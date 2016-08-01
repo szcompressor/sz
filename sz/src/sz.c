@@ -292,18 +292,18 @@ void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, i
 											
 	cleanESwithNoUnpredictable(esc);		
 	
-	char* resiBitLengthBytes;
-	convertDBAtoBytes(resiBitLengthArray, &resiBitLengthBytes);
+	//char* resiBitLengthBytes;
+	//convertDBAtoBytes(resiBitLengthArray, &resiBitLengthBytes);
 	
-	char* exactLeadNumIntArray;
-	convertDIAtoInts(exactLeadNumArray, &exactLeadNumIntArray);
+	//char* exactLeadNumIntArray;
+	//convertDIAtoInts(exactLeadNumArray, &exactLeadNumIntArray);
 
 	
-	char* exactMidBytes;
-	convertDBAtoBytes(exactMidByteArray, &exactMidBytes);
+	//char* exactMidBytes;
+	//convertDBAtoBytes(exactMidByteArray, &exactMidBytes);
 	
-	char* resiBitIntArray;
-	convertDIAtoInts(resiBitArray, &resiBitIntArray);
+	//char* resiBitIntArray;
+	//convertDIAtoInts(resiBitArray, &resiBitIntArray);
 		
 	char* expSegmentsInBytes;
 	int expSegmentsInBytes_size = convertESCToBytes(esc, &expSegmentsInBytes);
@@ -312,17 +312,18 @@ void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, i
 	TightDataPointStorageF* tdps;
 			
 	new_TightDataPointStorageF(&tdps, dataLength, exactDataNum, 
-			type, exactMidBytes, exactMidByteArray->size,  
-			exactLeadNumIntArray,  
-			resiBitIntArray, resiBitArray->size, 
+			type, exactMidByteArray->array, exactMidByteArray->size,  
+			exactLeadNumArray->array,  
+			resiBitArray->array, resiBitArray->size, 
 			expSegmentsInBytes, expSegmentsInBytes_size, 
-			resiBitLengthBytes, resiBitLengthArray->size);
+			resiBitLengthArray->array, resiBitLengthArray->size);
 	
 	//free memory
-	free_DBA(exactMidByteArray);	
 	free_DBA(resiBitLengthArray);
-	free_DIA(resiBitArray);
+	free_DBA(exactMidByteArray);	
 	free_DIA(exactLeadNumArray);
+	free_DIA(resiBitArray);
+	free(type);
 	
 	free_ExpSegmentConstructor(esc);
 	
@@ -758,6 +759,12 @@ double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
 		
 		return newByteData;
 	}
+	else
+	{
+		printf("Error: dataType can only be SZ_FLOAT or SZ_DOUBLE.\n");
+		exit(1);
+		return NULL;
+	}
 }
 
 int SZ_compress_args2(int dataType, void *data, char* compressed_bytes, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
@@ -843,6 +850,7 @@ void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, i
 	getSnapshotData_float(newData,dataLength,tdps);
 	
 	free_TightDataPointStorageF(tdps);
+	free(szTmpBytes);
 }
 
 void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2, int r1, char* cmpBytes, int cmpSize)
@@ -1008,11 +1016,12 @@ char* SZ_batch_compress(int *outSize)
 		
 		//keep dimension information
 		int dimNum = computeDimension(p->r5, p->r4, p->r3, p->r2, p->r1);
+		int dimSize[dimNum];
+		memset(dimSize, 0, dimNum*sizeof(int));
 		meta = meta | dimNum << 2; //---aaabc: aaa indicates dim, b indicates HZ, c indicates dataType
 		
 		addDBA_Data(dba, (char)meta);
 		
-		int* dimSize = (int*)malloc(sizeof(int)*dimNum);
 		filloutDimArray(dimSize, p->r5, p->r4, p->r3, p->r2, p->r1);
 		
 		for(j=0;j<dimNum;j++)

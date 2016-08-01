@@ -277,6 +277,7 @@ void decompressDataSeries_double(double** data, int dataSeriesLength, TightDataP
 		}
 	}
 	free_ExpSegmentConstructor(esc);
+	free(leadNum);
 	return;
 }
 

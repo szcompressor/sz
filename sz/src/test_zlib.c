@@ -36,8 +36,6 @@ ulong zlib_compress(char* data, ulong dataLength, char** compressBytes, int leve
 ulong zlib_compress2(char* data, ulong dataLength, char** compressBytes, int level)
 {
 	ulong outSize;
-	ulong* outSize_ = (ulong*)malloc(sizeof(ulong));
-	*outSize_ = dataLength;	
 	*compressBytes = (char*)malloc(sizeof(char)*dataLength);
 	
 	z_stream stream;
@@ -65,12 +63,10 @@ ulong zlib_compress2(char* data, ulong dataLength, char** compressBytes, int lev
         deflateEnd(&stream);
         return err == Z_OK ? Z_BUF_ERROR : err;
     }
-    *outSize_ = stream.total_out;
 
     err = deflateEnd(&stream);
     
-    outSize = *outSize_;
-	free(outSize_);
+    outSize = stream.total_out;
     return outSize;
 
 }

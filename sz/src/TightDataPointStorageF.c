@@ -205,6 +205,8 @@ void decompressDataSeries_float(float** data, int dataSeriesLength, TightDataPoi
 	char preBytes[4];
 	char curBytes[4];
 	
+	memset(preBytes, 0, 4);
+	
 	int i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 								// in resiMidBits, p is to track the
 								// byte_index of resiMidBits, l is for
@@ -279,6 +281,7 @@ void decompressDataSeries_float(float** data, int dataSeriesLength, TightDataPoi
 		}
 	}
 	free_ExpSegmentConstructor(esc);
+	free(leadNum);
 	return;
 }
 
@@ -501,8 +504,8 @@ void free_TightDataPointStorageF(TightDataPointStorageF *tdps)
 		free(tdps->typeArray);
 	if(tdps->leadNumArray!=NULL)
 		free(tdps->leadNumArray);
-	if(tdps->exactMidBytes!=NULL)
-		free(tdps->exactMidBytes);
+//	if(tdps->exactMidBytes!=NULL)
+//		free(tdps->exactMidBytes);
 	if(tdps->escBytes!=NULL)
 		free(tdps->escBytes);
 	if(tdps->residualMidBits!=NULL)

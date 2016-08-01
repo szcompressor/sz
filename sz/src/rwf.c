@@ -42,6 +42,7 @@ void readdoublefile_(char *srcFilePath, ulong *len, double *data, ulong *nbEle)
     s[*len]='\0';	
 	double *tmp_data = readDoubleData(s, nbEle);
 	memcpy(data, tmp_data, *nbEle);
+	free(tmp_data);
 }
 
 void readfloatfile_(char *srcFilePath, ulong *len, float *data, ulong *nbEle)
@@ -53,6 +54,7 @@ void readfloatfile_(char *srcFilePath, ulong *len, float *data, ulong *nbEle)
     s[*len]='\0';
 	float *tmp_data = readFloatData(s, nbEle);
 	memcpy(data, tmp_data, *nbEle);
+	free(tmp_data);
 }
 
 void writebytefile_(char *bytes, ulong *byteLength, char *tgtFilePath, ulong *len)
