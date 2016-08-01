@@ -1,4 +1,4 @@
---------SZ (version 1.0): Error-bounded Lossy Compressor for HPC Data--------
+--------SZ (version 1.1): Error-bounded Lossy Compressor for HPC Data--------
  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
        See COPYRIGHT in top-level directory.
 
