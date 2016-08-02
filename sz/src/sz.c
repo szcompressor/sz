@@ -320,7 +320,6 @@ void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, i
 	
 	//free memory
 	free_DBA(resiBitLengthArray);
-	free_DBA(exactMidByteArray);	
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
@@ -330,6 +329,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, i
 	//TODO: return bytes....
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 
+	free_DBA(exactMidByteArray);	
 	//*outSize= tmpOutSize;
 	//*newByteData = tmpByteData;
 	
