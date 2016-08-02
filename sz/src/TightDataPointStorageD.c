@@ -500,8 +500,8 @@ void free_TightDataPointStorageD(TightDataPointStorageD *tdps)
 		free(tdps->typeArray);
 	if(tdps->leadNumArray!=NULL)
 		free(tdps->leadNumArray);
-	if(tdps->exactMidBytes!=NULL)
-		free(tdps->exactMidBytes);
+	//if(tdps->exactMidBytes!=NULL)
+	//	free(tdps->exactMidBytes);
 	if(tdps->escBytes!=NULL)
 		free(tdps->escBytes);
 	if(tdps->residualMidBits!=NULL)

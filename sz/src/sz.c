@@ -297,7 +297,6 @@ void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, i
 	
 	//char* exactLeadNumIntArray;
 	//convertDIAtoInts(exactLeadNumArray, &exactLeadNumIntArray);
-
 	
 	//char* exactMidBytes;
 	//convertDBAtoBytes(exactMidByteArray, &exactMidBytes);
@@ -606,18 +605,17 @@ void SZ_compress_args_double_NoCkRngeNoGzip(char** newByteData, double *oriData,
 											
 	cleanESwithNoUnpredictable(esc);		
 	
-	char* resiBitLengthBytes;
-	convertDBAtoBytes(resiBitLengthArray, &resiBitLengthBytes);
+	//char* resiBitLengthBytes;
+	//convertDBAtoBytes(resiBitLengthArray, &resiBitLengthBytes);
 	
-	char* exactLeadNumIntArray;
-	convertDIAtoInts(exactLeadNumArray, &exactLeadNumIntArray);
-
+	//char* exactLeadNumIntArray;
+	//convertDIAtoInts(exactLeadNumArray, &exactLeadNumIntArray);
 	
-	char* exactMidBytes;
-	convertDBAtoBytes(exactMidByteArray, &exactMidBytes);
+	//char* exactMidBytes;
+	//convertDBAtoBytes(exactMidByteArray, &exactMidBytes);
 	
-	char* resiBitIntArray;
-	convertDIAtoInts(resiBitArray, &resiBitIntArray);
+	//char* resiBitIntArray;
+	//convertDIAtoInts(resiBitArray, &resiBitIntArray);
 		
 	char* expSegmentsInBytes;
 	int expSegmentsInBytes_size = convertESCToBytes(esc, &expSegmentsInBytes);
@@ -626,22 +624,24 @@ void SZ_compress_args_double_NoCkRngeNoGzip(char** newByteData, double *oriData,
 	TightDataPointStorageD* tdps;
 			
 	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum, 
-			type, exactMidBytes, exactMidByteArray->size,  
-			exactLeadNumIntArray,  
-			resiBitIntArray, resiBitArray->size, 
+			type, exactMidByteArray->array, exactMidByteArray->size,  
+			exactLeadNumArray->array,  
+			resiBitArray->array, resiBitArray->size, 
 			expSegmentsInBytes, expSegmentsInBytes_size, 
-			resiBitLengthBytes, resiBitLengthArray->size);
+			resiBitLengthArray->array, resiBitLengthArray->size);
 	
 	//free memory
-	free_DBA(exactMidByteArray);	
 	free_DBA(resiBitLengthArray);
-	free_DIA(resiBitArray);
 	free_DIA(exactLeadNumArray);
+	free_DIA(resiBitArray);
+	free(type);
 	
 	free_ExpSegmentConstructor(esc);
 	
 	//TODO: return bytes....
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
+
+	free_DBA(exactMidByteArray);	
 
 	//*outSize= tmpOutSize;
 	//*newByteData = tmpByteData;
