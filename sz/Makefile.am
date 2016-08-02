@@ -16,5 +16,5 @@ libsz_la_SOURCES=include/CompressElement.h include/DynamicDoubleArray.h include/
 		src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c src/iniparser.c src/szf.c \
 		src/CompressElement.c src/DynamicByteArray.c src/ExpSegment.c src/rw.c src/TightDataPointStorageD.c src/TightDataPointStorageF.c \
 		src/conf.c src/DynamicDoubleArray.c src/ExpSegmentConstructor.c src/rwf.c src/TypeManager.c \
-		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/test_zlib.c src/sz.c \
+		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/test_zlib.c src/reorganizeData.c src/sz.c \
 		src/sz_interface.F90 src/rw_interface.F90

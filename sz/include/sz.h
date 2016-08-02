@@ -66,6 +66,9 @@ double relBoundRatio;
 
 int versionNumber[3];
 
+int spaceFillingCurveTransform; //default is 0, or 1 set by sz.config
+int reOrgSize; //the granularity of the reganization of the original data
+
 SZ_VarSet* sz_varset;
 
 typedef union lshort

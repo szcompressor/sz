@@ -91,6 +91,11 @@ int SZ_ReadConf() {
 			printf("[SZ] Error: Wrong gzip Mode (please check sz.config file)\n");
 			exit(0);
 		}
+		maxSegmentNum = (int)iniparser_getint(ini, "PARAMETER:maxSegmentNum", 0); //256
+		
+		spaceFillingCurveTransform = (int)iniparser_getint(ini, "PARAMETER:spaceFillingCurveTransform", 0);
+		
+		reOrgSize = (int)iniparser_getint(ini, "PARAMETER:reOrgBlockSize", 0); //8
 		
 		errBoundMode = iniparser_getstring(ini, "PARAMETER:errorBoundMode", NULL);
 		if(strcmp(errBoundMode,"ABS")==0||strcmp(errBoundMode,"abs")==0)
@@ -114,8 +119,6 @@ int SZ_ReadConf() {
 	versionNumber[0] = 1; //0
 	versionNumber[1] = 1; //5
 	versionNumber[2] = 0; //15
-    
-    maxSegmentNum = 1024;
     
     iniparser_freedict(ini);
     return 1;

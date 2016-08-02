@@ -403,7 +403,18 @@ int errBoundMode, float absErr_Bound, float rel_BoundRatio)
 	{
 		int tmpOutSize;
 		char* tmpByteData;
-		SZ_compress_args_float_NoCkRngeNoGzip(&tmpByteData, oriData, dataLength, realPrecision, &tmpOutSize);
+		if(spaceFillingCurveTransform==1)
+		{
+			float* newOriData;				
+			reorganizeData_float_spacefilling(&newOriData, oriData, r5,r4,r3,r2,r1);
+			SZ_compress_args_float_NoCkRngeNoGzip(&tmpByteData, newOriData, dataLength, realPrecision, &tmpOutSize);
+			if(r2!=0)
+				free(newOriData);			
+		}
+		else
+		{
+			SZ_compress_args_float_NoCkRngeNoGzip(&tmpByteData, oriData, dataLength, realPrecision, &tmpOutSize);
+		}
 		
 		//TODO: call Gzip to do the further compression.
 		*outSize = (int)zlib_compress2(tmpByteData, tmpOutSize, newByteData, gzipMode);
@@ -720,7 +731,19 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 	{
 		int tmpOutSize;
 		char* tmpByteData;
-		SZ_compress_args_double_NoCkRngeNoGzip(&tmpByteData, oriData, dataLength, realPrecision, &tmpOutSize);
+		
+		if(spaceFillingCurveTransform==1)
+		{
+			double* newOriData;				
+			reorganizeData_double_spacefilling(&newOriData, oriData, r5,r4,r3,r2,r1);
+			SZ_compress_args_double_NoCkRngeNoGzip(&tmpByteData, newOriData, dataLength, realPrecision, &tmpOutSize);
+			if(r2!=0)
+				free(newOriData);
+		}
+		else //==0
+		{
+			SZ_compress_args_double_NoCkRngeNoGzip(&tmpByteData, oriData, dataLength, realPrecision, &tmpOutSize);
+		}		
 		
 		//TODO: call Gzip to do the further compression.
 		*outSize = (int)zlib_compress2(tmpByteData, tmpOutSize, newByteData, gzipMode);
