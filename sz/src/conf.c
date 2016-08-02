@@ -46,7 +46,7 @@ int SZ_ReadConf() {
 	endianTypeString = iniparser_getstring(ini, "ENV:dataEndianType", NULL);
 	if(strcmp(endianTypeString, "LITTLE_ENDIAN_DATA")==0)
 		dataEndianType = LITTLE_ENDIAN_DATA;
-	else if(strcmp(endianTypeString, "BIG_ENDIAN_DATA")==1)
+	else if(strcmp(endianTypeString, "BIG_ENDIAN_DATA")==0)
 		dataEndianType = BIG_ENDIAN_DATA;
 	else
 	{
