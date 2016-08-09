@@ -285,8 +285,8 @@ void computeOffset_3orders(ExpSegment* header, void* data_, int dataLength, floa
 				{
 					if(fabs(value - preData) > errBound) //actually, it is equal to (value-medianValue)-(preData-medianValue)
 					{
-						//float medianValue = curExp->medianValue_f0; //here, it's also known as lambda0
-						float medianValue = 0;
+						float medianValue = curExp->medianValue_f0; //here, it's also known as lambda0
+						//float medianValue = 0;
 						int newUnpreData = floatToOSEndianInt(value - medianValue);
 						leadingNumSum_mod8 += getLeadingNumbers_Int(preUnpreData, newUnpreData)%8;
 						preUnpreData = newUnpreData;
@@ -297,8 +297,8 @@ void computeOffset_3orders(ExpSegment* header, void* data_, int dataLength, floa
 				{
 					if(fabs(value - preData)>errBound && fabs(value - (2*preData - prepreData))>errBound)
 					{
-						//float medianValue = curExp->medianValue_f0;
-						float medianValue = 0;
+						float medianValue = curExp->medianValue_f0;
+						//float medianValue = 0;
 						int newUnpreData = floatToOSEndianInt(value - medianValue);
 						leadingNumSum_mod8 += getLeadingNumbers_Int(preUnpreData, newUnpreData)%8;
 						preUnpreData = newUnpreData;
@@ -309,8 +309,8 @@ void computeOffset_3orders(ExpSegment* header, void* data_, int dataLength, floa
 				{
 					if(fabs(value - preData)>errBound && fabs(value - (2*preData - prepreData))>errBound && fabs(value - (3*preData - 3*prepreData + preprepreData))>errBound)
 					{
-						//float medianValue = curExp->medianValue_f0;
-						float medianValue = 0;
+						float medianValue = curExp->medianValue_f0;
+						//float medianValue = 0;
 						int newUnpreData = floatToOSEndianInt(value - medianValue);
 						leadingNumSum_mod8 += getLeadingNumbers_Int(preUnpreData, newUnpreData)%8;
 						preUnpreData = newUnpreData;
@@ -457,13 +457,13 @@ void computeOffsetMedianValue(ExpSegment* header, void* data_, int DATA_TYPE)
 			char offset = curExp->offset;
 			if(offset==0)
 			{
-				//curExp->medianValue_f = curExp->medianValue_f0;
-				curExp->medianValue_f = 0;
+				curExp->medianValue_f = curExp->medianValue_f0;
+				//curExp->medianValue_f = 0;
 			}
 			else
 			{
-				//float lambda0 = curExp->medianValue_f0;
-				float lambda0 = 0;
+				float lambda0 = curExp->medianValue_f0;
+				//float lambda0 = 0;
 				int start  = curExp->startStep;
 				int end = curExp->endStep;
 				
