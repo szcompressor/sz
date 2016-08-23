@@ -600,7 +600,7 @@ void computeReqLength(ExpSegmentConstructor* this, short reqExpo)
 
 inline void getExpSegment_fast(ExpSegmentConstructor *esc, int index)
 {
-	if(index > esc->curExp->endStep)
+	while(index > esc->curExp->endStep)
 		esc->curExp = (esc->curExp)->next;
 }
 
