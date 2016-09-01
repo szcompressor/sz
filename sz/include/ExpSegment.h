@@ -10,6 +10,10 @@
 #ifndef _ExpSegment_H
 #define _ExpSegment_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct ExpSegment
 {	
 	int fixed;
@@ -51,5 +55,9 @@ short mergeSelf_tonext(ExpSegment* this);
 int getEndStep(ExpSegment* this);
 void cleanUp(ExpSegment* this, void* data, long dataLength, float errBound, int DATA_TYPE);
 void updateEndStep(ExpSegment* this);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ----- #ifndef _ExpSegment_H  ----- */

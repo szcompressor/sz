@@ -10,6 +10,10 @@
 #ifndef _CompressElement_H
 #define _CompressElement_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct DoubleValueCompressElement
 {
 	double data;
@@ -50,5 +54,8 @@ inline void updateLossyCompElement_Double(char* curBytes, char* preBytes,
 inline void updateLossyCompElement_Float(char* curBytes, char* preBytes, 
 		int reqBytesLength, int resiBitsLength,  LossyCompressionElement *lce);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ----- #ifndef _CompressElement_H  ----- */

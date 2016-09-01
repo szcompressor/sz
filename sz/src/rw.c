@@ -52,7 +52,65 @@ char * readByteData(char *srcFilePath, ulong *byteLength)
     return byteBuf;
 }
 
-double * readDoubleData(char *srcFilePath, ulong *nbEle)
+double *readDoubleData(char *srcFilePath, ulong *nbEle)
+{
+	if(dataEndianType==sysEndianType)
+	{
+		double *daBuf = readDoubleData_systemEndian(srcFilePath, nbEle);
+		return daBuf;
+	}
+	else
+	{
+		ulong i,j;
+		
+		ulong byteLength;
+		char* bytes = readByteData(srcFilePath, &byteLength);
+		double *daBuf = (double *)malloc(byteLength);
+		*nbEle = byteLength/8;
+		
+		ldouble buf;
+		for(i = 0;i<*nbEle;i++)
+		{
+			j = i*8;
+			memcpy(buf.byte, bytes+j, 8);
+			symTransform_8bytes(buf.byte);
+			daBuf[i] = buf.value;
+		}
+		free(bytes);
+		return daBuf;
+	}
+}
+
+float *readFloatData(char *srcFilePath, ulong *nbEle)
+{
+	if(dataEndianType==sysEndianType)
+	{
+		float *daBuf = readFloatData_systemEndian(srcFilePath, nbEle);
+		return daBuf;
+	}
+	else
+	{
+		ulong i,j;
+		
+		ulong byteLength;
+		char* bytes = readByteData(srcFilePath, &byteLength);
+		float *daBuf = (float *)malloc(byteLength);
+		*nbEle = byteLength/4;
+		
+		lfloat buf;
+		for(i = 0;i<*nbEle;i++)
+		{
+			j = i*4;
+			memcpy(buf.byte, bytes+j, 4);
+			symTransform_4bytes(buf.byte);
+			daBuf[i] = buf.value;
+		}
+		free(bytes);
+		return daBuf;
+	}
+}
+
+double * readDoubleData_systemEndian(char *srcFilePath, ulong *nbEle)
 {
 	ulong inSize;
 	FILE *pFile = fopen(srcFilePath, "rb");
@@ -79,7 +137,7 @@ double * readDoubleData(char *srcFilePath, ulong *nbEle)
     return daBuf;
 }
 
-float * readFloatData(char *srcFilePath, ulong *nbEle)
+float * readFloatData_systemEndian(char *srcFilePath, ulong *nbEle)
 {
 	ulong inSize;
 	FILE *pFile = fopen(srcFilePath, "rb");

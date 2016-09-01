@@ -271,55 +271,42 @@ void computeOffset_3orders(ExpSegment* header, void* data_, int dataLength, floa
 		{
 			int start = curExp->startStep;
 			int end = curExp->endStep;
-			
-			float preData = floatData[start];
-			float prepreData = preData;
-			float preprepreData = prepreData;
-
-			int preUnpreData = floatToOSEndianInt(preData);
+			float preData_1, preData_2, predValue, preUnpreData, newUnpreData;
 			int leadingNumSum_mod8 = 0, count = 0;
+			if(start==0)
+			{
+				preData_2 = floatData[0];
+				preUnpreData = floatToOSEndianInt(preData_2 - curExp->medianValue_f0);
+				preData_1 = floatData[1];
+				newUnpreData = floatToOSEndianInt(preData_1 - curExp->medianValue_f0);
+				leadingNumSum_mod8 += getLeadingNumbers_Int(preUnpreData, newUnpreData)%8;
+				count++;
+				preUnpreData = newUnpreData;
+			}
+			else
+			{
+				preData_2 = floatData[start-2];
+				preData_1 = floatData[start-1];				
+			}
+			
+			float interval = 255*errBound;
 			for(i = start;i<=end;i++)
 			{
 				float value = floatData[i];
-				if(i==1)
+				if(i>1)
 				{
-					if(fabs(value - preData) > errBound) //actually, it is equal to (value-medianValue)-(preData-medianValue)
+					predValue = 2*preData_1 - preData_2;
+					if(fabs(predValue-value) > interval)
 					{
-						float medianValue = curExp->medianValue_f0; //here, it's also known as lambda0
-						//float medianValue = 0;
-						int newUnpreData = floatToOSEndianInt(value - medianValue);
+						newUnpreData = floatToOSEndianInt(value - curExp->medianValue_f0); // (value); medianValue_f0 -> 0
 						leadingNumSum_mod8 += getLeadingNumbers_Int(preUnpreData, newUnpreData)%8;
 						preUnpreData = newUnpreData;
-						count++;
-					}
-				}
-				else if(i==2)//i>=2
-				{
-					if(fabs(value - preData)>errBound && fabs(value - (2*preData - prepreData))>errBound)
-					{
-						float medianValue = curExp->medianValue_f0;
-						//float medianValue = 0;
-						int newUnpreData = floatToOSEndianInt(value - medianValue);
-						leadingNumSum_mod8 += getLeadingNumbers_Int(preUnpreData, newUnpreData)%8;
-						preUnpreData = newUnpreData;
-						count++;
-					}
-				}
-				else //i>=3
-				{
-					if(fabs(value - preData)>errBound && fabs(value - (2*preData - prepreData))>errBound && fabs(value - (3*preData - 3*prepreData + preprepreData))>errBound)
-					{
-						float medianValue = curExp->medianValue_f0;
-						//float medianValue = 0;
-						int newUnpreData = floatToOSEndianInt(value - medianValue);
-						leadingNumSum_mod8 += getLeadingNumbers_Int(preUnpreData, newUnpreData)%8;
-						preUnpreData = newUnpreData;
-						count++;
-					}
-				}
-				preprepreData = prepreData;
-				prepreData = preData;
-				preData = value;
+						count++;						
+					}						
+				}	
+				
+				preData_2 = preData_1;
+				preData_1 = predValue;
 			}
 			int meanLeadNum_mod8 = (int)(((float)leadingNumSum_mod8)/count);
 			//Change places / Changing places, compared to SZ-0.5.11
@@ -340,58 +327,47 @@ void computeOffset_3orders(ExpSegment* header, void* data_, int dataLength, floa
 		{
 			int start = curExp->startStep;
 			int end = curExp->endStep;
-			
-			double preData = doubleData[start];
-			double prepreData = preData;
-			double preprepreData = prepreData;
-			
-			long preUnpreData = doubleToOSEndianLong(preData);
+			double preData_1, preData_2, predValue, preUnpreData, newUnpreData;
 			int leadingNumSum_mod8 = 0, count = 0;
+			if(start==0)
+			{
+				preData_2 = doubleData[0];
+				preUnpreData = doubleToOSEndianLong(preData_2 - curExp->medianValue_d0);
+				preData_1 = doubleData[1];
+				newUnpreData = doubleToOSEndianLong(preData_1 - curExp->medianValue_d0);
+				leadingNumSum_mod8 += getLeadingNumbers_Long(preUnpreData, newUnpreData)%8;
+				count++;
+				preUnpreData = newUnpreData;
+			}
+			else
+			{
+				preData_2 = doubleData[start-2];
+				preData_1 = doubleData[start-1];				
+			}
 			
+			double interval = 255*errBound;
 			for(i = start;i<=end;i++)
 			{
 				double value = doubleData[i];
-				if(i==1)
+				if(i>1)
 				{
-					if(fabs(value - preData) > errBound) //actually, it is equal to (value-medianValue)-(preData-medianValue)
+					predValue = 2*preData_1 - preData_2;
+					if(fabs(predValue-value) > interval)
 					{
-						double medianValue = 0;//curExp->medianValue_d0; //here, it's also known as lambda0
-						long newUnpreData = doubleToOSEndianLong(value - medianValue);
+						newUnpreData = doubleToOSEndianLong(value - curExp->medianValue_d0); // (value); medianValue_f0 -> 0
 						leadingNumSum_mod8 += getLeadingNumbers_Long(preUnpreData, newUnpreData)%8;
 						preUnpreData = newUnpreData;
-						count++;
-					}
-				}
-				else if(i==2)//i>=2
-				{
-					if(fabs(value - preData)>errBound && fabs(value - (2*preData - prepreData))>errBound)
-					{
-						double medianValue = 0;//curExp->medianValue_d0;
-						long newUnpreData = doubleToOSEndianLong(value - medianValue);
-						leadingNumSum_mod8 += getLeadingNumbers_Long(preUnpreData, newUnpreData)%8;
-						preUnpreData = newUnpreData;
-						count++;
-					}
-				}
-				else //i>=3
-				{
-					if(fabs(value - preData)>errBound && fabs(value - (2*preData - prepreData))>errBound && fabs(value - (3*preData - 3*prepreData + preprepreData))>errBound)
-					{
-						double medianValue = 0;//curExp->medianValue_d0;
-						long newUnpreData = doubleToOSEndianLong(value - medianValue);
-						leadingNumSum_mod8 += getLeadingNumbers_Long(preUnpreData, newUnpreData)%8;
-						preUnpreData = newUnpreData;
-						count++;
-					}
-				}
-				preprepreData = prepreData;
-				prepreData = preData;
-				preData = value;
+						count++;						
+					}						
+				}	
+				
+				preData_2 = preData_1;
+				preData_1 = predValue;
 			}
-			int meanLeadNum_mod8 = (int)(((float)leadingNumSum_mod8)/count);
+			int meanLeadNum_mod8 = (int)(((double)leadingNumSum_mod8)/count);
 			//Change places / Changing places, compared to SZ-0.5.11
 			//float meanLeadNum_mod = meanLeadNum - ((int)(meanLeadNum/8))*8; 
-			if(meanLeadNum_mod8 > 4)
+			if(meanLeadNum_mod8 > 4) //4->2 is better for single-precision data
 			{
 				int offset_ = (8 - meanLeadNum_mod8)+offset;
 				curExp->offset = (char)offset_;
@@ -419,13 +395,13 @@ void computeOffsetMedianValue(ExpSegment* header, void* data_, int DATA_TYPE)
 			char offset = curExp->offset;
 			if(offset==0)
 			{
-				//curExp->medianValue_d = curExp->medianValue_d0;
-				curExp->medianValue_d = 0;
+				curExp->medianValue_d = curExp->medianValue_d0;
+				//curExp->medianValue_d = 0;
 			}
 			else
 			{
-				//double lambda0 = curExp->medianValue_d0;
-				double lambda0 = 0;
+				double lambda0 = curExp->medianValue_d0;
+				//double lambda0 = 0;
 				int start  = curExp->startStep;
 				int end = curExp->endStep;
 				

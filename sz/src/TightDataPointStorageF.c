@@ -1,7 +1,7 @@
 /**
  *  @file TightPointDataStorageF.c
- *  @author Sheng Di
- *  @date May, 2016
+ *  @author Sheng Di and Dingwen Tao
+ *  @date Aug, 2016
  *  @brief The functions used to construct the tightPointDataStorage element for storing compressed bytes.
  *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
@@ -13,6 +13,8 @@
 #include "TightDataPointStorageF.h"
 #include "sz.h"
 #include "ExpSegmentConstructor.h"
+#include "Huffman.h"
+#include "rw.h"
 
 void new_TightDataPointStorageF_Empty(TightDataPointStorageF **this)
 {
@@ -21,22 +23,22 @@ void new_TightDataPointStorageF_Empty(TightDataPointStorageF **this)
 	(*this)->allSameData = 0;
 	(*this)->exactDataNum = 0;
 	(*this)->reservedValue = 0;
-	
+
 	(*this)->rtypeArray = NULL;
 	(*this)->rtypeArray_size = 0;
-	
+
 	(*this)->typeArray = NULL; //its size is dataSeriesLength/4 (or xxx/4+1) 
 	(*this)->typeArray_size = 0;
-	
+
 	(*this)->leadNumArray = NULL; //its size is exactDataNum/4 (or exactDataNum/4+1)
 	(*this)->leadNumArray_size = 0;
-	
+
 	(*this)->exactMidBytes = NULL;
 	(*this)->exactMidBytes_size = 0;
-	
+
 	(*this)->escBytes = NULL;
 	(*this)->escBytes_size = 0;
-	
+
 	(*this)->residualMidBits = NULL;
 	(*this)->residualMidBits_size = 0;
 }
@@ -58,7 +60,7 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, cha
 	char dsLengthBytes[4];
 	for (i = 0; i < 4; i++)
 		dsLengthBytes[i] = flatBytes[index++];
-		
+
 	//TODO
 	(*this)->dataSeriesLength = bytesToInt_bigEndian(dsLengthBytes);// 4
 	char sameRByte = flatBytes[index++];
@@ -78,8 +80,8 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, cha
 	}
 	else
 		(*this)->allSameData = 0;
-		
-	int rtype_ = sameRByte & 0x02;
+
+	int rtype_ = sameRByte & 0x04;
 	if(rtype_!=0)
 	{
 		char rTypeLengthBytes[4];
@@ -90,23 +92,30 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, cha
 	else
 		(*this)->rtypeArray_size = 0;		
 
-	char exactLengthBytes[4];
+	char byteBuf[4];
 	for (i = 0; i < 4; i++)
-		exactLengthBytes[i] = flatBytes[index++];
-	(*this)->exactDataNum = bytesToInt_bigEndian(exactLengthBytes);// 4
+		byteBuf[i] = flatBytes[index++];
+	(*this)->realPrecision = bytesToFloat(byteBuf);
 
-	char escByteLengthBytes[4];
 	for (i = 0; i < 4; i++)
-		escByteLengthBytes[i] = flatBytes[index++];
-	(*this)->escBytes_size = bytesToInt_bigEndian(escByteLengthBytes);//4
+		byteBuf[i] = flatBytes[index++];
+	(*this)->typeArray_size = bytesToInt_bigEndian(byteBuf);// 4		
+
+	for (i = 0; i < 4; i++)
+		byteBuf[i] = flatBytes[index++];
+	(*this)->exactDataNum = bytesToInt_bigEndian(byteBuf);// 4
+
+	for (i = 0; i < 4; i++)
+		byteBuf[i] = flatBytes[index++];
+	(*this)->escBytes_size = bytesToInt_bigEndian(byteBuf);//4
 	if((*this)->escBytes_size>0)
 		(*this)->escBytes = (char*)malloc(sizeof(char)*(*this)->escBytes_size);
 	else
 		(*this)->escBytes = NULL;
-	char exactMidBytesLengthBytes[4];
+
 	for (i = 0; i < 4; i++)
-		exactMidBytesLengthBytes[i] = flatBytes[index++];// 4
-	(*this)->exactMidBytes_size = bytesToInt_bigEndian(exactMidBytesLengthBytes);// 4
+		byteBuf[i] = flatBytes[index++];// 4
+	(*this)->exactMidBytes_size = bytesToInt_bigEndian(byteBuf);// 4
 
 	int typeArrayLength = 0;
 	if (rtype_ != 0) {
@@ -114,27 +123,14 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, cha
 			(*this)->rtypeArray = (char*)malloc(sizeof(char)*(*this)->rtypeArray_size);
 		else
 			(*this)->rtypeArray = NULL;
-		char reservedValueBytes[4];
+
 		for (i = 0; i < 4; i++)
-			reservedValueBytes[i] = flatBytes[index++];
-		(*this)->reservedValue = bytesToFloat(reservedValueBytes);
-		
+			byteBuf[i] = flatBytes[index++];
+		(*this)->reservedValue = bytesToFloat(byteBuf);
+
 	}
 
-	int logicTypeLengthBitsNum = (*this)->dataSeriesLength * 2;
-	if (logicTypeLengthBitsNum % 8 == 0)
-	{
-		(*this)->typeArray_size = logicTypeLengthBitsNum >> 3;//divided by 8
-	}	
-	else
-	{
-		(*this)->typeArray_size = (logicTypeLengthBitsNum >> 3) + 1;
-	}
-	if((*this)->typeArray_size>0)
-		(*this)->typeArray = (char*)malloc(sizeof(char)*(*this)->typeArray_size);
-	else
-		(*this)->typeArray = NULL;
-
+	(*this)->typeArray = (char*)malloc(sizeof(char)*(*this)->typeArray_size);
 
 	int logicLeadNumBitsNum = (*this)->exactDataNum * 2;
 	if (logicLeadNumBitsNum % 8 == 0)
@@ -149,7 +145,7 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, cha
 		(*this)->leadNumArray = (char*)malloc(sizeof(char)*(*this)->leadNumArray_size);
 	else
 		(*this)->leadNumArray = NULL;
-	
+
 	if((*this)->exactMidBytes_size>0)
 		(*this)->exactMidBytes = (char*)malloc(sizeof(char)*(*this)->exactMidBytes_size);
 	else
@@ -157,7 +153,7 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, cha
 
 	if ((*this)->rtypeArray != NULL) 
 	{
-		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - 4 - 4 - 4 - 4
+		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - 4 - 4 - 4 - 4 - 4 - 4
 				- 4 - (*this)->rtypeArray_size - (*this)->escBytes_size
 				- (*this)->typeArray_size - (*this)->leadNumArray_size
 				- (*this)->exactMidBytes_size;
@@ -166,7 +162,7 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, cha
 	}
 	else
 	{
-		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - 4 - 4
+		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - 4 - 4 - 4 - 4
 				- 4 - (*this)->escBytes_size - (*this)->typeArray_size
 				- (*this)->leadNumArray_size - (*this)->exactMidBytes_size;
 	}	
@@ -189,15 +185,23 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, cha
 		(*this)->residualMidBits[i] = flatBytes[index++];	
 }
 
-//TODO
-void decompressDataSeries_float(float** data, int dataSeriesLength, TightDataPointStorageF* tdps) {
-	int* leadNum;
+void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps) 
+{
+	int i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+								// in resiMidBits, p is to track the
+								// byte_index of resiMidBits, l is for
+								// leadNum
+	char* leadNum;
+	float interval = tdps->realPrecision*2;
+	
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 
-	int* type;
-	convertByteArray2IntArray_fast_2b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
+	unsigned char* type;
+	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
+	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
+	type = tdps->typeArray;
 	
 	ExpSegmentConstructor *esc;
 	new_ExpSegmentConstructor_escbytes(&esc, 32, tdps->escBytes, tdps->escBytes_size, dataSeriesLength);
@@ -206,17 +210,18 @@ void decompressDataSeries_float(float** data, int dataSeriesLength, TightDataPoi
 	char curBytes[4];
 	
 	memset(preBytes, 0, 4);
-	
-	int i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
-								// in resiMidBits, p is to track the
-								// byte_index of resiMidBits, l is for
-								// leadNum
+
 	int curByteIndex = 0;
 	ExpSegment* curES;	
-	int reqBytesLength, resiBitsLength, resiBits, leadingNum;	
-	float medianValue, exactData;
+	int reqBytesLength, resiBitsLength, resiBits; 
+	char leadingNum;	
+	float medianValue, exactData, predValue;
+	unsigned char type_;
 	for (i = 0; i < dataSeriesLength; i++) {
-		switch (type[i]) {
+//		if(i==4)
+//			printf("i=%d\n",i);
+		type_ = type[i];
+		switch (type_) {
 		case 0:
 			getExpSegment_fast(esc,i);
 			curES = esc->curExp;
@@ -265,20 +270,12 @@ void decompressDataSeries_float(float** data, int dataSeriesLength, TightDataPoi
 			(*data)[i] = exactData + medianValue;
 			memcpy(preBytes,curBytes,4);
 			break;
-		case 1:
-			(*data)[i] = (*data)[i - 1];
-			break;
-		case 2:
-			(*data)[i] = 2 * (*data)[i - 1] - (*data)[i - 2];
-			break;
-		case 3:
-			(*data)[i] = 3 * (*data)[i - 1] - 3
-					* (*data)[i - 2] + (*data)[i - 3];
-			break;
 		default:
-			printf("Error: type[%d] cannot be %d, but only 0, 1, 2, 3\n", i, type[i]);
-			exit(0);
+			predValue = 2 * (*data)[i-1] - (*data)[i-2];
+			(*data)[i] = predValue + (type_-128)*interval;
+			break;
 		}
+		//printf("%.30G\n",(*data)[i]);
 	}
 	free_ExpSegmentConstructor(esc);
 	free(leadNum);
@@ -286,8 +283,928 @@ void decompressDataSeries_float(float** data, int dataSeriesLength, TightDataPoi
 }
 
 //TODO
-void getSnapshotData_float(float** data, int dataSeriesLength, TightDataPointStorageF* tdps) {
-	
+void decompressDataSeries_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps) {
+	int i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	// in resiMidBits, p is to track the
+	// byte_index of resiMidBits, l is for
+	// leadNum
+	int dataSeriesLength = r1*r2;
+	//	printf ("%d %d\n", r1, r2);
+
+	char* leadNum;
+	float realPrecision = tdps->realPrecision;
+
+	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
+
+	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
+
+	unsigned char* type;
+	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
+	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
+	type = tdps->typeArray;
+
+	ExpSegmentConstructor *esc;
+	new_ExpSegmentConstructor_escbytes(&esc, 32, tdps->escBytes, tdps->escBytes_size, dataSeriesLength);
+
+	char preBytes[4];
+	char curBytes[4];
+
+	memset(preBytes, 0, 4);
+
+	int curByteIndex = 0;
+	ExpSegment* curES;	
+	int reqBytesLength, resiBitsLength, resiBits; 
+	char leadingNum;	
+	float medianValue, exactData, predValue;
+	unsigned char type_;
+
+
+	float pred1D, pred2D;
+	int ii, jj;
+
+	/* Process Row-0, data 0 */
+	getExpSegment_fast(esc,0);
+	curES = esc->curExp;
+	reqBytesLength = curES->reqBytesLength;
+	resiBitsLength = curES->resiBitsLength;
+	medianValue = curES->medianValue_f;
+
+	// compute resiBits
+	resiBits = 0;
+	if (resiBitsLength != 0) {
+		int kMod8 = k % 8;
+		int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+		if (rightMovSteps > 0) {
+			int code = getRightMovingCode(kMod8, resiBitsLength);
+			resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+		} else if (rightMovSteps < 0) {
+			int code1 = getLeftMovingCode(kMod8);
+			int code2 = getRightMovingCode(kMod8, resiBitsLength);
+			int leftMovSteps = -rightMovSteps;
+			rightMovSteps = 8 - leftMovSteps;
+			resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+			p++;
+			resiBits = resiBits
+					| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+		} else // rightMovSteps == 0
+		{
+			int code = getRightMovingCode(kMod8, resiBitsLength);
+			resiBits = (tdps->residualMidBits[p] & code);
+			p++;
+		}
+		k += resiBitsLength;
+	}
+
+	// recover the exact data
+	memset(curBytes, 0, 4);
+	leadingNum = leadNum[l++];
+	memcpy(curBytes, preBytes, leadingNum);
+	for (j = leadingNum; j < reqBytesLength; j++)
+		curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+	if (resiBitsLength != 0) {
+		char resiByte = (char) (resiBits << (8 - resiBitsLength));
+		curBytes[reqBytesLength] = resiByte;
+	}
+
+	exactData = bytesToFloat(curBytes);
+	(*data)[0] = exactData + medianValue;
+	memcpy(preBytes,curBytes,4);
+
+	/* Process Row-0, data 1 */
+	pred1D = (*data)[0];
+
+	if (type[1] != 0)
+	{
+		(*data)[1] = pred1D + 2 * (type[1] - 128) * realPrecision;
+	}
+	else
+	{
+		getExpSegment_fast(esc,1);
+		curES = esc->curExp;
+		reqBytesLength = curES->reqBytesLength;
+		resiBitsLength = curES->resiBitsLength;
+		medianValue = curES->medianValue_f;
+
+		// compute resiBits
+		resiBits = 0;
+		if (resiBitsLength != 0) {
+			int kMod8 = k % 8;
+			int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+			if (rightMovSteps > 0) {
+				int code = getRightMovingCode(kMod8, resiBitsLength);
+				resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+			} else if (rightMovSteps < 0) {
+				int code1 = getLeftMovingCode(kMod8);
+				int code2 = getRightMovingCode(kMod8, resiBitsLength);
+				int leftMovSteps = -rightMovSteps;
+				rightMovSteps = 8 - leftMovSteps;
+				resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+				p++;
+				resiBits = resiBits
+						| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+			} else // rightMovSteps == 0
+			{
+				int code = getRightMovingCode(kMod8, resiBitsLength);
+				resiBits = (tdps->residualMidBits[p] & code);
+				p++;
+			}
+			k += resiBitsLength;
+		}
+
+		// recover the exact data
+		memset(curBytes, 0, 4);
+		leadingNum = leadNum[l++];
+		memcpy(curBytes, preBytes, leadingNum);
+		for (j = leadingNum; j < reqBytesLength; j++)
+			curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+		if (resiBitsLength != 0) {
+			char resiByte = (char) (resiBits << (8 - resiBitsLength));
+			curBytes[reqBytesLength] = resiByte;
+		}
+
+		exactData = bytesToFloat(curBytes);
+		(*data)[1] = exactData + medianValue;
+		memcpy(preBytes,curBytes,4);
+	}
+
+	/* Process Row-0, data 2 --> data r2-1 */
+	for (jj = 2; jj < r2; jj++)
+	{
+		pred1D = 2*(*data)[jj-1] - (*data)[jj-2];
+
+		if (type[jj] != 0)
+		{
+			(*data)[jj] = pred1D + 2 * (type[jj] - 128) * realPrecision;
+		}
+		else
+		{
+			getExpSegment_fast(esc,jj);
+			curES = esc->curExp;
+			reqBytesLength = curES->reqBytesLength;
+			resiBitsLength = curES->resiBitsLength;
+			medianValue = curES->medianValue_f;
+
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data
+			memset(curBytes, 0, 4);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				char resiByte = (char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+
+			exactData = bytesToFloat(curBytes);
+			(*data)[jj] = exactData + medianValue;
+			memcpy(preBytes,curBytes,4);
+		}
+	}
+
+	int index;
+	/* Process Row-1 --> Row-r1-1 */
+	for (ii = 1; ii < r1; ii++)
+	{
+		/* Process row-ii data 0 */
+		index = ii*r2;
+		pred1D = (*data)[index-r2];
+
+		if (type[index] != 0)
+		{
+			(*data)[index] = pred1D + 2 * (type[index] - 128) * realPrecision;
+		}
+		else
+		{
+			getExpSegment_fast(esc,index);
+			curES = esc->curExp;
+			reqBytesLength = curES->reqBytesLength;
+			resiBitsLength = curES->resiBitsLength;
+			medianValue = curES->medianValue_f;
+
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data
+			memset(curBytes, 0, 4);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				char resiByte = (char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+
+			exactData = bytesToFloat(curBytes);
+			(*data)[index] = exactData + medianValue;
+			memcpy(preBytes,curBytes,4);
+		}
+
+		/* Process row-ii data 1 --> r2-1*/
+		for (jj = 1; jj < r2; jj++)
+		{
+			index = ii*r2+jj;
+			pred2D = (*data)[index-1] + (*data)[index-r2] - (*data)[index-r2-1];
+
+			if (type[index] != 0)
+			{
+				(*data)[index] = pred2D + 2 * (type[index] - 128) * realPrecision;
+			}
+			else
+			{
+				getExpSegment_fast(esc,index);
+				curES = esc->curExp;
+				reqBytesLength = curES->reqBytesLength;
+				resiBitsLength = curES->resiBitsLength;
+				medianValue = curES->medianValue_f;
+
+				// compute resiBits
+				resiBits = 0;
+				if (resiBitsLength != 0) {
+					int kMod8 = k % 8;
+					int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+					if (rightMovSteps > 0) {
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+					} else if (rightMovSteps < 0) {
+						int code1 = getLeftMovingCode(kMod8);
+						int code2 = getRightMovingCode(kMod8, resiBitsLength);
+						int leftMovSteps = -rightMovSteps;
+						rightMovSteps = 8 - leftMovSteps;
+						resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+						p++;
+						resiBits = resiBits
+								| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+					} else // rightMovSteps == 0
+					{
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code);
+						p++;
+					}
+					k += resiBitsLength;
+				}
+
+				// recover the exact data
+				memset(curBytes, 0, 4);
+				leadingNum = leadNum[l++];
+				memcpy(curBytes, preBytes, leadingNum);
+				for (j = leadingNum; j < reqBytesLength; j++)
+					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+				if (resiBitsLength != 0) {
+					char resiByte = (char) (resiBits << (8 - resiBitsLength));
+					curBytes[reqBytesLength] = resiByte;
+				}
+
+				exactData = bytesToFloat(curBytes);
+				(*data)[index] = exactData + medianValue;
+				memcpy(preBytes,curBytes,4);
+			}
+		}
+	}
+
+	free_ExpSegmentConstructor(esc);
+	free(leadNum);
+	return;
+}
+
+void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps) 
+{
+	int i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	// in resiMidBits, p is to track the
+	// byte_index of resiMidBits, l is for
+	// leadNum
+	int dataSeriesLength = r1*r2*r3;
+//	printf ("%d %d %d\n", r1, r2, r3);
+
+	char* leadNum;
+	float realPrecision = tdps->realPrecision;
+
+	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
+
+	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
+
+	unsigned char* type;
+	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
+	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
+	type = tdps->typeArray;
+
+	ExpSegmentConstructor *esc;
+	new_ExpSegmentConstructor_escbytes(&esc, 32, tdps->escBytes, tdps->escBytes_size, dataSeriesLength);
+
+	char preBytes[4];
+	char curBytes[4];
+
+	memset(preBytes, 0, 4);
+
+	int curByteIndex = 0;
+	ExpSegment* curES;
+	int reqBytesLength, resiBitsLength, resiBits;
+	char leadingNum;
+	float medianValue, exactData, predValue;
+	unsigned char type_;
+
+
+	float pred1D, pred2D, pred3D;
+	int ii, jj, kk;
+
+	///////////////////////////	Process layer-0 ///////////////////////////
+	/* Process Row-0 data 0*/
+	getExpSegment_fast(esc,0);
+	curES = esc->curExp;
+	reqBytesLength = curES->reqBytesLength;
+	resiBitsLength = curES->resiBitsLength;
+	medianValue = curES->medianValue_f;
+
+	// compute resiBits
+	resiBits = 0;
+	if (resiBitsLength != 0) {
+		int kMod8 = k % 8;
+		int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+		if (rightMovSteps > 0) {
+			int code = getRightMovingCode(kMod8, resiBitsLength);
+			resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+		} else if (rightMovSteps < 0) {
+			int code1 = getLeftMovingCode(kMod8);
+			int code2 = getRightMovingCode(kMod8, resiBitsLength);
+			int leftMovSteps = -rightMovSteps;
+			rightMovSteps = 8 - leftMovSteps;
+			resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+			p++;
+			resiBits = resiBits
+					| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+		} else // rightMovSteps == 0
+		{
+			int code = getRightMovingCode(kMod8, resiBitsLength);
+			resiBits = (tdps->residualMidBits[p] & code);
+			p++;
+		}
+		k += resiBitsLength;
+	}
+
+	// recover the exact data
+	memset(curBytes, 0, 4);
+	leadingNum = leadNum[l++];
+	memcpy(curBytes, preBytes, leadingNum);
+	for (j = leadingNum; j < reqBytesLength; j++)
+		curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+	if (resiBitsLength != 0) {
+		char resiByte = (char) (resiBits << (8 - resiBitsLength));
+		curBytes[reqBytesLength] = resiByte;
+	}
+
+	exactData = bytesToFloat(curBytes);
+	(*data)[0] = exactData + medianValue;
+	memcpy(preBytes,curBytes,4);
+
+	/* Process Row-0, data 1 */
+	pred1D = (*data)[0];
+
+	if (type[1] != 0)
+	{
+		(*data)[1] = pred1D + 2 * (type[1] - 128) * realPrecision;
+	}
+	else
+	{
+		getExpSegment_fast(esc,1);
+		curES = esc->curExp;
+		reqBytesLength = curES->reqBytesLength;
+		resiBitsLength = curES->resiBitsLength;
+		medianValue = curES->medianValue_f;
+
+		// compute resiBits
+		resiBits = 0;
+		if (resiBitsLength != 0) {
+			int kMod8 = k % 8;
+			int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+			if (rightMovSteps > 0) {
+				int code = getRightMovingCode(kMod8, resiBitsLength);
+				resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+			} else if (rightMovSteps < 0) {
+				int code1 = getLeftMovingCode(kMod8);
+				int code2 = getRightMovingCode(kMod8, resiBitsLength);
+				int leftMovSteps = -rightMovSteps;
+				rightMovSteps = 8 - leftMovSteps;
+				resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+				p++;
+				resiBits = resiBits
+						| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+			} else // rightMovSteps == 0
+			{
+				int code = getRightMovingCode(kMod8, resiBitsLength);
+				resiBits = (tdps->residualMidBits[p] & code);
+				p++;
+			}
+			k += resiBitsLength;
+		}
+
+		// recover the exact data
+		memset(curBytes, 0, 4);
+		leadingNum = leadNum[l++];
+		memcpy(curBytes, preBytes, leadingNum);
+		for (j = leadingNum; j < reqBytesLength; j++)
+			curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+		if (resiBitsLength != 0) {
+			char resiByte = (char) (resiBits << (8 - resiBitsLength));
+			curBytes[reqBytesLength] = resiByte;
+		}
+
+		exactData = bytesToFloat(curBytes);
+		(*data)[1] = exactData + medianValue;
+		memcpy(preBytes,curBytes,4);
+	}
+
+	/* Process Row-0, data 2 --> data r3-1 */
+	for (jj = 2; jj < r3; jj++)
+	{
+		pred1D = 2*(*data)[jj-1] - (*data)[jj-2];
+
+		if (type[jj] != 0)
+		{
+			(*data)[jj] = pred1D + 2 * (type[jj] - 128) * realPrecision;
+		}
+		else
+		{
+			getExpSegment_fast(esc,jj);
+			curES = esc->curExp;
+			reqBytesLength = curES->reqBytesLength;
+			resiBitsLength = curES->resiBitsLength;
+			medianValue = curES->medianValue_f;
+
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data
+			memset(curBytes, 0, 4);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				char resiByte = (char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+
+			exactData = bytesToFloat(curBytes);
+			(*data)[jj] = exactData + medianValue;
+			memcpy(preBytes,curBytes,4);
+		}
+	}
+
+	int index;
+	/* Process Row-1 --> Row-r2-1 */
+	for (ii = 1; ii < r2; ii++)
+	{
+		/* Process row-ii data 0 */
+		index = ii*r3;
+		pred1D = (*data)[index-r3];
+
+		if (type[index] != 0)
+		{
+			(*data)[index] = pred1D + 2 * (type[index] - 128) * realPrecision;
+		}
+		else
+		{
+			getExpSegment_fast(esc,index);
+			curES = esc->curExp;
+			reqBytesLength = curES->reqBytesLength;
+			resiBitsLength = curES->resiBitsLength;
+			medianValue = curES->medianValue_f;
+
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data
+			memset(curBytes, 0, 4);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				char resiByte = (char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+
+			exactData = bytesToFloat(curBytes);
+			(*data)[index] = exactData + medianValue;
+			memcpy(preBytes,curBytes,4);
+		}
+
+		/* Process row-ii data 1 --> r3-1*/
+		for (jj = 1; jj < r3; jj++)
+		{
+			index = ii*r3+jj;
+			pred2D = (*data)[index-1] + (*data)[index-r3] - (*data)[index-r3-1];
+
+			if (type[index] != 0)
+			{
+				(*data)[index] = pred2D + 2 * (type[index] - 128) * realPrecision;
+			}
+			else
+			{
+				getExpSegment_fast(esc,index);
+				curES = esc->curExp;
+				reqBytesLength = curES->reqBytesLength;
+				resiBitsLength = curES->resiBitsLength;
+				medianValue = curES->medianValue_f;
+
+				// compute resiBits
+				resiBits = 0;
+				if (resiBitsLength != 0) {
+					int kMod8 = k % 8;
+					int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+					if (rightMovSteps > 0) {
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+					} else if (rightMovSteps < 0) {
+						int code1 = getLeftMovingCode(kMod8);
+						int code2 = getRightMovingCode(kMod8, resiBitsLength);
+						int leftMovSteps = -rightMovSteps;
+						rightMovSteps = 8 - leftMovSteps;
+						resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+						p++;
+						resiBits = resiBits
+								| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+					} else // rightMovSteps == 0
+					{
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code);
+						p++;
+					}
+					k += resiBitsLength;
+				}
+
+				// recover the exact data
+				memset(curBytes, 0, 4);
+				leadingNum = leadNum[l++];
+				memcpy(curBytes, preBytes, leadingNum);
+				for (j = leadingNum; j < reqBytesLength; j++)
+					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+				if (resiBitsLength != 0) {
+					char resiByte = (char) (resiBits << (8 - resiBitsLength));
+					curBytes[reqBytesLength] = resiByte;
+				}
+
+				exactData = bytesToFloat(curBytes);
+				(*data)[index] = exactData + medianValue;
+				memcpy(preBytes,curBytes,4);
+			}
+		}
+	}
+
+	///////////////////////////	Process layer-1 --> layer-r1-1 ///////////////////////////
+
+	for (kk = 1; kk < r1; kk++)
+	{
+		/* Process Row-0 data 0*/
+		index = kk*r2*r3;
+		pred1D = (*data)[index-r2*r3];
+
+		if (type[index] != 0)
+		{
+			(*data)[index] = pred1D + 2 * (type[index] - 128) * realPrecision;
+		}
+		else
+		{
+			getExpSegment_fast(esc,index);
+			curES = esc->curExp;
+			reqBytesLength = curES->reqBytesLength;
+			resiBitsLength = curES->resiBitsLength;
+			medianValue = curES->medianValue_f;
+
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data
+			memset(curBytes, 0, 4);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				char resiByte = (char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+
+			exactData = bytesToFloat(curBytes);
+			(*data)[index] = exactData + medianValue;
+			memcpy(preBytes,curBytes,4);
+		}
+
+		/* Process Row-0 data 1 --> data r3-1 */
+		for (jj = 1; jj < r3; jj++)
+		{
+			index = kk*r2*r3+jj;
+			pred2D = (*data)[index-1] + (*data)[index-r2*r3] - (*data)[index-r2*r3-1];
+
+			if (type[index] != 0)
+			{
+				(*data)[index] = pred2D + 2 * (type[index] - 128) * realPrecision;
+			}
+			else
+			{
+				getExpSegment_fast(esc,index);
+				curES = esc->curExp;
+				reqBytesLength = curES->reqBytesLength;
+				resiBitsLength = curES->resiBitsLength;
+				medianValue = curES->medianValue_f;
+
+				// compute resiBits
+				resiBits = 0;
+				if (resiBitsLength != 0) {
+					int kMod8 = k % 8;
+					int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+					if (rightMovSteps > 0) {
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+					} else if (rightMovSteps < 0) {
+						int code1 = getLeftMovingCode(kMod8);
+						int code2 = getRightMovingCode(kMod8, resiBitsLength);
+						int leftMovSteps = -rightMovSteps;
+						rightMovSteps = 8 - leftMovSteps;
+						resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+						p++;
+						resiBits = resiBits
+								| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+					} else // rightMovSteps == 0
+					{
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code);
+						p++;
+					}
+					k += resiBitsLength;
+				}
+
+				// recover the exact data
+				memset(curBytes, 0, 4);
+				leadingNum = leadNum[l++];
+				memcpy(curBytes, preBytes, leadingNum);
+				for (j = leadingNum; j < reqBytesLength; j++)
+					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+				if (resiBitsLength != 0) {
+					char resiByte = (char) (resiBits << (8 - resiBitsLength));
+					curBytes[reqBytesLength] = resiByte;
+				}
+
+				exactData = bytesToFloat(curBytes);
+				(*data)[index] = exactData + medianValue;
+				memcpy(preBytes,curBytes,4);
+			}
+		}
+
+		/* Process Row-1 --> Row-r2-1 */
+		for (ii = 1; ii < r2; ii++)
+		{
+			/* Process Row-i data 0 */
+			index = kk*r2*r3 + ii*r3;
+			pred2D = (*data)[index-r3] + (*data)[index-r2*r3] - (*data)[index-r2*r3-r3];
+
+			if (type[index] != 0)
+			{
+				(*data)[index] = pred2D + 2 * (type[index] - 128) * realPrecision;
+			}
+			else
+			{
+				getExpSegment_fast(esc,index);
+				curES = esc->curExp;
+				reqBytesLength = curES->reqBytesLength;
+				resiBitsLength = curES->resiBitsLength;
+				medianValue = curES->medianValue_f;
+
+				// compute resiBits
+				resiBits = 0;
+				if (resiBitsLength != 0) {
+					int kMod8 = k % 8;
+					int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+					if (rightMovSteps > 0) {
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+					} else if (rightMovSteps < 0) {
+						int code1 = getLeftMovingCode(kMod8);
+						int code2 = getRightMovingCode(kMod8, resiBitsLength);
+						int leftMovSteps = -rightMovSteps;
+						rightMovSteps = 8 - leftMovSteps;
+						resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+						p++;
+						resiBits = resiBits
+								| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+					} else // rightMovSteps == 0
+					{
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code);
+						p++;
+					}
+					k += resiBitsLength;
+				}
+
+				// recover the exact data
+				memset(curBytes, 0, 4);
+				leadingNum = leadNum[l++];
+				memcpy(curBytes, preBytes, leadingNum);
+				for (j = leadingNum; j < reqBytesLength; j++)
+					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+				if (resiBitsLength != 0) {
+					char resiByte = (char) (resiBits << (8 - resiBitsLength));
+					curBytes[reqBytesLength] = resiByte;
+				}
+
+				exactData = bytesToFloat(curBytes);
+				(*data)[index] = exactData + medianValue;
+				memcpy(preBytes,curBytes,4);
+			}
+
+			/* Process Row-i data 1 --> data r3-1 */
+			for (jj = 1; jj < r3; jj++)
+			{
+				index = kk*r2*r3 + ii*r3 + jj;
+				pred3D = (*data)[index-1] + (*data)[index-r3] + (*data)[index-r2*r3]
+					- (*data)[index-r3-1] - (*data)[index-r2*r3-r3] - (*data)[index-r2*r3-1] + (*data)[index-r2*r3-r3-1];
+
+				if (type[index] != 0)
+				{
+					(*data)[index] = pred3D + 2 * (type[index] - 128) * realPrecision;
+				}
+				else
+				{
+					getExpSegment_fast(esc,index);
+					curES = esc->curExp;
+					reqBytesLength = curES->reqBytesLength;
+					resiBitsLength = curES->resiBitsLength;
+					medianValue = curES->medianValue_f;
+
+					// compute resiBits
+					resiBits = 0;
+					if (resiBitsLength != 0) {
+						int kMod8 = k % 8;
+						int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+						if (rightMovSteps > 0) {
+							int code = getRightMovingCode(kMod8, resiBitsLength);
+							resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+						} else if (rightMovSteps < 0) {
+							int code1 = getLeftMovingCode(kMod8);
+							int code2 = getRightMovingCode(kMod8, resiBitsLength);
+							int leftMovSteps = -rightMovSteps;
+							rightMovSteps = 8 - leftMovSteps;
+							resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+							p++;
+							resiBits = resiBits
+									| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+						} else // rightMovSteps == 0
+						{
+							int code = getRightMovingCode(kMod8, resiBitsLength);
+							resiBits = (tdps->residualMidBits[p] & code);
+							p++;
+						}
+						k += resiBitsLength;
+					}
+
+					// recover the exact data
+					memset(curBytes, 0, 4);
+					leadingNum = leadNum[l++];
+					memcpy(curBytes, preBytes, leadingNum);
+					for (j = leadingNum; j < reqBytesLength; j++)
+						curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+					if (resiBitsLength != 0) {
+						char resiByte = (char) (resiBits << (8 - resiBitsLength));
+						curBytes[reqBytesLength] = resiByte;
+					}
+
+					exactData = bytesToFloat(curBytes);
+					(*data)[index] = exactData + medianValue;
+					memcpy(preBytes,curBytes,4);
+				}
+			}
+		}
+
+	}
+
+
+	free_ExpSegmentConstructor(esc);
+	free(leadNum);
+	return;
+}
+
+
+//TODO
+void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps) {
+
 	int i;
 	if (tdps->allSameData) {
 		float value = bytesToFloat(tdps->exactMidBytes);
@@ -296,8 +1213,8 @@ void getSnapshotData_float(float** data, int dataSeriesLength, TightDataPointSto
 			(*data)[i] = value;
 	} else {
 		if (tdps->rtypeArray == NULL) {
-			
-			decompressDataSeries_float(data, dataSeriesLength, tdps);
+
+			decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
 			return;
 		} else {
 			*data = (float*)malloc(sizeof(float)*dataSeriesLength);
@@ -316,7 +1233,7 @@ void getSnapshotData_float(float** data, int dataSeriesLength, TightDataPointSto
 			}
 			// get the decompressed data
 			float* decmpData;
-			decompressDataSeries_float(&decmpData, count, tdps);
+			decompressDataSeries_float_1D(&decmpData, dataSeriesLength, tdps);
 			// insert the decompressed data
 			int k = 0;
 			for (i = 0; i < dataSeriesLength; i++) {
@@ -328,33 +1245,133 @@ void getSnapshotData_float(float** data, int dataSeriesLength, TightDataPointSto
 	}
 }
 
+
+void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps) {
+
+	int i;
+	int dataSeriesLength = r1*r2;
+	if (tdps->allSameData) {
+		float value = bytesToFloat(tdps->exactMidBytes);
+		*data = (float*)malloc(sizeof(float)*dataSeriesLength);
+		for (i = 0; i < dataSeriesLength; i++)
+			(*data)[i] = value;
+	} else {
+		if (tdps->rtypeArray == NULL) {
+
+			decompressDataSeries_float_2D(data, r1, r2, tdps);
+			return;
+		} else {
+			*data = (float*)malloc(sizeof(float)*dataSeriesLength);
+			// insert the reserved values
+			//int[] rtypes = TypeManager.convertByteArray2IntArray_fast_1b(
+			//		dataSeriesLength, rtypeArray);
+			int* rtypes;
+			int validLength = computeBitNumRequired(dataSeriesLength);
+			decompressBitArraybySimpleLZ77(&rtypes, tdps->rtypeArray, tdps->rtypeArray_size, dataSeriesLength, validLength);
+			int count = 0;
+			for (i = 0; i < dataSeriesLength; i++) {
+				if (rtypes[i] == 1)
+					(*data)[i] = tdps->reservedValue;
+				else
+					count++;
+			}
+			// get the decompressed data
+			float* decmpData;
+			decompressDataSeries_float_2D(&decmpData, r1, r2, tdps);
+			// insert the decompressed data
+			int k = 0;
+			for (i = 0; i < dataSeriesLength; i++) {
+				if (rtypes[i] == 0) {
+					(*data)[i] = decmpData[k++];
+				}
+			}
+		}
+	}
+}
+
+void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps) {
+
+	int i;
+	int dataSeriesLength = r1*r2*r3;
+	if (tdps->allSameData) {
+		float value = bytesToFloat(tdps->exactMidBytes);
+		*data = (float*)malloc(sizeof(float)*dataSeriesLength);
+		for (i = 0; i < dataSeriesLength; i++)
+			(*data)[i] = value;
+	} else {
+		if (tdps->rtypeArray == NULL) {
+
+			decompressDataSeries_float_3D(data, r1, r2, r3, tdps);
+			return;
+		} else {
+			*data = (float*)malloc(sizeof(float)*dataSeriesLength);
+			// insert the reserved values
+			//int[] rtypes = TypeManager.convertByteArray2IntArray_fast_1b(
+			//		dataSeriesLength, rtypeArray);
+			int* rtypes;
+			int validLength = computeBitNumRequired(dataSeriesLength);
+			decompressBitArraybySimpleLZ77(&rtypes, tdps->rtypeArray, tdps->rtypeArray_size, dataSeriesLength, validLength);
+			int count = 0;
+			for (i = 0; i < dataSeriesLength; i++) {
+				if (rtypes[i] == 1)
+					(*data)[i] = tdps->reservedValue;
+				else
+					count++;
+			}
+			// get the decompressed data
+			float* decmpData;
+			decompressDataSeries_float_3D(&decmpData, r1, r2, r3, tdps);
+			// insert the decompressed data
+			int k = 0;
+			for (i = 0; i < dataSeriesLength; i++) {
+				if (rtypes[i] == 0) {
+					(*data)[i] = decmpData[k++];
+				}
+			}
+		}
+	}
+}
+
+
 /**
- * 
+ *
  * type's length == dataSeriesLength
  * exactMidBytes's length == exactMidBytes_size
  * leadNumIntArray's length == exactDataNum
  * escBytes's length == escBytes_size
  * resiBitLength's length == resiBitLengthSize
  * */
-void new_TightDataPointStorageF(TightDataPointStorageF **this, int dataSeriesLength, int exactDataNum, 
+void new_TightDataPointStorageF(TightDataPointStorageF **this,
+		int dataSeriesLength, int exactDataNum,
 		char* type, char* exactMidBytes, int exactMidBytes_size,
 		char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
 		char* resiMidBits, int resiMidBits_size,
 		char* escBytes, int escBytes_size,
-		char* resiBitLength, int resiBitLengthSize) {
+		char* resiBitLength, int resiBitLengthSize, float realPrecision) {
+	//int i = 0;
 	*this = (TightDataPointStorageF *)malloc(sizeof(TightDataPointStorageF));
 	(*this)->allSameData = 0;
+	(*this)->realPrecision = realPrecision;
+
 	(*this)->dataSeriesLength = dataSeriesLength;
 	(*this)->exactDataNum = exactDataNum;
-	
+
 	(*this)->rtypeArray = NULL;
 	(*this)->rtypeArray_size = 0;
-	
-	(*this)->typeArray_size = convertIntArray2ByteArray_fast_2b(type, dataSeriesLength, &((*this)->typeArray));
-	
+
+	//(*this)->typeArray_size = convertIntArray2ByteArray_fast_3b(type, dataSeriesLength, &((*this)->typeArray));
+	//for(;i<dataSeriesLength;i++)
+	//	type[i]+=48;
+	//huff_init(type);
+
+	//(*this)->typeArray_size = convert_HuffTree_and_Encode_16states(type, dataSeriesLength, &((*this)->typeArray));
+
+	(*this)->typeArray_size = dataSeriesLength;
+	(*this)->typeArray = type;
+
 	(*this)->exactMidBytes = exactMidBytes;
 	(*this)->exactMidBytes_size = exactMidBytes_size;
-	
+
 	(*this)->leadNumArray_size = convertIntArray2ByteArray_fast_2b(leadNumIntArray, exactDataNum, &((*this)->leadNumArray));
 
 	//(*this)->residualMidBits = resiMidBits;
@@ -362,29 +1379,31 @@ void new_TightDataPointStorageF(TightDataPointStorageF **this, int dataSeriesLen
 
 	(*this)->escBytes = escBytes;
 	(*this)->escBytes_size = escBytes_size;
-	
+
 	(*this)->residualMidBits_size = convertIntArray2ByteArray_fast_dynamic(resiMidBits, resiBitLength, resiBitLengthSize, &((*this)->residualMidBits));
 }
 
 //TODO: convert TightDataPointStorageD to bytes...
-void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, char** bytes, int *size) 
+void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, char** bytes, int *size)
 {
 	int i, k = 0;
+	char typeArrayLengthBytes[4];
 	char rTypeLengthBytes[4];
 	char dsLengthBytes[4];
 	char exactLengthBytes[4];
 	char escBytesLength[4];
 	char exactMidBytesLength[4];
 	char reservedValueBytes[4];
-	
+	char realPrecisionBytes[4];
+
 	intToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//4
 	char sameByte = tdps->allSameData==1?(char)1:(char)0;
-	
+
 	if(tdps->allSameData==1)
 	{
 		int totalByteLength = 3 + 4 + 1 + tdps->exactMidBytes_size;
 		*bytes = (char *)malloc(sizeof(char)*totalByteLength);
-	
+
 		for (i = 0; i < 3; i++)//3
 			(*bytes)[k++] = versionNumber[i];
 		for (i = 0; i < 4; i++)
@@ -392,35 +1411,44 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, char** bytes, in
 		(*bytes)[k++] = sameByte;
 		for (i = 0; i < tdps->exactMidBytes_size; i++)
 			(*bytes)[k++] = tdps->exactMidBytes[i];
-		
+
 		*size = totalByteLength;
 	}
-	else if (tdps->rtypeArray == NULL) 
+	else if (tdps->rtypeArray == NULL)
 	{
 		int residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;
-		int totalByteLength = 3 + 4 + 1 + 4 + 4 + 4 + tdps->escBytes_size
+		int totalByteLength = 3 + 4 + 1 + 4 + 4 + 4 + 4 + 4 + tdps->escBytes_size
 				+ tdps->typeArray_size + tdps->leadNumArray_size + tdps->exactMidBytes_size + residualMidBitsLength;
 
 		*bytes = (char *)malloc(sizeof(char)*totalByteLength);
 
-		for(i = 0;i<3;i++)//3
+		for(i = 0;i<3;i++)//3 bytes
 			(*bytes)[k++] = versionNumber[i];
-		for(i = 0;i<4;i++)//4
+		for(i = 0;i<4;i++)//4 bytes
 			(*bytes)[k++] = dsLengthBytes[i];
-		(*bytes)[k++] = sameByte;	//1			
-		
+
+		(*bytes)[k++] = sameByte;	//1	byte
+
+		floatToBytes(realPrecisionBytes, tdps->realPrecision);
+		for (i = 0; i < 4; i++)// 4
+			(*bytes)[k++] = realPrecisionBytes[i];
+
+		intToBytes_bigEndian(typeArrayLengthBytes, tdps->typeArray_size);
+		for(i = 0;i<4;i++)//4
+			(*bytes)[k++] = typeArrayLengthBytes[i];
+
 		intToBytes_bigEndian(exactLengthBytes, tdps->exactDataNum);
 		for(i = 0;i<4;i++)//4
 			(*bytes)[k++] = exactLengthBytes[i];
-		
+
 		intToBytes_bigEndian(escBytesLength, tdps->escBytes_size);
 		for(i = 0;i<4;i++)//4
 			(*bytes)[k++] = escBytesLength[i];
-		
+
 		intToBytes_bigEndian(exactMidBytesLength, tdps->exactMidBytes_size);
 		for(i = 0;i<4;i++)//4
 			(*bytes)[k++] = exactMidBytesLength[i];
-		
+
 		memcpy(&((*bytes)[k]), tdps->escBytes, tdps->escBytes_size);
 		k += tdps->escBytes_size;
 		memcpy(&((*bytes)[k]), tdps->typeArray, tdps->typeArray_size);
@@ -429,55 +1457,64 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, char** bytes, in
 		k += tdps->leadNumArray_size;
 		memcpy(&((*bytes)[k]), tdps->exactMidBytes, tdps->exactMidBytes_size);
 		k += tdps->exactMidBytes_size;
-		
+
 		if(tdps->residualMidBits!=NULL)
 		{
 			memcpy(&((*bytes)[k]), tdps->residualMidBits, tdps->residualMidBits_size);
-			k += tdps->residualMidBits_size;	
+			k += tdps->residualMidBits_size;
 		}
 		*size = totalByteLength;
 	}
 	else //the case with reserved value
 	{
 		int residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;
-		int totalByteLength = 3 + 4 + 1 + 4 + 4 + 4 + 4 + 4 + tdps->rtypeArray_size
-		+ tdps->escBytes_size + tdps->typeArray_size + tdps->leadNumArray_size 
-		+ tdps->exactMidBytes_size + residualMidBitsLength;
+		int totalByteLength = 3 + 4 + 1 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + tdps->rtypeArray_size
+				+ tdps->escBytes_size + tdps->typeArray_size + tdps->leadNumArray_size
+				+ tdps->exactMidBytes_size + residualMidBitsLength;
 
-		sameByte = (char) (sameByte | 0x02); // 00000010, the second bit
-												// denotes whether it is
-												// with "reserved value"
+		sameByte = (char) (sameByte | 0x04); // 00000100, the 3rd bit
+		// denotes whether it is
+		// with "reserved value"
 
 		*bytes = (char*)malloc(sizeof(char)*totalByteLength);
-		
+
 		for(i = 0;i<3;i++)//3
 			(*bytes)[k++] = versionNumber[i];
 		for(i = 0;i<4;i++)//4
 			(*bytes)[k++] = dsLengthBytes[i];
+
 		(*bytes)[k++] = sameByte;						//1
-		
+
+		floatToBytes(realPrecisionBytes, tdps->realPrecision);
+		for (i = 0; i < 4; i++)// 4
+			(*bytes)[k++] = realPrecisionBytes[i];
+
+		intToBytes_bigEndian(typeArrayLengthBytes, tdps->typeArray_size);
+		for(i = 0;i<4;i++)//4
+			(*bytes)[k++] = typeArrayLengthBytes[i];
+
 		intToBytes_bigEndian(rTypeLengthBytes, tdps->rtypeArray_size);
 		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = rTypeLengthBytes[i];				
-		
+			(*bytes)[k++] = rTypeLengthBytes[i];
+
 		intToBytes_bigEndian(exactLengthBytes, tdps->exactDataNum);
 		for(i = 0;i<4;i++)//4
 			(*bytes)[k++] = exactLengthBytes[i];
-		
+
 		intToBytes_bigEndian(escBytesLength, tdps->escBytes_size);
 		for(i = 0;i<4;i++)//4
 			(*bytes)[k++] = escBytesLength[i];
-		
+
 		intToBytes_bigEndian(exactMidBytesLength, tdps->exactMidBytes_size);
 		for(i = 0;i<4;i++)//4
 			(*bytes)[k++] = exactMidBytesLength[i];
-	
+
 		floatToBytes(reservedValueBytes, tdps->reservedValue);
 		for (i = 0; i < 4; i++)// 4
 			(*bytes)[k++] = reservedValueBytes[i];
-			
+
 		memcpy(&((*bytes)[k]), tdps->rtypeArray, tdps->rtypeArray_size);
-		k += tdps->rtypeArray_size;		
+		k += tdps->rtypeArray_size;
 		memcpy(&((*bytes)[k]), tdps->escBytes, tdps->escBytes_size);
 		k += tdps->escBytes_size;
 		memcpy(&((*bytes)[k]), tdps->typeArray, tdps->typeArray_size);
@@ -485,12 +1522,12 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, char** bytes, in
 		memcpy(&((*bytes)[k]), tdps->leadNumArray, tdps->leadNumArray_size);
 		k += tdps->leadNumArray_size;
 		memcpy(&((*bytes)[k]), tdps->exactMidBytes, tdps->exactMidBytes_size);
-		k += tdps->exactMidBytes_size;		
+		k += tdps->exactMidBytes_size;
 		if(tdps->residualMidBits!=NULL)
 		{
 			memcpy(&((*bytes)[k]), tdps->residualMidBits, tdps->residualMidBits_size);
-			k += tdps->residualMidBits_size;	
-		}		
+			k += tdps->residualMidBits_size;
+		}
 
 		*size = totalByteLength;
 	}
@@ -504,8 +1541,8 @@ void free_TightDataPointStorageF(TightDataPointStorageF *tdps)
 		free(tdps->typeArray);
 	if(tdps->leadNumArray!=NULL)
 		free(tdps->leadNumArray);
-//	if(tdps->exactMidBytes!=NULL)
-//		free(tdps->exactMidBytes);
+	//	if(tdps->exactMidBytes!=NULL)
+	//		free(tdps->exactMidBytes);
 	if(tdps->escBytes!=NULL)
 		free(tdps->escBytes);
 	if(tdps->residualMidBits!=NULL)

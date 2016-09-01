@@ -42,8 +42,8 @@ int main(int argc, char * argv[])
     
     if(argc < 3)
     {
-	printf("Test case: testfloat_compress [config_file] [srcFilePath] [dimension sizes...]\n", argv[0]);
-	printf("Example: testfloat_compress sz.config testfloat_8_8_128.dat 8 8 128\n", argv[0]);
+	printf("Test case: testfloat_compress [config_file] [srcFilePath] [dimension sizes...]\n");
+	printf("Example: testfloat_compress sz.config testfloat_8_8_128.dat 8 8 128\n");
 	exit(0);
     }
    

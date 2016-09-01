@@ -10,6 +10,10 @@
 #ifndef _DynamicDoubleArray_H
 #define _DynamicDoubleArray_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct DynamicDoubleArray
 {	
 	double* array;
@@ -22,5 +26,9 @@ void convertDDAtoDoubles(DynamicDoubleArray *dba, double **data);
 void free_DDA(DynamicDoubleArray *dda);
 double getDDA_Data(DynamicDoubleArray *dda, int pos);
 void addDDA_Data(DynamicDoubleArray *dda, int value);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ----- #ifndef _DynamicDoubleArray_H  ----- */

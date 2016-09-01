@@ -10,17 +10,25 @@
 #ifndef _DynamicIntArray_H
 #define _DynamicIntArray_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct DynamicIntArray
 {	
-	char* array; //char* (one byte) is enough, don't have to be int*
+	unsigned char* array; //char* (one byte) is enough, don't have to be int*
 	int size;
 	int capacity;
 } DynamicIntArray;
 
 void new_DIA(DynamicIntArray **dia, int cap);
-void convertDIAtoInts(DynamicIntArray *dia, char **data);
+void convertDIAtoInts(DynamicIntArray *dia, unsigned char **data);
 void free_DIA(DynamicIntArray *dia);
 int getDIA_Data(DynamicIntArray *dia, int pos);
 inline void addDIA_Data(DynamicIntArray *dia, int value);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ----- #ifndef _DynamicIntArray_H  ----- */

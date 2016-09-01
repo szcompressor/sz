@@ -19,12 +19,22 @@
 #define PATH_SEPARATOR ':'
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int checkFileSize(char *srcFilePath);
 char * readByteData(char *srcFilePath, ulong *byteLength);
+double * readDoubleData_systemEndian(char *srcFilePath, ulong *nbEle);
+float * readFloatData_systemEndian(char *srcFilePath, ulong *nbEle);
 double * readDoubleData(char *srcFilePath, ulong *nbEle);
 float * readFloatData(char *srcFilePath, ulong *nbEle);
 void writeByteData(char *bytes, ulong outSize, char *tgtFilePath);
 void writeDoubleData(double *data, ulong nbEle, char *tgtFilePath);
 void writeFloatData(float *data, ulong nbEle, char *tgtFilePath);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ----- #ifndef _IO_H  ----- */

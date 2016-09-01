@@ -134,7 +134,8 @@ am_libsz_la_OBJECTS = libsz_la-ByteToolkit.lo \
 	libsz_la-ExpSegmentConstructor.lo libsz_la-rwf.lo \
 	libsz_la-TypeManager.lo libsz_la-dictionary.lo \
 	libsz_la-DynamicFloatArray.lo libsz_la-VarSet.lo \
-	libsz_la-test_zlib.lo libsz_la-sz.lo sz_interface.lo \
+	libsz_la-test_zlib.lo libsz_la-Huffman.lo libsz_la-sz_float.lo \
+	libsz_la-sz_double.lo libsz_la-sz.lo sz_interface.lo \
 	rw_interface.lo
 libsz_la_OBJECTS = $(am_libsz_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -343,12 +344,12 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
 include_HEADERS = include/CompressElement.h include/DynamicDoubleArray.h include/ExpSegmentConstructor.h include/rw.h\
-		include/dictionary.h include/DynamicFloatArray.h include/ExpSegment.h include/VarSet.h include/sz.h\
+		include/dictionary.h include/DynamicFloatArray.h include/ExpSegment.h include/VarSet.h include/sz.h include/Huffman.h\
 		include/DynamicByteArray.h include/DynamicIntArray.h include/iniparser.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h sz.mod rw.mod
 
 lib_LTLIBRARIES = libsz.la
 libsz_la_CFLAGS = -g -I./include -I../zlib/
-libsz_la_LDFLAGS = -version-info  1:1:0
+libsz_la_LDFLAGS = -version-info  1:3:0
 libsz_la_LIDADD = ../zlib/libzlib.a
 libsz_la_SOURCES = include/CompressElement.h include/DynamicDoubleArray.h include/ExpSegmentConstructor.h include/rw.h\
 		include/dictionary.h include/DynamicFloatArray.h include/ExpSegment.h include/VarSet.h include/sz.h\
@@ -356,7 +357,7 @@ libsz_la_SOURCES = include/CompressElement.h include/DynamicDoubleArray.h includ
 		src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c src/iniparser.c src/szf.c \
 		src/CompressElement.c src/DynamicByteArray.c src/ExpSegment.c src/rw.c src/TightDataPointStorageD.c src/TightDataPointStorageF.c \
 		src/conf.c src/DynamicDoubleArray.c src/ExpSegmentConstructor.c src/rwf.c src/TypeManager.c \
-		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/test_zlib.c src/sz.c \
+		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/test_zlib.c src/Huffman.c src/sz_float.c src/sz_double.c src/sz.c \
 		src/sz_interface.F90 src/rw_interface.F90
 
 all: all-am
@@ -446,6 +447,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-DynamicIntArray.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-ExpSegment.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-ExpSegmentConstructor.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-Huffman.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-TightDataPointStorageD.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-TightDataPointStorageF.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-TypeManager.Plo@am__quote@
@@ -457,6 +459,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-rw.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-rwf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-sz.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-sz_double.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-sz_float.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-szf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsz_la-test_zlib.Plo@am__quote@
 
@@ -635,6 +639,27 @@ libsz_la-test_zlib.lo: src/test_zlib.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/test_zlib.c' object='libsz_la-test_zlib.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsz_la_CFLAGS) $(CFLAGS) -c -o libsz_la-test_zlib.lo `test -f 'src/test_zlib.c' || echo '$(srcdir)/'`src/test_zlib.c
+
+libsz_la-Huffman.lo: src/Huffman.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsz_la_CFLAGS) $(CFLAGS) -MT libsz_la-Huffman.lo -MD -MP -MF $(DEPDIR)/libsz_la-Huffman.Tpo -c -o libsz_la-Huffman.lo `test -f 'src/Huffman.c' || echo '$(srcdir)/'`src/Huffman.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsz_la-Huffman.Tpo $(DEPDIR)/libsz_la-Huffman.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/Huffman.c' object='libsz_la-Huffman.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsz_la_CFLAGS) $(CFLAGS) -c -o libsz_la-Huffman.lo `test -f 'src/Huffman.c' || echo '$(srcdir)/'`src/Huffman.c
+
+libsz_la-sz_float.lo: src/sz_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsz_la_CFLAGS) $(CFLAGS) -MT libsz_la-sz_float.lo -MD -MP -MF $(DEPDIR)/libsz_la-sz_float.Tpo -c -o libsz_la-sz_float.lo `test -f 'src/sz_float.c' || echo '$(srcdir)/'`src/sz_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsz_la-sz_float.Tpo $(DEPDIR)/libsz_la-sz_float.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/sz_float.c' object='libsz_la-sz_float.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsz_la_CFLAGS) $(CFLAGS) -c -o libsz_la-sz_float.lo `test -f 'src/sz_float.c' || echo '$(srcdir)/'`src/sz_float.c
+
+libsz_la-sz_double.lo: src/sz_double.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsz_la_CFLAGS) $(CFLAGS) -MT libsz_la-sz_double.lo -MD -MP -MF $(DEPDIR)/libsz_la-sz_double.Tpo -c -o libsz_la-sz_double.lo `test -f 'src/sz_double.c' || echo '$(srcdir)/'`src/sz_double.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsz_la-sz_double.Tpo $(DEPDIR)/libsz_la-sz_double.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/sz_double.c' object='libsz_la-sz_double.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsz_la_CFLAGS) $(CFLAGS) -c -o libsz_la-sz_double.lo `test -f 'src/sz_double.c' || echo '$(srcdir)/'`src/sz_double.c
 
 libsz_la-sz.lo: src/sz.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsz_la_CFLAGS) $(CFLAGS) -MT libsz_la-sz.lo -MD -MP -MF $(DEPDIR)/libsz_la-sz.Tpo -c -o libsz_la-sz.lo `test -f 'src/sz.c' || echo '$(srcdir)/'`src/sz.c

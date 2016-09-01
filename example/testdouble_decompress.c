@@ -43,8 +43,8 @@ int main(int argc, char * argv[])
     char *cfgFile;
     if(argc < 6)
     {
-		printf("Test case: testdouble_decompress [configFile] [srcFilePath] [dimension sizes...]\n", argv[0]);
-		printf("Example: testdouble_decompress sz.config testdouble_8_8_128.dat.sz 8 8 128\n", argv[0]);
+		printf("Test case: testdouble_decompress [configFile] [srcFilePath] [dimension sizes...]\n");
+		printf("Example: testdouble_decompress sz.config testdouble_8_8_128.dat.sz 8 8 128\n");
 		exit(0);
 	}	
    
@@ -85,5 +85,27 @@ int main(int argc, char * argv[])
     
     SZ_Finalize();
     
+
+    char oriFilePath[640];
+    strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
+    oriFilePath[strlen(zipFilePath)-3] = '\0';
+    double *ori_data = readDoubleData(oriFilePath, &nbEle);
+    int i;
+    double Max, Min, diffMax;
+    Max = ori_data[0];
+    Min = ori_data[0];
+    diffMax = fabs(data[0] - ori_data[0]);
+
+    for (i = 0; i < nbEle; i++)
+    {
+    	if (Max < ori_data[i]) Max = ori_data[i];
+    	if (Min > ori_data[i]) Min = ori_data[i];
+    	if (diffMax < fabs(data[i] - ori_data[i]))
+    		diffMax = fabs(data[i] - ori_data[i]);
+    }
+
+    printf ("Max absolute error = %f\n", diffMax);
+    printf ("Max relative error = %f\n", diffMax/(Max-Min));
+
 	return 0;
 }

@@ -10,6 +10,10 @@
 #ifndef _VarSet_H
 #define _VarSet_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct SZ_Variable
 {
 	char* varName;
@@ -50,5 +54,9 @@ void* SZ_getVarData(char* varName, int *r5, int *r4, int *r3, int *r2, int *r1);
 
 void free_VarSet_vset(SZ_VarSet *vset);
 void free_VarSet(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ----- #ifndef _VarSet_H  ----- */

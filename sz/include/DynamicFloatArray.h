@@ -10,6 +10,10 @@
 #ifndef _DynamicFloatArray_H
 #define _DynamicFloatArray_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct DynamicFloatArray
 {	
 	float* array;
@@ -22,5 +26,9 @@ void convertDFAtoFloats(DynamicFloatArray *dfa, float **data);
 void free_DFA(DynamicFloatArray *dfa);
 float getDFA_Data(DynamicFloatArray *dfa, int pos);
 void addDFA_Data(DynamicFloatArray *dfa, int value);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ----- #ifndef _DynamicFloatArray_H  ----- */

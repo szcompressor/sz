@@ -10,6 +10,10 @@
 #ifndef _DynamicByteArray_H
 #define _DynamicByteArray_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct DynamicByteArray
 {	
 	char* array;
@@ -22,5 +26,9 @@ void convertDBAtoBytes(DynamicByteArray *dba, char** bytes);
 void free_DBA(DynamicByteArray *dba);
 int getDBA_Data(DynamicByteArray *dba, int pos);
 inline void addDBA_Data(DynamicByteArray *dba, char value);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ----- #ifndef _DynamicByteArray_H  ----- */

@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include "DynamicByteArray.h"
 
+
+//int convertIntArray2ByteArray_fast_8b()
+
 /**
  * little endian
  * [01|10|11|00|....]-->[01|10|11|00][....]
@@ -60,7 +63,7 @@ int convertIntArray2ByteArray_fast_2b(char* timeStepType, int timeStepTypeLength
 	return byteLength;
 }
 
-void convertByteArray2IntArray_fast_2b(int stepLength, char* byteArray, int byteArrayLength, int **intArray)
+void convertByteArray2IntArray_fast_2b(int stepLength, char* byteArray, int byteArrayLength, char **intArray)
 {
 	if(stepLength > byteArrayLength*4)
 	{
@@ -69,13 +72,13 @@ void convertByteArray2IntArray_fast_2b(int stepLength, char* byteArray, int byte
 		exit(0);
 	}
 	if(stepLength>0)
-		*intArray = (int*)malloc(stepLength*sizeof(int));
+		*intArray = (char*)malloc(stepLength*sizeof(char));
 	else
 		*intArray = NULL;
 	int i, n = 0;
 
 	for (i = 0; i < byteArrayLength; i++) {
-		int tmp = byteArray[i];
+		char tmp = byteArray[i];
 		(*intArray)[n++] = (tmp & 0xC0) >> 6;
 		if(n==stepLength)
 			break;
@@ -88,6 +91,118 @@ void convertByteArray2IntArray_fast_2b(int stepLength, char* byteArray, int byte
 		(*intArray)[n++] = tmp & 0x03;
 		if(n==stepLength)
 			break;
+	}
+}
+
+int convertIntArray2ByteArray_fast_3b(char* timeStepType, int timeStepTypeLength, char **result)
+{	
+	int i = 0, j = 0, k = 0, byteLength = 0;
+	if(timeStepTypeLength%8==0)
+		byteLength = timeStepTypeLength*3/8;
+	else
+		byteLength = timeStepTypeLength*3/8+1;
+
+	if(byteLength>0)
+		*result = (char*)malloc(byteLength*sizeof(char));
+	else
+		*result = NULL;
+	int n = 0, tmp = 0;
+	for(n = 0;n<timeStepTypeLength;n++)
+	{
+		k = n%8;
+		switch(k)
+		{
+		case 0:
+			tmp = tmp | (timeStepType[n] << 5);
+			break;
+		case 1:
+			tmp = tmp | (timeStepType[n] << 2);
+			break;
+		case 2: 
+			tmp = tmp | (timeStepType[n] >> 1);
+			(*result)[i++] = (char)tmp;
+			tmp = 0 | (timeStepType[n] << 7);
+			break;
+		case 3:
+			tmp = tmp | (timeStepType[n] << 4);
+			break;
+		case 4:
+			tmp = tmp | (timeStepType[n] << 1);
+			break;
+		case 5:
+			tmp = tmp | (timeStepType[n] >> 2);
+			(*result)[i++] = (char)tmp;
+			tmp = 0 | (timeStepType[n] << 6);
+			break;
+		case 6:
+			tmp = tmp | (timeStepType[n] << 3);
+			break;
+		case 7:
+			tmp = tmp | (timeStepType[n] << 0);
+			(*result)[i++] = (char)tmp;
+			tmp = 0;
+			break;
+		}
+	}
+	if(k!=7) //load the last one
+		(*result)[i] = (char)tmp;
+	
+	return byteLength;
+}
+
+void convertByteArray2IntArray_fast_3b(int stepLength, char* byteArray, int byteArrayLength, char **intArray)
+{	
+	if(stepLength > byteArrayLength*8/3)
+	{
+		printf("Error: stepLength > byteArray.length*8/3\n");
+		printf("stepLength=%d, byteArray.length=%d\n", stepLength, byteArrayLength);
+		exit(0);		
+	}
+	if(stepLength>0)
+		*intArray = (char*)malloc(stepLength*sizeof(char));
+	else
+		*intArray = NULL;
+	int i = 0, ii = 0, n = 0;
+	char tmp = byteArray[i];	
+	for(n=0;n<stepLength;)
+	{
+		switch(n%8)
+		{
+		case 0:
+			(*intArray)[n++] = (tmp & 0xE0) >> 5;
+			break;
+		case 1: 
+			(*intArray)[n++] = (tmp & 0x1C) >> 2;
+			break;
+		case 2:
+			ii = (tmp & 0x03) << 1;
+			i++;
+			tmp = byteArray[i];
+			ii |= (tmp & 0x80) >> 7;
+			(*intArray)[n++] = ii;
+			break;
+		case 3:
+			(*intArray)[n++] = (tmp & 0x70) >> 4;
+			break;
+		case 4:
+			(*intArray)[n++] = (tmp & 0x0E) >> 1;
+			break;
+		case 5:
+			ii = (tmp & 0x01) << 2;
+			i++;
+			tmp = byteArray[i];
+			ii |= (tmp & 0xC0) >> 6;
+			(*intArray)[n++] = ii;
+			break;
+		case 6: 
+			(*intArray)[n++] = (tmp & 0x38) >> 3;
+			break;
+		case 7:
+			(*intArray)[n++] = (tmp & 0x07);
+			i++;
+			tmp = byteArray[i];
+			break;
+		}
 	}
 }
 

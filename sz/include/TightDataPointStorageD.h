@@ -10,10 +10,17 @@
 #ifndef _TightDataPointStorageD_H
 #define _TightDataPointStorageD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct TightDataPointStorageD
 {
 	int dataSeriesLength;
 	int allSameData;
+	int bestChoice;
+	double realPrecision;
+	
 	int exactDataNum;
 	double reservedValue;
 	
@@ -37,16 +44,26 @@ typedef struct TightDataPointStorageD
 
 } TightDataPointStorageD;
 
+void new_TightDataPointStorageD_Empty(TightDataPointStorageD **this);
 void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, char* flatBytes, int flatBytesLength);
-void decompressDataSeries_double(double** data, int dataSeriesLength, TightDataPointStorageD* tdps);
-void getSnapshotData_double(double** data, int dataSeriesLength, TightDataPointStorageD* tdps);
-void new_TightDataPointStorageD(TightDataPointStorageD **this, int dataSeriesLength, int exactDataNum, 
+void decompressDataSeries_double_1D(double** data, int dataSeriesLength, TightDataPointStorageD* tdps);
+void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPointStorageD* tdps);
+void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, TightDataPointStorageD* tdps);
+void getSnapshotData_double_1D(double** data, int dataSeriesLength, TightDataPointStorageD* tdps);
+void getSnapshotData_double_2D(double** data, int r1, int r2, TightDataPointStorageD* tdps);
+void getSnapshotData_double_3D(double** data, int r1, int r2, int r3, TightDataPointStorageD* tdps);
+void new_TightDataPointStorageD(TightDataPointStorageD **this, 
+		int dataSeriesLength, int exactDataNum, 
 		char* type, char* exactMidBytes, int exactMidBytes_size,
 		char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
 		char* resiMidBits, int resiMidBits_size,
 		char* escBytes, int escBytes_size,
-		char* resiBitLength, int resiBitLengthSize);
+		char* resiBitLength, int resiBitLengthSize, double realPrecision);
 void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, char** bytes, int *size);
 void free_TightDataPointStorageD(TightDataPointStorageD *tdps);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ----- #ifndef _TightDataPointStorageD_H  ----- */

@@ -18,11 +18,16 @@
 #include "DynamicByteArray.h"
 #include "DynamicIntArray.h"
 #include "VarSet.h"
+#include "Huffman.h"
 
 #ifdef _WIN32
 #define PATH_SEPARATOR ';'
 #else
 #define PATH_SEPARATOR ':'
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 #define HZ 102
@@ -91,6 +96,22 @@ typedef union lfloat
     char byte[4];
 } lfloat;
 
+/* array meta data and compression parameters for SZ_Init_Params() */
+typedef struct sz_params
+{
+    int dataEndianType;
+    int sysEndianType;
+    int sol_ID;
+    int offset;
+    int gzipMode;
+    int maxSegmentNum;
+    int spaceFillingCurveTransform;
+    int reOrgSize;
+    int  errorBoundMode;
+    double absErrBound;
+    double relBoundRatio;
+} sz_params;
+
 //dataCompression.c
 void computeRangeSize_double(double* oriData, int size, double* valueRangeSize, double* medianValue);
 void computeRangeSize_float(float* oriData, int size, float* valueRangeSize, float* medianValue);
@@ -145,7 +166,9 @@ inline int getRightMovingCode(int kMod8, int resiBitLength);
 
 //TypeManager.c
 int convertIntArray2ByteArray_fast_2b(char* timeStepType, int timeStepTypeLength, char **result);
-void convertByteArray2IntArray_fast_2b(int stepLength, char* byteArray, int byteArrayLength, int **intArray);
+void convertByteArray2IntArray_fast_2b(int stepLength, char* byteArray, int byteArrayLength, char **intArray);
+int convertIntArray2ByteArray_fast_3b(char* timeStepType, int timeStepTypeLength, char **result);
+void convertByteArray2IntArray_fast_3b(int stepLength, char* byteArray, int byteArrayLength, char **intArray);
 int getLeftMovingSteps(int k, char resiBitLength);
 int convertIntArray2ByteArray_fast_dynamic(char* timeStepType, char* resiBitLength, int resiBitLengthLength, char **bytes);
 int computeBitNumRequired(int dataLength);
@@ -236,11 +259,20 @@ void sz_getvardata_double_(char* varName, int *len, double* data, int *r1, int *
 
 //sz.h
 int SZ_Init(char *configFilePath);
+int SZ_Init_Params(sz_params *params);
 int computeDataLength(int r5, int r4, int r3, int r2, int r1);
 int computeDimension(int r5, int r4, int r3, int r2, int r1);
 
-void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, int dataLength, float realPrecision, int *outSize);
-void SZ_compress_args_double_NoCkRngeNoGzip(char** newByteData, double *oriData, int dataLength, double realPrecision, int *outSize);
+int getBestChoiceLCFvsQCF_double(double* oriData, int dataLength, double realPrecision);
+
+//void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, int dataLength, float realPrecision, int *outSize);
+void SZ_compress_args_float_NoCkRngeNoGzip_1D(char** newByteData, float *oriData, int dataLength, float realPrecision, int *outSize);
+void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData, int r1, int r2, float realPrecision, int *outSize);
+void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData, int r1, int r2, int r3, float realPrecision, int *outSize);
+void SZ_compress_args_double_NoCkRngeNoGzip_1D(char** newByteData, double *oriData, int dataLength, double realPrecision, int *outSize);
+void SZ_compress_args_double_NoCkRngeNoGzip_2D(char** newByteData, double *oriData, int r1, int r2, double realPrecision, int *outSize);
+void SZ_compress_args_double_NoCkRngeNoGzip_3D(char** newByteData, double *oriData, int r1, int r2, int r3, double realPrecision, int *outSize);
+
 void SZ_compress_args_float_withinRange(char** newByteData, float *oriData, int dataLength, int *outSize);
 void SZ_compress_args_double_withinRange(char** newByteData, double *oriData, int dataLength, int *outSize);
 
@@ -275,5 +307,9 @@ void filloutDimArray(int* dim, int r5, int r4, int r3, int r2, int r1);
 char* SZ_batch_compress(int *outSize);
 SZ_VarSet* SZ_batch_decompress(char* compressedStream, int length);
 void SZ_Finalize();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ----- #ifndef _SZ_H  ----- */

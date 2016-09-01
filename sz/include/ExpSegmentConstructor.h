@@ -12,6 +12,10 @@
 
 #include "ExpSegment.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct ExpSegmentConstructor
 {	
 	ExpSegment *header;
@@ -42,5 +46,9 @@ void getExpSegment_fast(ExpSegmentConstructor *esc, int index);
 void cleanESwithNoUnpredictable(ExpSegmentConstructor *esc);
 int convertESCToBytes(ExpSegmentConstructor *esc, char **bytes);
 void construct(ExpSegmentConstructor *esc, void* data_, int dataLength, int lengthBound, short reqExpo, float errBound, int SZ_DATA_Type);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ----- #ifndef _ExpSegmentConstructor_H  ----- */

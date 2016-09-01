@@ -1,9 +1,9 @@
 /**
  *  @file sz.c
- *  @author Sheng Di
- *  @date April, 2015
+ *  @author Sheng Di and Dingwen Tao
+ *  @date Aug, 2016
  *  @brief SZ_Init, Compression and Decompression functions
- *  (C) 2015 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
+ *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
  */
 
@@ -21,6 +21,7 @@
 #include "TightDataPointStorageD.h"
 #include "TightDataPointStorageF.h"
 #include "zlib.h"
+#include "rw.h"
 //#include "CurveFillingCompressStorage.h"
 
 int SZ_Init(char *configFilePath)
@@ -34,6 +35,74 @@ int SZ_Init(char *configFilePath)
 	sz_varset->header = (SZ_Variable*)malloc(sizeof(SZ_Variable));
 	sz_varset->lastVar = sz_varset->header;
 	sz_varset->count = 0;
+}
+
+int SZ_Init_Params(sz_params *params)
+{
+    int x = 1;
+    char *y = (char*)&x;
+    int endianType = BIG_ENDIAN_SYSTEM;
+    if(*y==1) endianType = LITTLE_ENDIAN_SYSTEM;
+
+    // set default values
+    dataEndianType    = endianType;
+    sysEndianType    = endianType;
+    sol_ID                    = SZ;
+    offset                    = 0;
+    gzipMode               = Z_BEST_SPEED;
+    maxSegmentNum = 1024;
+    spaceFillingCurveTransform = 0;
+    reOrgSize             = 8;
+    errorBoundMode    = REL;
+    absErrBound         = 0.000001;
+    relBoundRatio         = 0.001;
+
+    // set values from function arguments if avail.
+    // [ENV]
+    if(params->dataEndianType >= 0) dataEndianType    = params->dataEndianType;
+    if(params->sysEndianType >= 0)    sysEndianType    = params->sysEndianType;
+    if(params->sol_ID >= 0)                sol_ID                    = params->sol_ID;
+
+    // [PARAMETER]
+    if(sol_ID==SZ) {
+        if(params->offset >= 0) offset = params->offset;
+
+        /* gzipModes:
+            Z_NO_COMPRESSION=0,
+            Z_BEST_SPEED=1,
+            Z_BEST_COMPRESSION=2,
+            Z_DEFAULT_COMPRESSION=3 */
+        if(params->gzipMode >= 0) gzipMode = params->gzipMode;
+
+        if(params->maxSegmentNum >= 0) maxSegmentNum = params->maxSegmentNum;
+        if(params->spaceFillingCurveTransform >= 0) spaceFillingCurveTransform = params->spaceFillingCurveTransform;
+        if(params->reOrgSize >= 0) reOrgSize = params->reOrgSize;
+
+        /* errBoundModes:
+            ABS = 0
+            REL = 1
+            ABS_AND_REL =2
+            ABS_OR_REL = 3 */
+        if( params->errorBoundMode >= 0)  errorBoundMode =  params->errorBoundMode;
+
+        if(params->absErrBound >= 0) absErrBound = params->absErrBound;
+        if(params->relBoundRatio >= 0) relBoundRatio = params->relBoundRatio;
+    }
+
+	versionNumber[0] = 1; //0
+	versionNumber[1] = 3; //5
+	versionNumber[2] = 0; //15
+
+    //initialization for Huffman encoding
+    memset(pool, 0, 128*sizeof(struct node_t));
+    memset(code, 0, 128); //original:128; we just used '0'-'7', so max ascii is 55.
+    memset(cout, 0, 128);
+    qq = qqq - 1;
+    n_nodes = 0;
+    n_inode = 0;
+    qend = 1;
+
+    return 1;
 }
 
 int computeDimension(int r5, int r4, int r3, int r2, int r1)
@@ -96,661 +165,6 @@ int computeDataLength(int r5, int r4, int r3, int r2, int r1)
 	return dataLength;
 }
 
-void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, int dataLength, float realPrecision, int *outSize)
-{
-	int i;
-	short reqExpo = getPrecisionReqLength_float(realPrecision);
-	
-	char* type = (char*) malloc(dataLength*sizeof(char));
-		
-	float* spaceFillingValue = oriData; //
-	float* values = spaceFillingValue;
-	int lengthBound = dataLength/maxSegmentNum;
-	if(lengthBound < 128)
-		lengthBound = 128;
-	//TODO:
-	ExpSegmentConstructor* esc;
-	new_ExpSegmentConstructor_float(&esc, spaceFillingValue, reqExpo, realPrecision);
-			
-	construct(esc, spaceFillingValue, dataLength, lengthBound, reqExpo, realPrecision, SZ_FLOAT);
-	esc->curExp = esc->header->next;
-	
-	computeReqLength(esc, reqExpo);
-			
-	//DynamicByteArray *reqByteLengthArray;
-	//new_DBA(&reqByteLengthArray, DynArrayInitLen);
-	
-	DynamicByteArray *resiBitLengthArray;
-	new_DBA(&resiBitLengthArray, DynArrayInitLen);
-	
-	DynamicIntArray *exactLeadNumArray;
-	new_DIA(&exactLeadNumArray, DynArrayInitLen);
-	
-	DynamicByteArray *exactMidByteArray;
-	new_DBA(&exactMidByteArray, DynArrayInitLen);
-	
-	DynamicIntArray *resiBitArray;
-	new_DIA(&resiBitArray, DynArrayInitLen);
-	
-	type[0] = 0;
-	
-	char preDataBytes[4];
-	intToBytes_bigEndian(preDataBytes, 0);
-	
-	getExpSegment_fast(esc, 0);
-	ExpSegment* curExp = esc->curExp;
-	curExp->unpredNum ++;
-			
-	int reqLength = curExp->reqLength;
-	int reqBytesLength = curExp->reqBytesLength;
-	int resiBitsLength = curExp->resiBitsLength;
-	//addDBA_Data(reqByteLengthArray, (char)reqBytesLength);
-	addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
-	
-	float medianValue = curExp->medianValue_f;
-	
-	FloatValueCompressElement *vce = (FloatValueCompressElement*)malloc(sizeof(FloatValueCompressElement));
-	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
-	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
-	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
-	memcpy(preDataBytes,vce->curBytes,4);
-	
-	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
-	
-	float last3CmprsData[3];
-	float* recentData;		
-	float pred_1, pred_2, pred_3, curData, pred_1AbsErr, pred_2AbsErr, pred_3AbsErr;
-	float min_pred, minErr;
-	int a = 0;		
-			
-	listAdd_float(last3CmprsData, vce->data);
-	for(i=1;i<dataLength;i++)
-	{	
-		getExpSegment_fast(esc, i);
-		curExp = esc->curExp;
-		if(i==1)
-		{
-			pred_1 = last3CmprsData[0];//last3CmprsData.get(0);
-			pred_1AbsErr = fabs(pred_1 - values[1]);
-			if(validPrediction_float(pred_1AbsErr, realPrecision))
-			{
-				type[i] = 1;
-				listAdd_float(last3CmprsData, pred_1);
-			}
-			else
-			{
-				type[i] = 0;
-				curExp->unpredNum++;
-				medianValue = curExp->medianValue_f;
-				reqLength = curExp->reqLength;
-				reqBytesLength = curExp->reqBytesLength;
-				resiBitsLength = curExp->resiBitsLength;
-				//addDBA_Data(reqByteLengthArray, (char)reqBytesLength);
-				addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
-				
-				compressSingleFloatValue(vce, values[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
-				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
-				memcpy(preDataBytes,vce->curBytes,4);
-				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
-				
-				listAdd_float(last3CmprsData, vce->data);
-			}
-		}
-		else if(i==2)
-		{
-			pred_1 = last3CmprsData[0];//last3CmprsData.get(0);
-			pred_2 = 2*last3CmprsData[0] - last3CmprsData[1];//2*last3CmprsData.get(0) - last3CmprsData.get(1);
-			
-			pred_1AbsErr = fabs(pred_1 - values[2]);
-			pred_2AbsErr = fabs(pred_2 - values[2]);
-			minErr = pred_1AbsErr<pred_2AbsErr ? pred_1AbsErr : pred_2AbsErr;
-			if(validPrediction_float(minErr, realPrecision))
-			{
-				if(pred_1AbsErr <= pred_2AbsErr)
-				{
-					type[2] = 1;
-					listAdd_float(last3CmprsData, pred_1);
-				}
-				else
-				{
-					type[2] = 2;
-					listAdd_float(last3CmprsData, pred_2);
-				}
-			}
-			else
-			{
-				type[2] = 0;
-				curExp->unpredNum++;
-				medianValue = curExp->medianValue_f;
-				reqLength = curExp->reqLength;
-				reqBytesLength = curExp->reqBytesLength;
-				resiBitsLength = curExp->resiBitsLength;
-				//addDBA_Data(reqByteLengthArray, (char)reqBytesLength);
-				addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
-				
-				compressSingleFloatValue(vce, values[2], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
-				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
-				memcpy(preDataBytes,vce->curBytes,4);
-				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
-				
-				listAdd_float(last3CmprsData, vce->data);
-			}					
-		}
-		else //i>=3
-		{
-			recentData = last3CmprsData;
-			
-			pred_1 = recentData[0];
-			pred_2 = 2*recentData[0] - recentData[1];
-			pred_3 = 3*recentData[0] - 3*recentData[1] + recentData[2];
-			
-			curData = values[i];
-			pred_1AbsErr = fabs(pred_1 - curData);
-			pred_2AbsErr = fabs(pred_2 - curData);	
-			pred_3AbsErr = fabs(pred_3 - curData);
-			min_pred = pred_1AbsErr<pred_2AbsErr?pred_1AbsErr:pred_2AbsErr;	
-			minErr = min_pred<pred_3AbsErr?min_pred:pred_3AbsErr;
-			
-			if(validPrediction_float(minErr, realPrecision))
-			{
-				if(pred_1AbsErr<=pred_2AbsErr&&pred_1AbsErr<=pred_3AbsErr)
-				{
-					type[i] = 1;
-					listAdd_float(last3CmprsData, pred_1);
-				}
-				else if(pred_2AbsErr<pred_1AbsErr&&pred_2AbsErr<=pred_3AbsErr)
-				{
-					type[i] = 2;
-					listAdd_float(last3CmprsData, pred_2);
-				}
-				else //pred_3 is the smallest (pred_3<pred_2 and pred_3<pred_1)
-				{
-					type[i] = 3;
-					listAdd_float(last3CmprsData, pred_3);
-				}					
-			}
-			else
-			{
-				type[i] = 0;
-				curExp->unpredNum++;
-				medianValue = curExp->medianValue_f;
-				reqLength = curExp->reqLength;
-				reqBytesLength = curExp->reqBytesLength;
-				resiBitsLength = curExp->resiBitsLength;
-				//addDBA_Data(reqByteLengthArray, (char)reqBytesLength);
-				addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
-				
-				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
-				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
-				memcpy(preDataBytes,vce->curBytes,4);
-				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
-								
-				listAdd_float(last3CmprsData, vce->data);
-			}
-		}//end of if() else....
-	}//end of for			
-											
-	cleanESwithNoUnpredictable(esc);		
-	
-	//char* resiBitLengthBytes;
-	//convertDBAtoBytes(resiBitLengthArray, &resiBitLengthBytes);
-	
-	//char* exactLeadNumIntArray;
-	//convertDIAtoInts(exactLeadNumArray, &exactLeadNumIntArray);
-	
-	//char* exactMidBytes;
-	//convertDBAtoBytes(exactMidByteArray, &exactMidBytes);
-	
-	//char* resiBitIntArray;
-	//convertDIAtoInts(resiBitArray, &resiBitIntArray);
-		
-	char* expSegmentsInBytes;
-	int expSegmentsInBytes_size = convertESCToBytes(esc, &expSegmentsInBytes);
-	int exactDataNum = exactLeadNumArray->size;
-	
-	TightDataPointStorageF* tdps;
-			
-	new_TightDataPointStorageF(&tdps, dataLength, exactDataNum, 
-			type, exactMidByteArray->array, exactMidByteArray->size,  
-			exactLeadNumArray->array,  
-			resiBitArray->array, resiBitArray->size, 
-			expSegmentsInBytes, expSegmentsInBytes_size, 
-			resiBitLengthArray->array, resiBitLengthArray->size);
-	
-	//free memory
-	free_DBA(resiBitLengthArray);
-	free_DIA(exactLeadNumArray);
-	free_DIA(resiBitArray);
-	free(type);
-	
-	free_ExpSegmentConstructor(esc);
-	
-	//TODO: return bytes....
-	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
-
-	free_DBA(exactMidByteArray);	
-	//*outSize= tmpOutSize;
-	//*newByteData = tmpByteData;
-	
-	//free(preDataBytes);  //no need to release preDataBytes, because it's in dvce or lce?
-	free(vce);
-	free(lce);
-	free_TightDataPointStorageF(tdps);	
-}
-
-void SZ_compress_args_float_withinRange(char** newByteData, float *oriData, int dataLength, int *outSize)
-{
-	TightDataPointStorageF* tdps = (TightDataPointStorageF*) malloc(sizeof(TightDataPointStorageF));
-	tdps->rtypeArray = NULL;
-	tdps->typeArray = NULL;	
-	tdps->leadNumArray = NULL;
-	tdps->escBytes = NULL;
-	tdps->residualMidBits = NULL;
-	
-	tdps->allSameData = 1;
-	tdps->dataSeriesLength = dataLength;
-	tdps->exactMidBytes = (char*)malloc(sizeof(char)*4);
-	float value = oriData[0];
-	floatToBytes(tdps->exactMidBytes, value);
-	tdps->exactMidBytes_size = 4;
-	
-	int tmpOutSize;
-	char *tmpByteData;
-	convertTDPStoFlatBytes_float(tdps, &tmpByteData, &tmpOutSize);
-
-	*newByteData = (char*)malloc(sizeof(char)*12); //for floating-point data (1+3+4+4)
-	memcpy(*newByteData, tmpByteData, 12);
-	*outSize = 12;
-	free_TightDataPointStorageF(tdps);	
-}
-
-
-void SZ_compress_args_float_wRngeNoGzip(char** newByteData, float *oriData, 
-int r5, int r4, int r3, int r2, int r1, int *outSize, 
-int errBoundMode, float absErr_Bound, float rel_BoundRatio)
-{
-	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
-	float valueRangeSize = 0, medianValue = 0;
-	
-	computeRangeSize_float(oriData, dataLength, &valueRangeSize, &medianValue);
-	float realPrecision = getRealPrecision_float(valueRangeSize, errBoundMode, absErr_Bound, rel_BoundRatio);
-		
-	if(valueRangeSize <= realPrecision)
-	{
-		SZ_compress_args_float_withinRange(newByteData, oriData, dataLength, outSize);
-	}
-	else
-	{
-		SZ_compress_args_float_NoCkRngeNoGzip(newByteData, oriData, dataLength, realPrecision, outSize);
-	}
-}
-
-void SZ_compress_args_float(char** newByteData, float *oriData, 
-int r5, int r4, int r3, int r2, int r1, int *outSize, 
-int errBoundMode, float absErr_Bound, float rel_BoundRatio)
-{
-	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
-	float valueRangeSize = 0, medianValue = 0;
-	
-	computeRangeSize_float(oriData, dataLength, &valueRangeSize, &medianValue);
-	float realPrecision = getRealPrecision_float(valueRangeSize, errBoundMode, absErr_Bound, rel_BoundRatio);
-		
-	if(valueRangeSize <= realPrecision)
-	{
-		SZ_compress_args_float_withinRange(newByteData, oriData, dataLength, outSize);
-	}
-	else
-	{
-		int tmpOutSize;
-		char* tmpByteData;
-		if(spaceFillingCurveTransform==1)
-		{
-			float* newOriData;				
-			reorganizeData_float_spacefilling(&newOriData, oriData, r5,r4,r3,r2,r1);
-			SZ_compress_args_float_NoCkRngeNoGzip(&tmpByteData, newOriData, dataLength, realPrecision, &tmpOutSize);
-			if(r2!=0)
-				free(newOriData);			
-		}
-		else
-		{
-			SZ_compress_args_float_NoCkRngeNoGzip(&tmpByteData, oriData, dataLength, realPrecision, &tmpOutSize);
-		}
-		
-		//TODO: call Gzip to do the further compression.
-		*outSize = (int)zlib_compress2(tmpByteData, tmpOutSize, newByteData, gzipMode);
-		free(tmpByteData);
-	}
-}
-
-void SZ_compress_args_double_NoCkRngeNoGzip(char** newByteData, double *oriData, int dataLength, double realPrecision, int *outSize)
-{
-	int i;
-	short reqExpo = getPrecisionReqLength_double(realPrecision);
-	char* type = (char*) malloc(dataLength*sizeof(char));
-		
-	double* spaceFillingValue = oriData; //
-	double* values = spaceFillingValue;
-	int lengthBound = dataLength/maxSegmentNum;
-	if(lengthBound < 128)
-		lengthBound = 128;
-	//TODO:
-	ExpSegmentConstructor* esc;
-	new_ExpSegmentConstructor_double(&esc, spaceFillingValue, reqExpo, realPrecision);
-			
-	construct(esc, spaceFillingValue, dataLength, lengthBound, reqExpo, realPrecision, SZ_DOUBLE);
-	esc->curExp = esc->header->next;
-	
-	computeReqLength(esc, reqExpo);
-			
-	//DynamicByteArray *reqByteLengthArray;
-	//new_DBA(&reqByteLengthArray, DynArrayInitLen);
-	
-	DynamicByteArray *resiBitLengthArray;
-	new_DBA(&resiBitLengthArray, DynArrayInitLen);
-	
-	DynamicIntArray *exactLeadNumArray;
-	new_DIA(&exactLeadNumArray, DynArrayInitLen);
-	
-	DynamicByteArray *exactMidByteArray;
-	new_DBA(&exactMidByteArray, DynArrayInitLen);
-	
-	DynamicIntArray *resiBitArray;
-	new_DIA(&resiBitArray, DynArrayInitLen);
-	
-	type[0] = 0;
-	
-	char preDataBytes[8];
-	longToBytes_bigEndian(preDataBytes, 0);
-	
-	getExpSegment_fast(esc, 0);
-	ExpSegment* curExp = esc->curExp;
-	curExp->unpredNum ++;
-			
-	int reqLength = curExp->reqLength;
-	int reqBytesLength = curExp->reqBytesLength;
-	int resiBitsLength = curExp->resiBitsLength;
-	//addDBA_Data(reqByteLengthArray, (char)reqBytesLength);
-	addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
-	
-	double medianValue = curExp->medianValue_d;
-	
-	DoubleValueCompressElement *vce = (DoubleValueCompressElement*)malloc(sizeof(DoubleValueCompressElement));
-	compressSingleDoubleValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
-	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
-	updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
-	memcpy(preDataBytes,vce->curBytes,8);
-	
-	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
-	
-	double last3CmprsData[3];
-	double* recentData;		
-	double pred_1, pred_2, pred_3, curData, pred_1AbsErr, pred_2AbsErr, pred_3AbsErr;
-	double min_pred, minErr;
-			
-	listAdd_double(last3CmprsData, vce->data);
-	for(i=1;i<dataLength;i++)
-	{
-		getExpSegment_fast(esc, i);
-		curExp = esc->curExp;
-		if(i==1)
-		{
-			pred_1 = last3CmprsData[0];
-			pred_1AbsErr = fabs(pred_1 - values[1]);
-			if(validPrediction_double(pred_1AbsErr, realPrecision))
-			{
-				type[i] = 1;
-				listAdd_double(last3CmprsData, pred_1);
-			}
-			else
-			{
-				type[i] = 0;
-				curExp->unpredNum++;
-				medianValue = curExp->medianValue_d;
-				reqLength = curExp->reqLength;
-				reqBytesLength = curExp->reqBytesLength;
-				resiBitsLength = curExp->resiBitsLength;
-				//addDBA_Data(reqByteLengthArray, (char)reqBytesLength);
-				addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
-				
-				compressSingleDoubleValue(vce, values[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
-				updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
-				memcpy(preDataBytes,vce->curBytes,8);
-				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
-				
-				listAdd_double(last3CmprsData, vce->data);
-			}
-		}
-		else if(i==2)
-		{
-			pred_1 = last3CmprsData[0];//last3CmprsData.get(0);
-			pred_2 = 2*last3CmprsData[0] - last3CmprsData[1];//2*last3CmprsData.get(0) - last3CmprsData.get(1);
-			
-			pred_1AbsErr = fabs(pred_1 - values[2]);
-			pred_2AbsErr = fabs(pred_2 - values[2]);
-			minErr = pred_1AbsErr<pred_2AbsErr ? pred_1AbsErr : pred_2AbsErr;
-			if(validPrediction_double(minErr, realPrecision))
-			{
-				if(pred_1AbsErr <= pred_2AbsErr)
-				{
-					type[2] = 1;
-					listAdd_double(last3CmprsData, pred_1);
-				}
-				else
-				{
-					type[2] = 2;
-					listAdd_double(last3CmprsData, pred_2);
-				}
-			}
-			else
-			{
-				type[2] = 0;
-				curExp->unpredNum++;
-				medianValue = curExp->medianValue_d;
-				reqLength = curExp->reqLength;
-				reqBytesLength = curExp->reqBytesLength;
-				resiBitsLength = curExp->resiBitsLength;
-				//addDBA_Data(reqByteLengthArray, (char)reqBytesLength);
-				addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
-				
-				compressSingleDoubleValue(vce, values[2], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
-				updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
-				memcpy(preDataBytes,vce->curBytes,8);
-				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
-				
-				listAdd_double(last3CmprsData, vce->data);
-			}					
-		}
-		else //i>=3
-		{
-			recentData = last3CmprsData;
-			
-			pred_1 = recentData[0];
-			pred_2 = 2*recentData[0] - recentData[1];
-			pred_3 = 3*recentData[0] - 3*recentData[1] + recentData[2];
-			
-			curData = values[i];
-			pred_1AbsErr = fabs(pred_1 - curData);
-			pred_2AbsErr = fabs(pred_2 - curData);	
-			pred_3AbsErr = fabs(pred_3 - curData);
-			min_pred = pred_1AbsErr<pred_2AbsErr?pred_1AbsErr:pred_2AbsErr;	
-			minErr = min_pred<pred_3AbsErr?min_pred:pred_3AbsErr;
-			
-			if(validPrediction_double(minErr, realPrecision))
-			{
-				if(pred_1AbsErr<=pred_2AbsErr&&pred_1AbsErr<=pred_3AbsErr)
-				{
-					type[i] = 1;
-					listAdd_double(last3CmprsData, pred_1);
-				}
-				else if(pred_2AbsErr<pred_1AbsErr&&pred_2AbsErr<=pred_3AbsErr)
-				{
-					type[i] = 2;
-					listAdd_double(last3CmprsData, pred_2);
-				}
-				else //pred_3 is the smallest (pred_3<pred_2 and pred_3<pred_1)
-				{
-					type[i] = 3;
-					listAdd_double(last3CmprsData, pred_3);
-				}					
-			}
-			else
-			{
-				type[i] = 0;
-				curExp->unpredNum++;
-				medianValue = curExp->medianValue_d;
-				reqLength = curExp->reqLength;
-				reqBytesLength = curExp->reqBytesLength;
-				resiBitsLength = curExp->resiBitsLength;
-				//addDBA_Data(reqByteLengthArray, (char)reqBytesLength);
-				addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
-				
-				compressSingleDoubleValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
-				updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
-				memcpy(preDataBytes,vce->curBytes,8);
-				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
-								
-				listAdd_double(last3CmprsData, vce->data);
-			}
-		}//end of if() else....
-	}//end of for			
-											
-	cleanESwithNoUnpredictable(esc);		
-	
-	//char* resiBitLengthBytes;
-	//convertDBAtoBytes(resiBitLengthArray, &resiBitLengthBytes);
-	
-	//char* exactLeadNumIntArray;
-	//convertDIAtoInts(exactLeadNumArray, &exactLeadNumIntArray);
-	
-	//char* exactMidBytes;
-	//convertDBAtoBytes(exactMidByteArray, &exactMidBytes);
-	
-	//char* resiBitIntArray;
-	//convertDIAtoInts(resiBitArray, &resiBitIntArray);
-		
-	char* expSegmentsInBytes;
-	int expSegmentsInBytes_size = convertESCToBytes(esc, &expSegmentsInBytes);
-	int exactDataNum = exactLeadNumArray->size;
-	
-	TightDataPointStorageD* tdps;
-			
-	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum, 
-			type, exactMidByteArray->array, exactMidByteArray->size,  
-			exactLeadNumArray->array,  
-			resiBitArray->array, resiBitArray->size, 
-			expSegmentsInBytes, expSegmentsInBytes_size, 
-			resiBitLengthArray->array, resiBitLengthArray->size);
-	
-	//free memory
-	free_DBA(resiBitLengthArray);
-	free_DIA(exactLeadNumArray);
-	free_DIA(resiBitArray);
-	free(type);
-	
-	free_ExpSegmentConstructor(esc);
-	
-	//TODO: return bytes....
-	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
-
-	free_DBA(exactMidByteArray);	
-
-	//*outSize= tmpOutSize;
-	//*newByteData = tmpByteData;
-	
-	//free(preDataBytes);  //no need to release preDataBytes, because it's in dvce or lce?
-	free(vce);
-	free(lce);
-	free_TightDataPointStorageD(tdps);	
-}
-
-void SZ_compress_args_double_withinRange(char** newByteData, double *oriData, int dataLength, int *outSize)
-{
-	TightDataPointStorageD* tdps = (TightDataPointStorageD*) malloc(sizeof(TightDataPointStorageD));
-	tdps->rtypeArray = NULL;
-	tdps->typeArray = NULL;
-	tdps->leadNumArray = NULL;
-	tdps->escBytes = NULL;
-	tdps->residualMidBits = NULL;
-	
-	tdps->allSameData = 1;
-	tdps->dataSeriesLength = dataLength;
-	tdps->exactMidBytes = (char*)malloc(sizeof(char)*8);
-	double value = oriData[0];
-	doubleToBytes(tdps->exactMidBytes, value);
-	tdps->exactMidBytes_size = 8;
-	
-	int tmpOutSize;
-	char *tmpByteData;
-	convertTDPStoFlatBytes_double(tdps, &tmpByteData, &tmpOutSize);
-
-	*newByteData = (char*)malloc(sizeof(char)*16); //for floating-point data (1+3+4+4)
-	memcpy(*newByteData, tmpByteData, 16);
-	*outSize = 16;
-	free_TightDataPointStorageD(tdps);	
-}
-
-void SZ_compress_args_double_wRngeNoGzip(char** newByteData, double *oriData, 
-int r5, int r4, int r3, int r2, int r1, int *outSize, 
-int errBoundMode, double absErr_Bound, double relBoundRatio)
-{
-
-	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
-
-	double valueRangeSize, medianValue;
-
-	computeRangeSize_double(oriData, dataLength, &valueRangeSize, &medianValue);
-	double realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio);
-		
-	if(valueRangeSize <= realPrecision)
-	{
-		SZ_compress_args_double_withinRange(newByteData, oriData, dataLength, outSize);
-	}
-	else
-	{
-		SZ_compress_args_double_NoCkRngeNoGzip(newByteData, oriData, dataLength, realPrecision, outSize);
-	}	
-}
-
-void SZ_compress_args_double(char** newByteData, double *oriData, 
-int r5, int r4, int r3, int r2, int r1, int *outSize, 
-int errBoundMode, double absErr_Bound, double relBoundRatio)
-{
-
-	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
-
-	double valueRangeSize, medianValue;
-
-	computeRangeSize_double(oriData, dataLength, &valueRangeSize, &medianValue);
-	double realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio);
-		
-	if(valueRangeSize <= realPrecision)
-	{
-		SZ_compress_args_double_withinRange(newByteData, oriData, dataLength, outSize);
-	}
-	else
-	{
-		int tmpOutSize;
-		char* tmpByteData;
-		
-		if(spaceFillingCurveTransform==1)
-		{
-			double* newOriData;				
-			reorganizeData_double_spacefilling(&newOriData, oriData, r5,r4,r3,r2,r1);
-			SZ_compress_args_double_NoCkRngeNoGzip(&tmpByteData, newOriData, dataLength, realPrecision, &tmpOutSize);
-			if(r2!=0)
-				free(newOriData);
-		}
-		else //==0
-		{
-			SZ_compress_args_double_NoCkRngeNoGzip(&tmpByteData, oriData, dataLength, realPrecision, &tmpOutSize);
-		}		
-		
-		//TODO: call Gzip to do the further compression.
-		*outSize = (int)zlib_compress2(tmpByteData, tmpOutSize, newByteData, gzipMode);
-		free(tmpByteData);
-	}	
-}
-
 /*-------------------------------------------------------------------------*/
 /**
     @brief      Perform Compression 
@@ -801,7 +215,6 @@ int SZ_compress_args2(int dataType, void *data, char* compressed_bytes, int *out
 char *SZ_compress(int dataType, void *data, int *outSize, int r5, int r4, int r3, int r2, int r1)
 {	
 	char *newByteData = SZ_compress_args(dataType, data, outSize, errorBoundMode, absErrBound, relBoundRatio, r5, r4, r3, r2, r1);
-	
 	return newByteData;
 }
 
@@ -848,57 +261,6 @@ char *SZ_compress_rev(int dataType, void *data, void *reservedValue, int *outSiz
 	exit(0);
 	
 	return newByteData;
-}
-
-void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, int r1, char* cmpBytes, int cmpSize)
-{
-	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
-	
-	char* tmpBytes;
-	int targetUncompressSize = dataLength <<2; //i.e., *4
-	int tmpSize = 12;
-	if(cmpSize!=12)
-		tmpSize = zlib_uncompress3(cmpBytes, (ulong)cmpSize, &tmpBytes, (ulong)targetUncompressSize);
-	else
-		tmpBytes = cmpBytes;
-	//tmpSize must be "much" smaller than dataLength
-	char* szTmpBytes = (char*)malloc(sizeof(char)*tmpSize);
-	memcpy(szTmpBytes, tmpBytes, tmpSize);
-	free(tmpBytes); //release useless memory
-	
-	//TODO: convert szTmpBytes to data array.
-	TightDataPointStorageF* tdps;
-	new_TightDataPointStorageF_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
-	
-	getSnapshotData_float(newData,dataLength,tdps);
-	
-	free_TightDataPointStorageF(tdps);
-	free(szTmpBytes);
-}
-
-void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2, int r1, char* cmpBytes, int cmpSize)
-{
-	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
-	char* tmpBytes;
-	int targetUncompressSize = dataLength <<3; //i.e., *8
-	int tmpSize = 16;
-	if(cmpSize!=16)
-		tmpSize = zlib_uncompress3(cmpBytes, (ulong)cmpSize, &tmpBytes, (ulong)targetUncompressSize);
-	else
-		tmpBytes = cmpBytes;
-	//tmpSize must be "much" smaller than dataLength
-	
-	//tmpBytes = cmpBytes;
-	//ulong tmpSize = cmpSize;
-	char* szTmpBytes = (char*)malloc(sizeof(char)*tmpSize);
-	memcpy(szTmpBytes, tmpBytes, tmpSize);
-	free(tmpBytes); //release useless memory
-	//TODO: convert szTmpBytes to double array.
-	TightDataPointStorageD* tdps;
-	new_TightDataPointStorageD_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
-	getSnapshotData_double(newData,dataLength,tdps);
-	
-	free_TightDataPointStorageD(tdps);
 }
 
 void *SZ_decompress(int dataType, char *bytes, int byteLength, int r5, int r4, int r3, int r2, int r1)
@@ -1182,8 +544,17 @@ SZ_VarSet* SZ_batch_decompress(char* compressedStream, int compressedLength)
 			{
 				float* newData;
 				TightDataPointStorageF* tdps;
-				new_TightDataPointStorageF_fromFlatBytes(&tdps, &(gzipDecpressBytes[k]), cpressedLength);				
-				getSnapshotData_float(&newData,dataLength,tdps);
+				new_TightDataPointStorageF_fromFlatBytes(&tdps, &(gzipDecpressBytes[k]), cpressedLength);
+
+				if (dataLength == dimSize[4])
+					getSnapshotData_float_1D(&newData,dimSize[4],tdps);
+				else
+				if (dataLength == dimSize[3]*dimSize[4])
+					getSnapshotData_float_2D(&newData,dimSize[3],dimSize[4],tdps);
+				else
+				if (dataLength == dimSize[2]*dimSize[3]*dimSize[4])
+					getSnapshotData_float_3D(&newData,dimSize[2], dimSize[3], dimSize[4],tdps);
+
 				SZ_batchAddVar(varNameString, dataType, newData, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4], 0, 0, 0);
 				free_TightDataPointStorageF(tdps);			
 			}	
@@ -1191,10 +562,19 @@ SZ_VarSet* SZ_batch_decompress(char* compressedStream, int compressedLength)
 			{
 				double* newData;
 				TightDataPointStorageD* tdps;
-				new_TightDataPointStorageD_fromFlatBytes(&tdps, &(gzipDecpressBytes[k]), cpressedLength);				
-				getSnapshotData_double(&newData,dataLength,tdps);
-				free_TightDataPointStorageD(tdps);
-				SZ_batchAddVar(varNameString, dataType, newData, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4], 0, 0, 0);				
+				new_TightDataPointStorageD_fromFlatBytes(&tdps, &(gzipDecpressBytes[k]), cpressedLength);
+
+				if (dataLength == dimSize[4])
+					getSnapshotData_double_1D(&newData,dimSize[4],tdps);
+				else
+				if (dataLength == dimSize[3]*dimSize[4])
+					getSnapshotData_double_2D(&newData,dimSize[3],dimSize[4],tdps);
+				else
+				if (dataLength == dimSize[2]*dimSize[3]*dimSize[4])
+					getSnapshotData_double_3D(&newData,dimSize[2], dimSize[3], dimSize[4],tdps);
+
+				SZ_batchAddVar(varNameString, dataType, newData, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4], 0, 0, 0);
+				free_TightDataPointStorageD(tdps);					
 			}
 			else
 			{
@@ -1272,7 +652,16 @@ SZ_VarSet* SZ_batch_decompress(char* compressedStream, int compressedLength)
 				float* newData;
 				TightDataPointStorageF* tdps;
 				new_TightDataPointStorageF_fromFlatBytes(&tdps, &(gzipDecpressBytes[k]), cpressedLength);					
-				getSnapshotData_float(&newData,dataLength,tdps);
+
+				if (dataLength == dimSize[4])
+					getSnapshotData_float_1D(&newData,dimSize[4],tdps);
+				else
+				if (dataLength == dimSize[3]*dimSize[4])
+					getSnapshotData_float_2D(&newData,dimSize[3],dimSize[4],tdps);
+				else
+				if (dataLength == dimSize[2]*dimSize[3]*dimSize[4])
+					getSnapshotData_float_3D(&newData,dimSize[2], dimSize[3], dimSize[4],tdps);
+
 				free_TightDataPointStorageF(tdps);	
 				curVar->data = newData;
 			}	
@@ -1280,10 +669,19 @@ SZ_VarSet* SZ_batch_decompress(char* compressedStream, int compressedLength)
 			{
 				double* newData;
 				TightDataPointStorageD* tdps;
-				new_TightDataPointStorageD_fromFlatBytes(&tdps, &(gzipDecpressBytes[k]), cpressedLength);					
-				getSnapshotData_double(&newData,dataLength,tdps);
+				new_TightDataPointStorageD_fromFlatBytes(&tdps, &(gzipDecpressBytes[k]), cpressedLength);
+
+				if (dataLength == dimSize[4])
+					getSnapshotData_double_1D(&newData,dimSize[4],tdps);
+				else
+				if (dataLength == dimSize[3]*dimSize[4])
+					getSnapshotData_double_2D(&newData,dimSize[3],dimSize[4],tdps);
+				else
+				if (dataLength == dimSize[2]*dimSize[3]*dimSize[4])
+					getSnapshotData_double_3D(&newData,dimSize[2], dimSize[3], dimSize[4],tdps);
+
+				SZ_batchAddVar(varNameString, dataType, newData, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4], 0, 0, 0);
 				free_TightDataPointStorageD(tdps);	
-				curVar->data = newData;
 			}
 			else
 			{

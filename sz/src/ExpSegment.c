@@ -108,6 +108,7 @@ void mergeSelf_bestfit(ExpSegment* this, ExpSegment** merged, short prevLevel, s
 		bestLevel = prevLevel < nextLevel ? prevLevel:nextLevel;
 	
 	if(this->length*(bestLevel-level) < lengthBound) //should merge_bestfit
+	//if(this->length < lengthBound) //should merge_bestfit
 	{
 		if((prevLevel<level && level<=nextLevel) || (prevLevel > nextLevel && nextLevel >= level)) //right merge
 		{

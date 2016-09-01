@@ -1,5 +1,5 @@
 AUTOMAKE_OPTIONS=foreign
-AM_CFLAGS = -I../sz/include -I../zlib
+AM_CFLAGS = -lm -I../sz/include -I../zlib
 AM_FCFLAGS = -I../sz/include -I../sz -I../zlib
 bin_PROGRAMS=testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testdouble_compress_f testdouble_decompress_f testfloat_batch_compress testdouble_batch_compress
 testfloat_compress_SOURCES=testfloat_compress.c

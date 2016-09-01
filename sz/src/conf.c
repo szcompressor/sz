@@ -10,6 +10,7 @@
 #include "string.h"
 #include "sz.h"
 #include "iniparser.h"
+#include "Huffman.h"
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -91,7 +92,7 @@ int SZ_ReadConf() {
 			printf("[SZ] Error: Wrong gzip Mode (please check sz.config file)\n");
 			exit(0);
 		}
-		maxSegmentNum = (int)iniparser_getint(ini, "PARAMETER:maxSegmentNum", 0); //256
+		maxSegmentNum = (int)iniparser_getint(ini, "PARAMETER:maxSegmentNum", 0); //1024
 		
 		spaceFillingCurveTransform = (int)iniparser_getint(ini, "PARAMETER:spaceFillingCurveTransform", 0);
 		
@@ -117,8 +118,17 @@ int SZ_ReadConf() {
 	}
 	
 	versionNumber[0] = 1; //0
-	versionNumber[1] = 1; //5
+	versionNumber[1] = 3; //5
 	versionNumber[2] = 0; //15
+    
+    //initialization for Huffman encoding
+	//memset(pool, 0, 128*sizeof(struct node_t));
+	//memset(code, 0, 128); //original:128; we just used '0'-'7', so max ascii is 55.
+	//memset(cout, 0, 128);
+    //qq = qqq - 1;
+    //n_nodes = 0;
+    //n_inode = 0;
+    //qend = 1;
     
     iniparser_freedict(ini);
     return 1;
