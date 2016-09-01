@@ -1,8 +1,8 @@
---------SZ (version 1.1): Error-bounded Lossy Compressor for HPC Data--------
+--------SZ (version 1.3): Error-bounded Lossy Compressor for HPC Data--------
  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
        See COPYRIGHT in top-level directory.
 
-***Author: Sheng Di ***
+***Author: Sheng Di, Dingwen Tao ***
 ***Advisor: Franck Cappello ***
 
 =================================
@@ -108,3 +108,4 @@ SZ 0.5.15	improved the compression ratio for single-precision data compression, 
 
 The version 0.x were all coded in Java, and C/Fortran interfaces were provided by using JNI and C/Fortran wrapper. SZ 1.0 is coded in C purely.
 SZ 1.0		Pure C version. In this version, the users don't need to install JDK and make the relative configurations any more. It provides dataEndienType in the sz.config 		file, so it can be used to compress the data file which was generated on different endian-type systems.
+SZ 1.3		Improve the compression ratio and speed significantly.
