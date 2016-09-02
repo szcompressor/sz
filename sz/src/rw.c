@@ -24,7 +24,7 @@ int checkFileSize(char *srcFilePath)
 	}
 	fseek(pFile, 0, SEEK_END);
     filesize = (int)ftell(pFile);
-    free(pFile);
+    fclose(pFile);
     return filesize;
 }
 

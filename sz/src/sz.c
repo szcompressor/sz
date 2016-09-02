@@ -680,7 +680,15 @@ SZ_VarSet* SZ_batch_decompress(char* compressedStream, int compressedLength)
 				else
 				if (dataLength == dimSize[2]*dimSize[3]*dimSize[4])
 					getSnapshotData_float_3D(&newData,dimSize[2], dimSize[3], dimSize[4],tdps);
-
+				else
+				if (dataLength == dimSize[1]*dimSize[2]*dimSize[3]*dimSize[4])
+					getSnapshotData_float_3D(&newData,dimSize[1]*dimSize[2], dimSize[3], dimSize[4],tdps);
+				else
+				{
+					printf("Error: doesn't support 5 dimensions yet.\n");
+					exit(0);
+				}
+				
 				free_TightDataPointStorageF(tdps);	
 				curVar->data = newData;
 			}	
@@ -698,7 +706,14 @@ SZ_VarSet* SZ_batch_decompress(char* compressedStream, int compressedLength)
 				else
 				if (dataLength == dimSize[2]*dimSize[3]*dimSize[4])
 					getSnapshotData_double_3D(&newData,dimSize[2], dimSize[3], dimSize[4],tdps);
-
+				else
+				if (dataLength == dimSize[1]*dimSize[2]*dimSize[3]*dimSize[4])
+					getSnapshotData_double_3D(&newData,dimSize[1]*dimSize[2], dimSize[3], dimSize[4],tdps);
+				else
+				{
+					printf("Error: doesn't support 5 dimensions yet.\n");
+					exit(0);
+				}
 				SZ_batchAddVar(varNameString, dataType, newData, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4], 0, 0, 0);
 				free_TightDataPointStorageD(tdps);	
 			}
