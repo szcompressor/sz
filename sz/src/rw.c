@@ -151,6 +151,12 @@ float * readFloatData_systemEndian(char *srcFilePath, ulong *nbEle)
     *nbEle = (int)inSize/4; 
     fclose(pFile);
     
+    if(inSize<=0)
+    {
+		printf("Error: input file is wrong!\n");
+		exit(0);
+	}
+    
     float *daBuf = (float *)malloc(inSize);
     
     pFile = fopen(srcFilePath, "rb");

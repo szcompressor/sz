@@ -290,21 +290,19 @@ void computeOffset_3orders(ExpSegment* header, void* data_, int dataLength, floa
 			}
 			
 			float interval = 255*errBound;
+			if(start == 0)
+				start = 2;
 			for(i = start;i<=end;i++)
 			{
 				float value = floatData[i];
-				if(i>1)
+				predValue = 2*preData_1 - preData_2;
+				if(fabs(predValue-value) > interval)
 				{
-					predValue = 2*preData_1 - preData_2;
-					if(fabs(predValue-value) > interval)
-					{
-						newUnpreData = floatToOSEndianInt(value - curExp->medianValue_f0); // (value); medianValue_f0 -> 0
-						leadingNumSum_mod8 += getLeadingNumbers_Int(preUnpreData, newUnpreData)%8;
-						preUnpreData = newUnpreData;
-						count++;						
-					}						
+					newUnpreData = floatToOSEndianInt(value - curExp->medianValue_f0); // (value); medianValue_f0 -> 0
+					leadingNumSum_mod8 += getLeadingNumbers_Int(preUnpreData, newUnpreData)%8;
+					preUnpreData = newUnpreData;
+					count++;						
 				}	
-				
 				preData_2 = preData_1;
 				preData_1 = predValue;
 			}
@@ -327,7 +325,7 @@ void computeOffset_3orders(ExpSegment* header, void* data_, int dataLength, floa
 		{
 			int start = curExp->startStep;
 			int end = curExp->endStep;
-			double preData_1, preData_2, predValue, preUnpreData, newUnpreData;
+			double preData_1, preData_2, predValue, preUnpreData = 0, newUnpreData = 0;
 			int leadingNumSum_mod8 = 0, count = 0;
 			if(start==0)
 			{
@@ -346,21 +344,20 @@ void computeOffset_3orders(ExpSegment* header, void* data_, int dataLength, floa
 			}
 			
 			double interval = 255*errBound;
+			if(start == 0)
+				start = 2;
+			
 			for(i = start;i<=end;i++)
 			{
 				double value = doubleData[i];
-				if(i>1)
+				predValue = 2*preData_1 - preData_2;
+				if(fabs(predValue-value) > interval)
 				{
-					predValue = 2*preData_1 - preData_2;
-					if(fabs(predValue-value) > interval)
-					{
-						newUnpreData = doubleToOSEndianLong(value - curExp->medianValue_d0); // (value); medianValue_f0 -> 0
-						leadingNumSum_mod8 += getLeadingNumbers_Long(preUnpreData, newUnpreData)%8;
-						preUnpreData = newUnpreData;
-						count++;						
-					}						
+					newUnpreData = doubleToOSEndianLong(value - curExp->medianValue_d0); // (value); medianValue_f0 -> 0
+					leadingNumSum_mod8 += getLeadingNumbers_Long(preUnpreData, newUnpreData)%8;
+					preUnpreData = newUnpreData;
+					count++;						
 				}	
-				
 				preData_2 = preData_1;
 				preData_1 = predValue;
 			}

@@ -1235,6 +1235,8 @@ void getSnapshotData_double_1D(double** data, int dataSeriesLength, TightDataPoi
 					(*data)[i] = decmpData[k++];
 				}
 			}
+			free(decmpData);
+			free(rtypes);
 		}
 	}
 }
@@ -1278,6 +1280,8 @@ void getSnapshotData_double_2D(double** data, int r1, int r2, TightDataPointStor
 					(*data)[i] = decmpData[k++];
 				}
 			}
+			free(decmpData);
+			free(rtypes);
 		}
 	}
 }
@@ -1321,6 +1325,8 @@ void getSnapshotData_double_3D(double** data, int r1, int r2, int r3, TightDataP
 					(*data)[i] = decmpData[k++];
 				}
 			}
+			free(decmpData);
+			free(rtypes);
 		}
 	}
 }

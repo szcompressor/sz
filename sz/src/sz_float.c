@@ -72,7 +72,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D(char** newByteData, float *oriData
 	int reqBytesLength = curExp->reqBytesLength;
 	int resiBitsLength = curExp->resiBitsLength;
 	float medianValue = curExp->medianValue_f;
-	float last3CmprsData[3];
+	float last3CmprsData[3] = {0};
 
 	FloatValueCompressElement *vce = (FloatValueCompressElement*)malloc(sizeof(FloatValueCompressElement));
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
@@ -944,7 +944,7 @@ int errBoundMode, float absErr_Bound, float relBoundRatio)
 	}
 	else
 	{
-		int tmpOutSize;
+		int tmpOutSize = 0;
 		char* tmpByteData;
 		if (r2==0)
 			SZ_compress_args_float_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize);

@@ -1241,6 +1241,8 @@ void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPoint
 					(*data)[i] = decmpData[k++];
 				}
 			}
+			free(decmpData);
+			free(rtypes);
 		}
 	}
 }
@@ -1285,6 +1287,8 @@ void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorag
 					(*data)[i] = decmpData[k++];
 				}
 			}
+			free(decmpData);
+			free(rtypes);
 		}
 	}
 }
@@ -1328,6 +1332,8 @@ void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPoi
 					(*data)[i] = decmpData[k++];
 				}
 			}
+			free(decmpData);
+			free(rtypes);
 		}
 	}
 }
