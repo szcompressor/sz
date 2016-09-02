@@ -942,7 +942,12 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 		else
 		if (r5==0)
 			SZ_compress_args_double_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r4*r3, r2, r1, realPrecision, &tmpOutSize);
-		
+		else
+		{
+			printf("Error: doesn't support 5 dimensions for now.\n");
+			exit(0);
+		}
+				
 		//TODO: call Gzip to do the further compression.
 		*outSize = (int)zlib_compress2(tmpByteData, tmpOutSize, newByteData, gzipMode);
 		free(tmpByteData);

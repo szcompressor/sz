@@ -31,6 +31,7 @@ void readbytefile_(char *srcFilePath, ulong *len, char *bytes, ulong *byteLength
     s[*len]='\0';
     char *tmp_bytes = readByteData(s, byteLength);
     memcpy(bytes, tmp_bytes, *byteLength);
+    free(tmp_bytes);
 }
 
 void readdoublefile_(char *srcFilePath, ulong *len, double *data, ulong *nbEle)

@@ -24,6 +24,7 @@ ulong zlib_compress(char* data, ulong dataLength, char** compressBytes, int leve
 {
 	ulong outSize;
 	ulong* outSize_ = (ulong*)malloc(sizeof(ulong));
+	*outSize_ = 0;
 	*outSize_ = dataLength;
 	*compressBytes = (char*)malloc(sizeof(char)*dataLength);
 	int err = compress2(*compressBytes, outSize_, data, dataLength, level);

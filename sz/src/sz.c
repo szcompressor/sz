@@ -35,6 +35,8 @@ int SZ_Init(char *configFilePath)
 	sz_varset->header = (SZ_Variable*)malloc(sizeof(SZ_Variable));
 	sz_varset->lastVar = sz_varset->header;
 	sz_varset->count = 0;
+	
+	return 0;
 }
 
 int SZ_Init_Params(sz_params *params)
@@ -710,7 +712,7 @@ SZ_VarSet* SZ_batch_decompress(char* compressedStream, int compressedLength)
 			p = p->next;
 		}
 	}
-	
+	free(gzipDecpressBytes);
 	return sz_varset;
 }
 
