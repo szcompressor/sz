@@ -557,7 +557,7 @@ SZ_VarSet* SZ_batch_decompress(char* compressedStream, int compressedLength)
 					getSnapshotData_float_3D(&newData,dimSize[2], dimSize[3], dimSize[4],tdps);
 				else
 				if (dataLength == dimSize[1]*dimSize[2]*dimSize[3]*dimSize[4])
-					getSnapshotData_double_3D(&newData,dimSize[1]*dimSize[2], dimSize[3], dimSize[4],tdps);
+					getSnapshotData_float_3D(&newData,dimSize[1]*dimSize[2], dimSize[3], dimSize[4],tdps);
 				else
 				{
 					printf("Current version doesn't support 5 dimensions.\n");
