@@ -1,8 +1,10 @@
 --------SZ (version 1.3): Error-bounded Lossy Compressor for HPC Data--------
+
  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
        See COPYRIGHT in top-level directory.
 
-***Author: Sheng Di, Dingwen Tao ***
+***Developers: Sheng Di, Dingwen Tao ***
+
 ***Advisor: Franck Cappello ***
 
 =================================
@@ -25,7 +27,9 @@ Examples can be found in the [SZ_PACKAGE]/example
 
 ===Compress===
 --------------
+
 ./test_compress sz.config testdouble_8_8_8_128.dat 8 8 8 128
+
 ./test_compress sz.config testdouble_8_8_128.dat 8 8 128
 
 Decription: 
@@ -46,15 +50,20 @@ sz.config is the configuration file. The key settings are errorBoundMode, absErr
 
 ===Decompress===
 ----------------
+
 ./test_decompress sz.config testdouble_8_8_8_128.dat.sz 8 8 8 128
+
 ./test_decompress sz.config testdouble_8_8_128.dat.sz 8 8 128
 
 The output files are testdouble_8_8_8_128.dat.sz.out and testdouble_8_8_128.dat.sz.out respectively. You can compare .txt file and .out file for checking the compression errors for each data point. For instance, compare testdouble_8_8_8_128.txt and testdouble_8_8_8_128.dat.sz.out.
 
 ===Application Programming Interface (API)===
 ---------------------------------------------
+
 Programming interfaces are procides in two programming languages - C and Java: 
+
 The interfaces are listed below. More details can be found in the user guide. 
+
 ----C Interface----
 
 int SZ_Init();
@@ -87,25 +96,45 @@ In the current version, the maximum original double-array file size (such as the
 ===version history===
 ---------------------
 version		New features
+
 SZ 0.2-0.4	Compression ratio is the same as SZ 0.5. The key difference is different implementation ways, such that SZ 0.5 is much faster than SZ 0.2-0.4.
+
 SZ 0.5.1	Support version checking
+
 SZ 0.5.2	finer compression granularity for unpredictable data, and also remove redundant Java storage bytes
+
 SZ 0.5.3 	Integrate with the dynamic segmentation support
+
 SZ 0.5.4	Gzip_mode: defaut --> fast_mode ; Support reserved value	
+
 SZ 0.5.5	runtime memory is shrinked (by changing int xxx to byte xxx in the codes)
 		The bug that writing decompressed data may encounter exceptions is fixed.
 		Memory leaking bug for ppc architecture is fixed.
+
 SZ 0.5.6	improve compression ratio for some cases (when the values in some segementation are always the same, this segment will be merged forward)
+
 SZ 0.5.7	improve the decompression speed for some cases
+
 SZ 0.5.8	Refine the leading-zero granularity (change it from byte to bits based on the distribution). For example, in SZ0.5.7, the leading-zero is always in bytes, 0, 1, 2, or 3. In SZ0.5.8, the leading-zero part could be xxxx xxxx xx xx xx xx xxxx xxxx (where each x means a bit in the leading-zero part)
+
 SZ 0.5.9	optimize the offset by using simple right-shifting method. Experiments show that this cannot improve compression ratio actually, because simple right-shifting actually make each data be multiplied by 2^{-k}, where k is # right-shifting bits. The pros is to save bits because of more leading-zero bytes, but the cons is much more required bits to save. A good solution is SZ 0.5.10!
+
 SZ 0.5.10	optimze the offset by using the optimized formula of computing the median_value based on optimized right-shifting method. Anyway, SZ0.5.10 improves compression ratio a lot for hard-to-compress datasets. (Hard-to-compress datasets refer to the cases whose compression ratios are usually very limited)
+
 SZ 0.5.11	In a very few cases, SZ 0.5.10 cannot guarantee the error-bounds to a certain user-specified level. For example, when absolute error bound = 1E-6, the maximum decompression error may be 0.01(>>1E-6) because of the huge value range even in the optimized segments such that the normalized data cannot reach the required precision even stoaring all of the 64 or 32 mantissa bits. SZ 0.5.11 fixed the problem well, with degraded compression ratio less than 1%.
+
 SZ 0.5.12 	A parameter setting called "offset" is added to the configuration file sz.config. The value of offset is an integer in [1,7]. Generally, we recommend offset=2 or 3, while we also find that some other settings (such as offset=7) may lead to better compression ratios in some cases. How to automize/optimize the selection of offset value would be the future work. In addition, the compression speed is improved, by replacing java List by array implementation in the code.
+
 SZ 0.5.13	Compression performance is improved, by replacing some class instances in the source code by primitive data type implementation.
+
 SZ 0.5.14 	fixed a design bug, which improves the compression ratio further.
+
 SZ 0.5.15	improved the compression ratio for single-precision data compression, by tuning the offset.
 
 The version 0.x were all coded in Java, and C/Fortran interfaces were provided by using JNI and C/Fortran wrapper. SZ 1.0 is coded in C purely.
+
 SZ 1.0		Pure C version. In this version, the users don't need to install JDK and make the relative configurations any more. It provides dataEndienType in the sz.config 		file, so it can be used to compress the data file which was generated on different endian-type systems.
+
+SZ 1.2		Improved compression quality compared with SZ 1.0
+
 SZ 1.3		Improve the compression ratio and speed significantly.
