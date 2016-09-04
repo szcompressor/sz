@@ -5,7 +5,7 @@
 
 ***Developers: Sheng Di, Dingwen Tao ***
 
-***Advisor: Franck Cappello ***
+***Supervisor: Franck Cappello ***
 
 =================================
 This document simply introduces how to install and use the SZ compressor. More details can be found in doc/userguide.pdf.

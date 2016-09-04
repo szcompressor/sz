@@ -2,8 +2,8 @@
  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
        See COPYRIGHT in top-level directory.
 
-***Author: Sheng Di ***
-***Advisor: Franck Cappello ***
+***Authors: Sheng Di, Dingwen Tao ***
+***Supervisor: Franck Cappello ***
 
 =================================
 This document simply introduces how to install and use the SZ compressor. More details can be found in doc/userguide.pdf.
