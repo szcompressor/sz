@@ -27,7 +27,7 @@ typedef struct TightDataPointStorageD
 	char* rtypeArray;
 	int rtypeArray_size;
 	
-	char* typeArray; //its size is dataSeriesLength/4 (or xxx/4+1) 
+	unsigned char* typeArray; //its size is dataSeriesLength/4 (or xxx/4+1) 
 	int typeArray_size;
 	
 	char* leadNumArray; //its size is exactDataNum/4 (or exactDataNum/4+1)

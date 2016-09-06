@@ -26,7 +26,7 @@ inline void listAdd_float(float last3CmprsData[3], float value)
 	last3CmprsData[0] = value;
 }
 
-inline int validPrediction_double(double minErr, double precision)
+int validPrediction_double(double minErr, double precision)
 {
 	if(minErr<=precision)
 		return 1;
@@ -34,7 +34,7 @@ inline int validPrediction_double(double minErr, double precision)
 		return 0;
 }
 
-inline int validPrediction_float(float minErr, float precision)
+int validPrediction_float(float minErr, float precision)
 {
 	if(minErr<=precision)
 		return 1;
@@ -52,7 +52,7 @@ int intMidBytes_Length, int resiMidBitsLength, int resiBits)
 	lce->residualMidBits = resiBits;
 }
 
-inline void updateLossyCompElement_Double(char* curBytes, char* preBytes, 
+void updateLossyCompElement_Double(char* curBytes, char* preBytes, 
 		int reqBytesLength, int resiBitsLength,  LossyCompressionElement *lce)
 {
 	int i, resiIndex, intMidBytes_Length = 0;
@@ -77,7 +77,7 @@ inline void updateLossyCompElement_Double(char* curBytes, char* preBytes,
 	lce->residualMidBits = resiBits;
 }
 
-inline void updateLossyCompElement_Float(char* curBytes, char* preBytes, 
+void updateLossyCompElement_Float(char* curBytes, char* preBytes, 
 		int reqBytesLength, int resiBitsLength,  LossyCompressionElement *lce)
 {
 	int i, resiIndex, intMidBytes_Length = 0;

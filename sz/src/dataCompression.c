@@ -177,7 +177,7 @@ void bigEndian_to_OSEndian_float(char data[4])
 		symTransform_4bytes(data);
 }
 
-inline void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, 
+void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, 
 		int reqLength, int reqBytesLength, int resiBitsLength)
 {		
 	float normValue = tgtValue - medianValue;
@@ -227,7 +227,7 @@ void compressSingleDoubleValue(DoubleValueCompressElement *vce, double tgtValue,
 	vce->resiBitsLength = resiBitsLength;
 }
 
-inline int compIdenticalLeadingBytesCount_double(char* preBytes, char* curBytes)
+int compIdenticalLeadingBytesCount_double(char* preBytes, char* curBytes)
 {
 	int i, n = 0;
 	for(i=0;i<8;i++)
@@ -239,7 +239,7 @@ inline int compIdenticalLeadingBytesCount_double(char* preBytes, char* curBytes)
 	return n;
 }
 
-inline int compIdenticalLeadingBytesCount_float(char* preBytes, char* curBytes)
+int compIdenticalLeadingBytesCount_float(char* preBytes, char* curBytes)
 {
 	int i, n = 0;
 	for(i=0;i<4;i++)
@@ -252,7 +252,7 @@ inline int compIdenticalLeadingBytesCount_float(char* preBytes, char* curBytes)
 }
 
 //TODO double-check the correctness...
-inline void addExactData(DynamicByteArray *exactMidByteArray, DynamicIntArray *exactLeadNumArray, 
+void addExactData(DynamicByteArray *exactMidByteArray, DynamicIntArray *exactLeadNumArray, 
 		DynamicIntArray *resiBitArray, LossyCompressionElement *lce)
 {
 	int i;

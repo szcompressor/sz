@@ -117,6 +117,11 @@ typedef struct sz_params
     double relBoundRatio;
 } sz_params;
 
+//conf.c
+int SZ_ReadConf();
+int SZ_LoadConf();
+int checkVersion(char* version);
+
 //dataCompression.c
 void computeRangeSize_double(double* oriData, int size, double* valueRangeSize, double* medianValue);
 void computeRangeSize_float(float* oriData, int size, float* valueRangeSize, float* medianValue);
@@ -142,20 +147,20 @@ void addExactData(DynamicByteArray *exactMidByteArray, DynamicIntArray *exactLea
 		DynamicIntArray *resiBitArray, LossyCompressionElement *lce);
 
 //ByteToolkit.c
-inline int bytesToInt_bigEndian(char* bytes);
-inline void intToBytes_bigEndian(char *b, unsigned int num);
-inline long bytesToLong_bigEndian(char* b);
-inline void longToBytes_bigEndian(char *b, unsigned long num);
+int bytesToInt_bigEndian(char* bytes);
+void intToBytes_bigEndian(char *b, unsigned int num);
+long bytesToLong_bigEndian(char* b);
+void longToBytes_bigEndian(char *b, unsigned long num);
 long doubleToOSEndianLong(double value);
 int floatToOSEndianInt(float value);
-inline short getExponent_float(float value);
+short getExponent_float(float value);
 short getPrecisionReqLength_float(float precision);
-inline short getExponent_double(double value);
+short getExponent_double(double value);
 short getPrecisionReqLength_double(double precision);
-inline int numberOfLeadingZeros_Int(int i);
-inline int numberOfLeadingZeros_Long(long i);
-inline char getLeadingNumbers_Int(int v1, int v2);
-inline char getLeadingNumbers_Long(long v1, long v2);
+int numberOfLeadingZeros_Int(int i);
+int numberOfLeadingZeros_Long(long i);
+char getLeadingNumbers_Int(int v1, int v2);
+char getLeadingNumbers_Long(long v1, long v2);
 short bytesToShort(char* bytes);
 int bytesToInt(char* bytes);
 long bytesToLong(char* bytes);
@@ -164,10 +169,10 @@ void floatToBytes(char *b, float num);
 double bytesToDouble(char* bytes);
 void doubleToBytes(char *b, double num);
 int extractBytes(char* byteArray, int k, int validLength);
-inline int getMaskRightCode(int m);
-inline int getLeftMovingCode(int kMod8);
-inline int getRightMovingSteps(int kMod8, int resiBitLength);
-inline int getRightMovingCode(int kMod8, int resiBitLength);
+int getMaskRightCode(int m);
+int getLeftMovingCode(int kMod8);
+int getRightMovingSteps(int kMod8, int resiBitLength);
+int getRightMovingCode(int kMod8, int resiBitLength);
 
 //TypeManager.c
 int convertIntArray2ByteArray_fast_2b(char* timeStepType, int timeStepTypeLength, char **result);

@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include "sz.h" 
 	
-inline int bytesToInt_bigEndian(char* bytes)
+int bytesToInt_bigEndian(char* bytes)
 {
 	int temp = 0;
 	int res = 0;
@@ -38,7 +38,7 @@ inline int bytesToInt_bigEndian(char* bytes)
  * @char *b the variable to store the converted bytes (length=4)
  * @unsigned int num
  * */
-inline void intToBytes_bigEndian(char *b, unsigned int num)
+void intToBytes_bigEndian(char *b, unsigned int num)
 {
 	b[0] = (char)(num >> 24);	
 	b[1] = (char)(num >> 16);	
@@ -53,7 +53,7 @@ inline void intToBytes_bigEndian(char *b, unsigned int num)
 /**
  * @endianType: refers to the endian_type of char* b.
  * */
-inline long bytesToLong_bigEndian(char* b) {
+long bytesToLong_bigEndian(char* b) {
 	long temp = 0;
 	long res = 0;
 	int i;
@@ -93,7 +93,7 @@ inline long bytesToLong_bigEndian(char* b) {
 	return res;
 }
 
-inline void longToBytes_bigEndian(char *b, unsigned long num) 
+void longToBytes_bigEndian(char *b, unsigned long num) 
 {
 	b[0] = (char)(num>>56);
 	b[1] = (char)(num>>48);
@@ -123,7 +123,7 @@ int floatToOSEndianInt(float value)
 }
 
 //TODO: debug: lfBuf.lvalue could be actually little_endian....
-inline short getExponent_float(float value)
+short getExponent_float(float value)
 {
 	//int ivalue = floatToBigEndianInt(value);
 
@@ -150,7 +150,7 @@ short getPrecisionReqLength_float(float precision)
 	return (short)expValue;
 }
 
-inline short getExponent_double(double value)
+short getExponent_double(double value)
 {
 	//long lvalue = doubleToBigEndianLong(value);
 	
@@ -177,7 +177,7 @@ short getPrecisionReqLength_double(double precision)
 	return (short)expValue;
 }
 
-inline int numberOfLeadingZeros_Int(int i) {
+int numberOfLeadingZeros_Int(int i) {
 	if (i == 0)
 		return 32;
 	int n = 1;
@@ -189,7 +189,7 @@ inline int numberOfLeadingZeros_Int(int i) {
 	return n;
 }
 
-inline int numberOfLeadingZeros_Long(long i) {
+int numberOfLeadingZeros_Long(long i) {
 	 if (i == 0)
 		return 64;
 	int n = 1;
@@ -203,13 +203,13 @@ inline int numberOfLeadingZeros_Long(long i) {
 	return n;
 }
 
-inline char getLeadingNumbers_Int(int v1, int v2)
+char getLeadingNumbers_Int(int v1, int v2)
 {
 	int v = v1 ^ v2;
 	return (char)numberOfLeadingZeros_Int(v);
 }
 
-inline char getLeadingNumbers_Long(long v1, long v2)
+char getLeadingNumbers_Long(long v1, long v2)
 {
 	long v = v1 ^ v2;
 	return (char)numberOfLeadingZeros_Long(v);
@@ -319,7 +319,7 @@ int extractBytes(char* byteArray, int k, int validLength)
 	return result;
 }
 
-inline int getMaskRightCode(int m) {
+int getMaskRightCode(int m) {
 	switch (m) {
 	case 1:
 		return 0x01;
@@ -342,16 +342,16 @@ inline int getMaskRightCode(int m) {
 	}
 }
 
-inline int getLeftMovingCode(int kMod8)
+int getLeftMovingCode(int kMod8)
 {
 	return getMaskRightCode(8 - kMod8);
 }
 
-inline int getRightMovingSteps(int kMod8, int resiBitLength) {
+int getRightMovingSteps(int kMod8, int resiBitLength) {
 	return 8 - kMod8 - resiBitLength;
 }
 
-inline int getRightMovingCode(int kMod8, int resiBitLength)
+int getRightMovingCode(int kMod8, int resiBitLength)
 {
 	int rightMovingSteps = 8 - kMod8 - resiBitLength;
 	if(rightMovingSteps < 0)

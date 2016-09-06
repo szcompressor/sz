@@ -117,9 +117,9 @@ int SZ_ReadConf() {
 		relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:relBoundRatio", 0);
 	}
 	
-	versionNumber[0] = 1; //0
-	versionNumber[1] = 3; //5
-	versionNumber[2] = 0; //15
+	versionNumber[0] = SZ_VER_MAJOR; //0
+	versionNumber[1] = SZ_VER_MINOR; //5
+	versionNumber[2] = SZ_VER_REVISION; //15
     
     //initialization for Huffman encoding
 	//memset(pool, 0, 128*sizeof(struct node_t));
