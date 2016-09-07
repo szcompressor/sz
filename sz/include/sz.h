@@ -81,6 +81,9 @@ int reOrgSize; //the granularity of the reganization of the original data
 
 SZ_VarSet* sz_varset;
 
+typedef unsigned long ulong;
+typedef unsigned int uint;
+
 typedef union lshort
 {
 	unsigned short svalue;

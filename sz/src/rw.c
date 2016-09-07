@@ -28,7 +28,7 @@ int checkFileSize(char *srcFilePath)
     return filesize;
 }
 
-char * readByteData(char *srcFilePath, ulong *byteLength)
+char *readByteData(char *srcFilePath, ulong *byteLength)
 {
 	FILE *pFile = fopen(srcFilePath, "rb");
     if (pFile == NULL)
@@ -111,7 +111,7 @@ float *readFloatData(char *srcFilePath, ulong *nbEle)
 	}
 }
 
-double * readDoubleData_systemEndian(char *srcFilePath, ulong *nbEle)
+double *readDoubleData_systemEndian(char *srcFilePath, ulong *nbEle)
 {
 	ulong inSize;
 	FILE *pFile = fopen(srcFilePath, "rb");
@@ -138,7 +138,7 @@ double * readDoubleData_systemEndian(char *srcFilePath, ulong *nbEle)
     return daBuf;
 }
 
-float * readFloatData_systemEndian(char *srcFilePath, ulong *nbEle)
+float *readFloatData_systemEndian(char *srcFilePath, ulong *nbEle)
 {
 	ulong inSize;
 	FILE *pFile = fopen(srcFilePath, "rb");

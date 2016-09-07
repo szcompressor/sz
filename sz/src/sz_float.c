@@ -199,7 +199,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 	int i,j;
 	float pred1D, pred2D;
 	float diff = 0.0;
-	long itvNum = 0;
+	double itvNum = 0;
 	float *P0, *P1;
 		
 	int dataLength = r1*r2;	
@@ -270,7 +270,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 	pred1D = P1[0];
 	diff = spaceFillingValue[1] - pred1D;
 
-	itvNum = (long) (fabs(diff)/realPrecision) + 1;
+	itvNum = fabs(diff)/realPrecision + 1;
 
 	if (itvNum < 256)
 	{
@@ -304,7 +304,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 		pred1D = 2*P1[j-1] - P1[j-2];
 		diff = spaceFillingValue[j] - pred1D;
 
-		itvNum = (long) (fabs(diff)/realPrecision) + 1;
+		itvNum = fabs(diff)/realPrecision + 1;
 
 		if (itvNum < 256)
 		{
@@ -342,7 +342,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 		pred1D = P1[0];
 		diff = spaceFillingValue[index] - pred1D;
 
-		itvNum = (long) (fabs(diff)/realPrecision) + 1;
+		itvNum = fabs(diff)/realPrecision + 1;
 
 		if (itvNum < 256)
 		{
@@ -378,7 +378,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 
 			diff = spaceFillingValue[index] - pred2D;
 
-			itvNum = (long) (fabs(diff)/realPrecision) + 1;
+			itvNum = fabs(diff)/realPrecision + 1;
 
 			if (itvNum < 256)
 			{
@@ -462,7 +462,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 	int i,j,k;
 	float pred1D, pred2D, pred3D;
 	float diff = 0.0;
-	long itvNum = 0;
+	double itvNum = 0;
 	float *P0, *P1;
 
 	int dataLength = r1*r2*r3;
@@ -535,7 +535,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 	pred1D = P1[0];
 	diff = spaceFillingValue[1] - pred1D;
 
-	itvNum = (long) (fabs(diff)/realPrecision) + 1;
+	itvNum = fabs(diff)/realPrecision + 1;
 
 	if (itvNum < 256)
 	{
@@ -569,7 +569,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 		pred1D = 2*P1[j-1] - P1[j-2];
 		diff = spaceFillingValue[j] - pred1D;
 
-		itvNum = (long) (fabs(diff)/realPrecision) + 1;
+		itvNum = fabs(diff)/realPrecision + 1;
 
 		if (itvNum < 256)
 		{
@@ -607,7 +607,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 		pred1D = P1[index-r3];
 		diff = spaceFillingValue[index] - pred1D;
 
-		itvNum = (long) (fabs(diff)/realPrecision) + 1;
+		itvNum = fabs(diff)/realPrecision + 1;
 
 		if (itvNum < 256)
 		{
@@ -643,7 +643,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 
 			diff = spaceFillingValue[index] - pred2D;
 
-			itvNum = (long) (fabs(diff)/realPrecision) + 1;
+			itvNum = fabs(diff)/realPrecision + 1;
 
 			if (itvNum < 256)
 			{
@@ -683,7 +683,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 		pred1D = P1[0];
 		diff = spaceFillingValue[index] - pred1D;
 
-		itvNum = (long) (fabs(diff)/realPrecision) + 1;
+		itvNum = fabs(diff)/realPrecision + 1;
 
 		if (itvNum < 256)
 		{
@@ -719,7 +719,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 			diff = spaceFillingValue[index] - pred2D;
 
-			itvNum = (long) (fabs(diff)/realPrecision) + 1;
+			itvNum = fabs(diff)/realPrecision + 1;
 
 			if (itvNum < 256)
 			{
@@ -758,7 +758,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 			pred2D = P0[index2D-r3] + P1[index2D] - P1[index2D-r3];
 			diff = spaceFillingValue[index] - pred2D;
 
-			itvNum = (long) (fabs(diff)/realPrecision) + 1;
+			itvNum = fabs(diff)/realPrecision + 1;
 
 			if (itvNum < 256)
 			{
@@ -794,7 +794,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 				pred3D = P0[index2D-1] + P0[index2D-r3]+ P1[index2D] - P0[index2D-r3-1] - P1[index2D-r3] - P1[index2D-1] + P1[index2D-r3-1];
 				diff = spaceFillingValue[index] - pred3D;
 
-				itvNum = (long) (fabs(diff)/realPrecision) + 1;
+				itvNum = fabs(diff)/realPrecision + 1;
 
 				if (itvNum < 256)
 				{
