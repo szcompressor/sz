@@ -22,13 +22,13 @@ typedef struct node_t {
  
 //for multi-thread version (in the future), these global variables must be carefully handled
 //e.g., share by passing addresses instead.
-struct node_t pool[128];
-node qqq[127], *qq;
-int n_nodes, qend; //n_nodes is for compression
-char bufByte;
-unsigned char code[128];
-unsigned char cout[128];
-char n_inode; //n_inode is for decompression
+extern struct node_t pool[128];
+extern node qqq[127], *qq;
+extern int n_nodes, qend; //n_nodes is for compression
+extern char bufByte;
+extern unsigned char code[128];
+extern unsigned char cout[128];
+extern char n_inode; //n_inode is for decompression
 
 node huff_new_node(int freq, char c, node a, node b);
 node huff_new_node2(char c);

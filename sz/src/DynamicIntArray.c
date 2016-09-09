@@ -16,7 +16,7 @@ void new_DIA(DynamicIntArray **dia, int cap) {
 		*dia = (DynamicIntArray *)malloc(sizeof(DynamicIntArray));
         (*dia)->size = 0;
         (*dia)->capacity = cap;
-        (*dia)->array = (unsigned char*)malloc(sizeof(char)*cap);
+        (*dia)->array = (unsigned char*)malloc(sizeof(unsigned char)*cap);
     }
 
 void convertDIAtoInts(DynamicIntArray *dia, unsigned char **data)
@@ -26,7 +26,7 @@ void convertDIAtoInts(DynamicIntArray *dia, unsigned char **data)
 		*data = (unsigned char*)malloc(size * sizeof(char));
 	else
 		*data = NULL;
-	memcpy(*data, dia->array, size*sizeof(char));	
+	memcpy(*data, dia->array, size*sizeof(unsigned char));	
 }
 
 void free_DIA(DynamicIntArray *dia)
@@ -45,7 +45,7 @@ int getDIA_Data(DynamicIntArray *dia, int pos)
 	return dia->array[pos];
 }
 
-inline void addDIA_Data(DynamicIntArray *dia, int value)
+void addDIA_Data(DynamicIntArray *dia, int value)
 {
 	if(dia->size==dia->capacity)
 	{

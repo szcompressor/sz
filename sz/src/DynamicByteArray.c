@@ -16,17 +16,17 @@ void new_DBA(DynamicByteArray **dba, int cap) {
 		*dba = (DynamicByteArray *)malloc(sizeof(DynamicByteArray));
         (*dba)->size = 0;
         (*dba)->capacity = cap;
-        (*dba)->array = (char*)malloc(sizeof(char)*cap);
+        (*dba)->array = (unsigned char*)malloc(sizeof(unsigned char)*cap);
     }
 
-void convertDBAtoBytes(DynamicByteArray *dba, char** bytes)
+void convertDBAtoBytes(DynamicByteArray *dba, unsigned char** bytes)
 {
 	int size = dba->size;
 	if(size>0)
-		*bytes = (char*)malloc(size * sizeof(char));
+		*bytes = (unsigned char*)malloc(size * sizeof(unsigned char));
 	else
 		*bytes = NULL;
-	memcpy(*bytes, dba->array, size*sizeof(char));	
+	memcpy(*bytes, dba->array, size*sizeof(unsigned char));	
 }
 
 void free_DBA(DynamicByteArray *dba)
@@ -45,23 +45,23 @@ int getDBA_Data(DynamicByteArray *dba, int pos)
 	return dba->array[pos];
 }
 
-inline void addDBA_Data(DynamicByteArray *dba, char value)
+void addDBA_Data(DynamicByteArray *dba, unsigned char value)
 {
 	if(dba->size==dba->capacity)
 	{
 		dba->capacity = dba->capacity << 1;
-		dba->array = (char *)realloc(dba->array, dba->capacity*sizeof(char));
+		dba->array = (unsigned char *)realloc(dba->array, dba->capacity*sizeof(unsigned char));
 	}
 	dba->array[dba->size] = value;
 	dba->size ++;
 }
 
-void memcpyDBA_Data(DynamicByteArray *dba, char* data, int length)
+void memcpyDBA_Data(DynamicByteArray *dba, unsigned char* data, int length)
 {
 	if(dba->size + length > dba->capacity)
 	{
 		dba->capacity = dba->size + length;
-		dba->array = (char *)realloc(dba->array, dba->capacity*sizeof(char));
+		dba->array = (unsigned char *)realloc(dba->array, dba->capacity*sizeof(unsigned char));
 	}
 	memcpy(&(dba->array[dba->size]), data, length);
 	dba->size += length;

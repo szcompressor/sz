@@ -12,6 +12,15 @@
 #include <string.h>
 #include "Huffman.h"
 
+struct node_t pool[128];
+node qqq[127], *qq;
+int n_nodes, qend; //n_nodes is for compression
+char bufByte;
+unsigned char code[128];
+unsigned char cout[128];
+char n_inode; //n_inode is for decompression
+
+
 node huff_new_node(int freq, char c, node a, node b)
 {
 	node n = pool + n_nodes++;

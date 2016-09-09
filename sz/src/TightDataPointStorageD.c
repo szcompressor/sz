@@ -43,7 +43,7 @@ void new_TightDataPointStorageD_Empty(TightDataPointStorageD **this)
 	(*this)->residualMidBits_size = 0;
 }
 
-void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, char* flatBytes, int flatBytesLength)
+void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsigned char* flatBytes, int flatBytesLength)
 {
 	new_TightDataPointStorageD_Empty(this);
 	int i, index = 0;
@@ -58,13 +58,13 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, cha
 		exit(0);
 	}
 	
-	char dsLengthBytes[4];
+	unsigned char dsLengthBytes[4];
 	for (i = 0; i < 4; i++)
 		dsLengthBytes[i] = flatBytes[index++];
 		
 	//TODO
 	(*this)->dataSeriesLength = bytesToInt_bigEndian(dsLengthBytes);// 4
-	char sameRByte = flatBytes[index++];
+	unsigned char sameRByte = flatBytes[index++];
 	int same = sameRByte & 0x01;
 
 	if(same==1)
@@ -72,7 +72,7 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, cha
 		(*this)->allSameData = 1;
 		int exactMidBytesLength = flatBytesLength - 3 - 4 -1;
 		if(exactMidBytesLength>0)
-			(*this)->exactMidBytes = (char*)malloc(sizeof(char)*exactMidBytesLength);
+			(*this)->exactMidBytes = (unsigned char*)malloc(sizeof(unsigned char)*exactMidBytesLength);
 		else
 			(*this)->exactMidBytes = NULL;
 		for(i = 0;i<exactMidBytesLength;i++)
@@ -85,7 +85,7 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, cha
 	int rtype_ = sameRByte & 0x04;
 	if(rtype_!=0)
 	{
-		char rTypeLengthBytes[4];
+		unsigned char rTypeLengthBytes[4];
 		for(i = 0;i<4;i++) //4
 			rTypeLengthBytes[i] = flatBytes[index++];
 		(*this)->rtypeArray_size = bytesToInt_bigEndian(rTypeLengthBytes);//4		
@@ -93,12 +93,12 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, cha
 	else
 		(*this)->rtypeArray_size = 0;		
 
-	char byteBuf[8];
+	unsigned char byteBuf[8];
 	for (i = 0; i < 8; i++)
 		byteBuf[i] = flatBytes[index++];
 	(*this)->realPrecision = bytesToDouble(byteBuf);
 
-	char byteBuf2[4];	
+	unsigned char byteBuf2[4];	
 	for (i = 0; i < 4; i++)
 		byteBuf2[i] = flatBytes[index++];
 	(*this)->typeArray_size = bytesToInt_bigEndian(byteBuf2);// 4		
@@ -111,7 +111,7 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, cha
 		byteBuf2[i] = flatBytes[index++];
 	(*this)->escBytes_size = bytesToInt_bigEndian(byteBuf2);//4
 	if((*this)->escBytes_size>0)
-		(*this)->escBytes = (char*)malloc(sizeof(char)*(*this)->escBytes_size);
+		(*this)->escBytes = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->escBytes_size);
 	else
 		(*this)->escBytes = NULL;
 
@@ -122,7 +122,7 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, cha
 	int typeArrayLength = 0;
 	if (rtype_ != 0) {
 		if((*this)->rtypeArray_size>0)
-			(*this)->rtypeArray = (char*)malloc(sizeof(char)*(*this)->rtypeArray_size);
+			(*this)->rtypeArray = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->rtypeArray_size);
 		else
 			(*this)->rtypeArray = NULL;
 			
@@ -132,7 +132,7 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, cha
 		
 	}
 
-	(*this)->typeArray = (char*)malloc(sizeof(char)*(*this)->typeArray_size);
+	(*this)->typeArray = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->typeArray_size);
 		
 	int logicLeadNumBitsNum = (*this)->exactDataNum * 2;
 	if (logicLeadNumBitsNum % 8 == 0)
@@ -144,12 +144,12 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, cha
 		(*this)->leadNumArray_size = (logicLeadNumBitsNum >> 3) + 1;
 	}
 	if((*this)->leadNumArray_size>0)
-		(*this)->leadNumArray = (char*)malloc(sizeof(char)*(*this)->leadNumArray_size);
+		(*this)->leadNumArray = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->leadNumArray_size);
 	else
 		(*this)->leadNumArray = NULL;
 	
 	if((*this)->exactMidBytes_size>0)
-		(*this)->exactMidBytes = (char*)malloc(sizeof(char)*(*this)->exactMidBytes_size);
+		(*this)->exactMidBytes = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->exactMidBytes_size);
 	else
 		(*this)->exactMidBytes = NULL;
 
@@ -169,7 +169,7 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, cha
 				- (*this)->leadNumArray_size - (*this)->exactMidBytes_size;
 	}	
 	if((*this)->residualMidBits_size>0)
-		(*this)->residualMidBits = (char*)malloc(sizeof(char)*(*this)->residualMidBits_size);
+		(*this)->residualMidBits = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->residualMidBits_size);
 	else
 		(*this)->residualMidBits = NULL;
 	for (i = 0; i < (*this)->escBytes_size; i++)
@@ -192,7 +192,7 @@ void decompressDataSeries_double_1D(double** data, int dataSeriesLength, TightDa
 								// in resiMidBits, p is to track the
 								// byte_index of resiMidBits, l is for
 								// leadNum
-	char* leadNum;
+	unsigned char* leadNum;
 	double interval = tdps->realPrecision*2;
 	
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
@@ -207,15 +207,15 @@ void decompressDataSeries_double_1D(double** data, int dataSeriesLength, TightDa
 	ExpSegmentConstructor *esc;
 	new_ExpSegmentConstructor_escbytes(&esc, 64, tdps->escBytes, tdps->escBytes_size, dataSeriesLength);
 
-	char preBytes[8];
-	char curBytes[8];
+	unsigned char preBytes[8];
+	unsigned char curBytes[8];
 	
 	memset(preBytes, 0, 8);
 
 	int curByteIndex = 0;
 	ExpSegment* curES;	
 	int reqBytesLength, resiBitsLength, resiBits; 
-	char leadingNum;	
+	unsigned char leadingNum;	
 	double medianValue, exactData, predValue;
 	unsigned char type_;
 	for (i = 0; i < dataSeriesLength; i++) {
@@ -261,7 +261,7 @@ void decompressDataSeries_double_1D(double** data, int dataSeriesLength, TightDa
 			for (j = leadingNum; j < reqBytesLength; j++)
 				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 			if (resiBitsLength != 0) {
-				char resiByte = (char) (resiBits << (8 - resiBitsLength));
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 				curBytes[reqBytesLength] = resiByte;
 			}
 			
@@ -290,7 +290,7 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 	int dataSeriesLength = r1*r2;
 	//	printf ("%d %d\n", r1, r2);
 
-	char* leadNum;
+	unsigned char* leadNum;
 	double realPrecision = tdps->realPrecision;
 
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
@@ -305,15 +305,15 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 	ExpSegmentConstructor *esc;
 	new_ExpSegmentConstructor_escbytes(&esc, 64, tdps->escBytes, tdps->escBytes_size, dataSeriesLength);
 
-	char preBytes[8];
-	char curBytes[8];
+	unsigned char preBytes[8];
+	unsigned char curBytes[8];
 
 	memset(preBytes, 0, 8);
 
 	int curByteIndex = 0;
 	ExpSegment* curES;	
 	int reqBytesLength, resiBitsLength, resiBits; 
-	char leadingNum;	
+	unsigned char leadingNum;	
 	double medianValue, exactData, predValue;
 	unsigned char type_;
 
@@ -361,7 +361,7 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 	for (j = leadingNum; j < reqBytesLength; j++)
 		curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 	if (resiBitsLength != 0) {
-		char resiByte = (char) (resiBits << (8 - resiBitsLength));
+		unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 		curBytes[reqBytesLength] = resiByte;
 	}
 
@@ -417,7 +417,7 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 		for (j = leadingNum; j < reqBytesLength; j++)
 			curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 		if (resiBitsLength != 0) {
-			char resiByte = (char) (resiBits << (8 - resiBitsLength));
+			unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 			curBytes[reqBytesLength] = resiByte;
 		}
 		
@@ -476,7 +476,7 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 			for (j = leadingNum; j < reqBytesLength; j++)
 				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 			if (resiBitsLength != 0) {
-				char resiByte = (char) (resiBits << (8 - resiBitsLength));
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 				curBytes[reqBytesLength] = resiByte;
 			}
 
@@ -539,7 +539,7 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 			for (j = leadingNum; j < reqBytesLength; j++)
 				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 			if (resiBitsLength != 0) {
-				char resiByte = (char) (resiBits << (8 - resiBitsLength));
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 				curBytes[reqBytesLength] = resiByte;
 			}
 
@@ -599,7 +599,7 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 				for (j = leadingNum; j < reqBytesLength; j++)
 					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 				if (resiBitsLength != 0) {
-					char resiByte = (char) (resiBits << (8 - resiBitsLength));
+					unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 					curBytes[reqBytesLength] = resiByte;
 				}
 
@@ -624,7 +624,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 	int dataSeriesLength = r1*r2*r3;
 //	printf ("%d %d %d\n", r1, r2, r3);
 
-	char* leadNum;
+	unsigned char* leadNum;
 	double realPrecision = tdps->realPrecision;
 
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
@@ -639,15 +639,15 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 	ExpSegmentConstructor *esc;
 	new_ExpSegmentConstructor_escbytes(&esc, 64, tdps->escBytes, tdps->escBytes_size, dataSeriesLength);
 
-	char preBytes[8];
-	char curBytes[8];
+	unsigned char preBytes[8];
+	unsigned char curBytes[8];
 
 	memset(preBytes, 0, 8);
 
 	int curByteIndex = 0;
 	ExpSegment* curES;
 	int reqBytesLength, resiBitsLength, resiBits;
-	char leadingNum;
+	unsigned char leadingNum;
 	double medianValue, exactData, predValue;
 	unsigned char type_;
 
@@ -695,7 +695,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 	for (j = leadingNum; j < reqBytesLength; j++)
 		curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 	if (resiBitsLength != 0) {
-		char resiByte = (char) (resiBits << (8 - resiBitsLength));
+		unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 		curBytes[reqBytesLength] = resiByte;
 	}
 
@@ -751,7 +751,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 		for (j = leadingNum; j < reqBytesLength; j++)
 			curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 		if (resiBitsLength != 0) {
-			char resiByte = (char) (resiBits << (8 - resiBitsLength));
+			unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 			curBytes[reqBytesLength] = resiByte;
 		}
 
@@ -810,7 +810,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 			for (j = leadingNum; j < reqBytesLength; j++)
 				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 			if (resiBitsLength != 0) {
-				char resiByte = (char) (resiBits << (8 - resiBitsLength));
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 				curBytes[reqBytesLength] = resiByte;
 			}
 
@@ -873,7 +873,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 			for (j = leadingNum; j < reqBytesLength; j++)
 				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 			if (resiBitsLength != 0) {
-				char resiByte = (char) (resiBits << (8 - resiBitsLength));
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 				curBytes[reqBytesLength] = resiByte;
 			}
 
@@ -933,7 +933,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 				for (j = leadingNum; j < reqBytesLength; j++)
 					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 				if (resiBitsLength != 0) {
-					char resiByte = (char) (resiBits << (8 - resiBitsLength));
+					unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 					curBytes[reqBytesLength] = resiByte;
 				}
 
@@ -997,7 +997,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 			for (j = leadingNum; j < reqBytesLength; j++)
 				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 			if (resiBitsLength != 0) {
-				char resiByte = (char) (resiBits << (8 - resiBitsLength));
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 				curBytes[reqBytesLength] = resiByte;
 			}
 
@@ -1057,7 +1057,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 				for (j = leadingNum; j < reqBytesLength; j++)
 					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 				if (resiBitsLength != 0) {
-					char resiByte = (char) (resiBits << (8 - resiBitsLength));
+					unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 					curBytes[reqBytesLength] = resiByte;
 				}
 
@@ -1119,7 +1119,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 				for (j = leadingNum; j < reqBytesLength; j++)
 					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 				if (resiBitsLength != 0) {
-					char resiByte = (char) (resiBits << (8 - resiBitsLength));
+					unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 					curBytes[reqBytesLength] = resiByte;
 				}
 
@@ -1180,7 +1180,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 					for (j = leadingNum; j < reqBytesLength; j++)
 						curBytes[j] = tdps->exactMidBytes[curByteIndex++];
 					if (resiBitsLength != 0) {
-						char resiByte = (char) (resiBits << (8 - resiBitsLength));
+						unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
 						curBytes[reqBytesLength] = resiByte;
 					}
 
@@ -1341,11 +1341,11 @@ void getSnapshotData_double_3D(double** data, int r1, int r2, int r3, TightDataP
  * */
 void new_TightDataPointStorageD(TightDataPointStorageD **this, 
 		int dataSeriesLength, int exactDataNum, 
-		char* type, char* exactMidBytes, int exactMidBytes_size,
-		char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
-		char* resiMidBits, int resiMidBits_size,
-		char* escBytes, int escBytes_size,
-		char* resiBitLength, int resiBitLengthSize, double realPrecision) {
+		unsigned char* type, unsigned char* exactMidBytes, int exactMidBytes_size,
+		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
+		unsigned char* resiMidBits, int resiMidBits_size,
+		unsigned char* escBytes, int escBytes_size,
+		unsigned char* resiBitLength, int resiBitLengthSize, double realPrecision) {
 	//int i = 0;
 	*this = (TightDataPointStorageD *)malloc(sizeof(TightDataPointStorageD));
 	(*this)->allSameData = 0;
@@ -1382,25 +1382,25 @@ void new_TightDataPointStorageD(TightDataPointStorageD **this,
 }
 
 //TODO: convert TightDataPointStorageD to bytes...
-void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, char** bytes, int *size) 
+void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char** bytes, int *size) 
 {
 	int i, k = 0;
-	char typeArrayLengthBytes[4];
-	char rTypeLengthBytes[4];
-	char dsLengthBytes[4];
-	char exactLengthBytes[4];
-	char escBytesLength[4];
-	char exactMidBytesLength[4];
-	char reservedValueBytes[8];
-	char realPrecisionBytes[8];
+	unsigned char typeArrayLengthBytes[4];
+	unsigned char rTypeLengthBytes[4];
+	unsigned char dsLengthBytes[4];
+	unsigned char exactLengthBytes[4];
+	unsigned char escBytesLength[4];
+	unsigned char exactMidBytesLength[4];
+	unsigned char reservedValueBytes[8];
+	unsigned char realPrecisionBytes[8];
 	
 	intToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//4
-	char sameByte = tdps->allSameData==1?(char)1:(char)0;
+	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
 	
 	if(tdps->allSameData==1)
 	{
 		int totalByteLength = 3 + 4 + 1 + tdps->exactMidBytes_size;
-		*bytes = (char *)malloc(sizeof(char)*totalByteLength);
+		*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
 	
 		for (i = 0; i < 3; i++)//3
 			(*bytes)[k++] = versionNumber[i];
@@ -1418,7 +1418,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, char** bytes, i
 		int totalByteLength = 3 + 4 + 1 + 8 + 4 + 4 + 4 + 4 + tdps->escBytes_size
 				+ tdps->typeArray_size + tdps->leadNumArray_size + tdps->exactMidBytes_size + residualMidBitsLength;
 
-		*bytes = (char *)malloc(sizeof(char)*totalByteLength);
+		*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
 
 		for(i = 0;i<3;i++)//3 bytes
 			(*bytes)[k++] = versionNumber[i];
@@ -1470,11 +1470,11 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, char** bytes, i
 		+ tdps->escBytes_size + tdps->typeArray_size + tdps->leadNumArray_size 
 		+ tdps->exactMidBytes_size + residualMidBitsLength;
 
-		sameByte = (char) (sameByte | 0x04); // 00000100, the 3rd bit
+		sameByte = (unsigned char) (sameByte | 0x04); // 00000100, the 3rd bit
 												// denotes whether it is
 												// with "reserved value"
 
-		*bytes = (char*)malloc(sizeof(char)*totalByteLength);
+		*bytes = (unsigned char*)malloc(sizeof(unsigned char)*totalByteLength);
 		
 		for(i = 0;i<3;i++)//3
 			(*bytes)[k++] = versionNumber[i];

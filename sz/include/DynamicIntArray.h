@@ -25,7 +25,7 @@ void new_DIA(DynamicIntArray **dia, int cap);
 void convertDIAtoInts(DynamicIntArray *dia, unsigned char **data);
 void free_DIA(DynamicIntArray *dia);
 int getDIA_Data(DynamicIntArray *dia, int pos);
-inline void addDIA_Data(DynamicIntArray *dia, int value);
+void addDIA_Data(DynamicIntArray *dia, int value);
 
 #ifdef __cplusplus
 }

@@ -32,299 +32,299 @@ void sz_finalize_c_()
 }
 
 //compress with config (without args in function)
-void sz_compress_d1_float_(float* data, char *bytes, int *outSize, int *r1)	
+void sz_compress_d1_float_(float* data, unsigned char *bytes, int *outSize, int *r1)	
 {
-	char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, 0, 0, 0, 0, *r1);
+	unsigned char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);	
 	free(tmp_bytes);
 }
 
-void sz_compress_d1_float_rev_(float* data, float *reservedValue, char *bytes, int *outSize, int *r1)	
+void sz_compress_d1_float_rev_(float* data, float *reservedValue, unsigned char *bytes, int *outSize, int *r1)	
 {
-	char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, 0, 0, 0, 0, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);	
 	free(tmp_bytes);
 }
 
-void sz_compress_d2_float_(float* data, char *bytes, int *outSize, int *r1, int *r2)
+void sz_compress_d2_float_(float* data, unsigned char *bytes, int *outSize, int *r1, int *r2)
 {
-	char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, 0, 0, 0, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, 0, 0, 0, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d2_float_rev_(float* data, float *reservedValue, char *bytes, int *outSize, int *r1, int *r2)
+void sz_compress_d2_float_rev_(float* data, float *reservedValue, unsigned char *bytes, int *outSize, int *r1, int *r2)
 {
-	char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, 0, 0, 0, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, 0, 0, 0, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d3_float_(float* data, char *bytes, int *outSize, int *r1, int *r2, int *r3)
+void sz_compress_d3_float_(float* data, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3)
 {
-	char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, 0, 0, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, 0, 0, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d3_float_rev_(float* data, float *reservedValue, char *bytes, int *outSize, int *r1, int *r2, int *r3)
+void sz_compress_d3_float_rev_(float* data, float *reservedValue, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3)
 {
-	char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, 0, 0, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, 0, 0, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d4_float_(float* data, char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4)
+void sz_compress_d4_float_(float* data, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4)
 {
-	char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, 0, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, 0, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d4_float_rev_(float* data, float *reservedValue, char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4)
+void sz_compress_d4_float_rev_(float* data, float *reservedValue, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4)
 {
-	char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, 0, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, 0, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d5_float_(float* data, char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_compress_d5_float_(float* data, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4, int *r5)
 {
-	char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, *r5, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, *r5, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d5_float_rev_(float* data, float *reservedValue, char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_compress_d5_float_rev_(float* data, float *reservedValue, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4, int *r5)
 {
-	char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, *r5, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, *r5, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d1_double_(double* data, char *bytes, int *outSize, int *r1)
+void sz_compress_d1_double_(double* data, unsigned char *bytes, int *outSize, int *r1)
 {
-	char *tmp_bytes = SZ_compress(SZ_DOUBLE, data, outSize, 0, 0, 0, 0, *r1);
+	unsigned char *tmp_bytes = SZ_compress(SZ_DOUBLE, data, outSize, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d1_double_rev_(double* data, double *reservedValue, char *bytes, int *outSize, int *r1)
+void sz_compress_d1_double_rev_(double* data, double *reservedValue, unsigned char *bytes, int *outSize, int *r1)
 {
-	char *tmp_bytes = SZ_compress_rev(SZ_DOUBLE, data, reservedValue, outSize, 0, 0, 0, 0, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev(SZ_DOUBLE, data, reservedValue, outSize, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d2_double_(double* data, char *bytes, int *outSize, int *r1, int *r2)
+void sz_compress_d2_double_(double* data, unsigned char *bytes, int *outSize, int *r1, int *r2)
 {
-	char *tmp_bytes = SZ_compress(SZ_DOUBLE, data, outSize, 0, 0, 0, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress(SZ_DOUBLE, data, outSize, 0, 0, 0, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d2_double_rev_(double* data, double *reservedValue, char *bytes, int *outSize, int *r1, int *r2)
+void sz_compress_d2_double_rev_(double* data, double *reservedValue, unsigned char *bytes, int *outSize, int *r1, int *r2)
 {
-	char *tmp_bytes = SZ_compress_rev(SZ_DOUBLE, data, reservedValue, outSize, 0, 0, 0, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev(SZ_DOUBLE, data, reservedValue, outSize, 0, 0, 0, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d3_double_(double* data, char *bytes, int *outSize, int *r1, int *r2, int *r3)
+void sz_compress_d3_double_(double* data, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3)
 {
-	char *tmp_bytes = SZ_compress(SZ_DOUBLE, data, outSize, 0, 0, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress(SZ_DOUBLE, data, outSize, 0, 0, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d3_double_rev_(double* data, double *reservedValue, char *bytes, int *outSize, int *r1, int *r2, int *r3)
+void sz_compress_d3_double_rev_(double* data, double *reservedValue, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3)
 {
-	char *tmp_bytes = SZ_compress_rev(SZ_DOUBLE, data, reservedValue, outSize, 0, 0, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev(SZ_DOUBLE, data, reservedValue, outSize, 0, 0, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d4_double_(double* data, char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4)
+void sz_compress_d4_double_(double* data, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4)
 {
-	char *tmp_bytes = SZ_compress(SZ_DOUBLE, data, outSize, 0, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress(SZ_DOUBLE, data, outSize, 0, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d4_double_rev_(double* data, double *reservedValue, char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4)
+void sz_compress_d4_double_rev_(double* data, double *reservedValue, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4)
 {
-	char *tmp_bytes = SZ_compress_rev(SZ_DOUBLE, data, reservedValue, outSize, 0, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev(SZ_DOUBLE, data, reservedValue, outSize, 0, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d5_double_(double* data, char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_compress_d5_double_(double* data, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4, int *r5)
 {
-	char *tmp_bytes = SZ_compress(SZ_DOUBLE, data, outSize, *r5, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress(SZ_DOUBLE, data, outSize, *r5, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d5_double_rev_(double* data, double *reservedValue, char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_compress_d5_double_rev_(double* data, double *reservedValue, unsigned char *bytes, int *outSize, int *r1, int *r2, int *r3, int *r4, int *r5)
 {
-	char *tmp_bytes = SZ_compress_rev(SZ_DOUBLE, data, reservedValue, outSize, *r5, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev(SZ_DOUBLE, data, reservedValue, outSize, *r5, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 //compress with args
 
-void sz_compress_d1_float_args_(float* data, char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1)
+void sz_compress_d1_float_args_(float* data, unsigned char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1)
 {
-	char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, 0, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d2_float_args_(float* data, char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2)
+void sz_compress_d2_float_args_(float* data, unsigned char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2)
 {
-	char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d3_float_args_(float* data, char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3)
+void sz_compress_d3_float_args_(float* data, unsigned char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3)
 {
-	char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d4_float_args_(float* data, char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3, int *r4)
+void sz_compress_d4_float_args_(float* data, unsigned char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3, int *r4)
 {
-	char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d5_float_args_(float* data, char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_compress_d5_float_args_(float* data, unsigned char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3, int *r4, int *r5)
 {
-	char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, *r5, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, *r5, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d1_double_args_(double* data, char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1)
+void sz_compress_d1_double_args_(double* data, unsigned char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1)
 {
-	char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, 0, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d2_double_args_(double* data, char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2)
+void sz_compress_d2_double_args_(double* data, unsigned char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2)
 {
-	char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d3_double_args_(double* data, char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3)
+void sz_compress_d3_double_args_(double* data, unsigned char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3)
 {
-	char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d4_double_args_(double* data, char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3, int *r4)
+void sz_compress_d4_double_args_(double* data, unsigned char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3, int *r4)
 {
-	char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d5_double_args_(double* data, char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_compress_d5_double_args_(double* data, unsigned char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3, int *r4, int *r5)
 {
-	char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, *r5, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, *r5, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 //--------------
 
-void sz_compress_d1_float_rev_args_(float* data, float *reservedValue, char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1)
+void sz_compress_d1_float_rev_args_(float* data, float *reservedValue, unsigned char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1)
 {
-	char *tmp_bytes = SZ_compress_rev_args(SZ_FLOAT, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, 0, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev_args(SZ_FLOAT, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d2_float_rev_args_(float* data, float *reservedValue, char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2)
+void sz_compress_d2_float_rev_args_(float* data, float *reservedValue, unsigned char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2)
 {
-	char *tmp_bytes = SZ_compress_rev_args(SZ_FLOAT, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev_args(SZ_FLOAT, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d3_float_rev_args_(float* data, float *reservedValue, char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3)
+void sz_compress_d3_float_rev_args_(float* data, float *reservedValue, unsigned char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3)
 {
-	char *tmp_bytes = SZ_compress_rev_args(SZ_FLOAT, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev_args(SZ_FLOAT, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d4_float_rev_args_(float* data, float *reservedValue, char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3, int *r4)
+void sz_compress_d4_float_rev_args_(float* data, float *reservedValue, unsigned char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3, int *r4)
 {
-	char *tmp_bytes = SZ_compress_rev_args(SZ_FLOAT, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev_args(SZ_FLOAT, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d5_float_rev_args_(float* data, float *reservedValue, char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_compress_d5_float_rev_args_(float* data, float *reservedValue, unsigned char *bytes, int *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, int *r1, int *r2, int *r3, int *r4, int *r5)
 {
-	char *tmp_bytes = SZ_compress_rev_args(SZ_FLOAT, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, *r5, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev_args(SZ_FLOAT, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, *r5, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d1_double_rev_args_(double* data, float *reservedValue, char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1)
+void sz_compress_d1_double_rev_args_(double* data, float *reservedValue, unsigned char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1)
 {
-	char *tmp_bytes = SZ_compress_rev_args(SZ_DOUBLE, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, 0, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev_args(SZ_DOUBLE, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d2_double_rev_args_(double* data, float *reservedValue, char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2)
+void sz_compress_d2_double_rev_args_(double* data, float *reservedValue, unsigned char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2)
 {
-	char *tmp_bytes = SZ_compress_rev_args(SZ_DOUBLE, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev_args(SZ_DOUBLE, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d3_double_rev_args_(double* data, float *reservedValue, char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3)
+void sz_compress_d3_double_rev_args_(double* data, float *reservedValue, unsigned char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3)
 {
-	char *tmp_bytes = SZ_compress_rev_args(SZ_DOUBLE, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev_args(SZ_DOUBLE, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 }
 
-void sz_compress_d4_double_rev_args_(double* data, double *reservedValue, char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3, int *r4)
+void sz_compress_d4_double_rev_args_(double* data, double *reservedValue, unsigned char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3, int *r4)
 {
-	char *tmp_bytes = SZ_compress_rev_args(SZ_DOUBLE, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev_args(SZ_DOUBLE, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
-void sz_compress_d5_double_rev_args_(double* data, double *reservedValue, char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_compress_d5_double_rev_args_(double* data, double *reservedValue, unsigned char *bytes, int *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3, int *r4, int *r5)
 {
-	char *tmp_bytes = SZ_compress_rev_args(SZ_DOUBLE, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, *r5, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_rev_args(SZ_DOUBLE, data, reservedValue, outSize, *errBoundMode, *absErrBound, *relBoundRatio, *r5, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 //decompress
 
-void sz_decompress_d1_float_(char *bytes, int *byteLength, float *data, int *r1)
+void sz_decompress_d1_float_(unsigned char *bytes, int *byteLength, float *data, int *r1)
 {
 	float *tmp_data = SZ_decompress(SZ_FLOAT, bytes, *byteLength, 0, 0, 0, 0, *r1);
 	memcpy(data, tmp_data, (*r1)*sizeof(float));
 	free(tmp_data);
 }
 
-void sz_decompress_d2_float_(char *bytes, int *byteLength, float *data, int *r1, int *r2)
+void sz_decompress_d2_float_(unsigned char *bytes, int *byteLength, float *data, int *r1, int *r2)
 {
 	int r;
 	float *tmp_data = SZ_decompress(SZ_FLOAT, bytes, *byteLength, 0, 0, 0, *r2, *r1);
@@ -333,7 +333,7 @@ void sz_decompress_d2_float_(char *bytes, int *byteLength, float *data, int *r1,
 	free(tmp_data);
 }
 
-void sz_decompress_d3_float_(char *bytes, int *byteLength, float *data, int *r1, int *r2, int *r3)
+void sz_decompress_d3_float_(unsigned char *bytes, int *byteLength, float *data, int *r1, int *r2, int *r3)
 {
 	int r;
 	float *tmp_data = SZ_decompress(SZ_FLOAT, bytes, *byteLength, 0, 0, *r3, *r2, *r1);
@@ -342,7 +342,7 @@ void sz_decompress_d3_float_(char *bytes, int *byteLength, float *data, int *r1,
 	free(tmp_data);
 }
 
-void sz_decompress_d4_float_(char *bytes, int *byteLength, float *data, int *r1, int *r2, int *r3, int *r4)
+void sz_decompress_d4_float_(unsigned char *bytes, int *byteLength, float *data, int *r1, int *r2, int *r3, int *r4)
 {
 	int r;
 	float *tmp_data = SZ_decompress(SZ_FLOAT, bytes, *byteLength, 0, *r4, *r3, *r2, *r1);
@@ -351,7 +351,7 @@ void sz_decompress_d4_float_(char *bytes, int *byteLength, float *data, int *r1,
 	free(tmp_data);
 }
 
-void sz_decompress_d5_float_(char *bytes, int *byteLength, float *data, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_decompress_d5_float_(unsigned char *bytes, int *byteLength, float *data, int *r1, int *r2, int *r3, int *r4, int *r5)
 {
 	int r;
 	float *tmp_data = SZ_decompress(SZ_FLOAT, bytes, *byteLength, *r5, *r4, *r3, *r2, *r1);
@@ -360,14 +360,14 @@ void sz_decompress_d5_float_(char *bytes, int *byteLength, float *data, int *r1,
 	free(tmp_data);
 }
 
-void sz_decompress_d1_double_(char *bytes, int *byteLength, double *data, int *r1)
+void sz_decompress_d1_double_(unsigned char *bytes, int *byteLength, double *data, int *r1)
 {
 	double *tmp_data = SZ_decompress(SZ_DOUBLE, bytes, *byteLength, 0, 0, 0, 0, *r1);
 	memcpy(data, tmp_data, (*r1)*sizeof(double));
 	free(tmp_data);
 }
 
-void sz_decompress_d2_double_(char *bytes, int *byteLength, double *data, int *r1, int *r2)
+void sz_decompress_d2_double_(unsigned char *bytes, int *byteLength, double *data, int *r1, int *r2)
 {
 	int r;
 	double *tmp_data = SZ_decompress(SZ_DOUBLE, bytes, *byteLength, 0, 0, 0, *r2, *r1);
@@ -376,7 +376,7 @@ void sz_decompress_d2_double_(char *bytes, int *byteLength, double *data, int *r
 	free(tmp_data);
 }
 
-void sz_decompress_d3_double_(char *bytes, int *byteLength, double *data, int *r1, int *r2, int *r3)
+void sz_decompress_d3_double_(unsigned char *bytes, int *byteLength, double *data, int *r1, int *r2, int *r3)
 {
 	int r;
 	double *tmp_data = SZ_decompress(SZ_DOUBLE, bytes, *byteLength, 0, 0, *r3, *r2, *r1);
@@ -385,7 +385,7 @@ void sz_decompress_d3_double_(char *bytes, int *byteLength, double *data, int *r
 	free(tmp_data);
 }
 
-void sz_decompress_d4_double_(char *bytes, int *byteLength, double *data, int *r1, int *r2, int *r3, int *r4)
+void sz_decompress_d4_double_(unsigned char *bytes, int *byteLength, double *data, int *r1, int *r2, int *r3, int *r4)
 {
 	int r;
 	double *tmp_data = SZ_decompress(SZ_DOUBLE, bytes, *byteLength, 0, *r4, *r3, *r2, *r1);
@@ -394,7 +394,7 @@ void sz_decompress_d4_double_(char *bytes, int *byteLength, double *data, int *r
 	free(tmp_data);
 }
 
-void sz_decompress_d5_double_(char *bytes, int *byteLength, double *data, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_decompress_d5_double_(unsigned char *bytes, int *byteLength, double *data, int *r1, int *r2, int *r3, int *r4, int *r5)
 {
 	int r;
 	double *tmp_data = SZ_decompress(SZ_DOUBLE, bytes, *byteLength, *r5, *r4, *r3, *r2, *r1);
@@ -503,13 +503,13 @@ void sz_batchdelvar_c_(char* varName, int *len, int *errState)
     s2[*len]='\0';
 	*errState = SZ_batchDelVar(s2);
 }
-void sz_batch_compress_c_(char* bytes, int *outSize)
+void sz_batch_compress_c_(unsigned char* bytes, int *outSize)
 {
-	char* tmp_bytes = SZ_batch_compress(outSize);
+	unsigned char* tmp_bytes = SZ_batch_compress(outSize);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
-void sz_batch_decompress_c_(char* bytes, int *byteLength)
+void sz_batch_decompress_c_(unsigned char* bytes, int *byteLength)
 {
 	SZ_batch_decompress(bytes, *byteLength);
 }

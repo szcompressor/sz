@@ -16,16 +16,17 @@ extern "C" {
 
 typedef struct DynamicByteArray
 {	
-	char* array;
+	unsigned char* array;
 	int size;
 	int capacity;
 } DynamicByteArray;
 
 void new_DBA(DynamicByteArray **dba, int cap);
-void convertDBAtoBytes(DynamicByteArray *dba, char** bytes);
+void convertDBAtoBytes(DynamicByteArray *dba, unsigned char** bytes);
 void free_DBA(DynamicByteArray *dba);
 int getDBA_Data(DynamicByteArray *dba, int pos);
-inline void addDBA_Data(DynamicByteArray *dba, char value);
+void addDBA_Data(DynamicByteArray *dba, unsigned char value);
+void memcpyDBA_Data(DynamicByteArray *dba, unsigned char* data, int length);
 
 #ifdef __cplusplus
 }

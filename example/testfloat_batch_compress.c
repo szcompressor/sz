@@ -43,8 +43,8 @@ int main(int argc, char * argv[])
     
     if(argc < 3)
     {
-	printf("Test case: testfloat_batch_compress [config_file] [srcFilePath] [dimension sizes...]\n", argv[0]);
-	printf("Example: testfloat_batch_compress sz.config testfloat_8_8_128.dat 8 8 128\n", argv[0]);
+	printf("Test case: testfloat_batch_compress [config_file] [srcFilePath] [dimension sizes...]\n");
+	printf("Example: testfloat_batch_compress sz.config testfloat_8_8_128.dat 8 8 128\n");
 	exit(0);
     }
    
@@ -66,7 +66,7 @@ int main(int argc, char * argv[])
     
     sprintf(outputFilePath, "%s.bsz", oriFilePath);
    
-    ulong nbEle;
+    int nbEle;
     float *data = readFloatData(oriFilePath, &nbEle);
     //float *revValue = (float *)malloc(sizeof(float));
     //*revValue = 1.0E36;
@@ -81,7 +81,7 @@ int main(int argc, char * argv[])
     //SZ_compress_args2(SZ_FLOAT, data, bytes, &outSize, ABS, 0.0001, 0.0001, r5, r4, r3, r2, r1);    
     //char *bytes = SZ_compress_rev(SZ_FLOAT, data, revValue, &outSize, r5, r4, r3, r2, r1);
     cost_start();
-    char *bytes = SZ_batch_compress(&outSize);
+    unsigned char *bytes = SZ_batch_compress(&outSize);
     cost_end(); 
     printf("timecost=%f\n",totalCost); 
     writeByteData(bytes, outSize, outputFilePath);
@@ -97,12 +97,13 @@ int main(int argc, char * argv[])
     {
         sprintf(outputFilePath, "%s-batch%d.out", oriFilePath, varIndex++);
         dataLength = computeDataLength(p->r5, p->r4, p->r3, p->r2, p->r1);
-	writeFloatData(p->data, dataLength, outputFilePath);
+		writeFloatData(p->data, dataLength, outputFilePath);
         p = p->next;
     }
 
     printf("done\n");
     
+    free(sz_varset);
     SZ_Finalize();
     
     return 0;

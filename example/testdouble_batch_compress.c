@@ -43,8 +43,8 @@ int main(int argc, char * argv[])
     
     if(argc < 3)
     {
-	printf("Test case: testdouble_batch_compress [config_file] [srcFilePath] [dimension sizes...]\n", argv[0]);
-	printf("Example: testdouble_batch_compress sz.config testdouble_8_8_128.dat 8 8 128\n", argv[0]);
+	printf("Test case: testdouble_batch_compress [config_file] [srcFilePath] [dimension sizes...]\n");
+	printf("Example: testdouble_batch_compress sz.config testdouble_8_8_128.dat 8 8 128\n");
 	exit(0);
     }
    
@@ -66,7 +66,7 @@ int main(int argc, char * argv[])
     
     sprintf(outputFilePath, "%s.bsz", oriFilePath);
    
-    ulong nbEle;
+    int nbEle;
     double *data = readDoubleData(oriFilePath, &nbEle);
   
     double *data2 = readDoubleData(oriFilePath, &nbEle);
@@ -76,7 +76,7 @@ int main(int argc, char * argv[])
 
     int outSize; 
     cost_start();
-    char *bytes = SZ_batch_compress(&outSize);
+    unsigned char *bytes = SZ_batch_compress(&outSize);
     cost_end(); 
     printf("timecost=%f\n",totalCost); 
     writeByteData(bytes, outSize, outputFilePath);
@@ -98,6 +98,7 @@ int main(int argc, char * argv[])
 
     printf("done\n");
     
+    free(sz_varset);
     SZ_Finalize();
     
     return 0;

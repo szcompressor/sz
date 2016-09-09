@@ -24,28 +24,28 @@ typedef struct TightDataPointStorageF
 	int exactDataNum;
 	float reservedValue;
 	
-	char* rtypeArray;
+	unsigned char* rtypeArray;
 	int rtypeArray_size;
 	
-	char* typeArray; //its size is dataSeriesLength/4 (or xxx/4+1) 
+	unsigned char* typeArray; //its size is dataSeriesLength/4 (or xxx/4+1) 
 	int typeArray_size;
 	
-	char* leadNumArray; //its size is exactDataNum/4 (or exactDataNum/4+1)
+	unsigned char* leadNumArray; //its size is exactDataNum/4 (or exactDataNum/4+1)
 	int leadNumArray_size;
 	
-	char* exactMidBytes;
+	unsigned char* exactMidBytes;
 	int exactMidBytes_size;
 	
-	char* escBytes;
+	unsigned char* escBytes;
 	int escBytes_size;
 	
-	char* residualMidBits;
+	unsigned char* residualMidBits;
 	int residualMidBits_size;
 
 } TightDataPointStorageF;
 
 void new_TightDataPointStorageF_Empty(TightDataPointStorageF **this);
-void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, char* flatBytes, int flatBytesLength);
+void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsigned char* flatBytes, int flatBytesLength);
 void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps);
 void decompressDataSeries_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps);
 void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
@@ -54,12 +54,12 @@ void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorag
 void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
 void new_TightDataPointStorageF(TightDataPointStorageF **this, 
 		int dataSeriesLength, int exactDataNum, 
-		char* type, char* exactMidBytes, int exactMidBytes_size,
-		char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
-		char* resiMidBits, int resiMidBits_size,
-		char* escBytes, int escBytes_size,
-		char* resiBitLength, int resiBitLengthSize, float realPrecision);
-void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, char** bytes, int *size);
+		unsigned char* type, unsigned char* exactMidBytes, int exactMidBytes_size,
+		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
+		unsigned char* resiMidBits, int resiMidBits_size,
+		unsigned char* escBytes, int escBytes_size,
+		unsigned char* resiBitLength, int resiBitLengthSize, float realPrecision);
+void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** bytes, int *size);
 void free_TightDataPointStorageF(TightDataPointStorageF *tdps);
 
 #ifdef __cplusplus

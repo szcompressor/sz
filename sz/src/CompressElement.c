@@ -42,7 +42,7 @@ int validPrediction_float(float minErr, float precision)
 		return 0;
 }
 
-void new_LossyCompressionElement(LossyCompressionElement *lce, int leadingNum, char* intMidBytes, 
+void new_LossyCompressionElement(LossyCompressionElement *lce, int leadingNum, unsigned char* intMidBytes, 
 int intMidBytes_Length, int resiMidBitsLength, int resiBits)
 {
 	lce->leadingZeroBytes = leadingNum; //0,1,2,or 3
@@ -52,7 +52,7 @@ int intMidBytes_Length, int resiMidBitsLength, int resiBits)
 	lce->residualMidBits = resiBits;
 }
 
-void updateLossyCompElement_Double(char* curBytes, char* preBytes, 
+void updateLossyCompElement_Double(unsigned char* curBytes, unsigned char* preBytes, 
 		int reqBytesLength, int resiBitsLength,  LossyCompressionElement *lce)
 {
 	int i, resiIndex, intMidBytes_Length = 0;
@@ -77,7 +77,7 @@ void updateLossyCompElement_Double(char* curBytes, char* preBytes,
 	lce->residualMidBits = resiBits;
 }
 
-void updateLossyCompElement_Float(char* curBytes, char* preBytes, 
+void updateLossyCompElement_Float(unsigned char* curBytes, unsigned char* preBytes, 
 		int reqBytesLength, int resiBitsLength,  LossyCompressionElement *lce)
 {
 	int i, resiIndex, intMidBytes_Length = 0;

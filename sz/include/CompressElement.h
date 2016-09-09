@@ -18,7 +18,7 @@ typedef struct DoubleValueCompressElement
 {
 	double data;
 	long curValue;
-	char curBytes[8]; //big_endian
+	unsigned char curBytes[8]; //big_endian
 	int reqBytesLength;
 	int resiBitsLength;
 } DoubleValueCompressElement;
@@ -27,7 +27,7 @@ typedef struct FloatValueCompressElement
 {
 	float data;
 	int curValue;
-	char curBytes[4]; //big_endian
+	unsigned char curBytes[4]; //big_endian
 	int reqBytesLength;
 	int resiBitsLength;
 } FloatValueCompressElement;
@@ -35,7 +35,7 @@ typedef struct FloatValueCompressElement
 typedef struct LossyCompressionElement
 {
 	int leadingZeroBytes; //0,1,2,or 3
-	char integerMidBytes[8];
+	unsigned char integerMidBytes[8];
 	int integerMidBytes_Length; //they are mid_bits actually
 	//char curBytes[8];
 	//int curBytes_Length; //4 for single_precision or 8 for double_precision	
@@ -43,15 +43,15 @@ typedef struct LossyCompressionElement
 	int residualMidBits;
 } LossyCompressionElement;
 
-inline void listAdd_double(double last3CmprsData[3], double value);
-inline void listAdd_float(float last3CmprsData[3], float value);
-inline int validPrediction_double(double minErr, double precision);
-inline int validPrediction_float(float minErr, float precision);
-void new_LossyCompressionElement(LossyCompressionElement *lce, int leadingNum, char* intMidBytes, 
+void listAdd_double(double last3CmprsData[3], double value);
+void listAdd_float(float last3CmprsData[3], float value);
+int validPrediction_double(double minErr, double precision);
+int validPrediction_float(float minErr, float precision);
+void new_LossyCompressionElement(LossyCompressionElement *lce, int leadingNum, unsigned char* intMidBytes, 
 		int intMidBytes_Length, int resiMidBitsLength, int resiBits);
-inline void updateLossyCompElement_Double(char* curBytes, char* preBytes, 
+void updateLossyCompElement_Double(unsigned char* curBytes, unsigned char* preBytes, 
 		int reqBytesLength, int resiBitsLength,  LossyCompressionElement *lce);
-inline void updateLossyCompElement_Float(char* curBytes, char* preBytes, 
+void updateLossyCompElement_Float(unsigned char* curBytes, unsigned char* preBytes, 
 		int reqBytesLength, int resiBitsLength,  LossyCompressionElement *lce);
 
 #ifdef __cplusplus

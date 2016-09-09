@@ -12,9 +12,9 @@
 #include <string.h>
 #include "rw.h"
 
-void checkfilesizec_(char *srcFilePath, ulong *len, ulong *filesize)
+void checkfilesizec_(char *srcFilePath, int *len, int *filesize)
 {
-	ulong i;
+	int i;
 	char s[*len+1];
 	for(i=0;i<*len;i++)
 		s[i]=srcFilePath[i];
@@ -22,21 +22,21 @@ void checkfilesizec_(char *srcFilePath, ulong *len, ulong *filesize)
 	*filesize = checkFileSize(s);
 }
 
-void readbytefile_(char *srcFilePath, ulong *len, char *bytes, ulong *byteLength)
+void readbytefile_(char *srcFilePath, int *len, unsigned char *bytes, int *byteLength)
 {
-	ulong i;
+	int i;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=srcFilePath[i];
     s[*len]='\0';
-    char *tmp_bytes = readByteData(s, byteLength);
+    unsigned char *tmp_bytes = readByteData(s, byteLength);
     memcpy(bytes, tmp_bytes, *byteLength);
     free(tmp_bytes);
 }
 
-void readdoublefile_(char *srcFilePath, ulong *len, double *data, ulong *nbEle)
+void readdoublefile_(char *srcFilePath, int *len, double *data, int *nbEle)
 {
-	ulong i;
+	int i;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=srcFilePath[i];
@@ -46,9 +46,9 @@ void readdoublefile_(char *srcFilePath, ulong *len, double *data, ulong *nbEle)
 	free(tmp_data);
 }
 
-void readfloatfile_(char *srcFilePath, ulong *len, float *data, ulong *nbEle)
+void readfloatfile_(char *srcFilePath, int *len, float *data, int *nbEle)
 {
-	ulong i;
+	int i;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=srcFilePath[i];
@@ -58,9 +58,9 @@ void readfloatfile_(char *srcFilePath, ulong *len, float *data, ulong *nbEle)
 	free(tmp_data);
 }
 
-void writebytefile_(char *bytes, ulong *byteLength, char *tgtFilePath, ulong *len)
+void writebytefile_(unsigned char *bytes, int *byteLength, char *tgtFilePath, int *len)
 {
-	ulong i;
+	int i;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=tgtFilePath[i];
@@ -68,9 +68,9 @@ void writebytefile_(char *bytes, ulong *byteLength, char *tgtFilePath, ulong *le
 	writeByteData(bytes, *byteLength, s);
 }
 
-void writedoublefile_(double *data, ulong *nbEle, char *tgtFilePath, ulong *len)
+void writedoublefile_(double *data, int *nbEle, char *tgtFilePath, int *len)
 {
-	ulong i;
+	int i;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=tgtFilePath[i];
@@ -78,9 +78,9 @@ void writedoublefile_(double *data, ulong *nbEle, char *tgtFilePath, ulong *len)
 	writeDoubleData(data, *nbEle, s);
 }
 
-void writefloatfile_(float *data, ulong *nbEle, char *tgtFilePath, ulong *len)
+void writefloatfile_(float *data, int *nbEle, char *tgtFilePath, int *len)
 {
-	ulong i;
+	int i;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=tgtFilePath[i];

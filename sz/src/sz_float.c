@@ -23,7 +23,7 @@
 #include "zlib.h"
 #include "rw.h"
 
-void SZ_compress_args_float_NoCkRngeNoGzip_1D(char** newByteData, float *oriData, int dataLength, float realPrecision, int *outSize)
+void SZ_compress_args_float_NoCkRngeNoGzip_1D(unsigned char** newByteData, float *oriData, int dataLength, float realPrecision, int *outSize)
 {
 	int i;
 	short reqExpo = getPrecisionReqLength_float(realPrecision);
@@ -61,7 +61,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D(char** newByteData, float *oriData
 	
 	type[0] = 0;
 	
-	char preDataBytes[4];
+	unsigned char preDataBytes[4];
 	intToBytes_bigEndian(preDataBytes, 0);
 	
 	getExpSegment_fast(esc, 0);
@@ -78,7 +78,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D(char** newByteData, float *oriData
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
 				
 	//add the first data	
-	addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
@@ -88,7 +88,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D(char** newByteData, float *oriData
 		
 	//add the second data
 	type[1] = 0;
-	addDBA_Data(resiBitLengthArray, (char)resiBitsLength);			
+	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);			
 	compressSingleFloatValue(vce, spaceFillingValue[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
@@ -137,7 +137,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D(char** newByteData, float *oriData
 		reqLength = curExp->reqLength;
 		reqBytesLength = curExp->reqBytesLength;
 		resiBitsLength = curExp->resiBitsLength;
-		addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+		addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 		
 		compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
@@ -149,7 +149,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D(char** newByteData, float *oriData
 			
 	cleanESwithNoUnpredictable(esc);
 		
-	char* expSegmentsInBytes;
+	unsigned char* expSegmentsInBytes;
 	int expSegmentsInBytes_size = convertESCToBytes(esc, &expSegmentsInBytes);
 	int exactDataNum = exactLeadNumArray->size;
 	
@@ -194,7 +194,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D(char** newByteData, float *oriData
  * Note: @r1 is high dimension
  * 		 @r2 is low dimension 
  * */
-void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData, int r1, int r2, float realPrecision, int *outSize)
+void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float *oriData, int r1, int r2, float realPrecision, int *outSize)
 {
 	int i,j;
 	float pred1D, pred2D;
@@ -209,7 +209,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 		
 	short reqExpo = getPrecisionReqLength_float(realPrecision);
 	
-	unsigned char* type = (unsigned char*) malloc(dataLength*sizeof(char));
+	unsigned char* type = (unsigned char*) malloc(dataLength*sizeof(unsigned char));
 	//type[dataLength]=0;
 		
 	float* spaceFillingValue = oriData; //
@@ -242,7 +242,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 	
 	type[0] = 0;
 	
-	char preDataBytes[4];
+	unsigned char preDataBytes[4];
 	intToBytes_bigEndian(preDataBytes, 0);
 	
 	getExpSegment_fast(esc, 0);
@@ -259,7 +259,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 			
 	/* Process Row-0 data 0*/
 	type[0] = 0;
-	addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
@@ -290,7 +290,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 		reqBytesLength = curExp->reqBytesLength;
 		resiBitsLength = curExp->resiBitsLength;
 
-		addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+		addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 		compressSingleFloatValue(vce, spaceFillingValue[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 		memcpy(preDataBytes,vce->curBytes,4);
@@ -324,7 +324,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 			reqBytesLength = curExp->reqBytesLength;
 			resiBitsLength = curExp->resiBitsLength;
 
-			addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 			compressSingleFloatValue(vce, spaceFillingValue[j], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -362,7 +362,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 			reqBytesLength = curExp->reqBytesLength;
 			resiBitsLength = curExp->resiBitsLength;
 
-			addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 			compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -398,7 +398,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 				reqBytesLength = curExp->reqBytesLength;
 				resiBitsLength = curExp->resiBitsLength;
 
-				addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
@@ -417,7 +417,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 	free(P1);			
 	cleanESwithNoUnpredictable(esc);
 		
-	char* expSegmentsInBytes;
+	unsigned char* expSegmentsInBytes;
 	int expSegmentsInBytes_size = convertESCToBytes(esc, &expSegmentsInBytes);
 	int exactDataNum = exactLeadNumArray->size;
 	
@@ -457,7 +457,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(char** newByteData, float *oriData
 	free_TightDataPointStorageF(tdps);	
 }
 
-void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData, int r1, int r2, int r3, float realPrecision, int *outSize)
+void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, float realPrecision, int *outSize)
 {
 	int i,j,k;
 	float pred1D, pred2D, pred3D;
@@ -472,7 +472,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 
 	short reqExpo = getPrecisionReqLength_float(realPrecision);
 
-	unsigned char* type = (unsigned char*) malloc(dataLength*sizeof(char));
+	unsigned char* type = (unsigned char*) malloc(dataLength*sizeof(unsigned char));
 	//type[dataLength]=0;
 
 	float* spaceFillingValue = oriData; //
@@ -505,7 +505,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 
 	type[0] = 0;
 
-	char preDataBytes[4];
+	unsigned char preDataBytes[4];
 	intToBytes_bigEndian(preDataBytes, 0);
 
 	getExpSegment_fast(esc, 0);
@@ -524,7 +524,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 	///////////////////////////	Process layer-0 ///////////////////////////
 	/* Process Row-0 data 0*/
 	type[0] = 0;
-	addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
@@ -555,7 +555,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 		reqBytesLength = curExp->reqBytesLength;
 		resiBitsLength = curExp->resiBitsLength;
 
-		addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+		addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 		compressSingleFloatValue(vce, spaceFillingValue[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 		memcpy(preDataBytes,vce->curBytes,4);
@@ -589,7 +589,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 			reqBytesLength = curExp->reqBytesLength;
 			resiBitsLength = curExp->resiBitsLength;
 
-			addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 			compressSingleFloatValue(vce, spaceFillingValue[j], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -627,7 +627,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 			reqBytesLength = curExp->reqBytesLength;
 			resiBitsLength = curExp->resiBitsLength;
 
-			addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 			compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -663,7 +663,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 				reqBytesLength = curExp->reqBytesLength;
 				resiBitsLength = curExp->resiBitsLength;
 
-				addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
@@ -703,7 +703,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 			reqBytesLength = curExp->reqBytesLength;
 			resiBitsLength = curExp->resiBitsLength;
 
-			addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 			compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -739,7 +739,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 				reqBytesLength = curExp->reqBytesLength;
 				resiBitsLength = curExp->resiBitsLength;
 
-				addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
@@ -778,7 +778,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 				reqBytesLength = curExp->reqBytesLength;
 				resiBitsLength = curExp->resiBitsLength;
 
-				addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
@@ -814,7 +814,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 					reqBytesLength = curExp->reqBytesLength;
 					resiBitsLength = curExp->resiBitsLength;
 
-					addDBA_Data(resiBitLengthArray, (char)resiBitsLength);
+					addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 					compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 					updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 					memcpy(preDataBytes,vce->curBytes,4);
@@ -834,7 +834,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 	free(P1);
 	cleanESwithNoUnpredictable(esc);
 
-	char* expSegmentsInBytes;
+	unsigned char* expSegmentsInBytes;
 	int expSegmentsInBytes_size = convertESCToBytes(esc, &expSegmentsInBytes);
 	int exactDataNum = exactLeadNumArray->size;
 
@@ -874,7 +874,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(char** newByteData, float *oriData
 	free_TightDataPointStorageF(tdps);
 }
 
-void SZ_compress_args_float_withinRange(char** newByteData, float *oriData, int dataLength, int *outSize)
+void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriData, int dataLength, int *outSize)
 {
 	TightDataPointStorageF* tdps = (TightDataPointStorageF*) malloc(sizeof(TightDataPointStorageF));
 	tdps->rtypeArray = NULL;
@@ -885,22 +885,22 @@ void SZ_compress_args_float_withinRange(char** newByteData, float *oriData, int 
 	
 	tdps->allSameData = 1;
 	tdps->dataSeriesLength = dataLength;
-	tdps->exactMidBytes = (char*)malloc(sizeof(char)*4);
+	tdps->exactMidBytes = (unsigned char*)malloc(sizeof(unsigned char)*4);
 	float value = oriData[0];
 	floatToBytes(tdps->exactMidBytes, value);
 	tdps->exactMidBytes_size = 4;
 	
 	int tmpOutSize;
-	char *tmpByteData;
+	unsigned char *tmpByteData;
 	convertTDPStoFlatBytes_float(tdps, &tmpByteData, &tmpOutSize);
 
-	*newByteData = (char*)malloc(sizeof(char)*12); //for floating-point data (1+3+4+4)
+	*newByteData = (unsigned char*)malloc(sizeof(unsigned char)*12); //for floating-point data (1+3+4+4)
 	memcpy(*newByteData, tmpByteData, 12);
 	*outSize = 12;
 	free_TightDataPointStorageF(tdps);	
 }
 
-void SZ_compress_args_float_wRngeNoGzip(char** newByteData, float *oriData, 
+void SZ_compress_args_float_wRngeNoGzip(unsigned char** newByteData, float *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, float absErr_Bound, float rel_BoundRatio)
 {
@@ -928,7 +928,7 @@ int errBoundMode, float absErr_Bound, float rel_BoundRatio)
 	}
 }
 
-void SZ_compress_args_float(char** newByteData, float *oriData, 
+void SZ_compress_args_float(unsigned char** newByteData, float *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, float absErr_Bound, float relBoundRatio)
 {
@@ -945,7 +945,7 @@ int errBoundMode, float absErr_Bound, float relBoundRatio)
 	else
 	{
 		int tmpOutSize = 0;
-		char* tmpByteData;
+		unsigned char* tmpByteData;
 		if (r2==0)
 			SZ_compress_args_float_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize);
 		else
@@ -968,22 +968,22 @@ int errBoundMode, float absErr_Bound, float relBoundRatio)
 	}
 }
 
-void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, int r1, char* cmpBytes, int cmpSize)
+void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, int r1, unsigned char* cmpBytes, int cmpSize)
 {
 	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	
-	char* tmpBytes;
+	unsigned char* tmpBytes;
 	int targetUncompressSize = dataLength <<2; //i.e., *4
 	int tmpSize = 12;
 	if(cmpSize!=12)
-		tmpSize = zlib_uncompress3(cmpBytes, (ulong)cmpSize, &tmpBytes, (ulong)targetUncompressSize);
+		tmpSize = zlib_uncompress3(cmpBytes, (unsigned long)cmpSize, &tmpBytes, (unsigned long)targetUncompressSize);
 	else
 		tmpBytes = cmpBytes;
 	//tmpSize must be "much" smaller than dataLength
 	
 	//tmpBytes = cmpBytes;
-	//ulong tmpSize = cmpSize;
-	char* szTmpBytes = (char*)malloc(sizeof(char)*tmpSize);
+	//unsigned long tmpSize = cmpSize;
+	unsigned char* szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 	memcpy(szTmpBytes, tmpBytes, tmpSize);
 	free(tmpBytes); //release useless memory
 	

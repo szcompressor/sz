@@ -33,7 +33,7 @@ void new_ExpSegmentConstructor_double(ExpSegmentConstructor **this, double* data
 	(*this)->doubleRealPrecision = realPrecision;
 }
 
-void new_ExpSegmentConstructor_escbytes(ExpSegmentConstructor **this, int precisionBitNum, char* flatBytes, 
+void new_ExpSegmentConstructor_escbytes(ExpSegmentConstructor **this, int precisionBitNum, unsigned char* flatBytes, 
 			int flatBytesLength, int totalNumOfData)
 {
 	*this = (ExpSegmentConstructor*)malloc(sizeof(ExpSegmentConstructor));
@@ -55,8 +55,8 @@ void new_ExpSegmentConstructor_escbytes(ExpSegmentConstructor **this, int precis
 		}
 		
 		int startStep, num = flatBytesLength/unitSize;
-		char startStepBytes[4];
-		char reqLength, medValueBytes[4];
+		unsigned char startStepBytes[4];
+		unsigned char reqLength, medValueBytes[4];
 		float medValue;
 		int i, j, k = 0;
 		for(i = 0;i<num;i++)
@@ -103,8 +103,8 @@ void new_ExpSegmentConstructor_escbytes(ExpSegmentConstructor **this, int precis
 		}
 		
 		int startStep, num = flatBytesLength/unitSize;
-		char startStepBytes[4];
-		char reqLength, medValueBytes[8];
+		unsigned char startStepBytes[4];
+		unsigned char reqLength, medValueBytes[8];
 		double medValue;
 					
 		int i, j, k = 0;
@@ -312,7 +312,7 @@ void computeOffset_3orders(ExpSegment* header, void* data_, int dataLength, floa
 			if(meanLeadNum_mod8 > 2) //4->2 is better for single-precision data
 			{
 				int offset_ = (8 - meanLeadNum_mod8)+offset;
-				curExp->offset = (char)offset_;
+				curExp->offset = (unsigned char)offset_;
 			}
 
 			curExp = curExp->next;
@@ -367,7 +367,7 @@ void computeOffset_3orders(ExpSegment* header, void* data_, int dataLength, floa
 			if(meanLeadNum_mod8 > 4) //4->2 is better for single-precision data
 			{
 				int offset_ = (8 - meanLeadNum_mod8)+offset;
-				curExp->offset = (char)offset_;
+				curExp->offset = (unsigned char)offset_;
 			}
 
 			curExp = curExp->next;
@@ -389,7 +389,7 @@ void computeOffsetMedianValue(ExpSegment* header, void* data_, int DATA_TYPE)
 		double *data = (double *) data_;
 		while(curExp!=NULL)
 		{
-			char offset = curExp->offset;
+			unsigned char offset = curExp->offset;
 			if(offset==0)
 			{
 				curExp->medianValue_d = curExp->medianValue_d0;
@@ -427,7 +427,7 @@ void computeOffsetMedianValue(ExpSegment* header, void* data_, int DATA_TYPE)
 		float *data = (float *) data_;
 		while(curExp!=NULL)
 		{
-			char offset = curExp->offset;
+			unsigned char offset = curExp->offset;
 			if(offset==0)
 			{
 				curExp->medianValue_f = curExp->medianValue_f0;
@@ -593,13 +593,13 @@ void cleanESwithNoUnpredictable(ExpSegmentConstructor *esc)
 	esc->curExp = esc->header->next;
 }
 
-int convertESCToBytes(ExpSegmentConstructor *esc, char **bytes)
+int convertESCToBytes(ExpSegmentConstructor *esc, unsigned char **bytes)
 {
 	int i, size_;
 	if(esc->precisionBitNum == 32)
 	{
-		char reqLength;
-		char startBytes[4], mediaBytes[4];
+		unsigned char reqLength;
+		unsigned char startBytes[4], mediaBytes[4];
 		DynamicByteArray* dba;
 		new_DBA(&dba, 1024);
 
@@ -607,7 +607,7 @@ int convertESCToBytes(ExpSegmentConstructor *esc, char **bytes)
 		while(curES->next!=NULL)
 		{
 			curES = curES->next;
-			reqLength = (char)curES->reqLength;
+			reqLength = (unsigned char)curES->reqLength;
 			//TODO
 			intToBytes_bigEndian(startBytes, curES->startStep); //int
 			floatToBytes(mediaBytes, curES->medianValue_f); //int
@@ -625,8 +625,8 @@ int convertESCToBytes(ExpSegmentConstructor *esc, char **bytes)
 	}
 	else //64 double data
 	{
-		char reqLength;
-		char startBytes[8], mediaBytes[8];	
+		unsigned char reqLength;
+		unsigned char startBytes[8], mediaBytes[8];	
 		DynamicByteArray *dba;
 		new_DBA(&dba, 1024);
 		//int k = 0,j=0;
@@ -634,7 +634,7 @@ int convertESCToBytes(ExpSegmentConstructor *esc, char **bytes)
 		while(curES->next!=NULL)
 		{
 			curES = curES->next;
-			reqLength = (char)curES->reqLength;
+			reqLength = (unsigned char)curES->reqLength;
 			//printf("%d (%d,%d) level=%d median=%f median0=%f\n", k++, startStep, curES->startStep+curES->length-1, curES->level, curES->medianValue_d, curES->medianValue_d0);
 
 			intToBytes_bigEndian(startBytes, curES->startStep); //int

@@ -24,28 +24,28 @@ typedef struct TightDataPointStorageD
 	int exactDataNum;
 	double reservedValue;
 	
-	char* rtypeArray;
+	unsigned char* rtypeArray;
 	int rtypeArray_size;
 	
 	unsigned char* typeArray; //its size is dataSeriesLength/4 (or xxx/4+1) 
 	int typeArray_size;
 	
-	char* leadNumArray; //its size is exactDataNum/4 (or exactDataNum/4+1)
+	unsigned char* leadNumArray; //its size is exactDataNum/4 (or exactDataNum/4+1)
 	int leadNumArray_size;
 	
-	char* exactMidBytes;
+	unsigned char* exactMidBytes;
 	int exactMidBytes_size;
 	
-	char* escBytes;
+	unsigned char* escBytes;
 	int escBytes_size;
 	
-	char* residualMidBits;
+	unsigned char* residualMidBits;
 	int residualMidBits_size;
 
 } TightDataPointStorageD;
 
 void new_TightDataPointStorageD_Empty(TightDataPointStorageD **this);
-void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, char* flatBytes, int flatBytesLength);
+void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsigned char* flatBytes, int flatBytesLength);
 void decompressDataSeries_double_1D(double** data, int dataSeriesLength, TightDataPointStorageD* tdps);
 void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPointStorageD* tdps);
 void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, TightDataPointStorageD* tdps);
@@ -54,12 +54,12 @@ void getSnapshotData_double_2D(double** data, int r1, int r2, TightDataPointStor
 void getSnapshotData_double_3D(double** data, int r1, int r2, int r3, TightDataPointStorageD* tdps);
 void new_TightDataPointStorageD(TightDataPointStorageD **this, 
 		int dataSeriesLength, int exactDataNum, 
-		char* type, char* exactMidBytes, int exactMidBytes_size,
-		char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
-		char* resiMidBits, int resiMidBits_size,
-		char* escBytes, int escBytes_size,
-		char* resiBitLength, int resiBitLengthSize, double realPrecision);
-void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, char** bytes, int *size);
+		unsigned char* type, unsigned char* exactMidBytes, int exactMidBytes_size,
+		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
+		unsigned char* resiMidBits, int resiMidBits_size,
+		unsigned char* escBytes, int escBytes_size,
+		unsigned char* resiBitLength, int resiBitLengthSize, double realPrecision);
+void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char** bytes, int *size);
 void free_TightDataPointStorageD(TightDataPointStorageD *tdps);
 
 #ifdef __cplusplus

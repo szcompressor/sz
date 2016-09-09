@@ -123,9 +123,9 @@ float getRealPrecision_float(float valueRangeSize, int errBoundMode, float absEr
 	return precision;
 }
 
-void symTransform_8bytes(char data[8])
+void symTransform_8bytes(unsigned char data[8])
 {
-	char tmp = data[0];
+	unsigned char tmp = data[0];
 	data[0] = data[7];
 	data[7] = tmp;
 
@@ -142,15 +142,15 @@ void symTransform_8bytes(char data[8])
 	data[4] = tmp;
 }
 
-void flush_to_bigEndian_8bytes(char data[8], int dataEndianType)
+void flush_to_bigEndian_8bytes(unsigned char data[8], int dataEndianType)
 {
 	if(dataEndianType==LITTLE_ENDIAN_DATA)
 		symTransform_8bytes(data);
 }
 
-void symTransform_4bytes(char data[4])
+void symTransform_4bytes(unsigned char data[4])
 {
-	char tmp = data[0];
+	unsigned char tmp = data[0];
 	data[0] = data[3];
 	data[3] = tmp;
 
@@ -159,19 +159,19 @@ void symTransform_4bytes(char data[4])
 	data[2] = tmp;
 }
 
-void flush_to_bigEndian_4bytes(char data[4])
+void flush_to_bigEndian_4bytes(unsigned char data[4])
 {
 	if(dataEndianType==LITTLE_ENDIAN_DATA)
 		symTransform_4bytes(data);
 }
 
-void bigEndian_to_OSEndian_double(char data[8])
+void bigEndian_to_OSEndian_double(unsigned char data[8])
 {
 	if(dataEndianType==LITTLE_ENDIAN_DATA)
 		symTransform_8bytes(data);
 }
 
-void bigEndian_to_OSEndian_float(char data[4])
+void bigEndian_to_OSEndian_float(unsigned char data[4])
 {
 	if(dataEndianType==LITTLE_ENDIAN_DATA)
 		symTransform_4bytes(data);
@@ -227,7 +227,7 @@ void compressSingleDoubleValue(DoubleValueCompressElement *vce, double tgtValue,
 	vce->resiBitsLength = resiBitsLength;
 }
 
-int compIdenticalLeadingBytesCount_double(char* preBytes, char* curBytes)
+int compIdenticalLeadingBytesCount_double(unsigned char* preBytes, unsigned char* curBytes)
 {
 	int i, n = 0;
 	for(i=0;i<8;i++)
@@ -239,7 +239,7 @@ int compIdenticalLeadingBytesCount_double(char* preBytes, char* curBytes)
 	return n;
 }
 
-int compIdenticalLeadingBytesCount_float(char* preBytes, char* curBytes)
+int compIdenticalLeadingBytesCount_float(unsigned char* preBytes, unsigned char* curBytes)
 {
 	int i, n = 0;
 	for(i=0;i<4;i++)
@@ -258,7 +258,7 @@ void addExactData(DynamicByteArray *exactMidByteArray, DynamicIntArray *exactLea
 	int i;
 	int leadByteLength = lce->leadingZeroBytes;
 	addDIA_Data(exactLeadNumArray, leadByteLength);
-	char* intMidBytes = lce->integerMidBytes;
+	unsigned char* intMidBytes = lce->integerMidBytes;
 	int integerMidBytesLength = lce->integerMidBytes_Length;
 	int resMidBitsLength = lce->resMidBitsLength;
 	if(intMidBytes!=NULL||resMidBitsLength!=0)

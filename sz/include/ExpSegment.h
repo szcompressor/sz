@@ -37,7 +37,7 @@ typedef struct ExpSegment
 	int reqLength;
 	int reqBytesLength;
 	int resiBitsLength;
-	char offset; //offset is equal to [8 - beta]+2 (or 1), where beta  alpha - [alpha/8]*8, where alpha average length of leadingzero number
+	unsigned char offset; //offset is equal to [8 - beta]+2 (or 1), where beta  alpha - [alpha/8]*8, where alpha average length of leadingzero number
 	
 	struct ExpSegment* prev; 
 	struct ExpSegment* next;

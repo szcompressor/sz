@@ -28,7 +28,7 @@ int checkFileSize(char *srcFilePath)
     return filesize;
 }
 
-char *readByteData(char *srcFilePath, ulong *byteLength)
+unsigned char *readByteData(char *srcFilePath, int *byteLength)
 {
 	FILE *pFile = fopen(srcFilePath, "rb");
     if (pFile == NULL)
@@ -40,7 +40,7 @@ char *readByteData(char *srcFilePath, ulong *byteLength)
     *byteLength = (int)ftell(pFile);
     fclose(pFile);
     
-    char *byteBuf = (char *)malloc((*byteLength)*sizeof(char)); //sizeof(char)==1
+    unsigned char *byteBuf = ( unsigned char *)malloc((*byteLength)*sizeof(unsigned char)); //sizeof(char)==1
     
     pFile = fopen(srcFilePath, "rb");
     if (pFile == NULL)
@@ -53,7 +53,7 @@ char *readByteData(char *srcFilePath, ulong *byteLength)
     return byteBuf;
 }
 
-double *readDoubleData(char *srcFilePath, ulong *nbEle)
+double *readDoubleData(char *srcFilePath, int *nbEle)
 {
 	if(dataEndianType==sysEndianType)
 	{
@@ -62,10 +62,10 @@ double *readDoubleData(char *srcFilePath, ulong *nbEle)
 	}
 	else
 	{
-		ulong i,j;
+		int i,j;
 		
-		ulong byteLength;
-		char* bytes = readByteData(srcFilePath, &byteLength);
+		int byteLength;
+		unsigned char* bytes = readByteData(srcFilePath, &byteLength);
 		double *daBuf = (double *)malloc(byteLength);
 		*nbEle = byteLength/8;
 		
@@ -82,7 +82,7 @@ double *readDoubleData(char *srcFilePath, ulong *nbEle)
 	}
 }
 
-float *readFloatData(char *srcFilePath, ulong *nbEle)
+float *readFloatData(char *srcFilePath, int *nbEle)
 {
 	if(dataEndianType==sysEndianType)
 	{
@@ -91,10 +91,10 @@ float *readFloatData(char *srcFilePath, ulong *nbEle)
 	}
 	else
 	{
-		ulong i,j;
+		int i,j;
 		
-		ulong byteLength;
-		char* bytes = readByteData(srcFilePath, &byteLength);
+		int byteLength;
+		unsigned char* bytes = readByteData(srcFilePath, &byteLength);
 		float *daBuf = (float *)malloc(byteLength);
 		*nbEle = byteLength/4;
 		
@@ -111,9 +111,9 @@ float *readFloatData(char *srcFilePath, ulong *nbEle)
 	}
 }
 
-double *readDoubleData_systemEndian(char *srcFilePath, ulong *nbEle)
+double *readDoubleData_systemEndian(char *srcFilePath, int *nbEle)
 {
-	ulong inSize;
+	int inSize;
 	FILE *pFile = fopen(srcFilePath, "rb");
     if (pFile == NULL)
     {
@@ -138,9 +138,9 @@ double *readDoubleData_systemEndian(char *srcFilePath, ulong *nbEle)
     return daBuf;
 }
 
-float *readFloatData_systemEndian(char *srcFilePath, ulong *nbEle)
+float *readFloatData_systemEndian(char *srcFilePath, int *nbEle)
 {
-	ulong inSize;
+	int inSize;
 	FILE *pFile = fopen(srcFilePath, "rb");
     if (pFile == NULL)
     {
@@ -171,7 +171,7 @@ float *readFloatData_systemEndian(char *srcFilePath, ulong *nbEle)
     return daBuf;
 }
 
-void writeByteData(char *bytes, ulong byteLength, char *tgtFilePath)
+void writeByteData(unsigned char *bytes, int byteLength, char *tgtFilePath)
 {
 	FILE *pFile = fopen(tgtFilePath, "wb");
     if (pFile == NULL)
@@ -184,9 +184,9 @@ void writeByteData(char *bytes, ulong byteLength, char *tgtFilePath)
     fclose(pFile);
 }
 
-void writeDoubleData(double *data, ulong nbEle, char *tgtFilePath)
+void writeDoubleData(double *data, int nbEle, char *tgtFilePath)
 {
-	ulong i = 0;
+	int i = 0;
 	char s[64];
 	FILE *pFile = fopen(tgtFilePath, "wb");
     if (pFile == NULL)
@@ -204,9 +204,9 @@ void writeDoubleData(double *data, ulong nbEle, char *tgtFilePath)
     fclose(pFile);
 }
 
-void writeFloatData(float *data, ulong nbEle, char *tgtFilePath)
+void writeFloatData(float *data, int nbEle, char *tgtFilePath)
 {
-	ulong i = 0;
+	int i = 0;
 	char s[64];
 	FILE *pFile = fopen(tgtFilePath, "wb");
     if (pFile == NULL)

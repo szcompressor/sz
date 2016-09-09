@@ -24,6 +24,34 @@
 #include "rw.h"
 //#include "CurveFillingCompressStorage.h"
 
+int sysEndianType; //endian type of the system
+int dataEndianType; //endian type of the data
+int maxSegmentNum;
+
+char maxHeap[10];
+
+long status;
+
+int sol_ID;
+int errorBoundMode; //ABS, REL, ABS_AND_REL, or ABS_OR_REL
+
+int gzipMode; //four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
+
+char *sz_cfgFile;
+
+int offset;
+
+double absErrBound;
+double relBoundRatio;
+
+int versionNumber[3];
+
+int spaceFillingCurveTransform; //default is 0, or 1 set by sz.config
+int reOrgSize; //the granularity of the reganization of the original data
+
+SZ_VarSet* sz_varset;
+
+
 int SZ_Init(char *configFilePath)
 {
 	char str[512]="", str2[512]="", str3[512]="";
@@ -177,13 +205,13 @@ int computeDataLength(int r5, int r4, int r3, int r2, int r1)
 
  **/
 /*-------------------------------------------------------------------------*/
-char* SZ_compress_args(int dataType, void *data, int *outSize, int errBoundMode, double absErrBound, 
+unsigned char* SZ_compress_args(int dataType, void *data, int *outSize, int errBoundMode, double absErrBound, 
 double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
 {
 	//TODO
 	if(dataType==SZ_FLOAT)
 	{
-		char *newByteData;
+		unsigned char *newByteData;
 		
 		SZ_compress_args_float(&newByteData, (float *)data, r5, r4, r3, r2, r1, 
 		outSize, errBoundMode, (float)absErrBound, (float)relBoundRatio);
@@ -192,7 +220,7 @@ double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
 	}
 	else if(dataType==SZ_DOUBLE)
 	{
-		char *newByteData;
+		unsigned char *newByteData;
 		SZ_compress_args_double(&newByteData, (double *)data, r5, r4, r3, r2, r1, 
 		outSize, errBoundMode, absErrBound, relBoundRatio);
 		
@@ -206,17 +234,17 @@ double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
 	}
 }
 
-int SZ_compress_args2(int dataType, void *data, char* compressed_bytes, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
+int SZ_compress_args2(int dataType, void *data, unsigned char* compressed_bytes, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
 {
-	char* bytes = SZ_compress_args(dataType, data, outSize, errBoundMode, absErrBound, relBoundRatio, r5, r4, r3, r2, r1);
+	unsigned char* bytes = SZ_compress_args(dataType, data, outSize, errBoundMode, absErrBound, relBoundRatio, r5, r4, r3, r2, r1);
     memcpy(compressed_bytes, bytes, *outSize);
     free(bytes); 
 	return 0;
 }
 
-char *SZ_compress(int dataType, void *data, int *outSize, int r5, int r4, int r3, int r2, int r1)
+unsigned char *SZ_compress(int dataType, void *data, int *outSize, int r5, int r4, int r3, int r2, int r1)
 {	
-	char *newByteData = SZ_compress_args(dataType, data, outSize, errorBoundMode, absErrBound, relBoundRatio, r5, r4, r3, r2, r1);
+	unsigned char *newByteData = SZ_compress_args(dataType, data, outSize, errorBoundMode, absErrBound, relBoundRatio, r5, r4, r3, r2, r1);
 	return newByteData;
 }
 
@@ -232,10 +260,10 @@ char *SZ_compress(int dataType, void *data, int *outSize, int r5, int r4, int r3
 
  **/
 /*-------------------------------------------------------------------------*/
-char *SZ_compress_rev_args(int dataType, void *data, void *reservedValue, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
+unsigned char *SZ_compress_rev_args(int dataType, void *data, void *reservedValue, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
 {
 	int dataLength;
-	char *newByteData;
+	unsigned char *newByteData;
 	dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	//TODO
 	printf("SZ compression with reserved data is TO BE DONE LATER.\n");
@@ -244,19 +272,19 @@ char *SZ_compress_rev_args(int dataType, void *data, void *reservedValue, int *o
 	return newByteData;	
 }
 
-int SZ_compress_rev_args2(int dataType, void *data, void *reservedValue, char* compressed_bytes, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
+int SZ_compress_rev_args2(int dataType, void *data, void *reservedValue, unsigned char* compressed_bytes, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
 {
-	char* bytes = SZ_compress_rev_args(dataType, data, reservedValue, outSize, errBoundMode, absErrBound, relBoundRatio, r5, r4, r3, r2, r1);
+	unsigned char* bytes = SZ_compress_rev_args(dataType, data, reservedValue, outSize, errBoundMode, absErrBound, relBoundRatio, r5, r4, r3, r2, r1);
 	memcpy(compressed_bytes, bytes, *outSize);
 	free(bytes); //free(bytes) is removed , because of dump error at MIRA system (PPC architecture), fixed?
 	return 0;
 }
 
-char *SZ_compress_rev(int dataType, void *data, void *reservedValue, int *outSize, int r5, int r4, int r3, int r2, int r1)
+unsigned char *SZ_compress_rev(int dataType, void *data, void *reservedValue, int *outSize, int r5, int r4, int r3, int r2, int r1)
 {
 	int dataLength;
 
-	char *newByteData;
+	unsigned char *newByteData;
 	dataLength = computeDataLength(r5,r4,r3,r2,r1);	
 	//TODO
 	printf("SZ compression with reserved data is TO BE DONE LATER.\n");
@@ -265,7 +293,7 @@ char *SZ_compress_rev(int dataType, void *data, void *reservedValue, int *outSiz
 	return newByteData;
 }
 
-void *SZ_decompress(int dataType, char *bytes, int byteLength, int r5, int r4, int r3, int r2, int r1)
+void *SZ_decompress(int dataType, unsigned char *bytes, int byteLength, int r5, int r4, int r3, int r2, int r1)
 {
 	if(dataType == SZ_FLOAT)
 	{
@@ -286,7 +314,7 @@ void *SZ_decompress(int dataType, char *bytes, int byteLength, int r5, int r4, i
 	}
 }
 
-int SZ_decompress_args(int dataType, char *bytes, int byteLength, void* decompressed_array, int r5, int r4, int r3, int r2, int r1)
+int SZ_decompress_args(int dataType, unsigned char *bytes, int byteLength, void* decompressed_array, int r5, int r4, int r3, int r2, int r1)
 {
 	int i;
 	int nbEle = computeDataLength(r5,r4,r3,r2,r1);
@@ -351,7 +379,7 @@ void filloutDimArray(int* dim, int r5, int r4, int r3, int r2, int r1)
 	}
 }
 
-char* SZ_batch_compress(int *outSize)
+unsigned char* SZ_batch_compress(int *outSize)
 {
 	int dataLength;
 	DynamicByteArray* dba; 
@@ -359,7 +387,7 @@ char* SZ_batch_compress(int *outSize)
 	
 	//number of variables
 	int varCount = sz_varset->count;
-	char  countBufBytes[4];
+	unsigned char countBufBytes[4];
 	intToBytes_bigEndian(countBufBytes, varCount);
 	//add only the lats two bytes, i.e., the maximum # variables is supposed to be less than 32768
 	addDBA_Data(dba, countBufBytes[2]);
@@ -371,7 +399,7 @@ char* SZ_batch_compress(int *outSize)
 	{
 		if(p->dataType==SZ_FLOAT)
 		{
-			char *newByteData;
+			unsigned char *newByteData;
 			int outSize;
 			SZ_compress_args_float_wRngeNoGzip(&newByteData, (float *)p->data, 
 			p->r5, p->r4, p->r3, p->r2, p->r1, 
@@ -381,7 +409,7 @@ char* SZ_batch_compress(int *outSize)
 		}
 		else if(p->dataType==SZ_DOUBLE)
 		{
-			char *newByteData;
+			unsigned char *newByteData;
 			int outSize;
 			SZ_compress_args_double_wRngeNoGzip(&newByteData, (double *)p->data, 
 			p->r5, p->r4, p->r3, p->r2, p->r1, 
@@ -407,7 +435,7 @@ char* SZ_batch_compress(int *outSize)
 		memset(dimSize, 0, dimNum*sizeof(int));
 		meta = meta | dimNum << 2; //---aaabc: aaa indicates dim, b indicates HZ, c indicates dataType
 		
-		addDBA_Data(dba, (char)meta);
+		addDBA_Data(dba, (unsigned char)meta);
 		
 		filloutDimArray(dimSize, p->r5, p->r4, p->r3, p->r2, p->r1);
 		
@@ -425,9 +453,9 @@ char* SZ_batch_compress(int *outSize)
 			addDBA_Data(dba, countBufBytes[i]);			 
 			 
 		//Keep varName information	 
-		char varNameLength = (char)strlen(p->varName);
+		unsigned char varNameLength = (unsigned char)strlen(p->varName);
 		addDBA_Data(dba, varNameLength);
-		memcpyDBA_Data(dba, p->varName, varNameLength);
+		memcpyDBA_Data(dba, (unsigned char*)p->varName, varNameLength);
 			 
 		//copy the compressed stream
 		memcpyDBA_Data(dba, p->compressedBytes, p->compressedSize);
@@ -437,14 +465,14 @@ char* SZ_batch_compress(int *outSize)
 		p = p->next;
 	}
 	
-	char* tmpFinalCompressedBytes;
+	unsigned char* tmpFinalCompressedBytes;
 	convertDBAtoBytes(dba, &tmpFinalCompressedBytes);
 	
-	char* tmpCompressedBytes2;
+	unsigned char* tmpCompressedBytes2;
 	int tmpGzipSize = (int)zlib_compress2(tmpFinalCompressedBytes, dba->size, &tmpCompressedBytes2, gzipMode);
 	free(tmpFinalCompressedBytes);
 	
-	char* finalCompressedBytes = (char*) malloc(sizeof(char)*(4+tmpGzipSize));
+	unsigned char* finalCompressedBytes = (unsigned char*) malloc(sizeof(unsigned char)*(4+tmpGzipSize));
 	
 	intToBytes_bigEndian(countBufBytes, dba->size);
 	
@@ -458,10 +486,10 @@ char* SZ_batch_compress(int *outSize)
 	return finalCompressedBytes;
 }
 
-SZ_VarSet* SZ_batch_decompress(char* compressedStream, int compressedLength)
+SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLength)
 {
 	int i, j, k = 0;
-	char intByteBuf[4];
+	unsigned char intByteBuf[4];
 	
 	//get target decompression size for Gzip (zlib)
 	intByteBuf[0] = compressedStream[0];
@@ -472,8 +500,8 @@ SZ_VarSet* SZ_batch_decompress(char* compressedStream, int compressedLength)
 	int targetUncompressSize = bytesToInt_bigEndian(intByteBuf);
 	
 	//Gzip decompression
-	char* gzipDecpressBytes;
-	int gzipDecpressSize = zlib_uncompress3(&(compressedStream[4]), (ulong)compressedLength, &gzipDecpressBytes, (ulong)targetUncompressSize);
+	unsigned char* gzipDecpressBytes;
+	int gzipDecpressSize = zlib_uncompress3(&(compressedStream[4]), (unsigned long)compressedLength, &gzipDecpressBytes, (unsigned long)targetUncompressSize);
 	
 	if(gzipDecpressSize!=targetUncompressSize)
 	{
