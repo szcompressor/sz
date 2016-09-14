@@ -65,16 +65,16 @@ int main(int argc, char * argv[])
     
     sprintf(outputFilePath, "%s.sz", oriFilePath);
    
-    ulong nbEle;
+    int nbEle;
     double *data = readDoubleData(oriFilePath, &nbEle);
    
     int outSize;
     cost_start(); 
-    char *bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
+    unsigned char *bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
+    //char *bytes = (char *)malloc(nbEle*sizeof(double)); //
+    //char* bytes = SZ_compress_args(SZ_DOUBLE, data, &outSize, ABS, 1E-12, 0.000001, r5, r4, r3, r2, r1);
     cost_end();
     printf("timecost=%f\n",totalCost);
-    //char *bytes = (char *)malloc(nbEle*sizeof(double)); //
-    //SZ_compress_args2(SZ_DOUBLE, data, bytes, &outSize, ABS, 0.000001, 0.000001, r5, r4, r3, r2, r1);
 
     writeByteData(bytes, outSize, outputFilePath);
     free(data);

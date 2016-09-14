@@ -39,7 +39,7 @@ void cost_end()
 int main(int argc, char * argv[])
 {
     int r5=0,r4=0,r3=0,r2=0,r1=0;
-    ulong nbEle;
+    int nbEle;
     char zipFilePath[640], outputFilePath[640];
     char *cfgFile;
     if(argc < 2)
@@ -77,8 +77,8 @@ int main(int argc, char * argv[])
 
     sprintf(outputFilePath, "%s.out", zipFilePath);
     
-    ulong byteLength;
-    char *bytes = readByteData(zipFilePath, &byteLength);
+    int byteLength;
+    unsigned char *bytes = readByteData(zipFilePath, &byteLength);
   
     //printf("r1=%d,r2=%d,r3=%d,r4=%d,r5=%d\n", r1,r2,r3,r4,r5);
  
@@ -100,28 +100,28 @@ int main(int argc, char * argv[])
     strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
     oriFilePath[strlen(zipFilePath)-3] = '\0';
     float *ori_data = readFloatData(oriFilePath, &nbEle);
-    int i;
+    int i = 0;
     float Max, Min, diffMax;
     Max = ori_data[0];
     Min = ori_data[0];
     diffMax = fabs(data[0] - ori_data[0]);
 
-    float err = fabs(data[i] - ori_data[i]);
     double sum = 0;
     for (i = 0; i < nbEle; i++)
     {
         if (Max < ori_data[i]) Max = ori_data[i];
         if (Min > ori_data[i]) Min = ori_data[i];
         
-	if (diffMax < err)
-                diffMax = err;
-	sum += err*err;	
+        float err = fabs(data[i] - ori_data[i]);
+		if (diffMax < err)
+				diffMax = err;
+		sum += err*err;	
     }
     double mse = sum/nbEle;
     double range = Max - Min;
     double psnr = 20*log10(range)-10*log10(mse);
 
-    printf ("Max absolute error = %f\n", diffMax);
+    printf ("Max absolute error = %.10f\n", diffMax);
     printf ("Max relative error = %f\n", diffMax/(Max-Min));
     printf ("PSNR = %f\n", psnr);
 
