@@ -106,6 +106,7 @@ int main(int argc, char * argv[])
     Min = ori_data[0];
     diffMax = fabs(data[0] - ori_data[0]);
 
+<<<<<<< HEAD
     double sum1 = 0, sum2 = 0;
     for (i = 0; i < nbEle; i++)
     {
@@ -117,18 +118,27 @@ int main(int argc, char * argv[])
 
     double sum3 = 0, sum4 = 0;
     double sum = 0, prodSum = 0;
+=======
+    double sum = 0;
+>>>>>>> 34cfd3b4792c52910a43ddbc97cfc1f4ea4d3deb
     for (i = 0; i < nbEle; i++)
     {
         if (Max < ori_data[i]) Max = ori_data[i];
         if (Min > ori_data[i]) Min = ori_data[i];
         
         float err = fabs(data[i] - ori_data[i]);
+<<<<<<< HEAD
 	if (diffMax < err)
 		diffMax = err;
         prodSum += (ori_data[i]-mean1)*(data[i]-mean2);
         sum3 += (ori_data[i] - mean1)*(ori_data[i]-mean1);
         sum4 += (data[i] - mean2)*(data[i]-mean2);
 	sum += err*err;	
+=======
+		if (diffMax < err)
+				diffMax = err;
+		sum += err*err;	
+>>>>>>> 34cfd3b4792c52910a43ddbc97cfc1f4ea4d3deb
     }
     double std1 = sqrt(sum3/nbEle);
     double std2 = sqrt(sum4/nbEle);
