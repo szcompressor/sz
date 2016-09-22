@@ -38,7 +38,7 @@ void cost_end()
 int main(int argc, char * argv[])
 {
     int r5=0,r4=0,r3,r2,r1;
-    ulong nbEle;
+    int nbEle;
     char zipFilePath[640], outputFilePath[640];
     char *cfgFile;
     if(argc < 6)
@@ -68,8 +68,8 @@ int main(int argc, char * argv[])
     
     sprintf(outputFilePath, "%s.out", zipFilePath);
     
-    long byteLength;
-    char *bytes = readByteData(zipFilePath, &byteLength);
+    int byteLength;
+    unsigned char *bytes = readByteData(zipFilePath, &byteLength);
 
     cost_start();    
     double *data = SZ_decompress(SZ_DOUBLE, bytes, byteLength, r5, r4, r3, r2, r1);
@@ -102,6 +102,11 @@ int main(int argc, char * argv[])
     	if (Min > ori_data[i]) Min = ori_data[i];
     	if (diffMax < fabs(data[i] - ori_data[i]))
     		diffMax = fabs(data[i] - ori_data[i]);
+	//if(fabs(data[i] - ori_data[i]) > 1E-12)
+	//{
+	//	printf("error: i=%d, %.20G, %.20G\n",i,ori_data[i], data[i]);
+	//	exit(0);
+	//}
     }
 
     printf ("Max absolute error = %f\n", diffMax);
