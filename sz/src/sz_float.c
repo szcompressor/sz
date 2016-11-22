@@ -507,8 +507,9 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float
 		P1 = P0;
 		P0 = Pt;
 	}
-
-	free(P0);
+	
+	if(r2!=1)
+		free(P0);
 	free(P1);			
 	int exactDataNum = exactLeadNumArray->size;
 	
@@ -566,9 +567,9 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 	float *P0, *P1;
 
 	int dataLength = r1*r2*r3;
-
-	P0 = (float*)malloc(r2*r3*sizeof(float));
-	P1 = (float*)malloc(r2*r3*sizeof(float));
+	int r23 = r2*r3;
+	P0 = (float*)malloc(r23*sizeof(float));
+	P1 = (float*)malloc(r23*sizeof(float));
 
 	float medianValue = medianValue_f;
 	short reqExpo = getPrecisionReqLength_float(realPrecision);
@@ -857,7 +858,8 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 		P0 = Pt;
 	}
 
-	free(P0);
+	if(r23!=1)
+		free(P0);
 	free(P1);
 	int exactDataNum = exactLeadNumArray->size;
 
@@ -1051,6 +1053,6 @@ void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, i
 	if (dataLength == r1*r2*r3*r4)
 		getSnapshotData_float_3D(newData,r4*r3,r2,r1,tdps);
 	free_TightDataPointStorageF(tdps);
-	if(szMode!=SZ_BEST_SPEED & cmpSize!=12)
+	if(szMode!=SZ_BEST_SPEED && cmpSize!=12)
 		free(szTmpBytes);
 }

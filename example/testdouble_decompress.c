@@ -93,11 +93,11 @@ int main(int argc, char * argv[])
     
     SZ_Finalize();
     
-
+    int totalNbEle;
     char oriFilePath[640];
     strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
     oriFilePath[strlen(zipFilePath)-3] = '\0';
-    double *ori_data = readDoubleData(oriFilePath, &nbEle);
+    double *ori_data = readDoubleData(oriFilePath, &totalNbEle);
     int i;
     double Max, Min, diffMax;
     Max = ori_data[0];

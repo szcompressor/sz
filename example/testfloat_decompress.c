@@ -96,11 +96,12 @@ int main(int argc, char * argv[])
     printf("done\n");
     
     SZ_Finalize();
-    
+   
+    int totalNbEle; 
     char oriFilePath[640];
     strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
     oriFilePath[strlen(zipFilePath)-3] = '\0';
-    float *ori_data = readFloatData(oriFilePath, &nbEle);
+    float *ori_data = readFloatData(oriFilePath, &totalNbEle);
     int i = 0;
     float Max, Min, diffMax;
     Max = ori_data[0];

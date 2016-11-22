@@ -335,7 +335,9 @@ void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, doub
 	int dataLength = r1*r2;	
 	
 	P0 = (double*)malloc(r2*sizeof(double));
+	memset(P0, 0, r2*sizeof(double));
 	P1 = (double*)malloc(r2*sizeof(double));
+	memset(P1, 0, r2*sizeof(double));
 		
 	double medianValue = medianValue_d;
 	short reqExpo = getPrecisionReqLength_double(realPrecision);
@@ -502,8 +504,9 @@ void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, doub
 		P1 = P0;
 		P0 = Pt;
 	}
-			
-	free(P0);
+		
+	if(r2!=1)	
+		free(P0);
 	free(P1);
 	int exactDataNum = exactLeadNumArray->size;
 	
@@ -559,8 +562,10 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 
 	int dataLength = r1*r2*r3;
 
-	P0 = (double*)malloc(r2*r3*sizeof(double));
-	P1 = (double*)malloc(r2*r3*sizeof(double));
+	int r23 = r2*r3;
+
+	P0 = (double*)malloc(r23*sizeof(double));
+	P1 = (double*)malloc(r23*sizeof(double));
 
 	double medianValue = medianValue_d;
 	short reqExpo = getPrecisionReqLength_double(realPrecision);
@@ -849,8 +854,8 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 		P1 = P0;
 		P0 = Pt;
 	}
-
-	free(P0);
+	if(r23!=1)
+		free(P0);
 	free(P1);
 	int exactDataNum = exactLeadNumArray->size;
 
