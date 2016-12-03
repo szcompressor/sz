@@ -323,7 +323,7 @@ void pad_tree_ushort(unsigned short* L, unsigned short* R, unsigned short* C, un
 	}	
 }
 
-void pad_tree_uint(unsigned int* L, unsigned int* R, unsigned short* C, unsigned char* t, unsigned short i, node root)
+void pad_tree_uint(unsigned int* L, unsigned int* R, unsigned short* C, unsigned char* t, unsigned int i, node root)
 {
 	C[i] = root->c;
 	t[i] = root->t;
@@ -454,7 +454,7 @@ void unpad_tree_ushort(unsigned short* L, unsigned short* R, unsigned short* C, 
 	}
 }
 
-void unpad_tree_uint(unsigned int* L, unsigned int* R, unsigned short* C, unsigned char* t, unsigned short i, node root)
+void unpad_tree_uint(unsigned int* L, unsigned int* R, unsigned short* C, unsigned char* t, unsigned int i, node root)
 {
 	//root->c = C[i];
 	if(root->t==0)
@@ -569,7 +569,7 @@ node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount)
 					
 		node root = new_node2(0,0);
 		unpad_tree_uint(L,R,C,t,0,root);
-		return root;		
+		return root;
 	}
 }
 

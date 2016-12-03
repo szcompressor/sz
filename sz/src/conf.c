@@ -196,8 +196,8 @@ int SZ_ReadConf() {
 	versionNumber[2] = SZ_VER_REVISION; //15
     
     //initialization for Huffman encoding
-	pool = (struct node_t*)malloc(allNodes*sizeof(struct node_t));
-	qqq = (node*)malloc(allNodes*sizeof(node));
+	pool = (struct node_t*)malloc(allNodes*2*sizeof(struct node_t));
+	qqq = (node*)malloc(allNodes*2*sizeof(node));
 	code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
 	cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
     qq = qqq - 1;

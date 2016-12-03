@@ -1295,6 +1295,9 @@ void new_TightDataPointStorageF(TightDataPointStorageF **this,
 	free(type);*/
 
 	encode_withTree(type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
+	//debug for decompression
+	//unsigned short* outt = (unsigned short*)malloc(dataSeriesLength*sizeof(unsigned short));
+	//decode_withTree((*this)->typeArray, dataSeriesLength, outt);
 
 	(*this)->exactMidBytes = exactMidBytes;
 	(*this)->exactMidBytes_size = exactMidBytes_size;
