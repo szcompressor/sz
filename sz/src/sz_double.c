@@ -93,8 +93,8 @@ unsigned int optimize_intervals_double_2D(double *oriData, int r1, int r2, doubl
 		if(sum>targetCount)
 			break;
 	}
-	if(i>32767)
-		i = 32767;	
+	if(i>=maxRangeRadius)
+		i = maxRangeRadius-1;	
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 	//printf("maxRangeRadius = %d, accIntervals=%d, powerOf2=%d\n", maxRangeRadius, accIntervals, powerOf2);
@@ -142,8 +142,8 @@ unsigned int optimize_intervals_double_3D(double *oriData, int r1, int r2, int r
 		if(sum>targetCount)
 			break;
 	}
-	if(i>32767)
-		i = 32767;
+	if(i>=maxRangeRadius)
+		i = maxRangeRadius-1;
 		
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
