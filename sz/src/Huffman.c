@@ -18,12 +18,12 @@ int allNodes = maxRangeRadius*4;
 
 //struct node_t pool[allNodes] = {{0}};
 node pool;
-node *qqq;
-node *qq;
+node *qqq = NULL;
+node *qq = NULL;
 int n_nodes = 0;
 int qend = 1;
-unsigned long **code;//TODO
-unsigned char *cout;
+unsigned long **code = NULL;//TODO
+unsigned char *cout = NULL;
 int n_inode = 0;
  
 node new_node(int freq, unsigned short c, node a, node b)

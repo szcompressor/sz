@@ -59,6 +59,8 @@ int szMode = SZ_BEST_COMPRESSION;
 
 SZ_VarSet* sz_varset;
 
+sz_params *conf_params = NULL;
+
 int SZ_Init(char *configFilePath)
 {
 	char str[512]="", str2[512]="", str3[512]="";
@@ -74,8 +76,37 @@ int SZ_Init(char *configFilePath)
 	return 0;
 }
 
+void SZ_Reset()
+{
+	int i =0;
+    if(pool==NULL)
+    {
+		pool = (struct node_t*)malloc(allNodes*2*sizeof(struct node_t));
+		qqq = (node*)malloc(allNodes*2*sizeof(node));
+		code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
+		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
+	    qq = qqq - 1;
+	}
+	else
+	{
+		for(i=0;i<stateNum;i++)
+		{
+			if(code[i]!=NULL)
+				free(code[i]);
+		}
+	}
+	memset(pool, 0, allNodes*2*sizeof(struct node_t));
+	memset(qqq, 0, allNodes*2*sizeof(node));
+    memset(code, 0, stateNum*sizeof(unsigned long*));
+    memset(cout, 0, stateNum*sizeof(unsigned char));
+	n_nodes = 0;
+    n_inode = 0;
+    qend = 1;	
+}
+
 int SZ_Init_Params(sz_params *params)
 {
+	conf_params = params;
     int x = 1;
     char *y = (char*)&x;
     int endianType = BIG_ENDIAN_SYSTEM;
@@ -154,12 +185,8 @@ int SZ_Init_Params(sz_params *params)
 	}
 
     //initialization for Huffman encoding
-	pool = (struct node_t*)malloc(allNodes*sizeof(struct node_t));
-	qqq = (node*)malloc(allNodes*sizeof(node));
-	code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
-	cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
-    qq = qqq - 1;
-
+	SZ_Reset();
+	
     return 1;
 }
 
@@ -855,8 +882,19 @@ int getPredictionCoefficients(int layers, int dimension, int **coeff_array)
 
 void SZ_Finalize()
 {
+	int i ;
 	free(pool);
+	pool = NULL;
 	free(qqq);
+	qqq = NULL;
+	for(i=0;i<stateNum;i++)
+	{
+		if(code[i]!=NULL)
+			free(code[i]);
+	}	
 	free(code);
+	code = NULL;
 	free(cout);
+	cout = NULL;
+	
 }

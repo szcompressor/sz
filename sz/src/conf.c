@@ -64,6 +64,9 @@ void clearHuffmanMem()
 /*-------------------------------------------------------------------------*/
 int SZ_ReadConf() {
     // Check access to SZ configuration file and load dictionary
+    //record the setting in conf_params
+    conf_params = (sz_params*)malloc(sizeof(sz_params));    
+    
     int x = 1;
     char sol_name[256];
     char *modeBuf;
@@ -95,12 +98,15 @@ int SZ_ReadConf() {
 		exit(0);
 	}
 
+	conf_params->dataEndianType = dataEndianType;
+
 	char *y = (char*)&x;
 	
 	if(*y==1)
 		sysEndianType = LITTLE_ENDIAN_SYSTEM;
 	else //=0
 		sysEndianType = BIG_ENDIAN_SYSTEM;
+	conf_params->sysEndianType = sysEndianType;
 
 	// Reading/setting detection parameters
 	
@@ -115,18 +121,24 @@ int SZ_ReadConf() {
 		exit(0);
 	}
 
+	conf_params->sol_ID = sol_ID;
+
 	if(sol_ID==SZ)
 	{
 		layers = (int)iniparser_getint(ini, "PARAMETER:layers", 0);
+		conf_params->layers = layers;
 		
 		int quantization_intervals = (int)iniparser_getint(ini, "PARAMETER:quantization_intervals", 0);
+		conf_params->quantization_intervals = quantization_intervals;
 		if(quantization_intervals>0)
 		{
 			updateQuantizationInfo(quantization_intervals);
 			optQuantMode = 0;
 		}
 		else
+		{
 			optQuantMode = 1;
+		}
 		
 		if(quantization_intervals%2!=0)
 		{
@@ -135,9 +147,12 @@ int SZ_ReadConf() {
 		}
 		
 		predThreshold = (float)iniparser_getdouble(ini, "PARAMETER:predThreshold", 0);
+		conf_params->predThreshold = predThreshold;
 		sampleDistance = (int)iniparser_getint(ini, "PARAMETER:sampleDistance", 0);
+		conf_params->sampleDistance = sampleDistance;
 		
 		offset = (int)iniparser_getint(ini, "PARAMETER:offset", 0);
+		conf_params->offset = offset;
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:szMode", NULL);
 		if(strcmp(modeBuf, "SZ_BEST_SPEED")==0)
@@ -151,6 +166,7 @@ int SZ_ReadConf() {
 			printf("[SZ] Error: Wrong szMode setting (please check sz.config file)\n");
 			exit(0);			
 		}
+		conf_params->szMode = szMode;
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:gzipMode", NULL);
 		if(strcmp(modeBuf, "Gzip_NO_COMPRESSION")==0)
@@ -166,6 +182,7 @@ int SZ_ReadConf() {
 			printf("[SZ] Error: Wrong gzip Mode (please check sz.config file)\n");
 			exit(0);
 		}
+		conf_params->gzipMode = gzipMode;
 		//maxSegmentNum = (int)iniparser_getint(ini, "PARAMETER:maxSegmentNum", 0); //1024
 		
 		//spaceFillingCurveTransform = (int)iniparser_getint(ini, "PARAMETER:spaceFillingCurveTransform", 0);
@@ -186,9 +203,12 @@ int SZ_ReadConf() {
 			printf("[SZ] Error: Wrong error bound mode (please check sz.config file)\n");
 			exit(0);
 		}
+		conf_params->errorBoundMode = errorBoundMode;
 		
 		absErrBound = (double)iniparser_getdouble(ini, "PARAMETER:absErrBound", 0);
+		conf_params->absErrBound = absErrBound;
 		relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:relBoundRatio", 0);
+		conf_params->relBoundRatio = relBoundRatio;
 	}
 	
 	versionNumber[0] = SZ_VER_MAJOR; //0
@@ -196,19 +216,29 @@ int SZ_ReadConf() {
 	versionNumber[2] = SZ_VER_REVISION; //15
     
     //initialization for Huffman encoding
-	pool = (struct node_t*)malloc(allNodes*2*sizeof(struct node_t));
-	qqq = (node*)malloc(allNodes*2*sizeof(node));
-	code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
-	cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
-    qq = qqq - 1;
-    
-/*   	memset(pool, 0, allNodes*sizeof(struct node_t));
-	memset(code, 0, stateNum*sizeof(long*)); //original:128; we just used '0'-'7', so max ascii is 55.
-	memset(cout, 0, stateNum);
-    n_nodes = 0;
+    if(pool==NULL)
+    {
+		pool = (struct node_t*)malloc(allNodes*2*sizeof(struct node_t));
+		qqq = (node*)malloc(allNodes*2*sizeof(node));
+		code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
+		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
+		qq = qqq - 1;		
+	}
+	else
+	{
+		for(x=0;x<stateNum;x++)
+		{
+			if(code[x]!=NULL)
+				free(code[x]);
+		}
+	}
+	memset(pool, 0, allNodes*2*sizeof(struct node_t));
+	memset(qqq, 0, allNodes*2*sizeof(node));
+    memset(code, 0, stateNum*sizeof(unsigned long*));
+    memset(cout, 0, stateNum*sizeof(unsigned char));
+	n_nodes = 0;
     n_inode = 0;
-    qend = 1; 
-*/
+    qend = 1;    
     
     iniparser_freedict(ini);
     return 1;

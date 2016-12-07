@@ -144,6 +144,8 @@ typedef struct sz_params
     double relBoundRatio;
 } sz_params;
 
+extern sz_params *conf_params;
+
 //conf.c
 void updateQuantizationInfo(int quant_intervals);
 void clearHuffmanMem();
@@ -298,6 +300,7 @@ void sz_getvardata_double_(char* varName, int *len, double* data, int *r1, int *
 
 
 //sz.h
+void SZ_Reset();
 int SZ_Init(char *configFilePath);
 int SZ_Init_Params(sz_params *params);
 int computeDataLength(int r5, int r4, int r3, int r2, int r1);
