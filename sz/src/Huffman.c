@@ -144,6 +144,7 @@ void init(unsigned short *s, int length)
 		qinsert(new_node(0, 0, qremove(), qremove()));
  
 	build_code(qq[1], 0, 0, 0);
+	free(freq);
 }
  
 void encode(unsigned short *s, int length, unsigned char *out, int *outSize)

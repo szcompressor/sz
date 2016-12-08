@@ -295,7 +295,7 @@ int dataLength, double realPrecision, int *outSize, double valueRangeSize, doubl
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	//free(type);
+	free(type);
 	
 	//free_ExpSegmentConstructor(esc);
 		
@@ -529,7 +529,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, doub
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	//free(type);
+	free(type);
 	
 	//free_ExpSegmentConstructor(esc);
 		
@@ -878,7 +878,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	//free(type);
+	free(type);
 
 	//free_ExpSegmentConstructor(esc);
 

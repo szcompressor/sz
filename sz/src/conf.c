@@ -95,7 +95,8 @@ int SZ_ReadConf() {
 	else
 	{
 		printf("Error: Wrong dataEndianType: please set it correctly in sz.config.\n");
-		exit(0);
+		iniparser_freedict(ini);
+		exit(1);
 	}
 
 	conf_params->dataEndianType = dataEndianType;
@@ -118,6 +119,7 @@ int SZ_ReadConf() {
 	else
 	{
 		printf("[SZ] Error: wrong solution name (please check sz.config file)\n");
+		iniparser_freedict(ini);
 		exit(0);
 	}
 
@@ -143,7 +145,8 @@ int SZ_ReadConf() {
 		if(quantization_intervals%2!=0)
 		{
 			printf("Error: quantization_intervals must be an even number!\n");
-			return 0;
+			iniparser_freedict(ini);
+			exit(1);
 		}
 		
 		predThreshold = (float)iniparser_getdouble(ini, "PARAMETER:predThreshold", 0);
@@ -155,7 +158,13 @@ int SZ_ReadConf() {
 		conf_params->offset = offset;
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:szMode", NULL);
-		if(strcmp(modeBuf, "SZ_BEST_SPEED")==0)
+		if(modeBuf==NULL)
+		{
+			printf("[SZ] Error: Null szMode setting (please check sz.config file)\n");
+			iniparser_freedict(ini);
+			exit(1);					
+		}
+		else if(strcmp(modeBuf, "SZ_BEST_SPEED")==0)
 			szMode = SZ_BEST_SPEED;
 		else if(strcmp(modeBuf, "SZ_DEFAULT_COMPRESSION")==0)
 			szMode = SZ_DEFAULT_COMPRESSION;
@@ -164,12 +173,19 @@ int SZ_ReadConf() {
 		else
 		{
 			printf("[SZ] Error: Wrong szMode setting (please check sz.config file)\n");
-			exit(0);			
+			iniparser_freedict(ini);
+			exit(1);			
 		}
 		conf_params->szMode = szMode;
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:gzipMode", NULL);
-		if(strcmp(modeBuf, "Gzip_NO_COMPRESSION")==0)
+		if(modeBuf==NULL)
+		{
+			printf("[SZ] Error: Null Gzip mode setting (please check sz.config file)\n");
+			iniparser_freedict(ini);
+			exit(1);					
+		}		
+		else if(strcmp(modeBuf, "Gzip_NO_COMPRESSION")==0)
 			gzipMode = 0;
 		else if(strcmp(modeBuf, "Gzip_BEST_SPEED")==0)
 			gzipMode = 1;
@@ -190,7 +206,13 @@ int SZ_ReadConf() {
 		//reOrgSize = (int)iniparser_getint(ini, "PARAMETER:reOrgBlockSize", 0); //8
 		
 		errBoundMode = iniparser_getstring(ini, "PARAMETER:errorBoundMode", NULL);
-		if(strcmp(errBoundMode,"ABS")==0||strcmp(errBoundMode,"abs")==0)
+		if(errBoundMode==NULL)
+		{
+			printf("[SZ] Error: Null error bound setting (please check sz.config file)\n");
+			iniparser_freedict(ini);
+			exit(1);					
+		}		
+		else if(strcmp(errBoundMode,"ABS")==0||strcmp(errBoundMode,"abs")==0)
 			errorBoundMode=ABS;
 		else if(strcmp(errBoundMode, "REL")==0||strcmp(errBoundMode,"rel")==0)
 			errorBoundMode=REL;
@@ -201,7 +223,8 @@ int SZ_ReadConf() {
 		else
 		{
 			printf("[SZ] Error: Wrong error bound mode (please check sz.config file)\n");
-			exit(0);
+			iniparser_freedict(ini);
+			exit(1);
 		}
 		conf_params->errorBoundMode = errorBoundMode;
 		

@@ -296,7 +296,7 @@ int dataLength, float realPrecision, int *outSize, float valueRangeSize, float m
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	//free(type);
+	free(type);
 	
 	//free_ExpSegmentConstructor(esc);
 		
@@ -341,6 +341,8 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float
 	
 	P0 = (float*)malloc(r2*sizeof(float));
 	P1 = (float*)malloc(r2*sizeof(float));
+//	memset(P0, 0, r2*sizeof(float));
+//	memset(P1, 0, r2*sizeof(float));
 		
 	float medianValue = medianValue_f;
 	short reqExpo = getPrecisionReqLength_float(realPrecision);
@@ -532,7 +534,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	//free(type);
+	free(type);
 	
 	//free_ExpSegmentConstructor(esc);
 		
@@ -570,6 +572,8 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 	int r23 = r2*r3;
 	P0 = (float*)malloc(r23*sizeof(float));
 	P1 = (float*)malloc(r23*sizeof(float));
+//	memset(P0, 0, r23*sizeof(float));
+//	memset(P1, 0, r23*sizeof(float));	
 
 	float medianValue = medianValue_f;
 	short reqExpo = getPrecisionReqLength_float(realPrecision);
@@ -882,7 +886,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	//free(type);
+	free(type);
 
 	//free_ExpSegmentConstructor(esc);
 

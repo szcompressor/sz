@@ -156,21 +156,18 @@ int SZ_Init_Params(sz_params *params)
 
         if(params->absErrBound >= 0) absErrBound = params->absErrBound;
         if(params->relBoundRatio >= 0) relBoundRatio = params->relBoundRatio;
-        if(params->quantization_intervals >= 0) 
-        {
-			if(params->quantization_intervals>0)
-			{
-				updateQuantizationInfo(params->quantization_intervals);
-				optQuantMode = 0;
-			}
-			else
-				optQuantMode = 1;
+		if(params->quantization_intervals>0)
+		{
+			updateQuantizationInfo(params->quantization_intervals);
+			optQuantMode = 0;
 		}
-		if(params->layers >=0)
+		else
+			optQuantMode = 1;
+		if(params->layers >= 0)
 			layers = params->layers;
-		if(params->sampleDistance>=0)
+		if(params->sampleDistance >= 0)
 			sampleDistance = params->sampleDistance;
-		if(params->predThreshold=0)
+		if(params->predThreshold > 0)
 			predThreshold = params->predThreshold;
     }
 
