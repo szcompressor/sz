@@ -87,14 +87,7 @@ void SZ_Reset()
 		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
 	    qq = qqq - 1;
 	}
-	else
-	{
-		for(i=0;i<stateNum;i++)
-		{
-			if(code[i]!=NULL)
-				free(code[i]);
-		}
-	}
+	
 	memset(pool, 0, allNodes*2*sizeof(struct node_t));
 	memset(qqq, 0, allNodes*2*sizeof(node));
     memset(code, 0, stateNum*sizeof(unsigned long*));
@@ -182,7 +175,7 @@ int SZ_Init_Params(sz_params *params)
 	}
 
     //initialization for Huffman encoding
-	SZ_Reset();
+	//SZ_Reset();
 	
     return 1;
 }
@@ -803,6 +796,7 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 				exit(0);
 			}		
 			
+			free(varNameString);
 			k+=cpressedLength;
 			p = p->next;
 		}

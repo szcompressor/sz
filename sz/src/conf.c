@@ -246,22 +246,7 @@ int SZ_ReadConf() {
 		code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
 		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
 		qq = qqq - 1;		
-	}
-	else
-	{
-		for(x=0;x<stateNum;x++)
-		{
-			if(code[x]!=NULL)
-				free(code[x]);
-		}
-	}
-	memset(pool, 0, allNodes*2*sizeof(struct node_t));
-	memset(qqq, 0, allNodes*2*sizeof(node));
-    memset(code, 0, stateNum*sizeof(unsigned long*));
-    memset(cout, 0, stateNum*sizeof(unsigned char));
-	n_nodes = 0;
-    n_inode = 0;
-    qend = 1;    
+	} 
     
     iniparser_freedict(ini);
     return 1;

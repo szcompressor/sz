@@ -157,6 +157,7 @@ unsigned int optimize_intervals_float_3D(float *oriData, int r1, int r2, int r3,
 void SZ_compress_args_float_NoCkRngeNoGzip_1D(unsigned char** newByteData, float *oriData, 
 int dataLength, float realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
 {
+	SZ_Reset();	
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
@@ -205,7 +206,7 @@ int dataLength, float realPrecision, int *outSize, float valueRangeSize, float m
 	
 	int reqBytesLength = reqLength/8;
 	int resiBitsLength = reqLength%8;
-	float last3CmprsData[3];
+	float last3CmprsData[3] = {0};
 
 	FloatValueCompressElement *vce = (FloatValueCompressElement*)malloc(sizeof(FloatValueCompressElement));
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
@@ -320,6 +321,7 @@ int dataLength, float realPrecision, int *outSize, float valueRangeSize, float m
  * */
 void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float *oriData, int r1, int r2, float realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
 {
+	SZ_Reset();	
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
@@ -553,6 +555,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float
 
 void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, float realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
 {
+	SZ_Reset();	
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{

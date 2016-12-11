@@ -250,6 +250,8 @@ void encode(unsigned short *s, int length, unsigned char *out, int *outSize)
 			}
 		}
 	}
+//	for(i=0;i<stateNum;i++)
+//		if(code[i]!=NULL) free(code[i]);
 	/*printf("max bitsize = %d\n", maxBitSize);
 	printf("bitSize21 ratio = %f\n", ((float)bitSize21)/length);
 	printf("bitSize32 ratio = %f\n", ((float)bitSize32)/length);

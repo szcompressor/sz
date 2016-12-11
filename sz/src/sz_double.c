@@ -158,6 +158,7 @@ unsigned int optimize_intervals_double_3D(double *oriData, int r1, int r2, int r
 void SZ_compress_args_double_NoCkRngeNoGzip_1D(unsigned char** newByteData, double *oriData, 
 int dataLength, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d)
 {
+	SZ_Reset();
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
@@ -317,6 +318,7 @@ int dataLength, double realPrecision, int *outSize, double valueRangeSize, doubl
  * */
 void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, double *oriData, int r1, int r2, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d)
 {
+	SZ_Reset();	
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
@@ -545,6 +547,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, doub
 
 void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, double *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d)
 {
+	SZ_Reset();	
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
