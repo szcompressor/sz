@@ -166,7 +166,7 @@ int dataLength, float realPrecision, int *outSize, float valueRangeSize, float m
 	}
 	else
 		quantization_intervals = intvCapacity;
-	clearHuffmanMem();
+	//clearHuffmanMem();
 	int i;
 	float medianValue = medianValue_f;
 	short reqExpo = getPrecisionReqLength_float(realPrecision);
@@ -330,7 +330,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float
 	}	
 	else
 		quantization_intervals = intvCapacity;
-	clearHuffmanMem();
+	//clearHuffmanMem();
 	//printf("quantization_intervals=%d\n",quantization_intervals);
 	
 	int i,j;
@@ -564,7 +564,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 	}	
 	else
 		quantization_intervals = intvCapacity;
-	clearHuffmanMem();
+	//clearHuffmanMem();
 	int i,j,k;
 	float pred1D, pred2D, pred3D;
 	float diff = 0.0;

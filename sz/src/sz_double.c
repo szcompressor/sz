@@ -167,7 +167,7 @@ int dataLength, double realPrecision, int *outSize, double valueRangeSize, doubl
 	}
 	else
 		quantization_intervals = intvCapacity;
-	clearHuffmanMem();
+	//clearHuffmanMem();
 
 	int i;
 	double medianValue = medianValue_d;
@@ -327,7 +327,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, doub
 	}
 	else
 		quantization_intervals = intvCapacity;	
-	clearHuffmanMem();	
+	//clearHuffmanMem();	
 	int i,j;
 	double pred1D, pred2D;
 	double diff = 0.0;
@@ -556,7 +556,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 	}	
 	else
 		quantization_intervals = intvCapacity;
-	clearHuffmanMem();
+	//clearHuffmanMem();
 	int i,j,k;
 	double pred1D, pred2D, pred3D;
 	double diff = 0.0;

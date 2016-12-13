@@ -244,3 +244,21 @@ void writeData(void *data, int dataType, int nbEle, char *tgtFilePath)
 		exit(0);	
 	}
 }
+
+void writeFloatData_inBytes(float *data, int nbEle, char* tgtFilePath)
+{
+	int i = 0;
+	lfloat buf;
+	unsigned char* bytes = (unsigned char*)malloc(nbEle*sizeof(float));
+	for(i=0;i<nbEle;i++)
+	{
+		buf.ivalue = data[i];
+		bytes[i*4+0] = buf.byte[0];
+		bytes[i*4+1] = buf.byte[1];
+		bytes[i*4+2] = buf.byte[2];
+		bytes[i*4+3] = buf.byte[3];						
+	}
+	int byteLength = nbEle*sizeof(float);
+	writeByteData(bytes, byteLength, tgtFilePath);
+	free(bytes);
+}

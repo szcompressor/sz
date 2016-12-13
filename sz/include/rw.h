@@ -33,6 +33,7 @@ void writeByteData(unsigned char *bytes, int outSize, char *tgtFilePath);
 void writeDoubleData(double *data, int nbEle, char *tgtFilePath);
 void writeFloatData(float *data, int nbEle, char *tgtFilePath);
 void writeData(void *data, int dataType, int nbEle, char *tgtFilePath);
+void writeFloatData_inBytes(float *data, int nbEle, char* tgtFilePath);
 
 #ifdef __cplusplus
 }
