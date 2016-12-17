@@ -384,3 +384,29 @@ int getRightMovingCode(int kMod8, int resiBitLength)
 		return c;
 	}
 }
+
+unsigned short* convertByteDataToShortArray(unsigned char* bytes, int byteLength)
+{
+	lshort ls;
+	int i, stateLength = byteLength/2;
+	unsigned short* states = (unsigned short*)malloc(stateLength*sizeof(short));
+	for(i=0;i<stateLength;i++)
+	{
+		ls.byte[0] = bytes[i*2];
+		ls.byte[1] = bytes[i*2+1];
+		states[i] = ls.svalue;
+	}
+	return states;
+} 
+
+void convertShortArrayToBytes(unsigned short* states, int stateLength, unsigned char* bytes)
+{
+	lshort ls;
+	int i, byteLength = byteLength*2;
+	for(i=0;i<stateLength;i++)
+	{
+		ls.svalue = states[i];
+		bytes[i*2] = ls.byte[0];
+		bytes[i*2+1] = ls.byte[1];
+	}
+} 

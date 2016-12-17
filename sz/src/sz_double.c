@@ -1019,6 +1019,8 @@ void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2,
 		}	
 		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
 		{
+			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
+				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 			
 			tmpSize = zlib_uncompress2(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize);			
 			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 			//memcpy(szTmpBytes, tmpBytes, tmpSize);

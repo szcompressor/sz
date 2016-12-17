@@ -1126,6 +1126,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 
 void getSnapshotData_double_1D(double** data, int dataSeriesLength, TightDataPointStorageD* tdps) 
 {	
+	SZ_Reset();
 	int i;
 	if (tdps->allSameData) {
 		double value = bytesToDouble(tdps->exactMidBytes);
@@ -1170,6 +1171,7 @@ void getSnapshotData_double_1D(double** data, int dataSeriesLength, TightDataPoi
 
 void getSnapshotData_double_2D(double** data, int r1, int r2, TightDataPointStorageD* tdps) 
 {
+	SZ_Reset();
 	int i;
 	int dataSeriesLength = r1*r2;
 	if (tdps->allSameData) {
@@ -1215,6 +1217,7 @@ void getSnapshotData_double_2D(double** data, int r1, int r2, TightDataPointStor
 
 void getSnapshotData_double_3D(double** data, int r1, int r2, int r3, TightDataPointStorageD* tdps) 
 {
+	SZ_Reset();
 	int i;
 	int dataSeriesLength = r1*r2*r3;
 	if (tdps->allSameData) {

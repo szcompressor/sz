@@ -84,7 +84,7 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, uns
 
 	int rtype_ = sameRByte & 0x08;		//1000
 
-	unsigned char byteBuf[4];
+	unsigned char byteBuf[4], byteBuf2[8];
 
 	for (i = 0; i < 4; i++)
 		byteBuf[i] = flatBytes[index++];
@@ -96,9 +96,9 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, uns
 	
 	(*this)->reqLength = flatBytes[index++]; //1
 	
-	for (i = 0; i < 4; i++)
-		byteBuf[i] = flatBytes[index++];
-	(*this)->realPrecision = bytesToFloat(byteBuf);//4
+	for (i = 0; i < 8; i++)
+		byteBuf2[i] = flatBytes[index++];
+	(*this)->realPrecision = bytesToDouble(byteBuf2);//8
 
 	for (i = 0; i < 4; i++)
 		byteBuf[i] = flatBytes[index++];
@@ -156,7 +156,7 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, uns
 
 	if ((*this)->rtypeArray != NULL) 
 	{
-		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - 4 - 4 - 1 - 4 - 4 - 4 - 4 - 4
+		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - 4 - 4 - 1 - 8 - 4 - 4 - 4 - 4
 				- 4 - (*this)->rtypeArray_size
 				- (*this)->typeArray_size - (*this)->leadNumArray_size
 				- (*this)->exactMidBytes_size;
@@ -165,7 +165,7 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, uns
 	}
 	else
 	{
-		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - 4 - 4 - 1 - 4 - 4 - 4
+		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - 4 - 4 - 1 - 8 - 4 - 4
 				- 4 - (*this)->typeArray_size
 				- (*this)->leadNumArray_size - (*this)->exactMidBytes_size;
 	}	
@@ -196,7 +196,7 @@ void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightData
 								// byte_index of resiMidBits, l is for
 								// leadNum
 	unsigned char* leadNum;
-	float interval = tdps->realPrecision*2;
+	double interval = tdps->realPrecision*2;
 	
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 
@@ -208,6 +208,9 @@ void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightData
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
 	//type = tdps->typeArray;
 	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+
+	//sdi:Debug
+	//writeShortData(type, dataSeriesLength, "decompressStateBytes.sb");
 
 	unsigned char preBytes[4];
 	unsigned char curBytes[4];
@@ -225,6 +228,8 @@ void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightData
 	
 	unsigned short type_;
 	for (i = 0; i < dataSeriesLength; i++) {
+//		if(i==147321881)
+//			printf("i=%d\n", i);
 		type_ = type[i];
 		switch (type_) {
 		case 0:
@@ -294,7 +299,7 @@ void decompressDataSeries_float_2D(float** data, int r1, int r2, TightDataPointS
 	//	printf ("%d %d\n", r1, r2);
 
 	unsigned char* leadNum;
-	float realPrecision = tdps->realPrecision;
+	double realPrecision = tdps->realPrecision;
 
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 
@@ -600,7 +605,7 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 	int dataSeriesLength = r1*r2*r3;
 //	printf ("%d %d %d\n", r1, r2, r3);
 	unsigned char* leadNum;
-	float realPrecision = tdps->realPrecision;
+	double realPrecision = tdps->realPrecision;
 
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 
@@ -1119,7 +1124,7 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 
 //TODO
 void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps) {
-
+	SZ_Reset();
 	int i;
 	if (tdps->allSameData) {
 		float value = bytesToFloat(tdps->exactMidBytes);
@@ -1164,7 +1169,7 @@ void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPoint
 
 
 void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps) {
-
+	SZ_Reset();
 	int i;
 	int dataSeriesLength = r1*r2;
 	if (tdps->allSameData) {
@@ -1210,6 +1215,7 @@ void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorag
 
 void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps)
 {
+	SZ_Reset();
 	int i;
 	int dataSeriesLength = r1*r2*r3;
 	if (tdps->allSameData) {
@@ -1268,8 +1274,8 @@ void new_TightDataPointStorageF(TightDataPointStorageF **this,
 		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
 		unsigned char* resiMidBits, int resiMidBits_size,
 		unsigned char* resiBitLength, int resiBitLengthSize, 
-		float realPrecision, float medianValue, char reqLength, unsigned int intervals) {
-	//int i = 0;
+		double realPrecision, float medianValue, char reqLength, unsigned int intervals) {
+	int i = 0;
 	*this = (TightDataPointStorageF *)malloc(sizeof(TightDataPointStorageF));
 	(*this)->allSameData = 0;
 	(*this)->realPrecision = realPrecision;
@@ -1295,10 +1301,20 @@ void new_TightDataPointStorageF(TightDataPointStorageF **this,
 	free(type);*/
 
 	encode_withTree(type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
-	//debug for decompression
-	//unsigned short* outt = (unsigned short*)malloc(dataSeriesLength*sizeof(unsigned short));
-	//decode_withTree((*this)->typeArray, dataSeriesLength, outt);
+	
+	//sdi: Debug
+	//SZ_Reset();
+	//unsigned short type_[dataSeriesLength];
+	//decode_withTree((*this)->typeArray, (*this)->typeArray_size, type_);
 
+	/*for (i = 0; i < stateNum; i++)
+		if (code[i])
+		{		
+			printf("%d: %lu,%lu ; %u\n", i, (code[i])[0] >> (64-cout[i]),(code[i])[1], cout[i]);
+		}
+	*/
+	//writeByteData((*this)->typeArray, (*this)->typeArray_size, "compress-typebytes.tbt");
+	
 	(*this)->exactMidBytes = exactMidBytes;
 	(*this)->exactMidBytes_size = exactMidBytes_size;
 
@@ -1323,7 +1339,7 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 	unsigned char exactLengthBytes[4];
 	unsigned char exactMidBytesLength[4];
 	unsigned char reservedValueBytes[4];
-	unsigned char realPrecisionBytes[4];
+	unsigned char realPrecisionBytes[8];
 	
 	unsigned char medianValueBytes[4];
 
@@ -1349,7 +1365,7 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 	else if (tdps->rtypeArray == NULL)
 	{
 		int residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;
-		int totalByteLength = 3 + 4 + 1 + 4 + 4 + 1 + 4 + 4 + 4 + 4  
+		int totalByteLength = 3 + 4 + 1 + 4 + 4 + 1 + 8 + 4 + 4 + 4  
 				+ tdps->typeArray_size + tdps->leadNumArray_size + tdps->exactMidBytes_size + residualMidBitsLength;
 
 		*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
@@ -1371,8 +1387,8 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 
 		(*bytes)[k++] = tdps->reqLength; //1 byte
 
-		floatToBytes(realPrecisionBytes, tdps->realPrecision);
-		for (i = 0; i < 4; i++)// 4
+		doubleToBytes(realPrecisionBytes, tdps->realPrecision);
+		for (i = 0; i < 8; i++)// 8
 			(*bytes)[k++] = realPrecisionBytes[i];
 
 		intToBytes_bigEndian(typeArrayLengthBytes, tdps->typeArray_size);
@@ -1404,7 +1420,7 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 	else //the case with reserved value
 	{
 		int residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;
-		int totalByteLength = 3 + 4 + 1 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 + 4 + tdps->rtypeArray_size
+		int totalByteLength = 3 + 4 + 1 + 4 + 4 + 1 + 8 + 4 + 4 + 4 + 4 + 4 + tdps->rtypeArray_size
 				+ tdps->typeArray_size + tdps->leadNumArray_size
 				+ tdps->exactMidBytes_size + residualMidBitsLength;
 
@@ -1432,7 +1448,7 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 		(*bytes)[k++] = tdps->reqLength; //1 byte
 
 		floatToBytes(realPrecisionBytes, tdps->realPrecision);
-		for (i = 0; i < 4; i++)// 4
+		for (i = 0; i < 8; i++)// 8
 			(*bytes)[k++] = realPrecisionBytes[i];
 
 		intToBytes_bigEndian(typeArrayLengthBytes, tdps->typeArray_size);

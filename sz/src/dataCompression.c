@@ -104,9 +104,9 @@ double getRealPrecision_double(double valueRangeSize, int errBoundMode, double a
 	return precision;
 }
 
-float getRealPrecision_float(float valueRangeSize, int errBoundMode, float absErrBound, float relBoundRatio)
+double getRealPrecision_float(float valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio)
 {
-	float precision = 0;
+	double precision = 0;
 	if(errBoundMode==ABS)
 		precision = absErrBound; 
 	else if(errBoundMode==REL)

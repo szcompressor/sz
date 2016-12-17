@@ -18,7 +18,7 @@ typedef struct TightDataPointStorageF
 {
 	int dataSeriesLength;
 	int allSameData;
-	float realPrecision;
+	double realPrecision;
 	float medianValue;
 	char reqLength;
 	
@@ -61,7 +61,7 @@ void new_TightDataPointStorageF(TightDataPointStorageF **this,
 		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
 		unsigned char* resiMidBits, int resiMidBits_size,
 		unsigned char* resiBitLength, int resiBitLengthSize, 
-		float realPrecision, float medianValue, char reqLength, unsigned int intervals);
+		double realPrecision, float medianValue, char reqLength, unsigned int intervals);
 void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** bytes, int *size);
 void free_TightDataPointStorageF(TightDataPointStorageF *tdps);
 

@@ -246,7 +246,7 @@ int SZ_ReadConf() {
 		code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
 		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
 		qq = qqq - 1;		
-	} 
+	}
     
     iniparser_freedict(ini);
     return 1;

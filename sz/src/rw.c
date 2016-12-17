@@ -250,30 +250,35 @@ void writeFloatData_inBytes(float *data, int nbEle, char* tgtFilePath)
 	int i = 0;
 	lfloat buf;
 	unsigned char* bytes = (unsigned char*)malloc(nbEle*sizeof(float));
-	if(sysEndianType==BIG_ENDIAN_DATA)
+	for(i=0;i<nbEle;i++)
 	{
-		for(i=0;i<nbEle;i++)
-		{
-			buf.value = data[i];
-			bytes[i*4+0] = buf.byte[0];
-			bytes[i*4+1] = buf.byte[1];
-			bytes[i*4+2] = buf.byte[2];
-			bytes[i*4+3] = buf.byte[3];					
-		}		
-	}
-	else
-	{
-		for(i=0;i<nbEle;i++)
-		{
-			buf.value = data[i];
-			bytes[i*4+0] = buf.byte[3];
-			bytes[i*4+1] = buf.byte[2];
-			bytes[i*4+2] = buf.byte[1];
-			bytes[i*4+3] = buf.byte[0];									
-		}		
+		buf.value = data[i];
+		bytes[i*4+0] = buf.byte[0];
+		bytes[i*4+1] = buf.byte[1];
+		bytes[i*4+2] = buf.byte[2];
+		bytes[i*4+3] = buf.byte[3];					
 	}
 
 	int byteLength = nbEle*sizeof(float);
 	writeByteData(bytes, byteLength, tgtFilePath);
 	free(bytes);
+}
+
+void writeShortData(unsigned short *states, int stateLength, unsigned char *tgtFilePath)
+{
+	int byteLength = stateLength*2;
+	unsigned char* bytes = (unsigned char*)malloc(byteLength*sizeof(char));
+	convertShortArrayToBytes(states, stateLength, bytes);
+	writeByteData(bytes, byteLength, tgtFilePath);
+	free(bytes);
+}
+
+unsigned short* readShortData(unsigned char *srcFilePath, int *dataLength)
+{
+	int byteLength = 0;
+	unsigned char * bytes = readByteData(srcFilePath, &byteLength);
+	*dataLength = byteLength/2;
+	unsigned short* states = convertByteDataToShortArray(bytes, byteLength);
+	free(bytes);
+	return states;
 }

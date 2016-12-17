@@ -33,7 +33,7 @@ extern "C" {
 #define SZ_VERNUM 0x0130
 #define SZ_VER_MAJOR 1
 #define SZ_VER_MINOR 4
-#define SZ_VER_REVISION 6
+#define SZ_VER_REVISION 7
 
 #define HZ 102
 #define SZ 101
@@ -54,6 +54,9 @@ extern "C" {
 
 #define DynArrayInitLen 1024
 
+#define MIN_ZLIB_DEC_ALLOMEM_BYTES 1000000
+
+//#define maxRangeRadius 32768
 #define maxRangeRadius 32768
 
 #define SZ_BEST_SPEED 0
@@ -162,7 +165,7 @@ double max_d(double a, double b);
 float min_f(float a, float b);
 float max_f(float a, float b);
 double getRealPrecision_double(double valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio);
-float getRealPrecision_float(float valueRangeSize, int errBoundMode, float absErrBound, float relBoundRatio);
+double getRealPrecision_float(float valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio);
 void symTransform_8bytes(unsigned char data[8]);
 void flush_to_bigEndian_8bytes(unsigned char data[8], int dataEndianType);
 void symTransform_2bytes(unsigned char data[2]);
@@ -206,6 +209,8 @@ int getMaskRightCode(int m);
 int getLeftMovingCode(int kMod8);
 int getRightMovingSteps(int kMod8, int resiBitLength);
 int getRightMovingCode(int kMod8, int resiBitLength);
+unsigned short* convertByteDataToShortArray(unsigned char* bytes, int byteLength);
+void convertShortArrayToBytes(unsigned short* states, int stateLength, unsigned char* bytes);
 
 //TypeManager.c
 int convertIntArray2ByteArray_fast_2b(unsigned char* timeStepType, int timeStepTypeLength, unsigned char **result);
@@ -307,17 +312,17 @@ int computeDataLength(int r5, int r4, int r3, int r2, int r1);
 int computeDimension(int r5, int r4, int r3, int r2, int r1);
 
 int getPredictionCoefficients(int layers, int dimension, int **coeff_array);
-unsigned int optimize_intervals_float_1D(float *oriData, int dataLength, float realPrecision);
-unsigned int optimize_intervals_float_2D(float *oriData, int r1, int r2, float realPrecision);
-unsigned int optimize_intervals_float_3D(float *oriData, int r1, int r2, int r3, float realPrecision);
+unsigned int optimize_intervals_float_1D(float *oriData, int dataLength, double realPrecision);
+unsigned int optimize_intervals_float_2D(float *oriData, int r1, int r2, double realPrecision);
+unsigned int optimize_intervals_float_3D(float *oriData, int r1, int r2, int r3, double realPrecision);
 unsigned int optimize_intervals_double_1D(double *oriData, int dataLength, double realPrecision);
 unsigned int optimize_intervals_double_2D(double *oriData, int r1, int r2, double realPrecision);
 unsigned int optimize_intervals_double_3D(double *oriData, int r1, int r2, int r3, double realPrecision);
 
-//void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, int dataLength, float realPrecision, int *outSize);
-void SZ_compress_args_float_NoCkRngeNoGzip_1D(unsigned char** newByteData, float *oriData, int dataLength, float realPrecision, int *outSize, float valueRangeSize, float medianValue_f);
-void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float *oriData, int r1, int r2, float realPrecision, int *outSize, float valueRangeSize, float medianValue_f);
-void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, float realPrecision, int *outSize, float valueRangeSize, float medianValue_f);
+//void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, int dataLength, double realPrecision, int *outSize);
+void SZ_compress_args_float_NoCkRngeNoGzip_1D(unsigned char** newByteData, float *oriData, int dataLength, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f);
+void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float *oriData, int r1, int r2, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f);
+void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f);
 void SZ_compress_args_double_NoCkRngeNoGzip_1D(unsigned char** newByteData, double *oriData, int dataLength, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d);
 void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, double *oriData, int r1, int r2, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d);
 void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, double *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d);
@@ -327,14 +332,14 @@ void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *or
 
 void SZ_compress_args_float(unsigned char** newByteData, float *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
-int errBoundMode, float absErr_Bound, float rel_BoundRatio);
+int errBoundMode, double absErr_Bound, double relBoundRatio);
 void SZ_compress_args_double(unsigned char** newByteData, double *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio);
 
 void SZ_compress_args_float_wRngeNoGzip(unsigned char** newByteData, float *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
-int errBoundMode, float absErr_Bound, float rel_BoundRatio);
+int errBoundMode, double absErr_Bound, double rel_BoundRatio);
 void SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio);

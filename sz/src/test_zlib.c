@@ -60,7 +60,7 @@ unsigned long zlib_compress2(unsigned char* data, unsigned long dataLength, unsi
 //	stream.data_type = Z_TEXT;
 
     //err = deflateInit(&stream, level); //default  windowBits == 15.
-    int windowBits = 13; //8-15
+    int windowBits = 14; //8-15
     if(szMode==SZ_BEST_COMPRESSION)
 		windowBits = 15;
 	

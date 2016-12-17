@@ -101,11 +101,10 @@ void build_code(node n, int len, unsigned long out1, unsigned long out2)
 		cout[n->c] = (unsigned char)len;
 		return;
 	}
-	int index = len >> 8; //=len/64
+	int index = len >> 6; //=len/64
 	if(index == 0)
 	{
-		if(len%64!=0)
-			out1 = out1 << 1;
+		out1 = out1 << 1;
 		out1 = out1 | 0;
 		build_code(n->left, len + 1, out1, 0);
 		out1 = out1 | 1;
@@ -260,7 +259,8 @@ void encode(unsigned short *s, int length, unsigned char *out, int *outSize)
  
 void decode(unsigned char *s, int targetLength, node t, unsigned short *out)
 {
-	int i = 0, r, byteIndex= 0, count=0;
+	unsigned long i = 0, byteIndex = 0;
+	int r, count=0;
 	node n = t;
 	char byte;
 	for(i=0;count<targetLength;i++)
@@ -343,7 +343,7 @@ void pad_tree_uint(unsigned int* L, unsigned int* R, unsigned short* C, unsigned
 		n_inode++;
 		R[i] = n_inode;
 		pad_tree_uint(L,R,C,t,n_inode, rroot);
-	}	
+	}
 }
  
 unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** out) 
@@ -495,6 +495,10 @@ node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount)
 		memcpy(t, bytes+2*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short), nodeCount*sizeof(unsigned char));
 		node root = new_node2(0,0);
 		unpad_tree_uchar(L,R,C,t,0,root);
+		free(L);
+		free(R);
+		free(C);
+		free(t);
 		return root;
 	}
 	else if(nodeCount<=65536)
@@ -527,6 +531,10 @@ node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount)
 
 		node root = new_node2(0,0);
 		unpad_tree_ushort(L,R,C,t,0,root);
+		free(L);
+		free(R);
+		free(C);
+		free(t);		
 		return root;				
 	}
 	else //nodeCount>65536
@@ -572,6 +580,10 @@ node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount)
 					
 		node root = new_node2(0,0);
 		unpad_tree_uint(L,R,C,t,0,root);
+		free(L);
+		free(R);
+		free(C);
+		free(t);
 		return root;
 	}
 }
@@ -598,6 +610,10 @@ void encode_withTree(unsigned short *s, int length, unsigned char **out, int *ou
 	int enCodeSize = 0;
 	encode(s, length, *out+4+treeByteSize, &enCodeSize);
 	*outSize = 4+treeByteSize+enCodeSize;
+	
+	//unsigned short state[length];
+	//decode(*out+4+treeByteSize, enCodeSize, qqq[0], state);
+	//printf("dataSeriesLength=%d",length );
 }
 
 /**
@@ -609,6 +625,18 @@ void decode_withTree(unsigned char *s, int targetLength, unsigned short *out)
 	int encodeStartIndex;
 	int nodeCount = bytesToInt_bigEndian(s);
 	node root = reconstruct_HuffTree_from_bytes_anyStates(s+4, nodeCount);
+	
+	//sdi: Debug
+/*	build_code(root, 0, 0, 0);
+	int i;
+	unsigned long code_1, code_2;
+	for (i = 0; i < stateNum; i++)
+		if (code[i])
+		{		
+			printf("%d: %lu,%lu ; %u\n", i, (code[i])[0],(code[i])[1], cout[i]);
+			//code_1 = (code[i])[0];
+		}*/
+	
 	if(nodeCount<=256)
 		encodeStartIndex = 3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short);
 	else if(nodeCount<=65536)

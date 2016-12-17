@@ -85,16 +85,16 @@ void SZ_Reset()
 		qqq = (node*)malloc(allNodes*2*sizeof(node));
 		code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
 		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
-	    qq = qqq - 1;
 	}
 	
 	memset(pool, 0, allNodes*2*sizeof(struct node_t));
 	memset(qqq, 0, allNodes*2*sizeof(node));
     memset(code, 0, stateNum*sizeof(unsigned long*));
     memset(cout, 0, stateNum*sizeof(unsigned char));
+	qq = qqq - 1;
 	n_nodes = 0;
     n_inode = 0;
-    qend = 1;	
+    qend = 1;
 }
 
 int SZ_Init_Params(sz_params *params)
@@ -259,7 +259,7 @@ double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
 		unsigned char *newByteData;
 		
 		SZ_compress_args_float(&newByteData, (float *)data, r5, r4, r3, r2, r1, 
-		outSize, errBoundMode, (float)absErrBound, (float)relBoundRatio);
+		outSize, errBoundMode, absErrBound, relBoundRatio);
 		
 		return newByteData;
 	}
@@ -448,7 +448,7 @@ unsigned char* SZ_batch_compress(int *outSize)
 			int outSize;
 			SZ_compress_args_float_wRngeNoGzip(&newByteData, (float *)p->data, 
 			p->r5, p->r4, p->r3, p->r2, p->r1, 
-			&(p->compressedSize), p->errBoundMode, (float)(p->absErrBound), (float)(p->relBoundRatio));
+			&(p->compressedSize), p->errBoundMode, p->absErrBound, p->relBoundRatio);
 			
 			p->compressedBytes = newByteData;
 		}
