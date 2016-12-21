@@ -8,6 +8,7 @@ AC_CONFIG_SRCDIR([sz/src/sz.c])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
+: ${CFLAGS=-O3}
 AC_PROG_CC
 AC_PROG_FC
 AC_PROG_RANLIB
