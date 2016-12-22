@@ -65,9 +65,15 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, uns
 	unsigned char sameRByte = flatBytes[index++]; //1
 	int same = sameRByte & 0x01;
 	szMode = (sameRByte & 0x06)>>1;
+	(*this)->isLossless = (sameRByte & 0x16)>>4;
 	//printf("szMode=%d\n",szMode);
 
-	if(same==1)
+	if((*this)->isLossless==1)
+	{
+		(*this)->exactMidBytes = flatBytes+8;
+		return;
+	}
+	else if(same==1)
 	{
 		(*this)->allSameData = 1;
 		int exactMidBytesLength = flatBytesLength - 3 - 4 -1;
@@ -1126,6 +1132,7 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps) {
 	SZ_Reset();
 	int i;
+
 	if (tdps->allSameData) {
 		float value = bytesToFloat(tdps->exactMidBytes);
 		*data = (float*)malloc(sizeof(float)*dataSeriesLength);
@@ -1326,6 +1333,8 @@ void new_TightDataPointStorageF(TightDataPointStorageF **this,
 	(*this)->residualMidBits_size = convertIntArray2ByteArray_fast_dynamic(resiMidBits, resiBitLength, resiBitLengthSize, &((*this)->residualMidBits));
 	
 	(*this)->intervals = intervals;
+	
+	(*this)->isLossless = 0;
 }
 
 //TODO: convert TightDataPointStorageD to bytes...

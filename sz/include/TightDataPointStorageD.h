@@ -42,6 +42,8 @@ typedef struct TightDataPointStorageD
 	int residualMidBits_size;
 	
 	unsigned int intervals;
+	
+	unsigned char isLossless;
 
 } TightDataPointStorageD;
 

@@ -262,7 +262,7 @@ int dataLength, double realPrecision, int *outSize, float valueRangeSize, float 
 				pred = pred - state*interval;
 			}
 			if(type[i]==0)
-				printf(":i=%d\n", i);
+				printf("err:type[%d]=0\n", i);
 			listAdd_float(last3CmprsData, pred);					
 			continue;
 		}
@@ -321,6 +321,33 @@ int dataLength, double realPrecision, int *outSize, float valueRangeSize, float 
 	//TODO: return bytes....
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 	
+	int floatSize=sizeof(float);
+	if(*outSize>dataLength*floatSize)
+	{
+		int k = 0, i;
+		tdps->isLossless = 1;
+		int totalByteLength = 3 + 4 + 1 + floatSize*dataLength;
+		*newByteData = (unsigned char*)malloc(totalByteLength);
+		
+		unsigned char dsLengthBytes[4];
+		intToBytes_bigEndian(dsLengthBytes, dataLength);//4
+		for (i = 0; i < 3; i++)//3
+			(*newByteData)[k++] = versionNumber[i];
+		for (i = 0; i < 4; i++)//4
+			(*newByteData)[k++] = dsLengthBytes[i];
+		(*newByteData)[k++] = 16;	//=00010000	
+		
+		if(sysEndianType==BIG_ENDIAN_SYSTEM)
+			memcpy((*newByteData)+8, oriData, dataLength*floatSize);
+		else
+		{
+			unsigned char* p = (*newByteData)+8;
+			for(i=0;i<dataLength;i++,p+=floatSize)
+				floatToBytes(p, oriData[i]);
+		}
+		*outSize = totalByteLength;
+	}
+	
 //	TightDataPointStorageF* tdps2;
 //	new_TightDataPointStorageF_fromFlatBytes(&tdps2, *newByteData, outSize);
 
@@ -359,7 +386,9 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float
 	int dataLength = r1*r2;	
 	
 	P0 = (float*)malloc(r2*sizeof(float));
+	memset(P0, 0, r2*sizeof(float));
 	P1 = (float*)malloc(r2*sizeof(float));
+	memset(P1, 0, r2*sizeof(float));
 		
 	float medianValue = medianValue_f;
 	short reqExpo = getPrecisionReqLength_float((float)realPrecision);
@@ -925,7 +954,6 @@ void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriD
 	tdps->rtypeArray = NULL;
 	tdps->typeArray = NULL;	
 	tdps->leadNumArray = NULL;
-	tdps->escBytes = NULL;
 	tdps->residualMidBits = NULL;
 	
 	tdps->allSameData = 1;
@@ -1033,7 +1061,7 @@ void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, i
 	//unsigned char* tmpBytes;
 	int targetUncompressSize = dataLength <<2; //i.e., *4
 	//tmpSize must be "much" smaller than dataLength
-	int tmpSize = 12;
+	int tmpSize = 12, i;
 	unsigned char* szTmpBytes;
 	if(cmpSize!=12)
 	{
@@ -1066,7 +1094,22 @@ void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, i
 	
 	//writeByteData(tdps->typeArray, tdps->typeArray_size, "decompress-typebytes.tbt");
 	
-	if (dataLength == r1)
+	int floatSize = sizeof(float);
+	if(tdps->isLossless)
+	{
+		*newData = (float*)malloc(floatSize*dataLength);
+		if(sysEndianType==BIG_ENDIAN_SYSTEM)
+		{
+			memcpy(*newData, tdps->exactMidBytes, dataLength*floatSize);
+		}
+		else
+		{
+			unsigned char* p = tdps->exactMidBytes;
+			for(i=0;i<dataLength;i++,p+=floatSize)
+				(*newData)[i] = bytesToFloat(p);
+		}		
+	}
+	else if (dataLength == r1)
 		getSnapshotData_float_1D(newData,r1,tdps);
 	else
 	if (dataLength == r1*r2)

@@ -37,14 +37,12 @@ typedef struct TightDataPointStorageF
 	unsigned char* exactMidBytes;
 	int exactMidBytes_size;
 	
-	unsigned char* escBytes;
-	int escBytes_size;
-	
 	unsigned char* residualMidBits;
 	int residualMidBits_size;
 	
 	unsigned int intervals;
-
+	
+	unsigned char isLossless; //a mark to denote whether it's lossless compression (1 is yes, 0 is no)
 } TightDataPointStorageF;
 
 void new_TightDataPointStorageF_Empty(TightDataPointStorageF **this);

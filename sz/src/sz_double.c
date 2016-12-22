@@ -303,6 +303,33 @@ int dataLength, double realPrecision, int *outSize, double valueRangeSize, doubl
 	//TODO: return bytes....
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
 
+	int doubleSize = sizeof(double);
+	if(*outSize>dataLength*doubleSize)
+	{
+		int k = 0, i;
+		tdps->isLossless = 1;
+		int totalByteLength = 3 + 4 + 1 + doubleSize*dataLength;
+		*newByteData = (unsigned char*)malloc(totalByteLength);
+		
+		unsigned char dsLengthBytes[4];
+		intToBytes_bigEndian(dsLengthBytes, dataLength);//4
+		for (i = 0; i < 3; i++)//3
+			(*newByteData)[k++] = versionNumber[i];
+		for (i = 0; i < 4; i++)//4
+			(*newByteData)[k++] = dsLengthBytes[i];
+		(*newByteData)[k++] = 16;	//=00010000	
+
+		if(sysEndianType==BIG_ENDIAN_SYSTEM)
+			memcpy((*newByteData)+8, oriData, dataLength*doubleSize);
+		else
+		{
+			unsigned char* p = (*newByteData)+8;
+			for(i=0;i<dataLength;i++,p+=doubleSize)
+				doubleToBytes(p, oriData[i]);
+		}
+		*outSize = totalByteLength;
+	}
+
 	free_DBA(exactMidByteArray);	
 	
 	free(vce);
@@ -963,7 +990,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 	}
 	else
 	{
-		int tmpOutSize;
+		int tmpOutSize = 0;
 		unsigned char* tmpByteData;
 		if (r2==0)
 			SZ_compress_args_double_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
@@ -1008,7 +1035,7 @@ void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2,
 	unsigned char* tmpBytes;
 	int targetUncompressSize = dataLength <<3; //i.e., *8
 	//tmpSize must be "much" smaller than dataLength
-	int tmpSize = 16;
+	int i, tmpSize = 16;
 	unsigned char* szTmpBytes;
 	if(cmpSize!=16)
 	{
@@ -1037,7 +1064,23 @@ void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2,
 	//TODO: convert szTmpBytes to double array.
 	TightDataPointStorageD* tdps;
 	new_TightDataPointStorageD_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
-	if (dataLength == r1)
+
+	int doubleSize = sizeof(double);
+	if(tdps->isLossless)
+	{
+		*newData = (double*)malloc(doubleSize*dataLength);
+		if(sysEndianType==BIG_ENDIAN_SYSTEM)
+		{
+			memcpy(*newData, tdps->exactMidBytes, dataLength*doubleSize);
+		}
+		else
+		{
+			unsigned char* p = tdps->exactMidBytes;
+			for(i=0;i<dataLength;i++,p+=doubleSize)
+				(*newData)[i] = bytesToDouble(p);
+		}		
+	}
+	else if (dataLength == r1)
 		getSnapshotData_double_1D(newData,r1,tdps);
 	else
 	if (dataLength == r1*r2)
