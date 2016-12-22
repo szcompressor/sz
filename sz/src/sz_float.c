@@ -34,7 +34,7 @@ unsigned int optimize_intervals_float_1D(float *oriData, int dataLength, double 
 		{
 			pred_value = 2*oriData[i-1] - oriData[i-2];
 			pred_err = fabs(pred_value - oriData[i]);
-			int radiusIndex = (int)((pred_err/realPrecision+1)/2);
+			unsigned long radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
 				radiusIndex = maxRangeRadius - 1;			
 			intervals[radiusIndex]++;
@@ -77,7 +77,7 @@ unsigned int optimize_intervals_float_2D(float *oriData, int r1, int r2, double 
 				index = i*r2+j;
 				pred_value = oriData[index-1] + oriData[index-r2] - oriData[index-r2-1];
 				pred_err = fabs(pred_value - oriData[index]);
-				int radiusIndex = (int)((pred_err/realPrecision+1)/2);
+				unsigned long radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 				if(radiusIndex>=maxRangeRadius)
 					radiusIndex = maxRangeRadius - 1;
 				intervals[radiusIndex]++;
@@ -124,7 +124,7 @@ unsigned int optimize_intervals_float_3D(float *oriData, int r1, int r2, int r3,
 					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23] 
 					- oriData[index-1-r23] - oriData[index-r3-1] - oriData[index-r3-r23] + oriData[index-r3-r23-1];
 					pred_err = fabs(pred_value - oriData[index]);
-					int radiusIndex = (int)((pred_err/realPrecision+1)/2);
+					unsigned long radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 					if(radiusIndex>=maxRangeRadius)
 						radiusIndex = maxRangeRadius - 1;
 					intervals[radiusIndex]++;
