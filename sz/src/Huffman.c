@@ -13,8 +13,8 @@
 #include "Huffman.h"
 #include "sz.h"
 
-int stateNum = maxRangeRadius*2;
-int allNodes = maxRangeRadius*4;
+int stateNum;
+int allNodes;
 
 //struct node_t pool[allNodes] = {{0}};
 node pool;
@@ -26,7 +26,7 @@ unsigned long **code = NULL;//TODO
 unsigned char *cout = NULL;
 int n_inode = 0;
  
-node new_node(int freq, unsigned short c, node a, node b)
+node new_node(int freq, unsigned int c, node a, node b)
 {
 	node n = pool + n_nodes++;
 	if (freq) 
@@ -45,7 +45,7 @@ node new_node(int freq, unsigned short c, node a, node b)
 	return n;
 }
  
-node new_node2(unsigned short c, unsigned char t)
+node new_node2(unsigned int c, unsigned char t)
 {
 	pool[n_nodes].c = c;
 	pool[n_nodes].t = t;
@@ -121,10 +121,10 @@ void build_code(node n, int len, unsigned long out1, unsigned long out2)
 	}
 }
 
-void init(unsigned short *s, int length)
+void init(int *s, int length)
 {
 	int i, *freq = (int *)malloc(allNodes*sizeof(int));
-	unsigned short index;
+	int index;
 	memset(freq, 0, allNodes*sizeof(int));
 	for(i = 0;i < length;i++) 
 	{
@@ -146,11 +146,11 @@ void init(unsigned short *s, int length)
 	free(freq);
 }
  
-void encode(unsigned short *s, int length, unsigned char *out, int *outSize)
+void encode(int *s, int length, unsigned char *out, int *outSize)
 {
 	int i = 0;
 	unsigned char curByte, bitSize = 0, byteSize, byteSizep;
-	unsigned short state;
+	int state;
 	unsigned char *p = out;
 	int lackBits = 0;
 	//long totalBitSize = 0, maxBitSize = 0, bitSize21 = 0, bitSize32 = 0;
@@ -257,7 +257,7 @@ void encode(unsigned short *s, int length, unsigned char *out, int *outSize)
 	printf("avg bit size = %f\n", ((float)totalBitSize)/length);*/
 }
  
-void decode(unsigned char *s, int targetLength, node t, unsigned short *out)
+void decode(unsigned char *s, int targetLength, node t, int *out)
 {
 	unsigned long i = 0, byteIndex = 0;
 	int r, count=0;
@@ -286,7 +286,7 @@ void decode(unsigned char *s, int targetLength, node t, unsigned short *out)
 	return;
 } 
 	 
-void pad_tree_uchar(unsigned char* L, unsigned char* R, unsigned short* C, unsigned char* t, unsigned short i, node root)
+void pad_tree_uchar(unsigned char* L, unsigned char* R, unsigned short* C, unsigned char* t, unsigned int i, node root)
 {
 	C[i] = root->c;
 	t[i] = root->t;
@@ -306,7 +306,7 @@ void pad_tree_uchar(unsigned char* L, unsigned char* R, unsigned short* C, unsig
 	}
 }  
 
-void pad_tree_ushort(unsigned short* L, unsigned short* R, unsigned short* C, unsigned char* t, unsigned short i, node root)
+void pad_tree_ushort(unsigned short* L, unsigned short* R, unsigned short* C, unsigned char* t, unsigned int i, node root)
 {
 	C[i] = root->c;
 	t[i] = root->t;
@@ -326,7 +326,7 @@ void pad_tree_ushort(unsigned short* L, unsigned short* R, unsigned short* C, un
 	}	
 }
 
-void pad_tree_uint(unsigned int* L, unsigned int* R, unsigned short* C, unsigned char* t, unsigned int i, node root)
+void pad_tree_uint(unsigned int* L, unsigned int* R, int* C, unsigned char* t, unsigned int i, node root)
 {
 	C[i] = root->c;
 	t[i] = root->t;
@@ -356,12 +356,13 @@ unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** 
 		unsigned short* C = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
 		pad_tree_uchar(L,R,C,t,0,qq[1]);
-		unsigned int totalSize = 3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short);	
+		unsigned int totalSize = 1+3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short);	
 		*out = (unsigned char*)malloc(totalSize*sizeof(unsigned char));
-		memcpy(*out, L, nodeCount*sizeof(unsigned char));
-		memcpy((*out)+nodeCount*sizeof(unsigned char),R,nodeCount*sizeof(unsigned char));
-		memcpy((*out)+2*nodeCount*sizeof(unsigned char),C,nodeCount*sizeof(unsigned short));
-		memcpy((*out)+2*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short), t, nodeCount*sizeof(unsigned char));
+		(*out)[0] = (unsigned char)sysEndianType;
+		memcpy(*out+1, L, nodeCount*sizeof(unsigned char));
+		memcpy((*out)+1+nodeCount*sizeof(unsigned char),R,nodeCount*sizeof(unsigned char));
+		memcpy((*out)+1+2*nodeCount*sizeof(unsigned char),C,nodeCount*sizeof(unsigned short));
+		memcpy((*out)+1+2*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short), t, nodeCount*sizeof(unsigned char));
 		free(L);
 		free(R);
 		free(C);
@@ -393,16 +394,16 @@ unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** 
 	{
 		unsigned int* L = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));
 		unsigned int* R = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));
-		unsigned short* C = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));	
+		unsigned int* C = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));	
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
 		pad_tree_uint(L,R,C,t,0,qq[1]);
-		unsigned int totalSize = 1+2*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned char);
+		unsigned int totalSize = 1+3*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned char);
 		*out = (unsigned char*)malloc(totalSize);
 		(*out)[0] = (unsigned char)sysEndianType;
 		memcpy(*out+1, L, nodeCount*sizeof(unsigned int));
 		memcpy((*out)+1+nodeCount*sizeof(unsigned int),R,nodeCount*sizeof(unsigned int));
-		memcpy((*out)+1+2*nodeCount*sizeof(unsigned int),C,nodeCount*sizeof(unsigned short));
-		memcpy((*out)+1+2*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned short),t,nodeCount*sizeof(unsigned char));
+		memcpy((*out)+1+2*nodeCount*sizeof(unsigned int),C,nodeCount*sizeof(unsigned int));
+		memcpy((*out)+1+3*nodeCount*sizeof(unsigned int),t,nodeCount*sizeof(unsigned char));
 		free(L);
 		free(R);
 		free(C);
@@ -411,7 +412,7 @@ unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** 
 	}
 }
 
-void unpad_tree_uchar(unsigned char* L, unsigned char* R, unsigned short* C, unsigned char *t, unsigned short i, node root)
+void unpad_tree_uchar(unsigned char* L, unsigned char* R, unsigned short* C, unsigned char *t, unsigned int i, node root)
 {
 	//root->c = C[i];
 	if(root->t==0)
@@ -434,7 +435,7 @@ void unpad_tree_uchar(unsigned char* L, unsigned char* R, unsigned short* C, uns
 	}
 }
 
-void unpad_tree_ushort(unsigned short* L, unsigned short* R, unsigned short* C, unsigned char* t, unsigned short i, node root)
+void unpad_tree_ushort(unsigned short* L, unsigned short* R, unsigned short* C, unsigned char* t, unsigned int i, node root)
 {
 	//root->c = C[i];
 	if(root->t==0)
@@ -457,7 +458,7 @@ void unpad_tree_ushort(unsigned short* L, unsigned short* R, unsigned short* C, 
 	}
 }
 
-void unpad_tree_uint(unsigned int* L, unsigned int* R, unsigned short* C, unsigned char* t, unsigned int i, node root)
+void unpad_tree_uint(unsigned int* L, unsigned int* R, int* C, unsigned char* t, unsigned int i, node root)
 {
 	//root->c = C[i];
 	if(root->t==0)
@@ -489,10 +490,25 @@ node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount)
 		unsigned char* R = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
 		unsigned short* C = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));	
-		memcpy(L, bytes, nodeCount*sizeof(unsigned char));
-		memcpy(R, bytes+nodeCount*sizeof(unsigned char), nodeCount*sizeof(unsigned char));
-		memcpy(C, bytes+2*nodeCount*sizeof(unsigned char), nodeCount*sizeof(unsigned short));	
-		memcpy(t, bytes+2*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short), nodeCount*sizeof(unsigned char));
+		unsigned char cmpSysEndianType = bytes[0];
+		if(cmpSysEndianType!=(unsigned char)sysEndianType)
+		{
+			unsigned char* p = bytes+1+2*nodeCount*sizeof(unsigned char);
+			int i = 0, size = nodeCount*sizeof(unsigned short);
+			while(1)
+			{
+				symTransform_2bytes(p);
+				i+=sizeof(unsigned short);
+				if(i<size)
+					p+=sizeof(unsigned short);
+				else
+					break;
+			}		
+		}
+		memcpy(L, bytes+1, nodeCount*sizeof(unsigned char));
+		memcpy(R, bytes+1+nodeCount*sizeof(unsigned char), nodeCount*sizeof(unsigned char));
+		memcpy(C, bytes+1+2*nodeCount*sizeof(unsigned char), nodeCount*sizeof(unsigned short));	
+		memcpy(t, bytes+1+2*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short), nodeCount*sizeof(unsigned char));
 		node root = new_node2(0,0);
 		unpad_tree_uchar(L,R,C,t,0,root);
 		free(L);
@@ -541,13 +557,13 @@ node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount)
 	{
 		unsigned int* L = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));
 		unsigned int* R = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));
-		unsigned short* C = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));	
+		unsigned int* C = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));	
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));	
 		unsigned char cmpSysEndianType = bytes[0];
 		if(cmpSysEndianType!=(unsigned char)sysEndianType)
 		{
 			unsigned char* p = bytes+1;
-			int i = 0, size = 2*nodeCount*sizeof(unsigned int);
+			int i = 0, size = 3*nodeCount*sizeof(unsigned int);
 			while(1)
 			{
 				symTransform_4bytes(p);
@@ -557,26 +573,13 @@ node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount)
 				else
 					break;
 			}
-			
-			p = bytes+1+size;
-			i = 0;
-			size = nodeCount*sizeof(unsigned short);
-			while(1)
-			{
-				symTransform_2bytes(p);
-				i+=sizeof(unsigned short);
-				if(i<size)
-					p+=sizeof(unsigned short);
-				else
-					break;
-			}
 		}
 
 		memcpy(L, bytes+1, nodeCount*sizeof(unsigned int));
 		memcpy(R, bytes+1+nodeCount*sizeof(unsigned int), nodeCount*sizeof(unsigned int));
-		memcpy(C, bytes+1+2*nodeCount*sizeof(unsigned int), nodeCount*sizeof(unsigned short));	
+		memcpy(C, bytes+1+2*nodeCount*sizeof(unsigned int), nodeCount*sizeof(unsigned int));	
 	
-		memcpy(t, bytes+1+2*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned short), nodeCount*sizeof(unsigned char));			
+		memcpy(t, bytes+1+3*nodeCount*sizeof(unsigned int), nodeCount*sizeof(unsigned char));			
 					
 		node root = new_node2(0,0);
 		unpad_tree_uint(L,R,C,t,0,root);
@@ -588,7 +591,7 @@ node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount)
 	}
 }
 
-void encode_withTree(unsigned short *s, int length, unsigned char **out, int *outSize)
+void encode_withTree(int *s, int length, unsigned char **out, int *outSize)
 {
 	int i, nodeCount = 0;
 	unsigned char *treeBytes, buffer[4];
@@ -602,7 +605,7 @@ void encode_withTree(unsigned short *s, int length, unsigned char **out, int *ou
 	nodeCount = nodeCount*2-1;
 	unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(nodeCount, &treeBytes);
 	//printf("treeByteSize=%d\n", treeByteSize);
-	*out = (unsigned char*)malloc(length*sizeof(unsigned short)+treeByteSize);
+	*out = (unsigned char*)malloc(length*sizeof(int)+treeByteSize);
 	intToBytes_bigEndian(buffer, nodeCount);
 	memcpy(*out, buffer, 4);
 	memcpy(*out+4, treeBytes, treeByteSize);
@@ -620,7 +623,7 @@ void encode_withTree(unsigned short *s, int length, unsigned char **out, int *ou
  * @par *out rememmber to allocate targetLength short_type data for it beforehand.
  * 
  * */
-void decode_withTree(unsigned char *s, int targetLength, unsigned short *out)
+void decode_withTree(unsigned char *s, int targetLength, int *out)
 {
 	int encodeStartIndex;
 	int nodeCount = bytesToInt_bigEndian(s);
@@ -638,10 +641,10 @@ void decode_withTree(unsigned char *s, int targetLength, unsigned short *out)
 		}*/
 	
 	if(nodeCount<=256)
-		encodeStartIndex = 3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short);
+		encodeStartIndex = 1+3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short);
 	else if(nodeCount<=65536)
 		encodeStartIndex = 1+3*nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned char);
 	else
-		encodeStartIndex = 1+2*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned char);
+		encodeStartIndex = 1+3*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned char);
 	decode(s+4+encodeStartIndex, targetLength, root, out);
 }

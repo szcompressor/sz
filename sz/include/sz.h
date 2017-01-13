@@ -33,7 +33,7 @@ extern "C" {
 #define SZ_VERNUM 0x0130
 #define SZ_VER_MAJOR 1
 #define SZ_VER_MINOR 4
-#define SZ_VER_REVISION 7
+#define SZ_VER_REVISION 8
 
 #define HZ 102
 #define SZ 101
@@ -57,7 +57,7 @@ extern "C" {
 #define MIN_ZLIB_DEC_ALLOMEM_BYTES 1000000
 
 //#define maxRangeRadius 32768
-#define maxRangeRadius 32768
+//#define maxRangeRadius 1048576//131072
 
 #define SZ_BEST_SPEED 0
 #define SZ_BEST_COMPRESSION 1
@@ -68,6 +68,8 @@ extern "C" {
 //#define intvRadius 32768
 //#define intvCapacity 131072
 //#define intvRadius 65536
+
+extern unsigned int maxRangeRadius;
 
 extern int intvCapacity;
 extern int intvRadius;
@@ -132,6 +134,7 @@ typedef union lfloat
 /* array meta data and compression parameters for SZ_Init_Params() */
 typedef struct sz_params
 {
+	unsigned int max_quant_intervals;
 	unsigned int quantization_intervals;
     int dataEndianType;
     int sysEndianType; //sysEndianType is actually set automatically.

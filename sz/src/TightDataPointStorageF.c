@@ -208,7 +208,7 @@ void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightData
 
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 
-	unsigned short* type = (unsigned short*)malloc(dataSeriesLength*sizeof(unsigned short));
+	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
@@ -232,9 +232,9 @@ void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightData
 	resiBitsLength = tdps->reqLength%8;
 	medianValue = tdps->medianValue;
 	
-	unsigned short type_;
+	int type_;
 	for (i = 0; i < dataSeriesLength; i++) {
-//		if(i==147321881)
+//		if(i==6)
 //			printf("i=%d\n", i);
 		type_ = type[i];
 		switch (type_) {
@@ -311,7 +311,7 @@ void decompressDataSeries_float_2D(float** data, int r1, int r2, TightDataPointS
 
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 
-	unsigned short* type = (unsigned short*)malloc(dataSeriesLength*sizeof(unsigned short));
+	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
@@ -327,7 +327,7 @@ void decompressDataSeries_float_2D(float** data, int r1, int r2, TightDataPointS
 	int reqBytesLength, resiBitsLength, resiBits; 
 	unsigned char leadingNum;	
 	float medianValue, exactData, predValue;
-	unsigned short type_;
+	int type_;
 
 	reqBytesLength = tdps->reqLength/8;
 	resiBitsLength = tdps->reqLength%8;
@@ -382,9 +382,10 @@ void decompressDataSeries_float_2D(float** data, int r1, int r2, TightDataPointS
 	/* Process Row-0, data 1 */
 	pred1D = (*data)[0];
 
-	if (type[1] != 0)
+	type_ = type[1];
+	if (type_ != 0)
 	{
-		(*data)[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+		(*data)[1] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 	}
 	else
 	{
@@ -435,9 +436,10 @@ void decompressDataSeries_float_2D(float** data, int r1, int r2, TightDataPointS
 	{
 		pred1D = 2*(*data)[jj-1] - (*data)[jj-2];
 
-		if (type[jj] != 0)
+		type_ = type[jj];
+		if (type_ != 0)
 		{
-			(*data)[jj] = pred1D + 2 * (type[jj] - intvRadius) * realPrecision;
+			(*data)[jj] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -492,9 +494,10 @@ void decompressDataSeries_float_2D(float** data, int r1, int r2, TightDataPointS
 		index = ii*r2;
 		pred1D = (*data)[index-r2];
 
-		if (type[index] != 0)
+		type_ = type[index];
+		if (type_ != 0)
 		{
-			(*data)[index] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -546,9 +549,10 @@ void decompressDataSeries_float_2D(float** data, int r1, int r2, TightDataPointS
 			index = ii*r2+jj;
 			pred2D = (*data)[index-1] + (*data)[index-r2] - (*data)[index-r2-1];
 
-			if (type[index] != 0)
+			type_ = type[index];
+			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -616,7 +620,7 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
-	unsigned short* type = (unsigned short*)malloc(dataSeriesLength*sizeof(unsigned short));
+	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
@@ -631,7 +635,7 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 	int reqBytesLength, resiBitsLength, resiBits;
 	unsigned char leadingNum;
 	float medianValue, exactData, predValue;
-	unsigned short type_;
+	int type_;
 
 	reqBytesLength = tdps->reqLength/8;
 	resiBitsLength = tdps->reqLength%8;
@@ -685,9 +689,10 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 	/* Process Row-0, data 1 */
 	pred1D = (*data)[0];
 
-	if (type[1] != 0)
+	type_ = type[1];
+	if (type_ != 0)
 	{
-		(*data)[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+		(*data)[1] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 	}
 	else
 	{
@@ -737,9 +742,10 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 	{
 		pred1D = 2*(*data)[jj-1] - (*data)[jj-2];
 
-		if (type[jj] != 0)
+		type_ = type[jj];
+		if (type_ != 0)
 		{
-			(*data)[jj] = pred1D + 2 * (type[jj] - intvRadius) * realPrecision;
+			(*data)[jj] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -793,9 +799,10 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 		index = ii*r3;
 		pred1D = (*data)[index-r3];
 
-		if (type[index] != 0)
+		type_ = type[index];
+		if (type_ != 0)
 		{
-			(*data)[index] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -847,9 +854,10 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 			index = ii*r3+jj;
 			pred2D = (*data)[index-1] + (*data)[index-r3] - (*data)[index-r3-1];
 
-			if (type[index] != 0)
+			type_ = type[index];
+			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -905,9 +913,10 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 		index = kk*r2*r3;
 		pred1D = (*data)[index-r2*r3];
 
-		if (type[index] != 0)
+		type_ = type[index];
+		if (type_ != 0)
 		{
-			(*data)[index] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -959,9 +968,10 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 			index = kk*r2*r3+jj;
 			pred2D = (*data)[index-1] + (*data)[index-r2*r3] - (*data)[index-r2*r3-1];
 
-			if (type[index] != 0)
+			type_ = type[index];
+			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1015,9 +1025,10 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 			index = kk*r2*r3 + ii*r3;
 			pred2D = (*data)[index-r3] + (*data)[index-r2*r3] - (*data)[index-r2*r3-r3];
 
-			if (type[index] != 0)
+			type_ = type[index];
+			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1070,9 +1081,10 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 				pred3D = (*data)[index-1] + (*data)[index-r3] + (*data)[index-r2*r3]
 					- (*data)[index-r3-1] - (*data)[index-r2*r3-r3] - (*data)[index-r2*r3-1] + (*data)[index-r2*r3-r3-1];
 
-				if (type[index] != 0)
+				type_ = type[index];
+				if (type_ != 0)
 				{
-					(*data)[index] = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
+					(*data)[index] = pred3D + 2 * (type_ - intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -1277,7 +1289,7 @@ void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPoi
  * */
 void new_TightDataPointStorageF(TightDataPointStorageF **this,
 		int dataSeriesLength, int exactDataNum,
-		unsigned short* type, unsigned char* exactMidBytes, int exactMidBytes_size,
+		int* type, unsigned char* exactMidBytes, int exactMidBytes_size,
 		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
 		unsigned char* resiMidBits, int resiMidBits_size,
 		unsigned char* resiBitLength, int resiBitLengthSize, 

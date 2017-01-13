@@ -55,7 +55,7 @@ void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorag
 void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
 void new_TightDataPointStorageF(TightDataPointStorageF **this, 
 		int dataSeriesLength, int exactDataNum, 
-		unsigned short* type, unsigned char* exactMidBytes, int exactMidBytes_size,
+		int* type, unsigned char* exactMidBytes, int exactMidBytes_size,
 		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
 		unsigned char* resiMidBits, int resiMidBits_size,
 		unsigned char* resiBitLength, int resiBitLengthSize, 

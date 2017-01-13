@@ -130,6 +130,16 @@ int SZ_ReadConf() {
 		layers = (int)iniparser_getint(ini, "PARAMETER:layers", 0);
 		conf_params->layers = layers;
 		
+		int max_quant_intervals = iniparser_getint(ini, "PARAMETER:max_quant_intervals", 65536);
+		conf_params->max_quant_intervals = max_quant_intervals;
+		maxRangeRadius = max_quant_intervals/2;
+		
+		stateNum = maxRangeRadius*2;
+		allNodes = maxRangeRadius*4;
+		
+		intvCapacity = maxRangeRadius*2;
+		intvRadius = maxRangeRadius;
+		
 		int quantization_intervals = (int)iniparser_getint(ini, "PARAMETER:quantization_intervals", 0);
 		conf_params->quantization_intervals = quantization_intervals;
 		if(quantization_intervals>0)

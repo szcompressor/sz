@@ -65,8 +65,15 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, uns
 	unsigned char sameRByte = flatBytes[index++]; //1
 	int same = sameRByte & 0x01;
 	szMode = (sameRByte & 0x06)>>1;
+	(*this)->isLossless = (sameRByte & 0x16)>>4;
+	//printf("szMode=%d\n",szMode);
 
-	if(same==1)
+	if((*this)->isLossless==1)
+	{
+		(*this)->exactMidBytes = flatBytes+8;
+		return;
+	}
+	else if(same==1)
 	{
 		(*this)->allSameData = 1;
 		int exactMidBytesLength = flatBytesLength - 3 - 4 -1;
@@ -202,7 +209,7 @@ void decompressDataSeries_double_1D(double** data, int dataSeriesLength, TightDa
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
 
-	unsigned short* type = (unsigned short*)malloc(dataSeriesLength*sizeof(unsigned short));
+	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
@@ -223,7 +230,7 @@ void decompressDataSeries_double_1D(double** data, int dataSeriesLength, TightDa
 	resiBitsLength = tdps->reqLength%8;
 	medianValue = tdps->medianValue;
 	
-	unsigned short type_;
+	int type_;
 	for (i = 0; i < dataSeriesLength; i++) {
 		type_ = type[i];
 		switch (type_) {
@@ -300,7 +307,7 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 
 	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
 
-	unsigned short* type = (unsigned short*)malloc(dataSeriesLength*sizeof(unsigned short));
+	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
@@ -316,7 +323,7 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 	int reqBytesLength, resiBitsLength, resiBits; 
 	unsigned char leadingNum;	
 	double medianValue, exactData, predValue;
-	unsigned short type_;
+	int type_;
 
 	reqBytesLength = tdps->reqLength/8;
 	resiBitsLength = tdps->reqLength%8;
@@ -371,9 +378,10 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 	/* Process Row-0, data 1 */
 	pred1D = (*data)[0];
 
-	if (type[1] != 0)
+	type_ = type[1]; //note that this step is important, because type[i] is "unsigned int" which will lead to wrong results on (type[i] - intvRadius)!
+	if (type_ != 0)
 	{
-		(*data)[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+		(*data)[1] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 	}
 	else
 	{
@@ -424,9 +432,10 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 	{
 		pred1D = 2*(*data)[jj-1] - (*data)[jj-2];
 
-		if (type[jj] != 0)
+		type_ = type[jj];
+		if (type_ != 0)
 		{
-			(*data)[jj] = pred1D + 2 * (type[jj] - intvRadius) * realPrecision;
+			(*data)[jj] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -481,9 +490,10 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 		index = ii*r2;
 		pred1D = (*data)[index-r2];
 
-		if (type[index] != 0)
+		type_ = type[jj];
+		if (type_ != 0)
 		{
-			(*data)[index] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -535,9 +545,10 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 			index = ii*r2+jj;
 			pred2D = (*data)[index-1] + (*data)[index-r2] - (*data)[index-r2-1];
 
-			if (type[index] != 0)
+			type_ = type[index];
+			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -607,7 +618,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 
 	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
 
-	unsigned short* type = (unsigned short*)malloc(dataSeriesLength*sizeof(unsigned short));
+	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
@@ -625,7 +636,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 	int reqBytesLength, resiBitsLength, resiBits;
 	unsigned char leadingNum;
 	double medianValue, exactData, predValue;
-	unsigned short type_;
+	int type_;
 
 	reqBytesLength = tdps->reqLength/8;
 	resiBitsLength = tdps->reqLength%8;
@@ -681,9 +692,10 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 	/* Process Row-0, data 1 */
 	pred1D = (*data)[0];
 
-	if (type[1] != 0)
+	type_ = type[1];
+	if (type_ != 0)
 	{
-		(*data)[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+		(*data)[1] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 	}
 	else
 	{
@@ -734,9 +746,10 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 	{
 		pred1D = 2*(*data)[jj-1] - (*data)[jj-2];
 
-		if (type[jj] != 0)
+		type_ = type[jj];
+		if (type_ != 0)
 		{
-			(*data)[jj] = pred1D + 2 * (type[jj] - intvRadius) * realPrecision;
+			(*data)[jj] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -791,9 +804,10 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 		index = ii*r3;
 		pred1D = (*data)[index-r3];
 
-		if (type[index] != 0)
+		type_ = type[index];
+		if (type_ != 0)
 		{
-			(*data)[index] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -845,9 +859,10 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 			index = ii*r3+jj;
 			pred2D = (*data)[index-1] + (*data)[index-r3] - (*data)[index-r3-1];
 
-			if (type[index] != 0)
+			type_ = type[index];
+			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -903,9 +918,10 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 		index = kk*r2*r3;
 		pred1D = (*data)[index-r2*r3];
 
-		if (type[index] != 0)
+		type_ = type[index];
+		if (type_ != 0)
 		{
-			(*data)[index] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -957,9 +973,10 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 			index = kk*r2*r3+jj;
 			pred2D = (*data)[index-1] + (*data)[index-r2*r3] - (*data)[index-r2*r3-1];
 
-			if (type[index] != 0)
+			type_ = type[index];
+			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1013,9 +1030,10 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 			index = kk*r2*r3 + ii*r3;
 			pred2D = (*data)[index-r3] + (*data)[index-r2*r3] - (*data)[index-r2*r3-r3];
 
-			if (type[index] != 0)
+			type_ = type[index];
+			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1068,9 +1086,10 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 				pred3D = (*data)[index-1] + (*data)[index-r3] + (*data)[index-r2*r3]
 					- (*data)[index-r3-1] - (*data)[index-r2*r3-r3] - (*data)[index-r2*r3-1] + (*data)[index-r2*r3-r3-1];
 
-				if (type[index] != 0)
+				type_ = type[index];
+				if (type_ != 0)
 				{
-					(*data)[index] = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
+					(*data)[index] = pred3D + 2 * (type_ - intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -1271,7 +1290,7 @@ void getSnapshotData_double_3D(double** data, int r1, int r2, int r3, TightDataP
  * */
 void new_TightDataPointStorageD(TightDataPointStorageD **this, 
 		int dataSeriesLength, int exactDataNum, 
-		unsigned short* type, unsigned char* exactMidBytes, int exactMidBytes_size,
+		int* type, unsigned char* exactMidBytes, int exactMidBytes_size,
 		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
 		unsigned char* resiMidBits, int resiMidBits_size,
 		unsigned char* resiBitLength, int resiBitLengthSize, 
@@ -1316,6 +1335,7 @@ void new_TightDataPointStorageD(TightDataPointStorageD **this,
 	(*this)->residualMidBits_size = convertIntArray2ByteArray_fast_dynamic(resiMidBits, resiBitLength, resiBitLengthSize, &((*this)->residualMidBits));
 	
 	(*this)->intervals = intervals;
+	(*this)->isLossless = 0;
 }
 
 //TODO: convert TightDataPointStorageD to bytes...

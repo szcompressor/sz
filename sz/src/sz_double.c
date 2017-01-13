@@ -25,8 +25,10 @@
 unsigned int optimize_intervals_double_1D(double *oriData, int dataLength, double realPrecision)
 {	
 	int i = 0;
+	unsigned long radiusIndex;
 	double pred_value = 0, pred_err;
-	int intervals[maxRangeRadius] = {0};
+	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
+	memset(intervals, 0, maxRangeRadius*sizeof(int));
 	int totalSampleSize = dataLength/sampleDistance;
 	for(i=2;i<dataLength;i++)
 	{
@@ -34,7 +36,7 @@ unsigned int optimize_intervals_double_1D(double *oriData, int dataLength, doubl
 		{
 			pred_value = 2*oriData[i-1] - oriData[i-2];
 			pred_err = fabs(pred_value - oriData[i]);
-			int radiusIndex = (int)((pred_err/realPrecision+1)/2);
+			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
 				radiusIndex = maxRangeRadius - 1;
 			intervals[radiusIndex]++;
@@ -58,6 +60,7 @@ unsigned int optimize_intervals_double_1D(double *oriData, int dataLength, doubl
 	if(powerOf2<32)
 		powerOf2 = 32;
 
+	free(intervals);
 	//printf("accIntervals=%d, powerOf2=%d\n", accIntervals, powerOf2);
 	return powerOf2;
 }
@@ -65,8 +68,10 @@ unsigned int optimize_intervals_double_1D(double *oriData, int dataLength, doubl
 unsigned int optimize_intervals_double_2D(double *oriData, int r1, int r2, double realPrecision)
 {	
 	int i,j, index;
+	unsigned long radiusIndex;
 	double pred_value = 0, pred_err;
-	int intervals[maxRangeRadius] = {0};
+	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
+	memset(intervals, 0, maxRangeRadius*sizeof(int));
 	int totalSampleSize = r1*r2/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
@@ -77,7 +82,7 @@ unsigned int optimize_intervals_double_2D(double *oriData, int r1, int r2, doubl
 				index = i*r2+j;
 				pred_value = oriData[index-1] + oriData[index-r2] - oriData[index-r2-1];
 				pred_err = fabs(pred_value - oriData[index]);
-				int radiusIndex = (int)((pred_err/realPrecision+1)/2);
+				radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 				if(radiusIndex>=maxRangeRadius)
 					radiusIndex = maxRangeRadius - 1;
 				intervals[radiusIndex]++;
@@ -101,16 +106,19 @@ unsigned int optimize_intervals_double_2D(double *oriData, int r1, int r2, doubl
 
 	if(powerOf2<32)
 		powerOf2 = 32;
-		
+
+	free(intervals);
 	return powerOf2;
 }
 
 unsigned int optimize_intervals_double_3D(double *oriData, int r1, int r2, int r3, double realPrecision)
 {	
 	int i,j,k, index;
+	unsigned long radiusIndex;
 	int r23=r2*r3;
 	double pred_value = 0, pred_err;
-	int intervals[maxRangeRadius] = {0};
+	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
+	memset(intervals, 0, maxRangeRadius*sizeof(int));
 	int totalSampleSize = r1*r2*r3/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
@@ -124,7 +132,7 @@ unsigned int optimize_intervals_double_3D(double *oriData, int r1, int r2, int r
 					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23] 
 					- oriData[index-1-r23] - oriData[index-r3-1] - oriData[index-r3-r23] + oriData[index-r3-r23-1];
 					pred_err = fabs(pred_value - oriData[index]);
-					int radiusIndex = (int)((pred_err/realPrecision+1)/2);
+					radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 					if(radiusIndex>=maxRangeRadius)
 						radiusIndex = maxRangeRadius - 1;
 					intervals[radiusIndex]++;
@@ -151,6 +159,7 @@ unsigned int optimize_intervals_double_3D(double *oriData, int r1, int r2, int r
 	if(powerOf2<32)
 		powerOf2 = 32;
 
+	free(intervals);
 	//printf("maxRangeRadius = %d, accIntervals=%d, powerOf2=%d\n", maxRangeRadius, accIntervals, powerOf2);
 	return powerOf2;
 }
@@ -184,7 +193,7 @@ int dataLength, double realPrecision, int *outSize, double valueRangeSize, doubl
 		medianValue = 0;
 	}	
 
-	unsigned short* type = (unsigned short*) malloc(dataLength*sizeof(unsigned short));
+	int* type = (int*) malloc(dataLength*sizeof(int));
 	//type[dataLength]=0;
 		
 	double* spaceFillingValue = oriData; //
@@ -231,7 +240,7 @@ int dataLength, double realPrecision, int *outSize, double valueRangeSize, doubl
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	listAdd_double(last3CmprsData, vce->data);
 	
-	unsigned short state;
+	int state;
 	double lcf, qcf;		
 	double interval, checkRadius, curData;
 	double pred;
@@ -249,7 +258,7 @@ int dataLength, double realPrecision, int *outSize, double valueRangeSize, doubl
 		predAbsErr = fabs(curData - pred);	
 		if(predAbsErr<=checkRadius)
 		{
-			state = (unsigned short)((predAbsErr/realPrecision+1)/2);
+			state = (predAbsErr/realPrecision+1)/2;
 			if(curData>=pred)
 			{
 				type[i] = intvRadius+state;
@@ -382,7 +391,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, doub
 		medianValue = 0;
 	}	
 
-	unsigned short* type = (unsigned short*) malloc(dataLength*sizeof(unsigned short));
+	int* type = (int*) malloc(dataLength*sizeof(int));
 	//type[dataLength]=0;
 		
 	double* spaceFillingValue = oriData; //
@@ -611,7 +620,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 		medianValue = 0;
 	}	
 
-	unsigned short* type = (unsigned short*) malloc(dataLength*sizeof(unsigned short));
+	int* type = (int*) malloc(dataLength*sizeof(int));
 	//type[dataLength]=0;
 
 	double* spaceFillingValue = oriData; //
@@ -1032,7 +1041,7 @@ void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2,
 {
 	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	
-	unsigned char* tmpBytes;
+	//unsigned char* tmpBytes;
 	int targetUncompressSize = dataLength <<3; //i.e., *8
 	//tmpSize must be "much" smaller than dataLength
 	int i, tmpSize = 16;

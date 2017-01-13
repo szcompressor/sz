@@ -23,6 +23,8 @@
 #include "rw.h"
 //#include "CurveFillingCompressStorage.h"
 
+unsigned int maxRangeRadius = 32768;
+
 int sysEndianType; //endian type of the system
 int dataEndianType; //endian type of the data
 
@@ -47,8 +49,8 @@ int versionNumber[3];
 int spaceFillingCurveTransform; //default is 0, or 1 set by sz.config
 int reOrgSize; //the granularity of the reganization of the original data
 
-int intvCapacity = maxRangeRadius*2;
-int intvRadius = maxRangeRadius;
+int intvCapacity;
+int intvRadius;
 
 int layers = 1;
 float predThreshold = 0.97;
@@ -106,6 +108,14 @@ int SZ_Init_Params(sz_params *params)
     if(*y==1) endianType = LITTLE_ENDIAN_SYSTEM;
 
     // set default values
+    if(params->max_quant_intervals) 
+    {
+		maxRangeRadius = params->max_quant_intervals/2;
+    	stateNum = maxRangeRadius*2;
+		allNodes = maxRangeRadius*4;
+		intvCapacity = maxRangeRadius*2;
+		intvRadius = maxRangeRadius;		
+    }
     dataEndianType    = endianType;
     sysEndianType    = endianType;
     sol_ID                    = SZ;

@@ -2,7 +2,7 @@
 ##   Makefile to test SZ library.
 
 ##   PLEASE SET THIS VARIABLE BEFORE COMPILING
-SZPATH		= /home/fti/sz-1.4.6-install
+SZPATH		= /home/fti/sz-1.4.8-beta-install
 ##   COMPILERS
 CC		= gcc
 FT		= gfortran
