@@ -286,7 +286,7 @@ void decode(unsigned char *s, int targetLength, node t, int *out)
 	return;
 } 
 	 
-void pad_tree_uchar(unsigned char* L, unsigned char* R, unsigned short* C, unsigned char* t, unsigned int i, node root)
+void pad_tree_uchar(unsigned char* L, unsigned char* R, unsigned int* C, unsigned char* t, unsigned int i, node root)
 {
 	C[i] = root->c;
 	t[i] = root->t;
@@ -306,7 +306,7 @@ void pad_tree_uchar(unsigned char* L, unsigned char* R, unsigned short* C, unsig
 	}
 }  
 
-void pad_tree_ushort(unsigned short* L, unsigned short* R, unsigned short* C, unsigned char* t, unsigned int i, node root)
+void pad_tree_ushort(unsigned short* L, unsigned short* R, unsigned int* C, unsigned char* t, unsigned int i, node root)
 {
 	C[i] = root->c;
 	t[i] = root->t;
@@ -353,16 +353,16 @@ unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** 
 	{
 		unsigned char* L = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
 		unsigned char* R = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
-		unsigned short* C = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));
+		unsigned int* C = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
 		pad_tree_uchar(L,R,C,t,0,qq[1]);
-		unsigned int totalSize = 1+3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short);	
+		unsigned int totalSize = 1+3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned int);	
 		*out = (unsigned char*)malloc(totalSize*sizeof(unsigned char));
 		(*out)[0] = (unsigned char)sysEndianType;
 		memcpy(*out+1, L, nodeCount*sizeof(unsigned char));
 		memcpy((*out)+1+nodeCount*sizeof(unsigned char),R,nodeCount*sizeof(unsigned char));
-		memcpy((*out)+1+2*nodeCount*sizeof(unsigned char),C,nodeCount*sizeof(unsigned short));
-		memcpy((*out)+1+2*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short), t, nodeCount*sizeof(unsigned char));
+		memcpy((*out)+1+2*nodeCount*sizeof(unsigned char),C,nodeCount*sizeof(unsigned int));
+		memcpy((*out)+1+2*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned int), t, nodeCount*sizeof(unsigned char));
 		free(L);
 		free(R);
 		free(C);
@@ -374,16 +374,16 @@ unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** 
 	{
 		unsigned short* L = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));
 		unsigned short* R = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));
-		unsigned short* C = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));	
+		unsigned int* C = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));	
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
 		pad_tree_ushort(L,R,C,t,0,qq[1]);
-		unsigned int totalSize = 1+3*nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned char);
+		unsigned int totalSize = 1+2*nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned char) + nodeCount*sizeof(unsigned int);
 		*out = (char*)malloc(totalSize);
 		(*out)[0] = (unsigned char)sysEndianType;		
 		memcpy(*out+1, L, nodeCount*sizeof(unsigned short));
 		memcpy((*out)+1+nodeCount*sizeof(unsigned short),R,nodeCount*sizeof(unsigned short));
-		memcpy((*out)+1+2*nodeCount*sizeof(unsigned short),C,nodeCount*sizeof(unsigned short));
-		memcpy((*out)+1+3*nodeCount*sizeof(unsigned short),t,nodeCount*sizeof(unsigned char));
+		memcpy((*out)+1+2*nodeCount*sizeof(unsigned short),C,nodeCount*sizeof(unsigned int));
+		memcpy((*out)+1+2*nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned int),t,nodeCount*sizeof(unsigned char));
 		free(L);
 		free(R);
 		free(C);
@@ -412,7 +412,7 @@ unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** 
 	}
 }
 
-void unpad_tree_uchar(unsigned char* L, unsigned char* R, unsigned short* C, unsigned char *t, unsigned int i, node root)
+void unpad_tree_uchar(unsigned char* L, unsigned char* R, unsigned int* C, unsigned char *t, unsigned int i, node root)
 {
 	//root->c = C[i];
 	if(root->t==0)
@@ -435,7 +435,7 @@ void unpad_tree_uchar(unsigned char* L, unsigned char* R, unsigned short* C, uns
 	}
 }
 
-void unpad_tree_ushort(unsigned short* L, unsigned short* R, unsigned short* C, unsigned char* t, unsigned int i, node root)
+void unpad_tree_ushort(unsigned short* L, unsigned short* R, unsigned int* C, unsigned char* t, unsigned int i, node root)
 {
 	//root->c = C[i];
 	if(root->t==0)
@@ -488,27 +488,27 @@ node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount)
 	{
 		unsigned char* L = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
 		unsigned char* R = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
-		unsigned short* C = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));
+		unsigned int* C = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));	
 		unsigned char cmpSysEndianType = bytes[0];
 		if(cmpSysEndianType!=(unsigned char)sysEndianType)
 		{
 			unsigned char* p = bytes+1+2*nodeCount*sizeof(unsigned char);
-			int i = 0, size = nodeCount*sizeof(unsigned short);
+			int i = 0, size = nodeCount*sizeof(unsigned int);
 			while(1)
 			{
-				symTransform_2bytes(p);
-				i+=sizeof(unsigned short);
+				symTransform_4bytes(p);
+				i+=sizeof(unsigned int);
 				if(i<size)
-					p+=sizeof(unsigned short);
+					p+=sizeof(unsigned int);
 				else
 					break;
 			}		
 		}
 		memcpy(L, bytes+1, nodeCount*sizeof(unsigned char));
 		memcpy(R, bytes+1+nodeCount*sizeof(unsigned char), nodeCount*sizeof(unsigned char));
-		memcpy(C, bytes+1+2*nodeCount*sizeof(unsigned char), nodeCount*sizeof(unsigned short));	
-		memcpy(t, bytes+1+2*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short), nodeCount*sizeof(unsigned char));
+		memcpy(C, bytes+1+2*nodeCount*sizeof(unsigned char), nodeCount*sizeof(unsigned int));	
+		memcpy(t, bytes+1+2*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned int), nodeCount*sizeof(unsigned char));
 		node root = new_node2(0,0);
 		unpad_tree_uchar(L,R,C,t,0,root);
 		free(L);
@@ -521,19 +521,19 @@ node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount)
 	{
 		unsigned short* L = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));
 		unsigned short* R = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));
-		unsigned short* C = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));	
+		unsigned int* C = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));	
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
 		unsigned char cmpSysEndianType = bytes[0];	
 		if(cmpSysEndianType!=(unsigned char)sysEndianType)
 		{
 			unsigned char* p = bytes+1;
-			int i = 0, size = 3*nodeCount*sizeof(unsigned short);
+			int i = 0, size = 3*nodeCount*sizeof(unsigned int);
 			while(1)
 			{
-				symTransform_2bytes(p);
-				i+=sizeof(unsigned short);
+				symTransform_4bytes(p);
+				i+=sizeof(unsigned int);
 				if(i<size)
-					p+=sizeof(unsigned short);
+					p+=sizeof(unsigned int);
 				else
 					break;
 			}		
@@ -541,9 +541,9 @@ node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount)
 
 		memcpy(L, bytes+1, nodeCount*sizeof(unsigned short));
 		memcpy(R, bytes+1+nodeCount*sizeof(unsigned short), nodeCount*sizeof(unsigned short));
-		memcpy(C, bytes+1+2*nodeCount*sizeof(unsigned short), nodeCount*sizeof(unsigned short));	
+		memcpy(C, bytes+1+2*nodeCount*sizeof(unsigned short), nodeCount*sizeof(unsigned int));	
 
-		memcpy(t, bytes+1+3*nodeCount*sizeof(unsigned short), nodeCount*sizeof(unsigned char));	
+		memcpy(t, bytes+1+2*nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned int), nodeCount*sizeof(unsigned char));	
 
 		node root = new_node2(0,0);
 		unpad_tree_ushort(L,R,C,t,0,root);
@@ -641,9 +641,9 @@ void decode_withTree(unsigned char *s, int targetLength, int *out)
 		}*/
 	
 	if(nodeCount<=256)
-		encodeStartIndex = 1+3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned short);
+		encodeStartIndex = 1+3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned int);
 	else if(nodeCount<=65536)
-		encodeStartIndex = 1+3*nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned char);
+		encodeStartIndex = 1+2*nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned int);
 	else
 		encodeStartIndex = 1+3*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned char);
 	decode(s+4+encodeStartIndex, targetLength, root, out);

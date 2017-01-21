@@ -208,7 +208,7 @@ void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightData
 
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 
-	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
+	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
@@ -311,7 +311,7 @@ void decompressDataSeries_float_2D(float** data, int r1, int r2, TightDataPointS
 
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 
-	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
+	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
@@ -620,7 +620,7 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
-	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
+	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));

@@ -209,7 +209,7 @@ void decompressDataSeries_double_1D(double** data, int dataSeriesLength, TightDa
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
 
-	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
+	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
@@ -307,7 +307,7 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 
 	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
 
-	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
+	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
@@ -378,7 +378,7 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 	/* Process Row-0, data 1 */
 	pred1D = (*data)[0];
 
-	type_ = type[1]; //note that this step is important, because type[i] is "unsigned int" which will lead to wrong results on (type[i] - intvRadius)!
+	type_ = type[1]; 
 	if (type_ != 0)
 	{
 		(*data)[1] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
@@ -618,7 +618,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 
 	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
 
-	unsigned int* type = (unsigned int*)malloc(dataSeriesLength*sizeof(unsigned int));
+	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
 	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
 	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
 	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
