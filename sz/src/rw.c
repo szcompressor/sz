@@ -264,6 +264,31 @@ void writeFloatData_inBytes(float *data, int nbEle, char* tgtFilePath)
 	free(bytes);
 }
 
+void writeDoubleData_inBytes(double *data, int nbEle, char* tgtFilePath)
+{
+	int i = 0, index = 0;
+	ldouble buf;
+	unsigned char* bytes = (unsigned char*)malloc(nbEle*sizeof(double));
+	for(i=0;i<nbEle;i++)
+	{
+		index = i*8;
+		buf.value = data[i];
+		bytes[index+0] = buf.byte[0];
+		bytes[index+1] = buf.byte[1];
+		bytes[index+2] = buf.byte[2];
+		bytes[index+3] = buf.byte[3];	
+		bytes[index+4] = buf.byte[4];
+		bytes[index+5] = buf.byte[5];
+		bytes[index+6] = buf.byte[6];
+		bytes[index+7] = buf.byte[7];							
+	}
+
+	int byteLength = nbEle*sizeof(double);
+	writeByteData(bytes, byteLength, tgtFilePath);
+	free(bytes);
+}
+
+
 void writeShortData(unsigned short *states, int stateLength, unsigned char *tgtFilePath)
 {
 	int byteLength = stateLength*2;

@@ -1323,7 +1323,7 @@ void new_TightDataPointStorageD(TightDataPointStorageD **this,
 	//for(i=0;i<dataSeriesLength;i++)
 	//	printf("%u\n", type[i]);
 	encode_withTree(type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
-	
+
 	(*this)->exactMidBytes = exactMidBytes;
 	(*this)->exactMidBytes_size = exactMidBytes_size;
 	

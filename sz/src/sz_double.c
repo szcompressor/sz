@@ -298,6 +298,13 @@ int dataLength, double realPrecision, int *outSize, double valueRangeSize, doubl
 			resiBitLengthArray->array, resiBitLengthArray->size, 
 			realPrecision, medianValue, (char)reqLength, quantization_intervals);
 	
+	//for(i=0;i<dataLength;i++)
+	//	printf("%d %d\n",i, type[i]);
+	short testtype[128];
+	for(i=0;i<128;i++)
+		testtype[i] = type[i];
+	writeShortData(testtype, 128, "testtype.dat");
+	
 //	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d,resiBitLengthArray->size=%d\n", 
 //			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size, resiBitLengthArray->size);
 	
@@ -1027,6 +1034,11 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
 		{
 			*outSize = (int)zlib_compress2(tmpByteData, tmpOutSize, newByteData, gzipMode);
+		/*	int i=0;
+			printf("tmpOutSize=%d\n",tmpOutSize);
+			for(i=0;i<tmpOutSize;i++)
+				printf("%d %u\n",i, tmpByteData[i]);
+			printf("\n");*/
 			free(tmpByteData);			
 		}
 		else
