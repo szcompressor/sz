@@ -490,7 +490,7 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 		index = ii*r2;
 		pred1D = (*data)[index-r2];
 
-		type_ = type[jj];
+		type_ = type[index];
 		if (type_ != 0)
 		{
 			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
