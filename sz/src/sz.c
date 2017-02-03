@@ -178,6 +178,15 @@ int SZ_Init_Params(sz_params *params)
 	versionNumber[1] = SZ_VER_MINOR; //5
 	versionNumber[2] = SZ_VER_REVISION; //15
 
+    if(pool==NULL)
+    {
+		pool = (struct node_t*)malloc(allNodes*2*sizeof(struct node_t));
+		qqq = (node*)malloc(allNodes*2*sizeof(node));
+		code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
+		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
+		qq = qqq - 1;		
+	}
+
 	if(params->quantization_intervals%2!=0)
 	{
 		printf("Error: quantization_intervals must be an even number!\n");
