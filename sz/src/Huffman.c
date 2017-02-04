@@ -17,7 +17,7 @@ int stateNum;
 int allNodes;
 
 //struct node_t pool[allNodes] = {{0}};
-node pool;
+node pool = NULL;
 node *qqq = NULL;
 node *qq = NULL;
 int n_nodes = 0;

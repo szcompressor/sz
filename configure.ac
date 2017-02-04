@@ -103,6 +103,12 @@ AC_LANG_POP(Fortran 90)dnl
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h limits.h malloc.h stddef.h stdlib.h string.h sys/time.h unistd.h])
 
+#
+AC_ARG_ENABLE([fortran],
+              AS_HELP_STRING([--enable-fortran], [Enable fortran compilation]))
+AM_CONDITIONAL([FORTRAN], [test "x$enable_fortran" = "xyes"])
+
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 AC_CHECK_TYPES([ptrdiff_t])
