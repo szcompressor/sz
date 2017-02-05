@@ -38,7 +38,7 @@ void cost_end()
 int main(int argc, char * argv[])
 {
     int r5=0,r4=0,r3=0,r2=0,r1=0;
-    int nbEle;
+    int nbEle, totalNbEle;
     char zipFilePath[640], outputFilePath[640];
     char *cfgFile;
     if(argc < 2)
@@ -87,19 +87,19 @@ int main(int argc, char * argv[])
     //int i=0;
     //for(;i<8192;i++)
     //	printf("i=%d, data=%f\n",i,data[i]);
-    writeDoubleData(data, nbEle, outputFilePath);
+    writeDoubleData_inBytes(data, nbEle, outputFilePath);
     
     printf("done\n");
     
     SZ_Finalize();
     
-    int totalNbEle;
+
     char oriFilePath[640];
     strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
     oriFilePath[strlen(zipFilePath)-3] = '\0';
     double *ori_data = readDoubleData(oriFilePath, &totalNbEle);
     int i;
-    double Max, Min, diffMax;
+    double Max, Min, diffMax, err, maxpw_relerr = 0, relerr;
     Max = ori_data[0];
     Min = ori_data[0];
     diffMax = fabs(data[0] - ori_data[0]);
@@ -108,17 +108,34 @@ int main(int argc, char * argv[])
     {
     	if (Max < ori_data[i]) Max = ori_data[i];
     	if (Min > ori_data[i]) Min = ori_data[i];
-    	if (diffMax < fabs(data[i] - ori_data[i]))
-    		diffMax = fabs(data[i] - ori_data[i]);
-	//if(fabs(data[i] - ori_data[i]) > 1E-12)
-	//{
-	//	printf("error: i=%d, %.20G, %.20G\n",i,ori_data[i], data[i]);
-	//	exit(0);
-	//}
+	err = fabs(data[i] - ori_data[i]);
+    	if (diffMax < err)
+    		diffMax = err;
+        if(ori_data[i]!=0)
+        {
+                relerr = err/fabs(ori_data[i]);
+		/*if(relerr>0.00001)
+		{
+			printf("error:i=%d, ori_data=%f, dec_data=%f\n",i, ori_data[i], data[i]);
+			exit(0);
+		}*/
+                if(maxpw_relerr<relerr)
+                        maxpw_relerr = relerr;
+        }
+
+
+	/*if(fabs(data[i] - ori_data[i]) > 1E-1)
+	{
+		printf("error: i=%d, %.20G, %.20G\n",i,ori_data[i], data[i]);
+		exit(0);
+	}*/
     }
 
-    printf ("Max absolute error = %f\n", diffMax);
-    printf ("Max relative error = %f\n", diffMax/(Max-Min));
+    printf ("Max absolute error = %.20G\n", diffMax);
+    printf ("Max relative error = %.20G\n", diffMax/(Max-Min));
+    printf ("Max pw_relative err = %.20G\n", maxpw_relerr);
 
-	return 0;
+    free(ori_data);
+    free(data);
+    return 0;
 }

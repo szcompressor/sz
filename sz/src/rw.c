@@ -13,6 +13,91 @@
 #include "rw.h"
 #include "sz.h"
 
+float** create2DArray_float(int m, int n)
+{
+	int i=0;
+	float **data = (float**)malloc(sizeof(float*)*m);
+	for(i=0;i<m;i++)
+		data[i] = (float*)malloc(sizeof(float)*n);
+	return data;
+}
+
+void free2DArray_float(float** data, int m)
+{
+	int i = 0;
+	for(i=0;i<m;i++)
+		free(data[i]);
+	free(data);	
+}
+
+float*** create3DArray_float(int p, int m, int n)
+{
+	int i = 0, j = 0;
+	float ***data = (float***)malloc(sizeof(float**)*m);
+	for(i=0;i<p;i++)
+	{
+		data[i] = (float**)malloc(sizeof(float*)*n);
+		for(j=0;j<m;j++)
+			data[i][j] = (float*)malloc(sizeof(float)*n);
+	}
+	return data;
+}
+
+void free3DArray_float(float*** data, int p, int m)
+{
+	int i,j;
+	for(i=0;i<p;i++)
+	{
+		for(j=0;j<m;j++)
+			free(data[i][j]);
+		free(data[i]);
+	}
+	free(data);	
+}
+
+double** create2DArray_double(int m, int n)
+{
+	int i=0;
+	double **data = (double**)malloc(sizeof(double*)*m);
+	for(i=0;i<m;i++)
+			data[i] = (double*)malloc(sizeof(double)*n);
+			
+	return data;
+}
+
+void free2DArray_double(double** data, int m)
+{
+	int i;
+	for(i=0;i<m;i++)
+		free(data[i]);
+	free(data);	
+}
+
+double*** create3DArray_double(int p, int m, int n)
+{
+	int i = 0, j = 0;
+	double ***data = (double***)malloc(sizeof(double**)*m);
+	for(i=0;i<p;i++)
+	{
+		data[i] = (double**)malloc(sizeof(double*)*n);
+		for(j=0;j<m;j++)
+			data[i][j] = (double*)malloc(sizeof(double)*n);
+	}
+	return data;
+}
+
+void free3DArray_double(double*** data, int p, int m)
+{
+	int i,j;
+	for(i=0;i<p;i++)
+	{
+		for(j=0;j<m;j++)
+			free(data[i][j]);
+		free(data[i]);
+	}
+	free(data);	
+}
+
 int checkFileSize(char *srcFilePath)
 {
 	int filesize;
@@ -276,18 +361,17 @@ void writeDoubleData_inBytes(double *data, int nbEle, char* tgtFilePath)
 		bytes[index+0] = buf.byte[0];
 		bytes[index+1] = buf.byte[1];
 		bytes[index+2] = buf.byte[2];
-		bytes[index+3] = buf.byte[3];	
+		bytes[index+3] = buf.byte[3];
 		bytes[index+4] = buf.byte[4];
 		bytes[index+5] = buf.byte[5];
 		bytes[index+6] = buf.byte[6];
-		bytes[index+7] = buf.byte[7];							
+		bytes[index+7] = buf.byte[7];
 	}
 
 	int byteLength = nbEle*sizeof(double);
 	writeByteData(bytes, byteLength, tgtFilePath);
 	free(bytes);
 }
-
 
 void writeShortData(unsigned short *states, int stateLength, unsigned char *tgtFilePath)
 {

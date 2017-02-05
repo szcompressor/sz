@@ -18,9 +18,10 @@ typedef struct TightDataPointStorageF
 {
 	int dataSeriesLength;
 	int allSameData;
-	double realPrecision;
+	double realPrecision; //it's used as the pwrErrBoundRatio when errBoundMode==PW_REL
 	float medianValue;
 	char reqLength;
+	char radExpo; //used to compute reqLength based on segmented precisions in "pw_rel_compression"
 	
 	int exactDataNum;
 	float reservedValue;
@@ -40,26 +41,38 @@ typedef struct TightDataPointStorageF
 	unsigned char* residualMidBits;
 	int residualMidBits_size;
 	
-	unsigned int intervals;
+	unsigned int intervals; //quantization_intervals
 	
 	unsigned char isLossless; //a mark to denote whether it's lossless compression (1 is yes, 0 is no)
+	
+	unsigned int segment_size;
+	
+	unsigned char* pwrErrBoundBytes;
+	int pwrErrBoundBytes_size;
 } TightDataPointStorageF;
 
 void new_TightDataPointStorageF_Empty(TightDataPointStorageF **this);
 void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsigned char* flatBytes, int flatBytesLength);
 void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps);
+void decompressDataSeries_float_1D_pwr(float** data, int dataSeriesLength, TightDataPointStorageF* tdps);
+
+float* extractRealPrecision_2D_float(int R1, int R2, int blockSize, TightDataPointStorageF* tdps);
 void decompressDataSeries_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps);
+void decompressDataSeries_float_2D_pwr(float** data, int r1, int r2, TightDataPointStorageF* tdps);
+
+float* extractRealPrecision_3D_float(int R1, int R2, int R3, int blockSize, TightDataPointStorageF* tdps);
 void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
 void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps);
 void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps);
 void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
-void new_TightDataPointStorageF(TightDataPointStorageF **this, 
-		int dataSeriesLength, int exactDataNum, 
+void new_TightDataPointStorageF(TightDataPointStorageF **this,
+		int dataSeriesLength, int exactDataNum,
 		int* type, unsigned char* exactMidBytes, int exactMidBytes_size,
 		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
 		unsigned char* resiMidBits, int resiMidBits_size,
 		unsigned char* resiBitLength, int resiBitLengthSize, 
-		double realPrecision, float medianValue, char reqLength, unsigned int intervals);
+		double realPrecision, float medianValue, char reqLength, unsigned int intervals, 
+		unsigned char* pwrErrBoundBytes, int pwrErrBoundBytes_size, unsigned char radExpo);
 void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** bytes, int *size);
 void free_TightDataPointStorageF(TightDataPointStorageF *tdps);
 

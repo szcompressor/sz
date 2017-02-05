@@ -23,6 +23,16 @@
 extern "C" {
 #endif
 
+float** create2DArray_float(int m, int n);
+float*** create3DArray_float(int p, int m, int n);
+void free2DArray_float(float** data, int m);
+void free3DArray_float(float*** data, int p, int m);
+
+double** create2DArray_double(int m, int n);
+double*** create3DArray_double(int p, int m, int n);
+void free2DArray_double(double** data, int m);
+void free3DArray_double(double*** data, int p, int m);
+
 int checkFileSize(char *srcFilePath);
 unsigned char *readByteData(char *srcFilePath, int *byteLength);
 double *readDoubleData_systemEndian(char *srcFilePath, int *nbEle);

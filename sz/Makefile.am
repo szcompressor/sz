@@ -15,6 +15,7 @@ libsz_la_SOURCES=src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c s
 		src/CompressElement.c src/DynamicByteArray.c src/rw.c src/TightDataPointStorageD.c src/TightDataPointStorageF.c \
 		src/conf.c src/DynamicDoubleArray.c src/rwf.c src/TypeManager.c \
 		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/test_zlib.c src/Huffman.c src/sz_float.c src/sz_double.c src/sz.c \
+		src/TightDataPointStorageF_pwr.c src/TightDataPointStorageD_pwr.c src/sz_float_pwr.c src/sz_double_pwr.c \
 		src/sz_interface.F90 src/rw_interface.F90
 else
 include_HEADERS=include/CompressElement.h include/DynamicDoubleArray.h include/rw.h\
@@ -28,5 +29,6 @@ libsz_la_LIDADD=../zlib/.libs/libzlib.a
 libsz_la_SOURCES=src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c src/iniparser.c\
 		src/CompressElement.c src/DynamicByteArray.c src/rw.c src/TightDataPointStorageD.c src/TightDataPointStorageF.c \
 		src/conf.c src/DynamicDoubleArray.c src/TypeManager.c \
-		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/test_zlib.c src/Huffman.c src/sz_float.c src/sz_double.c src/sz.c
+		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/test_zlib.c src/Huffman.c src/sz_float.c src/sz_double.c src/sz.c \
+		src/TightDataPointStorageF_pwr.c src/TightDataPointStorageD_pwr.c src/sz_float_pwr.c src/sz_double_pwr.c
 endif

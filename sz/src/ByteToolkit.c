@@ -250,7 +250,7 @@ float bytesToFloat(unsigned char* bytes)
 	return buf.value;
 }
 
-void floatToBytes(unsigned char *b, float num)
+inline void floatToBytes(unsigned char *b, float num)
 {
 	lfloat buf;
 	buf.value = num;
@@ -269,7 +269,7 @@ double bytesToDouble(unsigned char* bytes)
 	return buf.value;
 }
 
-void doubleToBytes(unsigned char *b, double num)
+inline void doubleToBytes(unsigned char *b, double num)
 {
 	ldouble buf;
 	buf.value = num;
@@ -409,4 +409,4 @@ void convertShortArrayToBytes(unsigned short* states, int stateLength, unsigned 
 		bytes[i*2] = ls.byte[0];
 		bytes[i*2+1] = ls.byte[1];
 	}
-} 
+}

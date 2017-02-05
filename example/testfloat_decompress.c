@@ -39,7 +39,7 @@ void cost_end()
 int main(int argc, char * argv[])
 {
     int r5=0,r4=0,r3=0,r2=0,r1=0;
-    int nbEle;
+    int nbEle, totalNbEle;
     char zipFilePath[640], outputFilePath[640];
     char *cfgFile;
     if(argc < 2)
@@ -92,22 +92,21 @@ int main(int argc, char * argv[])
   
     free(bytes); 
     printf("timecost=%f\n",totalCost); 
-    writeData(data, SZ_FLOAT, nbEle, outputFilePath);
+    writeFloatData_inBytes(data, nbEle, outputFilePath);
     printf("done\n");
     
     SZ_Finalize();
-   
-    int totalNbEle; 
+    
     char oriFilePath[640];
     strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
     oriFilePath[strlen(zipFilePath)-3] = '\0';
     float *ori_data = readFloatData(oriFilePath, &totalNbEle);
     int i = 0;
-    float Max, Min, diffMax;
+    float Max = 0, Min = 0, diffMax = 0;
     Max = ori_data[0];
     Min = ori_data[0];
     diffMax = fabs(data[0] - ori_data[0]);
-
+    int k = 0;
     double sum1 = 0, sum2 = 0;
     for (i = 0; i < nbEle; i++)
     {
@@ -118,13 +117,26 @@ int main(int argc, char * argv[])
     double mean2 = sum2/nbEle;
 
     double sum3 = 0, sum4 = 0;
-    double sum = 0, prodSum = 0;
+    double sum = 0, prodSum = 0, relerr = 0;
+   
+    double maxpw_relerr = 0; 
     for (i = 0; i < nbEle; i++)
     {
         if (Max < ori_data[i]) Max = ori_data[i];
         if (Min > ori_data[i]) Min = ori_data[i];
         
         float err = fabs(data[i] - ori_data[i]);
+	if(ori_data[i]!=0)
+	{
+		relerr = err/ori_data[i];
+		if(maxpw_relerr<relerr)
+			maxpw_relerr = relerr;
+        }
+	/*if(relerr>0.00001)
+	{
+		printf("%d %d: err=%.20G ori=%.20G dec=%.20G\n", k, i, err, ori_data[i], data[i]);
+		break;
+	}*/
 	if (diffMax < err)
 		diffMax = err;
         prodSum += (ori_data[i]-mean1)*(data[i]-mean2);
@@ -142,10 +154,14 @@ int main(int argc, char * argv[])
     double psnr = 20*log10(range)-10*log10(mse);
     double nrmse = sqrt(mse)/range;
 
+    printf ("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, range);
     printf ("Max absolute error = %.10f\n", diffMax);
     printf ("Max relative error = %f\n", diffMax/(Max-Min));
-    printf ("PSNR = %f, NRMSE= %.10f\n", psnr,nrmse);
+    printf ("Max pw relative error = %f\n", maxpw_relerr);
+    printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
     printf ("acEff=%f\n", acEff);
 
+    free(data);
+    free(ori_data);
     return 0;
 }

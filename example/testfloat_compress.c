@@ -79,9 +79,21 @@ int main(int argc, char * argv[])
     cost_end();
     printf("timecost=%f\n",totalCost); 
     writeByteData(bytes, outSize, outputFilePath);
-    
+   /* //check mem leakage of decompression
+    int i;
+    float *ddata;
+    for(i=0;i<30;i++)
+    {
+	printf("start %d\n",i);
+	ddata = SZ_decompress(SZ_FLOAT, bytes, outSize, r5, r4, r3, r2, r1);
+	free(ddata);
+	printf("end %d\n", i);
+	sleep(1);
+    }
+*/
     printf("done\n");
-    
+    free(bytes); 
+    free(data);
     SZ_Finalize();
     
     return 0;

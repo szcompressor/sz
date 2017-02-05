@@ -17,7 +17,7 @@
 #include "TightDataPointStorageD.h"
 #include "CompressElement.h"
 
-void computeRangeSize_double(double* oriData, int size, double* valueRangeSize, double* medianValue)
+double computeRangeSize_double(double* oriData, int size, double* valueRangeSize, double* medianValue)
 {
 	int i = 0;
 	double min = oriData[0];
@@ -33,9 +33,10 @@ void computeRangeSize_double(double* oriData, int size, double* valueRangeSize, 
 	
 	*valueRangeSize = max - min;
 	*medianValue = min + *valueRangeSize/2;
+	return min;
 }
 
-void computeRangeSize_float(float* oriData, int size, float* valueRangeSize, float* medianValue)
+float computeRangeSize_float(float* oriData, int size, float* valueRangeSize, float* medianValue)
 {
 	int i = 0;
 	float min = oriData[0];
@@ -51,6 +52,7 @@ void computeRangeSize_float(float* oriData, int size, float* valueRangeSize, flo
 	
 	*valueRangeSize = max - min;
 	*medianValue = min + *valueRangeSize/2;
+	return min;
 }
 
 double min_d(double a, double b)
@@ -96,6 +98,8 @@ double getRealPrecision_double(double valueRangeSize, int errBoundMode, double a
 		precision = min_d(absErrBound, relBoundRatio*valueRangeSize);
 	else if(errBoundMode==ABS_OR_REL)
 		precision = max_d(absErrBound, relBoundRatio*valueRangeSize);
+	else if(errBoundMode==PW_REL)
+		precision = -1;
 	else
 	{
 		printf("Error: error-bound-mode is incorrect!\n");
@@ -115,6 +119,8 @@ double getRealPrecision_float(float valueRangeSize, int errBoundMode, double abs
 		precision = min_f(absErrBound, relBoundRatio*valueRangeSize);
 	else if(errBoundMode==ABS_OR_REL)
 		precision = max_f(absErrBound, relBoundRatio*valueRangeSize);
+	else if(errBoundMode==PW_REL)
+		precision = -1;
 	else
 	{
 		printf("Error: error-bound-mode is incorrect!\n");
@@ -199,7 +205,7 @@ void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, fl
 	int tmp_int = lfBuf.ivalue;
 	intToBytes_bigEndian(vce->curBytes, tmp_int);
 		
-	lfBuf.ivalue = (lfBuf.ivalue >> ignBytesLength)<<ignBytesLength;
+	lfBuf.ivalue = (lfBuf.ivalue >> ignBytesLength) << ignBytesLength;
 	
 	//float tmpValue = lfBuf.value;
 	

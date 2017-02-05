@@ -230,6 +230,8 @@ int SZ_ReadConf() {
 			errorBoundMode=ABS_AND_REL;
 		else if(strcmp(errBoundMode, "ABS_OR_REL")==0||strcmp(errBoundMode, "abs_or_rel")==0)
 			errorBoundMode=ABS_OR_REL;
+		else if(strcmp(errBoundMode, "PW_REL")==0||strcmp(errBoundMode, "pw_rel")==0)
+			errorBoundMode=PW_REL;
 		else
 		{
 			printf("[SZ] Error: Wrong error bound mode (please check sz.config file)\n");
@@ -242,6 +244,10 @@ int SZ_ReadConf() {
 		conf_params->absErrBound = absErrBound;
 		relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:relBoundRatio", 0);
 		conf_params->relBoundRatio = relBoundRatio;
+		pw_relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:pw_relBoundRatio", 0);
+		conf_params->pw_relBoundRatio = pw_relBoundRatio;
+		segment_size = (int)iniparser_getint(ini, "PARAMETER:segment_size", 0);
+		conf_params->segment_size = segment_size;
 	}
 	
 	versionNumber[0] = SZ_VER_MAJOR; //0

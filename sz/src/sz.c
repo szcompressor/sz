@@ -33,7 +33,7 @@ char maxHeap[10];
 long status;
 
 int sol_ID;
-int errorBoundMode; //ABS, REL, ABS_AND_REL, or ABS_OR_REL
+int errorBoundMode; //ABS, REL, ABS_AND_REL, or ABS_OR_REL, or PW_REL
 
 int gzipMode; //four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
 
@@ -43,14 +43,16 @@ int offset;
 
 double absErrBound;
 double relBoundRatio;
+double pw_relBoundRatio;
+int segment_size;
 
 int versionNumber[3];
 
 int spaceFillingCurveTransform; //default is 0, or 1 set by sz.config
 int reOrgSize; //the granularity of the reganization of the original data
 
-int intvCapacity;
-int intvRadius;
+int intvCapacity = 0;
+int intvRadius = 0;
 
 int layers = 1;
 float predThreshold = 0.97;
@@ -177,15 +179,6 @@ int SZ_Init_Params(sz_params *params)
 	versionNumber[0] = SZ_VER_MAJOR; //0
 	versionNumber[1] = SZ_VER_MINOR; //5
 	versionNumber[2] = SZ_VER_REVISION; //15
-
-/*    if(pool==NULL)
-    {
-		pool = (struct node_t*)malloc(allNodes*2*sizeof(struct node_t));
-		qqq = (node*)malloc(allNodes*2*sizeof(node));
-		code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
-		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
-		qq = qqq - 1;		
-	}*/
 
 	if(params->quantization_intervals%2!=0)
 	{
