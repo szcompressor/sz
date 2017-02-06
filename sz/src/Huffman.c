@@ -160,12 +160,10 @@ void encode(int *s, int length, unsigned char *out, int *outSize)
 		//state = (state | s[i])<<8;
 		//state = state | s[i+1];
 		
-		//if(i==2035)
-		//	printf("s[%d]=%u\n",i,s[i]);
-		
 		state = s[i];
 		bitSize = cout[state];	
 		
+		//printf("%d %d : %d %u\n",i, state, bitSize, (code[state])[0] >> (64-cout[state])); 
 		//debug: compute the average bitSize and the count that is over 32... 	
 		/*if(bitSize>=21)
 			bitSize21++;
@@ -352,10 +350,16 @@ unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** 
 	if(nodeCount<=256)
 	{
 		unsigned char* L = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
+		memset(L, 0, nodeCount*sizeof(unsigned char));
 		unsigned char* R = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
+		memset(R, 0, nodeCount*sizeof(unsigned char));
 		unsigned int* C = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));
+		memset(C, 0, nodeCount*sizeof(unsigned int));
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
+		memset(t, 0, nodeCount*sizeof(unsigned char));
+
 		pad_tree_uchar(L,R,C,t,0,qq[1]);
+		
 		unsigned int totalSize = 1+3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned int);	
 		*out = (unsigned char*)malloc(totalSize*sizeof(unsigned char));
 		(*out)[0] = (unsigned char)sysEndianType;
@@ -373,9 +377,13 @@ unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** 
 	else if(nodeCount<=65536)
 	{
 		unsigned short* L = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));
+		memset(L, 0, nodeCount*sizeof(unsigned short));
 		unsigned short* R = (unsigned short*)malloc(nodeCount*sizeof(unsigned short));
+		memset(R, 0, nodeCount*sizeof(unsigned short));
 		unsigned int* C = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));	
+		memset(C, 0, nodeCount*sizeof(unsigned int));		
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
+		memset(t, 0, nodeCount*sizeof(unsigned char));		
 		pad_tree_ushort(L,R,C,t,0,qq[1]);
 		unsigned int totalSize = 1+2*nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned char) + nodeCount*sizeof(unsigned int);
 		*out = (char*)malloc(totalSize);
@@ -393,9 +401,13 @@ unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** 
 	else //nodeCount>65536
 	{
 		unsigned int* L = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));
+		memset(L, 0, nodeCount*sizeof(unsigned int));
 		unsigned int* R = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));
+		memset(R, 0, nodeCount*sizeof(unsigned int));
 		unsigned int* C = (unsigned int*)malloc(nodeCount*sizeof(unsigned int));	
+		memset(C, 0, nodeCount*sizeof(unsigned int));
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
+		memset(t, 0, nodeCount*sizeof(unsigned char));
 		pad_tree_uint(L,R,C,t,0,qq[1]);
 		unsigned int totalSize = 1+3*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned char);
 		*out = (unsigned char*)malloc(totalSize);
@@ -595,9 +607,6 @@ void encode_withTree(int *s, int length, unsigned char **out, int *outSize)
 {
 	int i, nodeCount = 0;
 	unsigned char *treeBytes, buffer[4];
-	
-//	for(i=0;i<length;i++)
-//		printf("%u\n", s[i]);
 	
 	init(s, length);
 	for (i = 0; i < stateNum; i++)
