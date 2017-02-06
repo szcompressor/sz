@@ -12,6 +12,11 @@
 #include <sz.h>
 #include <CompressElement.h>
 
+/**
+ * Add preceding neighbor values to a buffer.
+ * @param  last3CmprsData buffer
+ * @param  value the value to be added to the buffer
+ * */
 inline void listAdd_double(double last3CmprsData[3], double value)
 {
 	last3CmprsData[2] = last3CmprsData[1];
@@ -26,6 +31,10 @@ inline void listAdd_float(float last3CmprsData[3], float value)
 	last3CmprsData[0] = value;
 }
 
+/**
+ * Determine whether the prediction value minErr is valid.
+ * 
+ * */
 int validPrediction_double(double minErr, double precision)
 {
 	if(minErr<=precision)

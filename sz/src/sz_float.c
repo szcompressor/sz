@@ -914,24 +914,13 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 //	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d,resiBitLengthArray->size=%d\n",
 //			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size, resiBitLengthArray->size);
 
-//	for(i = 3800;i<3844;i++)
-//		printf("exactLeadNumArray->array[%d]=%d\n",i,exactLeadNumArray->array[i]);
-
 	//free memory
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
 
-	//free_ExpSegmentConstructor(esc);
-
-	//TODO: return bytes....
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
-
-//	TightDataPointStorageF* tdps2;
-//	new_TightDataPointStorageF_fromFlatBytes(&tdps2, *newByteData, outSize);
-
-//	free_DBA(exactMidByteArray);
 
 	free(vce);
 	free(lce);
