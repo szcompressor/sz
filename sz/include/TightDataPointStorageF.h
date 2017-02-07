@@ -62,6 +62,8 @@ void decompressDataSeries_float_2D_pwr(float** data, int r1, int r2, TightDataPo
 
 float* extractRealPrecision_3D_float(int R1, int R2, int R3, int blockSize, TightDataPointStorageF* tdps);
 void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
+void decompressDataSeries_float_3D_pwr(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
+
 void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps);
 void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps);
 void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);

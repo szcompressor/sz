@@ -165,6 +165,8 @@ int SZ_LoadConf();
 int checkVersion(char* version);
 unsigned int roundUpToPowerOf2(unsigned int base);
 
+double fabs(double value);
+
 //dataCompression.c
 double computeRangeSize_double(double* oriData, int size, double* valueRangeSize, double* medianValue);
 float computeRangeSize_float(float* oriData, int size, float* valueRangeSize, float* medianValue);
@@ -209,9 +211,9 @@ short bytesToShort(unsigned char* bytes);
 int bytesToInt(unsigned char* bytes);
 long bytesToLong(unsigned char* bytes);
 float bytesToFloat(unsigned char* bytes);
-inline void floatToBytes(unsigned char *b, float num);
+void floatToBytes(unsigned char *b, float num);
 double bytesToDouble(unsigned char* bytes);
-inline void doubleToBytes(unsigned char *b, double num);
+void doubleToBytes(unsigned char *b, double num);
 int extractBytes(unsigned char* byteArray, int k, int validLength);
 int getMaskRightCode(int m);
 int getLeftMovingCode(int kMod8);
@@ -319,8 +321,8 @@ int SZ_Init_Params(sz_params *params);
 int computeDataLength(int r5, int r4, int r3, int r2, int r1);
 int computeDimension(int r5, int r4, int r3, int r2, int r1);
 
-inline void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue);
-inline void computeReqLength_float(float realPrecision, short radExpo, int* reqLength, float* medianValue);
+void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue);
+void computeReqLength_float(float realPrecision, short radExpo, int* reqLength, float* medianValue);
 
 int getPredictionCoefficients(int layers, int dimension, int **coeff_array);
 
@@ -359,8 +361,10 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D(unsigned char** newByteData, float
 void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr(unsigned char** newByteData, float *oriData, int dataLength, 
 int *outSize, float min, float max);
 void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float *oriData, int r1, int r2, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f);
+int computeBlockEdgeSize_2D(int segmentSize);
 void SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr(unsigned char** newByteData, float *oriData, int r1, int r2, 
 int *outSize, float min, float max);
+int computeBlockEdgeSize_3D(int segmentSize);
 void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f);
 void SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, 
 int *outSize, float min, float max);

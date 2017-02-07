@@ -48,12 +48,12 @@ void encode(int *s, int length, unsigned char *out, int *outSize);
 void decode(unsigned char *s, int targetLength, node t, int *out);
 void pad_tree_uchar(unsigned char* L, unsigned char* R, unsigned int* C, unsigned char* t, unsigned int i, node root);
 void pad_tree_ushort(unsigned short* L, unsigned short* R, unsigned int* C, unsigned char* t, unsigned int i, node root);
-void pad_tree_uint(unsigned int* L, unsigned int* R, int* C, unsigned char* t, unsigned int i, node root);
+void pad_tree_uint(unsigned int* L, unsigned int* R, unsigned int* C, unsigned char* t, unsigned int i, node root);
 unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** out);
 void unpad_tree_uchar(unsigned char* L, unsigned char* R, unsigned int* C, unsigned char *t, unsigned int i, node root);
 void unpad_tree_ushort(unsigned short* L, unsigned short* R, unsigned int* C, unsigned char* t, unsigned int i, node root);
-void unpad_tree_uint(unsigned int* L, unsigned int* R, int* C, unsigned char* t, unsigned int i, node root);
-node reconstruct_HuffTree_from_bytes_anyStates(char* bytes, int nodeCount);
+void unpad_tree_uint(unsigned int* L, unsigned int* R, unsigned int* C, unsigned char* t, unsigned int i, node root);
+node reconstruct_HuffTree_from_bytes_anyStates(unsigned char* bytes, int nodeCount);
 void encode_withTree(int *s, int length, unsigned char **out, int *outSize);
 void decode_withTree(unsigned char *s, int targetLength, int *out);
 

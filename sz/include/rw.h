@@ -45,8 +45,8 @@ void writeFloatData(float *data, int nbEle, char *tgtFilePath);
 void writeData(void *data, int dataType, int nbEle, char *tgtFilePath);
 void writeFloatData_inBytes(float *data, int nbEle, char* tgtFilePath);
 void writeDoubleData_inBytes(double *data, int nbEle, char* tgtFilePath);
-void writeShortData(unsigned short *states, int stateLength, unsigned char *tgtFilePath);
-unsigned short* readShortData(unsigned char *srcFilePath, int *dataLength);
+void writeShortData(unsigned short *states, int stateLength, char *tgtFilePath);
+unsigned short* readShortData(char *srcFilePath, int *dataLength);
 
 #ifdef __cplusplus
 }
