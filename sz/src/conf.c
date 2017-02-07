@@ -250,9 +250,9 @@ int SZ_ReadConf() {
 		conf_params->segment_size = segment_size;
 	}
 	
-	versionNumber[0] = SZ_VER_MAJOR; //0
-	versionNumber[1] = SZ_VER_MINOR; //5
-	versionNumber[2] = SZ_VER_REVISION; //15
+//	versionNumber[0] = SZ_VER_MAJOR; //0
+//	versionNumber[1] = SZ_VER_MINOR; //5
+//	versionNumber[2] = SZ_VER_REVISION; //15
     
     //initialization for Huffman encoding
     if(pool==NULL)
