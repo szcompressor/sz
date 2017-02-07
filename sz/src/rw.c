@@ -373,7 +373,7 @@ void writeDoubleData_inBytes(double *data, int nbEle, char* tgtFilePath)
 	free(bytes);
 }
 
-void writeShortData(unsigned short *states, int stateLength, unsigned char *tgtFilePath)
+void writeShortData(unsigned short *states, int stateLength, char *tgtFilePath)
 {
 	int byteLength = stateLength*2;
 	unsigned char* bytes = (unsigned char*)malloc(byteLength*sizeof(char));
@@ -382,7 +382,7 @@ void writeShortData(unsigned short *states, int stateLength, unsigned char *tgtF
 	free(bytes);
 }
 
-unsigned short* readShortData(unsigned char *srcFilePath, int *dataLength)
+unsigned short* readShortData(char *srcFilePath, int *dataLength)
 {
 	int byteLength = 0;
 	unsigned char * bytes = readByteData(srcFilePath, &byteLength);

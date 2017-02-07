@@ -115,8 +115,8 @@ void decompressDataSeries_double_1D_pwr(double** data, int dataSeriesLength, Tig
 			memcpy(preBytes,curBytes,8);
 			break;
 		default:
-			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
-			predValue = (*data)[i-1];
+			predValue = 2 * (*data)[i-1] - (*data)[i-2];
+			//predValue = (*data)[i-1];
 			(*data)[i] = predValue + (type_-intvRadius)*interval;
 			break;
 		}

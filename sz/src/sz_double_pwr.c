@@ -14,7 +14,6 @@
 #include <unistd.h>
 #include <math.h>
 #include "sz.h"
-//#include "ExpSegmentConstructor.h"
 #include "CompressElement.h"
 #include "DynamicByteArray.h"
 #include "DynamicIntArray.h"
@@ -27,7 +26,7 @@ void compute_segment_precisions_double_1D(double *oriData, int dataLength, doubl
 	int i = 0, j = 0, k = 0;
 	double realPrecision = oriData[0]!=0?fabs(pw_relBoundRatio*oriData[0]):pw_relBoundRatio; 
 	double approxPrecision;
-	unsigned char realPrecBytes[4];
+	unsigned char realPrecBytes[8];
 	double curPrecision;
 	double curValue;
 	for(i=0;i<dataLength;i++)
@@ -78,8 +77,8 @@ unsigned int optimize_intervals_double_1D_pwr(double *oriData, int dataLength, d
 			realPrecision = pwrErrBound[j++];
 		if(i%sampleDistance==0)
 		{
-			//pred_value = 2*oriData[i-1] - oriData[i-2];
-			pred_value = oriData[i-1];
+			pred_value = 2*oriData[i-1] - oriData[i-2];
+			//pred_value = oriData[i-1];
 			pred_err = fabs(pred_value - oriData[i]);
 			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
@@ -231,7 +230,7 @@ int r1, int r2, int r3, int R2, int R3, int edgeSize, unsigned char* pwrErrBound
 	int r23 = r2*r3, ir, jr;
 	double realPrecision; 
 	double approxPrecision;
-	unsigned char realPrecBytes[4];
+	unsigned char realPrecBytes[8];
 	double curValue, curAbsValue;
 	
 	double** minAbsValues = create2DArray_double(R2, R3);
@@ -485,8 +484,6 @@ int dataLength, int *outSize, double min, double max)
 	
 	for(i=2;i<dataLength;i++)
 	{
-//		if(i==6)
-//			printf("i=%d\n", i);
 		curData = spaceFillingValue[i];
 		if(i%segment_size==0)
 		{
@@ -495,8 +492,8 @@ int dataLength, int *outSize, double min, double max)
 			interval = 2*realPrecision;
 			updateReqLength = 0;
 		}
-		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
-		pred = last3CmprsData[0];
+		pred = 2*last3CmprsData[0] - last3CmprsData[1];
+		//pred = last3CmprsData[0];
 		predAbsErr = fabs(curData - pred);	
 		if(predAbsErr<checkRadius)
 		{
@@ -511,8 +508,6 @@ int dataLength, int *outSize, double min, double max)
 				type[i] = intvRadius-state;
 				pred = pred - state*interval;
 			}
-/*			if(type[i]==0)
-				printf("err:type[%d]=0\n", i);*/
 			listAdd_double(last3CmprsData, pred);			
 			continue;
 		}
@@ -561,22 +556,13 @@ int dataLength, int *outSize, double min, double max)
 //	SZ_Reset();
 //	decode_withTree(tdps->typeArray, tdps->typeArray_size, type_);	
 //	printf("tdps->typeArray_size=%d\n", tdps->typeArray_size);
-	
-//	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d,resiBitLengthArray->size=%d\n", 
-//			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size, resiBitLengthArray->size);
-	
-//	for(i = 3800;i<3844;i++)
-//		printf("exactLeadNumArray->array[%d]=%d\n",i,exactLeadNumArray->array[i]);
-	
+		
 	//free memory
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
-	
-	//free_ExpSegmentConstructor(esc);
 		
-	//TODO: return bytes....
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
 	
 	int doubleSize=sizeof(double);
@@ -606,11 +592,7 @@ int dataLength, int *outSize, double min, double max)
 		*outSize = totalByteLength;
 	}
 	
-//	TightDataPointStorageF* tdps2;
-//	new_TightDataPointStorageF_fromFlatBytes(&tdps2, *newByteData, outSize);
-
 	free(pwrErrBound);
-//	free_DBA(exactMidByteArray);	
 	
 	free(vce);
 	free(lce);
@@ -876,25 +858,15 @@ int *outSize, double min, double max)
 			resiBitLengthArray->array, resiBitLengthArray->size, 
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, pwrErrBoundBytes, pwrErrBoundBytes_size, radExpo);
 
-//	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d,resiBitLengthArray->size=%d\n", 
-//			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size, resiBitLengthArray->size);
-	
-//	for(i = 3800;i<3844;i++)
-//		printf("exactLeadNumArray->array[%d]=%d\n",i,exactLeadNumArray->array[i]);
-	
 	//free memory
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
-	
-	//free_ExpSegmentConstructor(esc);
 		
-	//TODO: return bytes....
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
 
 	free(pwrErrBound);
-	//free_DBA(exactMidByteArray);	
 	
 	free(vce);
 	free(lce);
@@ -1343,25 +1315,15 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, 
 			resiBitLengthArray->array, resiBitLengthArray->size, 
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, pwrErrBoundBytes, pwrErrBoundBytes_size, radExpo);
 
-//	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d,resiBitLengthArray->size=%d\n",
-//			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size, resiBitLengthArray->size);
-
-//	for(i = 3800;i<3844;i++)
-//		printf("exactLeadNumArray->array[%d]=%d\n",i,exactLeadNumArray->array[i]);
-
 	//free memory
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
 
-	//free_ExpSegmentConstructor(esc);
-
-	//TODO: return bytes....
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
 
 	free(pwrErrBound);
-//	free_DBA(exactMidByteArray);
 
 	free(vce);
 	free(lce);

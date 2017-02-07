@@ -108,6 +108,18 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, uns
 
 	unsigned char byteBuf[8];
 
+	for (i = 0; i < 4; i++)
+		byteBuf[i] = flatBytes[index++];
+	int max_quant_intervals = bytesToInt_bigEndian(byteBuf);// 4	
+
+	maxRangeRadius = max_quant_intervals/2;
+	
+	stateNum = maxRangeRadius*2;
+	allNodes = maxRangeRadius*4;
+	
+	intvCapacity = maxRangeRadius*2;
+	intvRadius = maxRangeRadius;
+
 	if(errorBoundMode==PW_REL)
 	{
 		(*this)->radExpo = flatBytes[index++];//1
@@ -199,7 +211,7 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, uns
 
 	if ((*this)->rtypeArray != NULL) 
 	{
-		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - radExpoL - segmentL - pwrErrBoundBytesL - 4 - 8 - 1 - 8 - 4 - 4 - 4 - 4
+		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - 4 - radExpoL - segmentL - pwrErrBoundBytesL - 4 - 8 - 1 - 8 - 4 - 4 - 4 - 4
 				- 8 - (*this)->rtypeArray_size 
 				- (*this)->typeArray_size - (*this)->leadNumArray_size
 				- (*this)->exactMidBytes_size - pwrErrBoundBytes_size;
@@ -208,7 +220,7 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, uns
 	}
 	else
 	{
-		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - radExpoL - segmentL - pwrErrBoundBytesL - 4 - 8 - 1 - 8 - 4 - 4
+		(*this)->residualMidBits_size = flatBytesLength - 3 - 4 - 1 - 4 - radExpoL - segmentL - pwrErrBoundBytesL - 4 - 8 - 1 - 8 - 4 - 4
 				- 4 - (*this)->typeArray_size
 				- (*this)->leadNumArray_size - (*this)->exactMidBytes_size - pwrErrBoundBytes_size;
 	}	
@@ -313,8 +325,8 @@ void decompressDataSeries_double_1D(double** data, int dataSeriesLength, TightDa
 			memcpy(preBytes,curBytes,8);
 			break;
 		default:
-			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
-			predValue = (*data)[i-1];
+			predValue = 2 * (*data)[i-1] - (*data)[i-2];
+			//predValue = (*data)[i-1];
 			(*data)[i] = predValue + (type_-intvRadius)*interval;
 			break;
 		}
@@ -1412,6 +1424,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 	
 	unsigned char segment_sizeBytes[4];
 	unsigned char pwrErrBoundBytes_sizeBytes[4];
+	unsigned char max_quant_intervals_Bytes[4];
 	
 	intToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//4
 	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
@@ -1449,7 +1462,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 			pwrBoundArrayL = 4;
 		}
 
-		int totalByteLength = 3 + 4 + 1 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 + 4 + 4 + 4 
+		int totalByteLength = 3 + 4 + 1 + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 + 4 + 4 + 4 
 				+ tdps->typeArray_size + tdps->leadNumArray_size
 				+ tdps->exactMidBytes_size + residualMidBitsLength + pwrErrBoundBytes_size;
 
@@ -1461,6 +1474,10 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 			(*bytes)[k++] = dsLengthBytes[i];
 			
 		(*bytes)[k++] = sameByte;	//1	byte		
+		
+		intToBytes_bigEndian(max_quant_intervals_Bytes, conf_params->max_quant_intervals);
+		for(i = 0;i<4;i++)//4
+			(*bytes)[k++] = max_quant_intervals_Bytes[i];		
 		
 		if(errorBoundMode==PW_REL)
 		{
@@ -1538,7 +1555,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 			pwrBoundArrayL = 4;
 		}
 
-		int totalByteLength = 3 + 4 + 1 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 + 4 + 4 + 4 + 4 + 8 + tdps->rtypeArray_size
+		int totalByteLength = 3 + 4 + 1 + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 + 4 + 4 + 4 + 4 + 8 + tdps->rtypeArray_size
 		+ tdps->typeArray_size + tdps->leadNumArray_size 
 				+ tdps->exactMidBytes_size + residualMidBitsLength + pwrErrBoundBytes_size;
 
@@ -1556,6 +1573,10 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 			(*bytes)[k++] = dsLengthBytes[i];		
 			
 		(*bytes)[k++] = sameByte;						//1
+
+		intToBytes_bigEndian(max_quant_intervals_Bytes, conf_params->max_quant_intervals);
+		for(i = 0;i<4;i++)//4
+			(*bytes)[k++] = max_quant_intervals_Bytes[i];
 
 		if(errorBoundMode==PW_REL)
 		{

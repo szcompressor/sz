@@ -538,6 +538,7 @@ unsigned char* SZ_batch_compress(int *outSize)
 	
 	*outSize = 4+tmpGzipSize;
 	free(dba);
+	SZ_Finalize();
 	return finalCompressedBytes;
 }
 
@@ -812,6 +813,7 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 		}
 	}
 	free(gzipDecpressBytes);
+	SZ_Finalize();
 	return sz_varset;
 }
 

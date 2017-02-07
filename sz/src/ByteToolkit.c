@@ -250,7 +250,7 @@ float bytesToFloat(unsigned char* bytes)
 	return buf.value;
 }
 
-inline void floatToBytes(unsigned char *b, float num)
+void floatToBytes(unsigned char *b, float num)
 {
 	lfloat buf;
 	buf.value = num;
@@ -269,7 +269,7 @@ double bytesToDouble(unsigned char* bytes)
 	return buf.value;
 }
 
-inline void doubleToBytes(unsigned char *b, double num)
+void doubleToBytes(unsigned char *b, double num)
 {
 	ldouble buf;
 	buf.value = num;

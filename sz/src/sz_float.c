@@ -33,8 +33,8 @@ unsigned int optimize_intervals_float_1D(float *oriData, int dataLength, double 
 	{
 		if(i%sampleDistance==0)
 		{
-			//pred_value = 2*oriData[i-1] - oriData[i-2];
-			pred_value = oriData[i-1];
+			pred_value = 2*oriData[i-1] - oriData[i-2];
+			//pred_value = oriData[i-1];
 			pred_err = fabs(pred_value - oriData[i]);
 			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
@@ -244,8 +244,8 @@ int dataLength, double realPrecision, int *outSize, float valueRangeSize, float 
 //		if(i==6)
 //			printf("i=%d\n", i);
 		curData = spaceFillingValue[i];
-		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
-		pred = last3CmprsData[0];
+		pred = 2*last3CmprsData[0] - last3CmprsData[1];
+		//pred = last3CmprsData[0];
 		predAbsErr = fabs(curData - pred);	
 		if(predAbsErr<=checkRadius)
 		{
@@ -914,24 +914,13 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 //	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d,resiBitLengthArray->size=%d\n",
 //			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size, resiBitLengthArray->size);
 
-//	for(i = 3800;i<3844;i++)
-//		printf("exactLeadNumArray->array[%d]=%d\n",i,exactLeadNumArray->array[i]);
-
 	//free memory
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
 
-	//free_ExpSegmentConstructor(esc);
-
-	//TODO: return bytes....
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
-
-//	TightDataPointStorageF* tdps2;
-//	new_TightDataPointStorageF_fromFlatBytes(&tdps2, *newByteData, outSize);
-
-//	free_DBA(exactMidByteArray);
 
 	free(vce);
 	free(lce);
@@ -1075,6 +1064,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 			exit(1);			
 		}
 	}
+	SZ_Finalize();
 }
 
 void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, int r1, unsigned char* cmpBytes, int cmpSize)
@@ -1146,9 +1136,10 @@ void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, i
 	free_TightDataPointStorageF(tdps);
 	if(szMode!=SZ_BEST_SPEED && cmpSize!=12)
 		free(szTmpBytes);
+	SZ_Finalize();	
 }
 
-inline void computeReqLength_float(float realPrecision, short radExpo, int* reqLength, float* medianValue)
+void computeReqLength_float(float realPrecision, short radExpo, int* reqLength, float* medianValue)
 {
 	short reqExpo = getPrecisionReqLength_double(realPrecision);
 	*reqLength = 9+radExpo - reqExpo; //radExpo-reqExpo == reqMantiLength
