@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include "sz.h"
 #include "CompressElement.h"
 #include "DynamicByteArray.h"
@@ -44,7 +45,8 @@ double absErrBound;
 double relBoundRatio;
 double pw_relBoundRatio;
 int segment_size;
-int versionNumber[3] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_REVISION};
+
+int versionNumber[3];
 
 int spaceFillingCurveTransform; //default is 0, or 1 set by sz.config
 int reOrgSize; //the granularity of the reganization of the original data
@@ -114,7 +116,7 @@ int SZ_Init_Params(sz_params *params)
     	stateNum = maxRangeRadius*2;
 		allNodes = maxRangeRadius*4;
 		intvCapacity = maxRangeRadius*2;
-		intvRadius = maxRangeRadius;
+		intvRadius = maxRangeRadius;		
     }
     dataEndianType    = endianType;
     sysEndianType    = endianType;
@@ -174,9 +176,9 @@ int SZ_Init_Params(sz_params *params)
 			predThreshold = params->predThreshold;
     }
 
-//	versionNumber[0] = SZ_VER_MAJOR; //0
-//	versionNumber[1] = SZ_VER_MINOR; //5
-//	versionNumber[2] = SZ_VER_REVISION; //15
+	versionNumber[0] = SZ_VER_MAJOR; //0
+	versionNumber[1] = SZ_VER_MINOR; //5
+	versionNumber[2] = SZ_VER_REVISION; //15
 
 	if(params->quantization_intervals%2!=0)
 	{

@@ -78,8 +78,8 @@ unsigned int optimize_intervals_float_1D_pwr(float *oriData, int dataLength, flo
 			realPrecision = pwrErrBound[j++];
 		if(i%sampleDistance==0)
 		{
-			pred_value = 2*oriData[i-1] - oriData[i-2];
-			//pred_value = oriData[i-1];
+			//pred_value = 2*oriData[i-1] - oriData[i-2];
+			pred_value = oriData[i-1];
 			pred_err = fabs(pred_value - oriData[i]);
 			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
@@ -496,8 +496,8 @@ int dataLength, int *outSize, float min, float max)
 			interval = 2*realPrecision;
 			updateReqLength = 0;
 		}
-		pred = 2*last3CmprsData[0] - last3CmprsData[1];
-		//pred = last3CmprsData[0];
+		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
+		pred = last3CmprsData[0];
 		predAbsErr = fabs(curData - pred);	
 		if(predAbsErr<checkRadius)
 		{
@@ -563,12 +563,21 @@ int dataLength, int *outSize, float min, float max)
 //	decode_withTree(tdps->typeArray, tdps->typeArray_size, type_);	
 //	printf("tdps->typeArray_size=%d\n", tdps->typeArray_size);
 	
+//	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d,resiBitLengthArray->size=%d\n", 
+//			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size, resiBitLengthArray->size);
+	
+//	for(i = 3800;i<3844;i++)
+//		printf("exactLeadNumArray->array[%d]=%d\n",i,exactLeadNumArray->array[i]);
+	
 	//free memory
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
 	
+	//free_ExpSegmentConstructor(esc);
+		
+	//TODO: return bytes....
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 	
 	int floatSize=sizeof(float);
@@ -597,8 +606,12 @@ int dataLength, int *outSize, float min, float max)
 		}
 		*outSize = totalByteLength;
 	}
+	
+//	TightDataPointStorageF* tdps2;
+//	new_TightDataPointStorageF_fromFlatBytes(&tdps2, *newByteData, outSize);
 
 	free(pwrErrBound);
+//	free_DBA(exactMidByteArray);	
 	
 	free(vce);
 	free(lce);
@@ -608,26 +621,12 @@ int dataLength, int *outSize, float min, float max)
 
 int computeBlockEdgeSize_2D(int segmentSize)
 {
-	int i = 1;
-	for(i=1; i<segmentSize;i++)
-	{
-		if(i*i>segmentSize)
-			break;
-	}
-	return i;
-	//return (int)(sqrt(segmentSize)+1);
+	return (int)(sqrt(segmentSize)+1);
 }
 
 int computeBlockEdgeSize_3D(int segmentSize)
 {
-	int i = 1;
-	for(i=1; i<segmentSize;i++)
-	{
-		if(i*i*i>segmentSize)
-			break;
-	}
-	return i;	
-	//return (int)(pow(segmentSize, 1.0/3)+1);
+	return (int)(pow(segmentSize, 1.0/3)+1);
 }
 
 void SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr(unsigned char** newByteData, float *oriData, int r1, int r2, 
@@ -738,6 +737,8 @@ int *outSize, float min, float max)
     /* Process Row-0 data 2 --> data r2-1 */
 	for (j = 2; j < r2; j++)
 	{
+//		if(j==6)
+//			printf("j=%d\n",j);
 		if(j%blockEdgeSize==0)
 		{
 			J++;
@@ -824,6 +825,8 @@ int *outSize, float min, float max)
 		for (j = 1; j < r2; j++)
 		{
 			index = i*r2+j;
+//			if(index==392)
+//				printf("index=%d\n",index);
 			if(j%blockEdgeSize==0)
 			{
 				J++;
@@ -882,6 +885,12 @@ int *outSize, float min, float max)
 			resiBitArray->array, resiBitArray->size, 
 			resiBitLengthArray->array, resiBitLengthArray->size, 
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, pwrErrBoundBytes, pwrErrBoundBytes_size, radExpo);
+
+//	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d,resiBitLengthArray->size=%d\n", 
+//			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size, resiBitLengthArray->size);
+	
+//	for(i = 3800;i<3844;i++)
+//		printf("exactLeadNumArray->array[%d]=%d\n",i,exactLeadNumArray->array[i]);
 	
 	//free memory
 	free_DBA(resiBitLengthArray);
@@ -889,9 +898,17 @@ int *outSize, float min, float max)
 	free_DIA(resiBitArray);
 	free(type);
 	
+	//free_ExpSegmentConstructor(esc);
+		
+	//TODO: return bytes....
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 	
+//	TightDataPointStorageF* tdps2;
+//	new_TightDataPointStorageF_fromFlatBytes(&tdps2, *newByteData, outSize);
+
 	free(pwrErrBound);
+	//free(pwrErrBoundBytes);
+	//free_DBA(exactMidByteArray);	
 
 	free(vce);
 	free(lce);
@@ -1348,15 +1365,28 @@ int *outSize, float min, float max)
 	printf("opt_quantizations=%d, exactDataNum=%d, sum=%d\n",quantization_intervals, exactDataNum, sum);
 */
 
+//	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d,resiBitLengthArray->size=%d\n",
+//			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size, resiBitLengthArray->size);
+
+//	for(i = 3800;i<3844;i++)
+//		printf("exactLeadNumArray->array[%d]=%d\n",i,exactLeadNumArray->array[i]);
+
 	//free memory
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
 
+	//free_ExpSegmentConstructor(esc);
+
+	//TODO: return bytes....
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 
+//	TightDataPointStorageF* tdps2;
+//	new_TightDataPointStorageF_fromFlatBytes(&tdps2, *newByteData, outSize);
+
 	free(pwrErrBound);
+//	free_DBA(exactMidByteArray);
 
 	free(vce);
 	free(lce);

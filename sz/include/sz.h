@@ -165,8 +165,6 @@ int SZ_LoadConf();
 int checkVersion(char* version);
 unsigned int roundUpToPowerOf2(unsigned int base);
 
-double fabs(double value);
-
 //dataCompression.c
 double computeRangeSize_double(double* oriData, int size, double* valueRangeSize, double* medianValue);
 float computeRangeSize_float(float* oriData, int size, float* valueRangeSize, float* medianValue);
