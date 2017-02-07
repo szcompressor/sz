@@ -60,8 +60,6 @@ int main(int argc, char * argv[])
     if(argc>=8)
         r5 = atoi(argv[7]);
 
-    SZ_Init(cfgFile);
-
     if(r2==0)
         nbEle = r1;
     else if(r3==0)

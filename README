@@ -1,4 +1,4 @@
---------SZ (version 1.4.8): Error-bounded Lossy Compressor for HPC Data--------
+--------SZ (version 1.4.9): Error-bounded Lossy Compressor for HPC Data--------
  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
        See COPYRIGHT in top-level directory.
 
@@ -119,6 +119,7 @@ SZ 1.4.6-beta   Three compression modes are provided (SZ_BEST_SPEED, SZ_BEST_COM
 SZ 1.4.6-hacc	the same as SZ 1.4.6-beta. The only difference is the optimized prediction for 1D array: replacing the linear-curve fitting by neighbor-value fitting.
 SZ 1.4.7-beta   Fix some mem leakage bugs. Fix the bugs about memory crash or segmentation faults when the number of data points is pretty large. Fix the sementation fault bug happening when the data size is super small. Fix the error bound may not be guaranteed in some cases.
 SZ 1.4.7-hacc	In addition to the updates of SZ 1.4.6-hacc, it also "improves" the prediction, by using segmented sorting.
-SZ 1.4.8-beta	It is improved based on SZ 1.4.7-beta. Increase the maximum number of quantization intervals. The users can set the max_quant_intervals in the configuration files, in order to optimize the compression performance and compression ratio in the cases with different precisions. Please see the description in sz.config for details. 
 SZ 1.4.8-hacc 	It is improved based on SZ 1.4.6-hacc. Increase the maximum number of quantization intervals. The users can set the max_quant_intervals in the configuration files, in order to optimize the compression performance and compression ratio in the cases with different precisions. Please see the description in sz.config for details.
-SZ 1.4.9-hacc	It is improved based on SZ 1.4.6-hacc. The whole data set is split into multiple segments, and each segment chooses the bestfit prediction method (either neighbor-state-prediction or linear-curve-fitting or more)
+SZ 1.4.9-hacc	Support point-wise relative error bound setting.
+SZ 1.4.9-beta	Support point-wise relative error bound setting, and optional Fortran compilation.
+SZ 1.4.x1-hacc	It is improved based on SZ 1.4.6-hacc. The whole data set is split into multiple segments, and each segment chooses the bestfit prediction method (either neighbor-state-prediction or linear-curve-fitting or more)

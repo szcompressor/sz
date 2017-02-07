@@ -78,12 +78,20 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = testfloat_compress$(EXEEXT) \
-	testfloat_decompress$(EXEEXT) testdouble_compress$(EXEEXT) \
-	testdouble_decompress$(EXEEXT) testdouble_compress_f$(EXEEXT) \
-	testdouble_decompress_f$(EXEEXT) \
-	testfloat_batch_compress$(EXEEXT) \
-	testdouble_batch_compress$(EXEEXT)
+@FORTRAN_FALSE@bin_PROGRAMS = testfloat_compress$(EXEEXT) \
+@FORTRAN_FALSE@	testfloat_decompress$(EXEEXT) \
+@FORTRAN_FALSE@	testdouble_compress$(EXEEXT) \
+@FORTRAN_FALSE@	testdouble_decompress$(EXEEXT) \
+@FORTRAN_FALSE@	testfloat_batch_compress$(EXEEXT) \
+@FORTRAN_FALSE@	testdouble_batch_compress$(EXEEXT)
+@FORTRAN_TRUE@bin_PROGRAMS = testfloat_compress$(EXEEXT) \
+@FORTRAN_TRUE@	testfloat_decompress$(EXEEXT) \
+@FORTRAN_TRUE@	testdouble_compress$(EXEEXT) \
+@FORTRAN_TRUE@	testdouble_decompress$(EXEEXT) \
+@FORTRAN_TRUE@	testfloat_batch_compress$(EXEEXT) \
+@FORTRAN_TRUE@	testdouble_batch_compress$(EXEEXT) \
+@FORTRAN_TRUE@	testdouble_compress_f$(EXEEXT) \
+@FORTRAN_TRUE@	testdouble_decompress_f$(EXEEXT)
 subdir = example
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp README
@@ -111,20 +119,24 @@ am_testdouble_compress_OBJECTS = testdouble_compress.$(OBJEXT)
 testdouble_compress_OBJECTS = $(am_testdouble_compress_OBJECTS)
 testdouble_compress_DEPENDENCIES = ../sz/.libs/libsz.a \
 	../zlib/.libs/libzlib.a
-am_testdouble_compress_f_OBJECTS = testdouble_compress_f.$(OBJEXT)
+am__testdouble_compress_f_SOURCES_DIST = testdouble_compress_f.f90
+@FORTRAN_TRUE@am_testdouble_compress_f_OBJECTS =  \
+@FORTRAN_TRUE@	testdouble_compress_f.$(OBJEXT)
 testdouble_compress_f_OBJECTS = $(am_testdouble_compress_f_OBJECTS)
-testdouble_compress_f_DEPENDENCIES = ../sz/.libs/libsz.a \
-	../zlib/.libs/libzlib.a
+@FORTRAN_TRUE@testdouble_compress_f_DEPENDENCIES =  \
+@FORTRAN_TRUE@	../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
 am_testdouble_decompress_OBJECTS = testdouble_decompress.$(OBJEXT)
 testdouble_decompress_OBJECTS = $(am_testdouble_decompress_OBJECTS)
 testdouble_decompress_DEPENDENCIES = ../sz/.libs/libsz.a \
 	../zlib/.libs/libzlib.a
-am_testdouble_decompress_f_OBJECTS =  \
-	testdouble_decompress_f.$(OBJEXT)
+am__testdouble_decompress_f_SOURCES_DIST =  \
+	testdouble_decompress_f.f90
+@FORTRAN_TRUE@am_testdouble_decompress_f_OBJECTS =  \
+@FORTRAN_TRUE@	testdouble_decompress_f.$(OBJEXT)
 testdouble_decompress_f_OBJECTS =  \
 	$(am_testdouble_decompress_f_OBJECTS)
-testdouble_decompress_f_DEPENDENCIES = ../sz/.libs/libsz.a \
-	../zlib/.libs/libzlib.a
+@FORTRAN_TRUE@testdouble_decompress_f_DEPENDENCIES =  \
+@FORTRAN_TRUE@	../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
 am_testfloat_batch_compress_OBJECTS =  \
 	testfloat_batch_compress.$(OBJEXT)
 testfloat_batch_compress_OBJECTS =  \
@@ -197,9 +209,9 @@ SOURCES = $(testdouble_batch_compress_SOURCES) \
 	$(testfloat_compress_SOURCES) $(testfloat_decompress_SOURCES)
 DIST_SOURCES = $(testdouble_batch_compress_SOURCES) \
 	$(testdouble_compress_SOURCES) \
-	$(testdouble_compress_f_SOURCES) \
+	$(am__testdouble_compress_f_SOURCES_DIST) \
 	$(testdouble_decompress_SOURCES) \
-	$(testdouble_decompress_f_SOURCES) \
+	$(am__testdouble_decompress_f_SOURCES_DIST) \
 	$(testfloat_batch_compress_SOURCES) \
 	$(testfloat_compress_SOURCES) $(testfloat_decompress_SOURCES)
 am__can_run_installinfo = \
@@ -355,10 +367,10 @@ testdouble_compress_SOURCES = testdouble_compress.c
 testdouble_compress_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
 testdouble_decompress_SOURCES = testdouble_decompress.c
 testdouble_decompress_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
-testdouble_compress_f_SOURCES = testdouble_compress_f.f90
-testdouble_compress_f_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
-testdouble_decompress_f_SOURCES = testdouble_decompress_f.f90
-testdouble_decompress_f_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
+@FORTRAN_TRUE@testdouble_compress_f_SOURCES = testdouble_compress_f.f90
+@FORTRAN_TRUE@testdouble_compress_f_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
+@FORTRAN_TRUE@testdouble_decompress_f_SOURCES = testdouble_decompress_f.f90
+@FORTRAN_TRUE@testdouble_decompress_f_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
 testfloat_batch_compress_SOURCES = testfloat_batch_compress.c
 testfloat_batch_compress_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
 testdouble_batch_compress_SOURCES = testdouble_batch_compress.c
