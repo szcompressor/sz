@@ -1107,6 +1107,7 @@ void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, i
 	
 	//writeByteData(tdps->typeArray, tdps->typeArray_size, "decompress-typebytes.tbt");
 	
+	int dim = computeDimension(r5,r4,r3,r2,r1);	
 	int floatSize = sizeof(float);
 	if(tdps->isLossless)
 	{
@@ -1122,16 +1123,16 @@ void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, i
 				(*newData)[i] = bytesToFloat(p);
 		}		
 	}
-	else if (dataLength == r1)
+	else if (dim == 1)
 		getSnapshotData_float_1D(newData,r1,tdps);
 	else
-	if (dataLength == r1*r2)
+	if (dim == 2)
 		getSnapshotData_float_2D(newData,r2,r1,tdps);
 	else
-	if (dataLength == r1*r2*r3)
+	if (dim == 3)
 		getSnapshotData_float_3D(newData,r3,r2,r1,tdps);
 	else
-	if (dataLength == r1*r2*r3*r4)
+	if (dim == 4)
 		getSnapshotData_float_3D(newData,r4*r3,r2,r1,tdps);
 	free_TightDataPointStorageF(tdps);
 	if(szMode!=SZ_BEST_SPEED && cmpSize!=12)
