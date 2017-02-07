@@ -608,12 +608,26 @@ int dataLength, int *outSize, float min, float max)
 
 int computeBlockEdgeSize_2D(int segmentSize)
 {
-	return (int)(sqrt(segmentSize)+1);
+	int i = 1;
+	for(i=1; i<segmentSize;i++)
+	{
+		if(i*i>segmentSize)
+			break;
+	}
+	return i;
+	//return (int)(sqrt(segmentSize)+1);
 }
 
 int computeBlockEdgeSize_3D(int segmentSize)
 {
-	return (int)(pow(segmentSize, 1.0/3)+1);
+	int i = 1;
+	for(i=1; i<segmentSize;i++)
+	{
+		if(i*i*i>segmentSize)
+			break;
+	}
+	return i;	
+	//return (int)(pow(segmentSize, 1.0/3)+1);
 }
 
 void SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr(unsigned char** newByteData, float *oriData, int r1, int r2, 
