@@ -11,10 +11,12 @@ This document simply introduces how to install and use the SZ compressor. More d
 ===========Installation==========
 ---------------------------------
 configure --prefix=[INSTALL_DIR]
+(Please use --enable-fortran if you need Fortran interface)
 
 make
 
 make install
+
 
 Then, you'll find all the executables in [INSTALL_DIR]/bin and .a and .so libraries in [INSTALL_DIR]/lib
 
@@ -34,16 +36,17 @@ testdouble_8_8_128.dat and testdouble_8_8_8_128.dat are two binary testing files
 
 sz.config is the configuration file. The key settings are errorBoundMode, absErrBound, and relBoundRatio, which are described below.
 
-*absErrBound referes to the absolute error bound, which is to limit the (de)compression errors to be within an absolute error. For example, absErrBound=0.0001 means the decompressed value must be in [V-0.0001,V+0.0001], where V is the original true value.
+*absErrBound refers to the absolute error bound, which is to limit the (de)compression errors to be within an absolute error. For example, absErrBound=0.0001 means the decompressed value must be in [V-0.0001,V+0.0001], where V is the original true value.
 
 *relBoundRatio refers to relative bound ratio, which is to limit the (de)compression errors by considering the global data value range size (i.e., taking into account the range size (max_value - min_value)). For example, suppose relBoundRatio is set to 0.01, and the data set is {100,101,102,103,104,...,110}, so the global value range size is 110-100=10, so the error bound will actually be 10*0.01=0.1, from the perspective of "relBoundRatio".
 
-*errorBoundMode is to define a combination of the above two types of error bounds. There are four types of values: ABS_AND_REL, ABS_OR_REL, ABS, REL.
+*errorBoundMode is to indicate the error-bounding way in the compression, such as based on absolute error bound, relative error bound, etc. 
+The options are shown below.
 	ABS: take only "absolute error bound" into account. That is, relative bound ratio will be ignored.
 	REL: take only "relative bound ratio" into account. That is, absolute error bound will be ignored. 
 	ABS_AND_REL: take both of the two bounds into account. The compression errors will be limited using both absErrBound and relBoundRatio*rangesize. That is, the two bounds must be both met.
 	ABS_OR_REL: take both of the two bounds into account. The compression errors will be limited using either absErrBound or relBoundRatio*rangesize. That is, only one bound is required to be met.
-
+	PW_REL: take "point-wise relative error bound" in the compression. 
 ===Decompress===
 ----------------
 ./test_decompress sz.config testdouble_8_8_8_128.dat.sz 8 8 8 128
