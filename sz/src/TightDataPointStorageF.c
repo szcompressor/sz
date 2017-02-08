@@ -85,7 +85,7 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 	if((*this)->isLossless==1)
 	{
 		(*this)->exactMidBytes = flatBytes+8;
-		return;
+		return errorBoundMode;
 	}
 	else if(same==1)
 	{
@@ -97,7 +97,7 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 			(*this)->exactMidBytes = NULL;
 		for(i = 0;i<exactMidBytesLength;i++)
 			(*this)->exactMidBytes[i] = flatBytes[index++];
-		return;
+		return errorBoundMode;
 	}
 	else
 		(*this)->allSameData = 0;

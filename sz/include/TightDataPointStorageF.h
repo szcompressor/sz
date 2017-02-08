@@ -52,7 +52,7 @@ typedef struct TightDataPointStorageF
 } TightDataPointStorageF;
 
 void new_TightDataPointStorageF_Empty(TightDataPointStorageF **this);
-void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsigned char* flatBytes, int flatBytesLength);
+int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsigned char* flatBytes, int flatBytesLength);
 void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps);
 void decompressDataSeries_float_1D_pwr(float** data, int dataSeriesLength, TightDataPointStorageF* tdps);
 
@@ -64,9 +64,9 @@ float* extractRealPrecision_3D_float(int R1, int R2, int R3, int blockSize, Tigh
 void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
 void decompressDataSeries_float_3D_pwr(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
 
-void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps);
-void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps);
-void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
+void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps, int errBoundMode);
+void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps, int errBoundMode);
+void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps, int errBoundMode);
 void new_TightDataPointStorageF(TightDataPointStorageF **this,
 		int dataSeriesLength, int exactDataNum,
 		int* type, unsigned char* exactMidBytes, int exactMidBytes_size,
