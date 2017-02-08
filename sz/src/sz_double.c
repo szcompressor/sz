@@ -1079,7 +1079,7 @@ void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2,
 		szTmpBytes = cmpBytes;
 	//TODO: convert szTmpBytes to double array.
 	TightDataPointStorageD* tdps;
-	new_TightDataPointStorageD_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
+	int errBoundMode = new_TightDataPointStorageD_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
 
 	int dim = computeDimension(r5,r4,r3,r2,r1);
 	int doubleSize = sizeof(double);
@@ -1098,16 +1098,16 @@ void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2,
 		}		
 	}
 	else if (dim == 1)
-		getSnapshotData_double_1D(newData,r1,tdps);
+		getSnapshotData_double_1D(newData,r1,tdps, errBoundMode);
 	else
 	if (dim == 2)
-		getSnapshotData_double_2D(newData,r2,r1,tdps);
+		getSnapshotData_double_2D(newData,r2,r1,tdps, errBoundMode);
 	else
 	if (dim == 3)
-		getSnapshotData_double_3D(newData,r3,r2,r1,tdps);
+		getSnapshotData_double_3D(newData,r3,r2,r1,tdps, errBoundMode);
 	else
 	if (dim == 4)
-		getSnapshotData_double_3D(newData,r4*r3,r2,r1,tdps);		
+		getSnapshotData_double_3D(newData,r4*r3,r2,r1,tdps, errBoundMode);		
 	free_TightDataPointStorageD(tdps);
 	if(szMode!=SZ_BEST_SPEED && cmpSize!=16)
 		free(szTmpBytes);	

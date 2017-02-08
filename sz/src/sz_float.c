@@ -1104,7 +1104,7 @@ void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, i
 	
 	//TODO: convert szTmpBytes to data array.
 	TightDataPointStorageF* tdps;
-	new_TightDataPointStorageF_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
+	int errBoundMode = new_TightDataPointStorageF_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
 	
 	//writeByteData(tdps->typeArray, tdps->typeArray_size, "decompress-typebytes.tbt");
 	
@@ -1125,16 +1125,16 @@ void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, i
 		}		
 	}
 	else if (dim == 1)
-		getSnapshotData_float_1D(newData,r1,tdps);
+		getSnapshotData_float_1D(newData,r1,tdps, errBoundMode);
 	else
 	if (dim == 2)
-		getSnapshotData_float_2D(newData,r2,r1,tdps);
+		getSnapshotData_float_2D(newData,r2,r1,tdps, errBoundMode);
 	else
 	if (dim == 3)
-		getSnapshotData_float_3D(newData,r3,r2,r1,tdps);
+		getSnapshotData_float_3D(newData,r3,r2,r1,tdps, errBoundMode);
 	else
 	if (dim == 4)
-		getSnapshotData_float_3D(newData,r4*r3,r2,r1,tdps);
+		getSnapshotData_float_3D(newData,r4*r3,r2,r1,tdps, errBoundMode);
 	free_TightDataPointStorageF(tdps);
 	if(szMode!=SZ_BEST_SPEED && cmpSize!=12)
 		free(szTmpBytes);

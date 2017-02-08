@@ -47,7 +47,7 @@ void new_TightDataPointStorageF_Empty(TightDataPointStorageF **this)
 	(*this)->pwrErrBoundBytes = NULL;
 }
 
-void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsigned char* flatBytes, int flatBytesLength)
+int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsigned char* flatBytes, int flatBytesLength)
 {
 	new_TightDataPointStorageF_Empty(this);
 	int i, index = 0;
@@ -74,14 +74,13 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, uns
 	szMode = (sameRByte & 0x06)>>1;
 	(*this)->isLossless = (sameRByte & 0x10)>>4;
 	int isPW_REL = (sameRByte & 0x20)>>5;
+	int errorBoundMode = ABS;
 	if(isPW_REL)
 	{
 		errorBoundMode = PW_REL;
 		segmentL = 4;
 		pwrErrBoundBytesL = 4;
 	}
-	else
-		errorBoundMode = ABS;
 
 	if((*this)->isLossless==1)
 	{
@@ -241,6 +240,7 @@ void new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, uns
 	}
 	for (i = 0; i < (*this)->residualMidBits_size; i++)
 		(*this)->residualMidBits[i] = flatBytes[index++];	
+	return errorBoundMode;
 }
 
 void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps) 
@@ -1185,7 +1185,7 @@ void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDa
 	return;
 }
 
-void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps)
+void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps, int errBoundMode)
 {	
 	SZ_Reset();
 	int i;
@@ -1197,7 +1197,7 @@ void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPoint
 			(*data)[i] = value;
 	} else {
 		if (tdps->rtypeArray == NULL) {
-			if(errorBoundMode!=PW_REL)
+			if(errBoundMode!=PW_REL)
 				decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
 			else 
 				decompressDataSeries_float_1D_pwr(data, dataSeriesLength, tdps);
@@ -1219,7 +1219,7 @@ void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPoint
 			}
 			// get the decompressed data
 			float* decmpData;
-			if(errorBoundMode!=PW_REL)
+			if(errBoundMode!=PW_REL)
 				decompressDataSeries_float_1D(&decmpData, dataSeriesLength, tdps);
 			else 
 				decompressDataSeries_float_1D_pwr(&decmpData, dataSeriesLength, tdps);
@@ -1236,7 +1236,7 @@ void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPoint
 	}
 }
 
-void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps) {
+void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps, int errBoundMode) {
 	SZ_Reset();
 	int i;
 	int dataSeriesLength = r1*r2;
@@ -1247,7 +1247,7 @@ void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorag
 			(*data)[i] = value;
 	} else {
 		if (tdps->rtypeArray == NULL) {
-			if(errorBoundMode!=PW_REL)
+			if(errBoundMode!=PW_REL)
 				decompressDataSeries_float_2D(data, r1, r2, tdps);
 			else 
 				decompressDataSeries_float_2D_pwr(data, r1, r2, tdps);
@@ -1269,7 +1269,7 @@ void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorag
 			}
 			// get the decompressed data
 			float* decmpData;
-			if(errorBoundMode!=PW_REL)
+			if(errBoundMode!=PW_REL)
 				decompressDataSeries_float_2D(&decmpData, r1, r2, tdps);
 			else 
 				decompressDataSeries_float_2D_pwr(&decmpData, r1, r2, tdps);
@@ -1286,7 +1286,7 @@ void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorag
 	}
 }
 
-void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps)
+void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps, int errBoundMode)
 {
 	SZ_Reset();
 	int i;
@@ -1298,7 +1298,7 @@ void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPoi
 			(*data)[i] = value;
 	} else {
 		if (tdps->rtypeArray == NULL) {
-			if(errorBoundMode!=PW_REL)
+			if(errBoundMode!=PW_REL)
 				decompressDataSeries_float_3D(data, r1, r2, r3, tdps);
 			else 
 				decompressDataSeries_float_3D_pwr(data, r1, r2, r3, tdps);
@@ -1320,7 +1320,10 @@ void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPoi
 			}
 			// get the decompressed data
 			float* decmpData;
-			decompressDataSeries_float_3D(&decmpData, r1, r2, r3, tdps);
+			if(errBoundMode!=PW_REL)
+				decompressDataSeries_float_3D(&decmpData, r1, r2, r3, tdps);
+			else 
+				decompressDataSeries_float_3D_pwr(&decmpData, r1, r2, r3, tdps);
 			// insert the decompressed data
 			int k = 0;
 			for (i = 0; i < dataSeriesLength; i++) {

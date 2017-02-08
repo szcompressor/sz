@@ -47,7 +47,7 @@ void new_TightDataPointStorageD_Empty(TightDataPointStorageD **this)
 	(*this)->pwrErrBoundBytes = NULL;
 }
 
-void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsigned char* flatBytes, int flatBytesLength)
+int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsigned char* flatBytes, int flatBytesLength)
 {
 	new_TightDataPointStorageD_Empty(this);
 	int i, index = 0;
@@ -74,14 +74,13 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, uns
 	szMode = (sameRByte & 0x06)>>1;
 	(*this)->isLossless = (sameRByte & 0x10)>>4;
 	int isPW_REL = (sameRByte & 0x20)>>5;
+	int errorBoundMode = ABS;
 	if(isPW_REL)
 	{
 		errorBoundMode = PW_REL;
 		segmentL = 4;
 		pwrErrBoundBytesL = 4;
 	}
-	else
-		errorBoundMode = ABS;
 	//printf("szMode=%d\n",szMode);
 
 	if((*this)->isLossless==1)
@@ -242,6 +241,7 @@ void new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, uns
 	}	
 	for (i = 0; i < (*this)->residualMidBits_size; i++)
 		(*this)->residualMidBits[i] = flatBytes[index++];	
+	return errorBoundMode;		
 }
 
 void decompressDataSeries_double_1D(double** data, int dataSeriesLength, TightDataPointStorageD* tdps) 
@@ -1190,7 +1190,7 @@ void decompressDataSeries_double_3D(double** data, int r1, int r2, int r3, Tight
 	return;
 }
 
-void getSnapshotData_double_1D(double** data, int dataSeriesLength, TightDataPointStorageD* tdps) 
+void getSnapshotData_double_1D(double** data, int dataSeriesLength, TightDataPointStorageD* tdps, int errBoundMode) 
 {	
 	SZ_Reset();
 	int i;
@@ -1201,7 +1201,7 @@ void getSnapshotData_double_1D(double** data, int dataSeriesLength, TightDataPoi
 			(*data)[i] = value;
 	} else {
 		if (tdps->rtypeArray == NULL) {
-			if(errorBoundMode!=PW_REL)
+			if(errBoundMode!=PW_REL)
 				decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
 			else 
 				decompressDataSeries_double_1D_pwr(data, dataSeriesLength, tdps);
@@ -1223,7 +1223,7 @@ void getSnapshotData_double_1D(double** data, int dataSeriesLength, TightDataPoi
 			}
 			// get the decompressed data
 			double* decmpData;
-			if(errorBoundMode!=PW_REL)
+			if(errBoundMode!=PW_REL)
 				decompressDataSeries_double_1D(&decmpData, dataSeriesLength, tdps);
 			else 
 				decompressDataSeries_double_1D_pwr(&decmpData, dataSeriesLength, tdps);
@@ -1240,7 +1240,7 @@ void getSnapshotData_double_1D(double** data, int dataSeriesLength, TightDataPoi
 	}
 }
 
-void getSnapshotData_double_2D(double** data, int r1, int r2, TightDataPointStorageD* tdps) 
+void getSnapshotData_double_2D(double** data, int r1, int r2, TightDataPointStorageD* tdps, int errBoundMode) 
 {
 	SZ_Reset();
 	int i;
@@ -1252,7 +1252,7 @@ void getSnapshotData_double_2D(double** data, int r1, int r2, TightDataPointStor
 			(*data)[i] = value;
 	} else {
 		if (tdps->rtypeArray == NULL) {
-			if(errorBoundMode!=PW_REL)
+			if(errBoundMode!=PW_REL)
 				decompressDataSeries_double_2D(data, r1, r2, tdps);
 			else 
 				decompressDataSeries_double_2D_pwr(data, r1, r2, tdps);
@@ -1274,7 +1274,7 @@ void getSnapshotData_double_2D(double** data, int r1, int r2, TightDataPointStor
 			}
 			// get the decompressed data
 			double* decmpData;
-			if(errorBoundMode!=PW_REL)
+			if(errBoundMode!=PW_REL)
 				decompressDataSeries_double_2D(&decmpData, r1, r2, tdps);
 			else 
 				decompressDataSeries_double_2D_pwr(&decmpData, r1, r2, tdps);
@@ -1291,7 +1291,7 @@ void getSnapshotData_double_2D(double** data, int r1, int r2, TightDataPointStor
 	}
 }
 
-void getSnapshotData_double_3D(double** data, int r1, int r2, int r3, TightDataPointStorageD* tdps) 
+void getSnapshotData_double_3D(double** data, int r1, int r2, int r3, TightDataPointStorageD* tdps, int errBoundMode) 
 {
 	SZ_Reset();
 	int i;
@@ -1303,7 +1303,7 @@ void getSnapshotData_double_3D(double** data, int r1, int r2, int r3, TightDataP
 			(*data)[i] = value;
 	} else {
 		if (tdps->rtypeArray == NULL) {
-			if(errorBoundMode!=PW_REL)
+			if(errBoundMode!=PW_REL)
 				decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
 			else 
 				decompressDataSeries_double_3D_pwr(data, r1, r2, r3, tdps);
@@ -1325,7 +1325,10 @@ void getSnapshotData_double_3D(double** data, int r1, int r2, int r3, TightDataP
 			}
 			// get the decompressed data
 			double* decmpData;
-			decompressDataSeries_double_3D(&decmpData, r1, r2, r3, tdps);
+			if(errBoundMode!=PW_REL)
+				decompressDataSeries_double_3D(&decmpData, r1, r2, r3, tdps);
+			else 
+				decompressDataSeries_double_3D_pwr(&decmpData, r1, r2, r3, tdps);			
 			// insert the decompressed data
 			int k = 0;
 			for (i = 0; i < dataSeriesLength; i++) {
