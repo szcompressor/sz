@@ -129,13 +129,13 @@ int r1, int r2, int R2, int edgeSize, unsigned char* pwrErrBoundBytes, float Min
 		{
 			index = i*r2+j;
 			curValue = oriData[index];				
-			if((i%edgeSize==edgeSize-1&&j%edgeSize==0&&j>0) || (i%edgeSize==0&&j==0&&i>0))
+			if(((i%edgeSize==edgeSize-1 || i==r1-1) &&j%edgeSize==0&&j>0) || (i%edgeSize==0&&j==0&&i>0))
 			{
 				realPrecision = pw_relBoundRatio*minAbsValues[J];
 				floatToBytes(realPrecBytes, realPrecision);
 				realPrecBytes[2] = realPrecBytes[3] = 0;
 				approxPrecision = bytesToFloat(realPrecBytes);
-				//put the realPrecision in float* pwrErBound
+				//put the realPrecision in float* pwrErBound		
 				pwrErrBound[p++] = approxPrecision;
 				//put the two bytes in pwrErrBoundBytes
 				pwrErrBoundBytes[k++] = realPrecBytes[0];
@@ -261,7 +261,7 @@ int r1, int r2, int r3, int R2, int R3, int edgeSize, unsigned char* pwrErrBound
 		for(j=0;j<r2;j++)
 		{
 			jr = j*r3;
-			if(i%edgeSize==edgeSize-1&&j%edgeSize==0&&j>0)
+			if((i%edgeSize==edgeSize-1 || i == r1-1)&&j%edgeSize==0&&j>0)
 			{
 				realPrecision = pw_relBoundRatio*minAbsValues[J][K];
 				floatToBytes(realPrecBytes, realPrecision);
@@ -285,7 +285,7 @@ int r1, int r2, int r3, int R2, int R3, int edgeSize, unsigned char* pwrErrBound
 			{
 				index = ir+jr+k;				
 				curValue = oriData[index];				
-				if(i%edgeSize==edgeSize-1&&j%edgeSize==edgeSize-1&&k%edgeSize==0&&k>0)
+				if((i%edgeSize==edgeSize-1 || i == r1-1)&&(j%edgeSize==edgeSize-1||j==r2-1)&&k%edgeSize==0&&k>0)
 				{
 					realPrecision = pw_relBoundRatio*minAbsValues[J][K];
 					floatToBytes(realPrecBytes, realPrecision);
@@ -824,6 +824,7 @@ int *outSize, float min, float max)
 		for (j = 1; j < r2; j++)
 		{
 			index = i*r2+j;
+			
 			if(j%blockEdgeSize==0)
 			{
 				J++;

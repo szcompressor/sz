@@ -514,7 +514,8 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float
 		/* Process row-i data 1 --> r2-1*/
 		for (j = 1; j < r2; j++)
 		{
-			index = i*r2+j;			
+			index = i*r2+j;		
+
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 
 			diff = spaceFillingValue[index] - pred2D;

@@ -626,23 +626,23 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 		
 			//TODO: convert szTmpBytes to data array.
 			dataLength = computeDataLength(dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);
-			
+			int dim = computeDimension(dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);
 			if(dataType==SZ_FLOAT)
 			{
 				float* newData;
 				TightDataPointStorageF* tdps;
 				new_TightDataPointStorageF_fromFlatBytes(&tdps, &(gzipDecpressBytes[k]), cpressedLength);
 
-				if (dataLength == dimSize[4])
+				if (dim == 1)
 					getSnapshotData_float_1D(&newData,dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[3]*dimSize[4])
+				if (dim == 2)
 					getSnapshotData_float_2D(&newData,dimSize[3],dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[2]*dimSize[3]*dimSize[4])
+				if (dim == 3)
 					getSnapshotData_float_3D(&newData,dimSize[2], dimSize[3], dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[1]*dimSize[2]*dimSize[3]*dimSize[4])
+				if (dim == 4)
 					getSnapshotData_float_3D(&newData,dimSize[1]*dimSize[2], dimSize[3], dimSize[4],tdps);
 				else
 				{
@@ -659,16 +659,16 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 				TightDataPointStorageD* tdps;
 				new_TightDataPointStorageD_fromFlatBytes(&tdps, &(gzipDecpressBytes[k]), cpressedLength);
 
-				if (dataLength == dimSize[4])
+				if (dim == 1)
 					getSnapshotData_double_1D(&newData,dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[3]*dimSize[4])
+				if (dim == 2)
 					getSnapshotData_double_2D(&newData,dimSize[3],dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[2]*dimSize[3]*dimSize[4])
+				if (dim == 3)
 					getSnapshotData_double_3D(&newData,dimSize[2], dimSize[3], dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[1]*dimSize[2]*dimSize[3]*dimSize[4])
+				if (dim == 4)
 					getSnapshotData_double_3D(&newData,dimSize[1]*dimSize[2], dimSize[3], dimSize[4],tdps);
 				else
 				{
@@ -749,23 +749,23 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 						
 			//TODO: convert szTmpBytes to data array.
 			dataLength = computeDataLength(dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);
-			
+			int dim = computeDimension(dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);			
 			if(dataType==SZ_FLOAT)
 			{
 				float* newData;
 				TightDataPointStorageF* tdps;
 				new_TightDataPointStorageF_fromFlatBytes(&tdps, &(gzipDecpressBytes[k]), cpressedLength);					
 
-				if (dataLength == dimSize[4])
+				if (dim == 1)
 					getSnapshotData_float_1D(&newData,dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[3]*dimSize[4])
+				if (dim == 2)
 					getSnapshotData_float_2D(&newData,dimSize[3],dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[2]*dimSize[3]*dimSize[4])
+				if (dim == 3)
 					getSnapshotData_float_3D(&newData,dimSize[2], dimSize[3], dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[1]*dimSize[2]*dimSize[3]*dimSize[4])
+				if (dim == 4)
 					getSnapshotData_float_3D(&newData,dimSize[1]*dimSize[2], dimSize[3], dimSize[4],tdps);
 				else
 				{
@@ -782,16 +782,16 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 				TightDataPointStorageD* tdps;
 				new_TightDataPointStorageD_fromFlatBytes(&tdps, &(gzipDecpressBytes[k]), cpressedLength);
 
-				if (dataLength == dimSize[4])
+				if (dim == 1)
 					getSnapshotData_double_1D(&newData,dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[3]*dimSize[4])
+				if (dim == 2)
 					getSnapshotData_double_2D(&newData,dimSize[3],dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[2]*dimSize[3]*dimSize[4])
+				if (dim == 3)
 					getSnapshotData_double_3D(&newData,dimSize[2], dimSize[3], dimSize[4],tdps);
 				else
-				if (dataLength == dimSize[1]*dimSize[2]*dimSize[3]*dimSize[4])
+				if (dim == 4)
 					getSnapshotData_double_3D(&newData,dimSize[1]*dimSize[2], dimSize[3], dimSize[4],tdps);
 				else
 				{

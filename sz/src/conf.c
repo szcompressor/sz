@@ -45,8 +45,8 @@ unsigned int roundUpToPowerOf2(unsigned int base)
  
 void updateQuantizationInfo(int quant_intervals)
 {
-	allNodes = 2*quant_intervals;
-	stateNum = quant_intervals;
+	//allNodes = 2*quant_intervals;
+	//stateNum = quant_intervals;
 	intvCapacity = quant_intervals;
 	intvRadius = quant_intervals/2;
 } 

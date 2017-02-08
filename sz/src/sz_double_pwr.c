@@ -127,7 +127,7 @@ int r1, int r2, int R2, int edgeSize, unsigned char* pwrErrBoundBytes, double Mi
 		{
 			index = i*r2+j;
 			curValue = oriData[index];				
-			if((i%edgeSize==edgeSize-1&&j%edgeSize==0&&j>0) || (i%edgeSize==0&&j==0&&i>0))
+			if(((i%edgeSize==edgeSize-1 || i==r1-1) &&j%edgeSize==0&&j>0) || (i%edgeSize==0&&j==0&&i>0))
 			{
 				realPrecision = pw_relBoundRatio*minAbsValues[J];
 				doubleToBytes(realPrecBytes, realPrecision);
@@ -259,7 +259,7 @@ int r1, int r2, int r3, int R2, int R3, int edgeSize, unsigned char* pwrErrBound
 		for(j=0;j<r2;j++)
 		{
 			jr = j*r3;
-			if(i%edgeSize==edgeSize-1&&j%edgeSize==0&&j>0)
+			if((i%edgeSize==edgeSize-1 || i == r1-1)&&j%edgeSize==0&&j>0)
 			{
 				realPrecision = pw_relBoundRatio*minAbsValues[J][K];
 				doubleToBytes(realPrecBytes, realPrecision);
@@ -283,7 +283,7 @@ int r1, int r2, int r3, int R2, int R3, int edgeSize, unsigned char* pwrErrBound
 			{
 				index = ir+jr+k;				
 				curValue = oriData[index];				
-				if(i%edgeSize==edgeSize-1&&j%edgeSize==edgeSize-1&&k%edgeSize==0&&k>0)
+				if((i%edgeSize==edgeSize-1 || i == r1-1)&&(j%edgeSize==edgeSize-1||j==r2-1)&&k%edgeSize==0&&k>0)
 				{
 					realPrecision = pw_relBoundRatio*minAbsValues[J][K];
 					doubleToBytes(realPrecBytes, realPrecision);

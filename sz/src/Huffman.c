@@ -132,7 +132,7 @@ void init(int *s, int length)
 		//index = (index | s[i])<<8;
 		//index = index | s[i+1];
 		index = s[i];
-		freq[index]++;		
+		freq[index]++;
 	}
  
 	for (i = 0; i < allNodes; i++)
