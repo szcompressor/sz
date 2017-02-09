@@ -31,4 +31,5 @@ libsz_la_SOURCES=src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c s
 		src/conf.c src/DynamicDoubleArray.c src/TypeManager.c \
 		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/test_zlib.c src/Huffman.c src/sz_float.c src/sz_double.c src/sz.c \
 		src/TightDataPointStorageF_pwr.c src/TightDataPointStorageD_pwr.c src/sz_float_pwr.c src/sz_double_pwr.c
+libsz_la_LINK=$(AM_V_CC)$(LIBTOOL) --tag=CC --mode=link $(CCLD) $(libsz_la_CFLAGS) -O3 $(libsz_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 endif
