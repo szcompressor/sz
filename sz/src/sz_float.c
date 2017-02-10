@@ -945,11 +945,11 @@ void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriD
 	tdps->exactMidBytes_size = 4;
 	
 	int tmpOutSize;
-	unsigned char *tmpByteData;
-	convertTDPStoFlatBytes_float(tdps, &tmpByteData, &tmpOutSize);
+	//unsigned char *tmpByteData;
+	convertTDPStoFlatBytes_float(tdps, newByteData, &tmpOutSize);
 
-	*newByteData = (unsigned char*)malloc(sizeof(unsigned char)*12); //for floating-point data (1+3+4+4)
-	memcpy(*newByteData, tmpByteData, 12);
+	//*newByteData = (unsigned char*)malloc(sizeof(unsigned char)*12); //for floating-point data (1+3+4+4)
+	//memcpy(*newByteData, tmpByteData, 12);
 	*outSize = 12;
 	free_TightDataPointStorageF(tdps);	
 }
