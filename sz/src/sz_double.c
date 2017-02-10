@@ -1088,11 +1088,11 @@ void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2,
 		*newData = (double*)malloc(doubleSize*dataLength);
 		if(sysEndianType==BIG_ENDIAN_SYSTEM)
 		{
-			memcpy(*newData, tdps->exactMidBytes, dataLength*doubleSize);
+			memcpy(*newData, szTmpBytes+8, dataLength*doubleSize);
 		}
 		else
 		{
-			unsigned char* p = tdps->exactMidBytes;
+			unsigned char* p = szTmpBytes+8;
 			for(i=0;i<dataLength;i++,p+=doubleSize)
 				(*newData)[i] = bytesToDouble(p);
 		}		

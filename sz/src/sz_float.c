@@ -1115,11 +1115,11 @@ void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, i
 		*newData = (float*)malloc(floatSize*dataLength);
 		if(sysEndianType==BIG_ENDIAN_SYSTEM)
 		{
-			memcpy(*newData, tdps->exactMidBytes, dataLength*floatSize);
+			memcpy(*newData, szTmpBytes+8, dataLength*floatSize);
 		}
 		else
 		{
-			unsigned char* p = tdps->exactMidBytes;
+			unsigned char* p = szTmpBytes+8;
 			for(i=0;i<dataLength;i++,p+=floatSize)
 				(*newData)[i] = bytesToFloat(p);
 		}		
