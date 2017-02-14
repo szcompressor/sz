@@ -89,7 +89,7 @@ int main(int argc, char * argv[])
     
     printf("done\n");
     
-    SZ_Finalize();
+    //SZ_Finalize();
     
 
     char oriFilePath[640];

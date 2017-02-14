@@ -68,14 +68,14 @@ int SZ_Init(char *configFilePath)
 	char str[512]="", str2[512]="", str3[512]="";
 	sz_cfgFile = configFilePath;
 	int loadFileResult = SZ_LoadConf();
-	if(loadFileResult==0)
-		exit(0);
+	if(loadFileResult==SZ_NSCS)
+		return SZ_NSCS;
 	sz_varset = (SZ_VarSet*)malloc(sizeof(SZ_VarSet));
 	sz_varset->header = (SZ_Variable*)malloc(sizeof(SZ_Variable));
 	sz_varset->lastVar = sz_varset->header;
 	sz_varset->count = 0;
 	
-	return 0;
+	return SZ_SCES;
 }
 
 void SZ_Reset()

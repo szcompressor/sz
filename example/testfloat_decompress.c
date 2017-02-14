@@ -93,7 +93,7 @@ int main(int argc, char * argv[])
     writeFloatData_inBytes(data, nbEle, outputFilePath);
     printf("done\n");
     
-    SZ_Finalize();
+    //SZ_Finalize();
     
     char oriFilePath[640];
     strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
@@ -130,7 +130,7 @@ int main(int argc, char * argv[])
 		if(maxpw_relerr<relerr)
 			maxpw_relerr = relerr;
         }
-	/*if(relerr>0.00001)
+	/*if(relerr>0.001)
 	{
 		printf("%d %d: err=%.20G ori=%.20G dec=%.20G\n", k, i, err, ori_data[i], data[i]);
 		break;

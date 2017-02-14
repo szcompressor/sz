@@ -17,7 +17,7 @@
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK && err != Z_STREAM_END) { \
         fprintf(stderr, "%s error: %d\n", msg, err); \
-        exit(1); \
+        return SZ_NSCS; \
     } \
 }
 
@@ -109,8 +109,8 @@ unsigned long zlib_uncompress2 (unsigned char* compressBytes, unsigned long cmpS
     if ((unsigned long)stream.avail_in != cmpSize) 
     {
 		printf("Error: zlib_uncompress2: stream.avail_in != cmpSize");
-		exit(1);
-		return -1;
+		//exit(1);
+		return SZ_NSCS; //-1
 	}
 
     stream.next_out = *oriData;
@@ -123,7 +123,7 @@ unsigned long zlib_uncompress2 (unsigned char* compressBytes, unsigned long cmpS
     if (err != Z_OK)
     {
 		printf("Error: zlib_uncompress2: err != Z_OK\n");
-		return -1;
+		return SZ_NSCS;
 	}
 
     err = inflate(&stream, Z_FINISH);

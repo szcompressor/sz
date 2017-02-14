@@ -61,8 +61,9 @@ int main(int argc, char * argv[])
         r5 = atoi(argv[7]);
    
     printf("cfgFile=%s\n", cfgFile); 
-    SZ_Init(cfgFile);
-    
+    int status = SZ_Init(cfgFile);
+    if(status == SZ_NSCS)
+	exit(0);
     sprintf(outputFilePath, "%s.sz", oriFilePath);
    
     int nbEle;

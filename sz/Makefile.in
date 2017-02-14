@@ -173,13 +173,6 @@ am__libsz_la_SOURCES_DIST = src/ByteToolkit.c src/dataCompression.c \
 @FORTRAN_TRUE@	libsz_la-sz_double_pwr.lo sz_interface.lo \
 @FORTRAN_TRUE@	rw_interface.lo
 libsz_la_OBJECTS = $(am_libsz_la_OBJECTS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
-libsz_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=FC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(FCLD) $(AM_FCFLAGS) $(FCFLAGS) \
-	$(libsz_la_LDFLAGS) $(LDFLAGS) -o $@
 @FORTRAN_FALSE@am_libsz_la_rpath = -rpath $(libdir)
 @FORTRAN_TRUE@am_libsz_la_rpath = -rpath $(libdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -198,6 +191,10 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 PPFCCOMPILE = $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS)
 LTPPFCCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=FC $(AM_LIBTOOLFLAGS) \
@@ -310,6 +307,7 @@ LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
+MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -416,11 +414,13 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@		src/TightDataPointStorageF_pwr.c src/TightDataPointStorageD_pwr.c src/sz_float_pwr.c src/sz_double_pwr.c \
 @FORTRAN_TRUE@		src/sz_interface.F90 src/rw_interface.F90
 
+@FORTRAN_FALSE@libsz_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=CC --mode=link $(CCLD) $(libsz_la_CFLAGS) -O3 $(libsz_la_LDFLAGS) -o $(lib_LTLIBRARIES)
+@FORTRAN_TRUE@libsz_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=FC --mode=link $(FCLD) $(libsz_la_CFLAGS) -O3 $(libsz_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .F90 .c .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -445,9 +445,9 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
-$(top_srcdir)/configure:  $(am__configure_deps)
+$(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
+$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
@@ -487,7 +487,7 @@ clean-libLTLIBRARIES:
 	}
 
 libsz.la: $(libsz_la_OBJECTS) $(libsz_la_DEPENDENCIES) $(EXTRA_libsz_la_DEPENDENCIES) 
-	$(AM_V_FCLD)$(libsz_la_LINK) $(am_libsz_la_rpath) $(libsz_la_OBJECTS) $(libsz_la_LIBADD) $(LIBS)
+	$(AM_V_GEN)$(libsz_la_LINK) $(am_libsz_la_rpath) $(libsz_la_OBJECTS) $(libsz_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

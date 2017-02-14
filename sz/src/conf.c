@@ -62,6 +62,11 @@ void clearHuffmanMem()
 } 
  
 /*-------------------------------------------------------------------------*/
+/**
+ * 
+ * 
+ * @return the status of loading conf. file: 1 (success) or 0 (error code);
+ * */
 int SZ_ReadConf() {
     // Check access to SZ configuration file and load dictionary
     //record the setting in conf_params
@@ -78,13 +83,13 @@ int SZ_ReadConf() {
     if (access(sz_cfgFile, F_OK) != 0)
     {
         printf("[SZ] Configuration file NOT accessible.\n");
-        return 1;
+        return SZ_NSCS;
     }
     ini = iniparser_load(sz_cfgFile);
     if (ini == NULL)
     {
         printf("[SZ] Iniparser failed to parse the conf. file.\n");
-        return 1;
+        return SZ_NSCS;
     }
 
 	endianTypeString = iniparser_getstring(ini, "ENV:dataEndianType", NULL);
@@ -96,7 +101,7 @@ int SZ_ReadConf() {
 	{
 		printf("Error: Wrong dataEndianType: please set it correctly in sz.config.\n");
 		iniparser_freedict(ini);
-		exit(1);
+		return SZ_NSCS;
 	}
 
 	conf_params->dataEndianType = dataEndianType;
@@ -120,7 +125,7 @@ int SZ_ReadConf() {
 	{
 		printf("[SZ] Error: wrong solution name (please check sz.config file)\n");
 		iniparser_freedict(ini);
-		exit(0);
+		return SZ_NSCS;
 	}
 
 	conf_params->sol_ID = sol_ID;
@@ -156,7 +161,7 @@ int SZ_ReadConf() {
 		{
 			printf("Error: quantization_intervals must be an even number!\n");
 			iniparser_freedict(ini);
-			exit(1);
+			return SZ_NSCS;
 		}
 		
 		predThreshold = (float)iniparser_getdouble(ini, "PARAMETER:predThreshold", 0);
@@ -172,7 +177,7 @@ int SZ_ReadConf() {
 		{
 			printf("[SZ] Error: Null szMode setting (please check sz.config file)\n");
 			iniparser_freedict(ini);
-			exit(1);					
+			return SZ_NSCS;					
 		}
 		else if(strcmp(modeBuf, "SZ_BEST_SPEED")==0)
 			szMode = SZ_BEST_SPEED;
@@ -184,7 +189,7 @@ int SZ_ReadConf() {
 		{
 			printf("[SZ] Error: Wrong szMode setting (please check sz.config file)\n");
 			iniparser_freedict(ini);
-			exit(1);			
+			return SZ_NSCS;	
 		}
 		conf_params->szMode = szMode;
 		
@@ -193,7 +198,7 @@ int SZ_ReadConf() {
 		{
 			printf("[SZ] Error: Null Gzip mode setting (please check sz.config file)\n");
 			iniparser_freedict(ini);
-			exit(1);					
+			return SZ_NSCS;					
 		}		
 		else if(strcmp(modeBuf, "Gzip_NO_COMPRESSION")==0)
 			gzipMode = 0;
@@ -206,7 +211,7 @@ int SZ_ReadConf() {
 		else
 		{
 			printf("[SZ] Error: Wrong gzip Mode (please check sz.config file)\n");
-			exit(0);
+			return SZ_NSCS;
 		}
 		conf_params->gzipMode = gzipMode;
 		//maxSegmentNum = (int)iniparser_getint(ini, "PARAMETER:maxSegmentNum", 0); //1024
@@ -220,7 +225,7 @@ int SZ_ReadConf() {
 		{
 			printf("[SZ] Error: Null error bound setting (please check sz.config file)\n");
 			iniparser_freedict(ini);
-			exit(1);					
+			return SZ_NSCS;				
 		}		
 		else if(strcmp(errBoundMode,"ABS")==0||strcmp(errBoundMode,"abs")==0)
 			errorBoundMode=ABS;
@@ -236,7 +241,7 @@ int SZ_ReadConf() {
 		{
 			printf("[SZ] Error: Wrong error bound mode (please check sz.config file)\n");
 			iniparser_freedict(ini);
-			exit(1);
+			return SZ_NSCS;
 		}
 		conf_params->errorBoundMode = errorBoundMode;
 		
@@ -265,7 +270,7 @@ int SZ_ReadConf() {
 	}
     
     iniparser_freedict(ini);
-    return 1;
+    return SZ_SCES;
 }
 
 /*-------------------------------------------------------------------------*/
