@@ -350,6 +350,13 @@ unsigned char *SZ_compress_rev(int dataType, void *data, void *reservedValue, in
 
 void *SZ_decompress(int dataType, unsigned char *bytes, int byteLength, int r5, int r4, int r3, int r2, int r1)
 {
+	int x = 1;
+	char *y = (char*)&x;
+	if(*y==1)
+		sysEndianType = LITTLE_ENDIAN_SYSTEM;
+	else //=0
+		sysEndianType = BIG_ENDIAN_SYSTEM;
+	
 	if(dataType == SZ_FLOAT)
 	{
 		float *newFloatData;
@@ -546,6 +553,13 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 {
 	int i, j, k = 0;
 	unsigned char intByteBuf[4];
+	
+	int x = 1;
+	char *y = (char*)&x;
+	if(*y==1)
+		sysEndianType = LITTLE_ENDIAN_SYSTEM;
+	else //=0
+		sysEndianType = BIG_ENDIAN_SYSTEM;
 	
 	//get target decompression size for Gzip (zlib)
 	intByteBuf[0] = compressedStream[0];
