@@ -64,8 +64,9 @@ extern "C" {
 #define SZ_BEST_COMPRESSION 1
 #define SZ_DEFAULT_COMPRESSION 2
 
-#define SZ_SCES 0; //SUCCESS returning status
-#define SZ_NSCS -1;
+//SUCCESS returning status
+#define SZ_SCES 0 
+#define SZ_NSCS -1
 
 //Note: the following setting should be consistent with stateNum in Huffman.h
 //#define intvCapacity 65536
