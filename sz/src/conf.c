@@ -285,12 +285,12 @@ int SZ_ReadConf() {
 /*-------------------------------------------------------------------------*/
 int SZ_LoadConf() {
     int res = SZ_ReadConf();
-    if (res == 0)
+    if (res != SZ_SCES)
     {
         printf("[SZ] ERROR: Impossible to read configuration.\n");
-        return 0;
+        return SZ_NSCS;
     }
-    return 1;
+    return SZ_SCES;
 }
 
 int checkVersion(char* version)
