@@ -916,6 +916,8 @@ void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *or
 	tdps->allSameData = 1;
 	tdps->dataSeriesLength = dataLength;
 	tdps->exactMidBytes = (unsigned char*)malloc(sizeof(unsigned char)*8);
+	tdps->pwrErrBoundBytes = NULL;
+	tdps->isLossless = 0;
 	double value = oriData[0];
 	doubleToBytes(tdps->exactMidBytes, value);
 	tdps->exactMidBytes_size = 8;

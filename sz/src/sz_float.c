@@ -940,6 +940,8 @@ void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriD
 	tdps->allSameData = 1;
 	tdps->dataSeriesLength = dataLength;
 	tdps->exactMidBytes = (unsigned char*)malloc(sizeof(unsigned char)*4);
+	tdps->pwrErrBoundBytes = NULL;
+	tdps->isLossless = 0;
 	float value = oriData[0];
 	floatToBytes(tdps->exactMidBytes, value);
 	tdps->exactMidBytes_size = 4;
