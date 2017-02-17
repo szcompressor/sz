@@ -363,6 +363,10 @@ void decompressDataSeries_double_2D(double** data, int r1, int r2, TightDataPoin
 	//type = tdps->typeArray;
 	decode_withTree(tdps->typeArray, dataSeriesLength, type);
 
+/*	for(i=0;i<dataSeriesLength;i++)
+		printf("%d ", type[i]);
+	printf("\n");*/
+
 	unsigned char preBytes[8];
 	unsigned char curBytes[8];
 

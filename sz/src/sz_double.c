@@ -539,6 +539,15 @@ void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, doub
 			resiBitLengthArray->array, resiBitLengthArray->size, 
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
 
+/*	int sum =0;
+	for(i=0;i<dataLength;i++)
+		if(type[i]==0) sum++;
+	printf("opt_quantizations=%d, exactDataNum=%d, sum=%d\n",quantization_intervals, exactDataNum, sum);
+
+	for(i=0;i<dataLength;i++)
+		printf("%d ", type[i]);
+	printf("\n");*/
+
 //	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d,resiBitLengthArray->size=%d\n", 
 //			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size, resiBitLengthArray->size);
 	

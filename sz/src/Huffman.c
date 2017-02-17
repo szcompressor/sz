@@ -261,10 +261,16 @@ void decode(unsigned char *s, int targetLength, node t, int *out)
 	int r, count=0;
 	node n = t;
 	char byte;
+	
+	if(n->t) //root->t==1 means that all state values are the same (constant)
+	{
+		for(count=0;count<targetLength;count++)
+			out[count] = n->c;
+		return;
+	}
+	
 	for(i=0;count<targetLength;i++)
 	{
-		//if(count==2035)
-		//	printf("%d\n",i);
 		
 		byteIndex = i>>3; //i/8
 		r = i%8;
@@ -272,6 +278,7 @@ void decode(unsigned char *s, int targetLength, node t, int *out)
 			n = n->left;
 		else
 			n = n->right;
+
 		if (n->t) {
 			//putchar(n->c); 
 			out[count] = n->c;
@@ -525,7 +532,7 @@ node reconstruct_HuffTree_from_bytes_anyStates(unsigned char* bytes, int nodeCou
 		memcpy(R, bytes+1+nodeCount*sizeof(unsigned char), nodeCount*sizeof(unsigned char));
 		memcpy(C, bytes+1+2*nodeCount*sizeof(unsigned char), nodeCount*sizeof(unsigned int));	
 		memcpy(t, bytes+1+2*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned int), nodeCount*sizeof(unsigned char));
-		node root = new_node2(0,0);
+		node root = new_node2(C[0],t[0]);
 		unpad_tree_uchar(L,R,C,t,0,root);
 		free(L);
 		free(R);

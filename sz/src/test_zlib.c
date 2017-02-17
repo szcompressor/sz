@@ -40,7 +40,7 @@ unsigned long zlib_compress2(unsigned char* data, unsigned long dataLength, unsi
 {
 	unsigned long outSize;
 	
-	z_stream stream;
+	z_stream stream = {0};
     int err;
 
     stream.next_in = data;
