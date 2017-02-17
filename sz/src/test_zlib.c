@@ -39,7 +39,6 @@ unsigned long zlib_compress(unsigned char* data, unsigned long dataLength, unsig
 unsigned long zlib_compress2(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level)
 {
 	unsigned long outSize;
-	*compressBytes = (unsigned char*)malloc(sizeof(unsigned char)*dataLength);
 	
 	z_stream stream;
     int err;
@@ -50,9 +49,14 @@ unsigned long zlib_compress2(unsigned char* data, unsigned long dataLength, unsi
     /* Check for source > 64K on 16-bit machine: */
     if ((uLong)stream.avail_in != dataLength) return Z_BUF_ERROR;
 #endif
+
+    uLong estCmpLen = deflateBound(&stream, dataLength);
+	*compressBytes = (unsigned char*)malloc(sizeof(unsigned char)*estCmpLen);
+
     stream.next_out = *compressBytes;
-    stream.avail_out = dataLength;
-    if ((uLong)stream.avail_out != dataLength) return Z_BUF_ERROR;
+    stream.avail_out = estCmpLen;
+    //stream.avail_out = dataLength*10;
+    //if ((uLong)stream.avail_out != dataLength*10) return Z_BUF_ERROR;
 
     stream.zalloc = (alloc_func)0;
     stream.zfree = (free_func)0;
