@@ -154,7 +154,7 @@ void convertByteArray2IntArray_fast_3b(int stepLength, unsigned char* byteArray,
 {	
 	if(stepLength > byteArrayLength*8/3)
 	{
-		printf("Error: stepLength > byteArray.length*8/3\n");
+		printf("Error: stepLength > byteArray.length*8/3, impossible case unless bugs elsewhere.\n");
 		printf("stepLength=%d, byteArray.length=%d\n", stepLength, byteArrayLength);
 		exit(0);		
 	}

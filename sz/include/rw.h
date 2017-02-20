@@ -33,20 +33,20 @@ double*** create3DArray_double(int p, int m, int n);
 void free2DArray_double(double** data, int m);
 void free3DArray_double(double*** data, int p, int m);
 
-int checkFileSize(char *srcFilePath);
-unsigned char *readByteData(char *srcFilePath, int *byteLength);
-double *readDoubleData_systemEndian(char *srcFilePath, int *nbEle);
-float *readFloatData_systemEndian(char *srcFilePath, int *nbEle);
-double *readDoubleData(char *srcFilePath, int *nbEle);
-float *readFloatData(char *srcFilePath, int *nbEle);
-void writeByteData(unsigned char *bytes, int outSize, char *tgtFilePath);
-void writeDoubleData(double *data, int nbEle, char *tgtFilePath);
-void writeFloatData(float *data, int nbEle, char *tgtFilePath);
-void writeData(void *data, int dataType, int nbEle, char *tgtFilePath);
-void writeFloatData_inBytes(float *data, int nbEle, char* tgtFilePath);
-void writeDoubleData_inBytes(double *data, int nbEle, char* tgtFilePath);
-void writeShortData(unsigned short *states, int stateLength, char *tgtFilePath);
-unsigned short* readShortData(char *srcFilePath, int *dataLength);
+int checkFileSize(char *srcFilePath, int *status);
+unsigned char *readByteData(char *srcFilePath, int *byteLength, int *status);
+double *readDoubleData_systemEndian(char *srcFilePath, int *nbEle, int *status);
+float *readFloatData_systemEndian(char *srcFilePath, int *nbEle, int *status);
+double *readDoubleData(char *srcFilePath, int *nbEle, int *status);
+float *readFloatData(char *srcFilePath, int *nbEle, int *status);
+void writeByteData(unsigned char *bytes, int outSize, char *tgtFilePath, int *status);
+void writeDoubleData(double *data, int nbEle, char *tgtFilePath, int *status);
+void writeFloatData(float *data, int nbEle, char *tgtFilePath, int *status);
+void writeData(void *data, int dataType, int nbEle, char *tgtFilePath, int *status);
+void writeFloatData_inBytes(float *data, int nbEle, char* tgtFilePath, int *status);
+void writeDoubleData_inBytes(double *data, int nbEle, char* tgtFilePath, int *status);
+void writeShortData(unsigned short *states, int stateLength, char *tgtFilePath, int *status);
+unsigned short* readShortData(char *srcFilePath, int *dataLength, int *status);
 
 #ifdef __cplusplus
 }

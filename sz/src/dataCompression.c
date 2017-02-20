@@ -87,8 +87,9 @@ float max_f(float a, float b)
 		return b;
 }
 
-double getRealPrecision_double(double valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio)
+double getRealPrecision_double(double valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status)
 {
+	int state = SZ_SCES;
 	double precision = 0;
 	if(errBoundMode==ABS)
 		precision = absErrBound; 
@@ -103,13 +104,15 @@ double getRealPrecision_double(double valueRangeSize, int errBoundMode, double a
 	else
 	{
 		printf("Error: error-bound-mode is incorrect!\n");
-		exit(0);
+		state = SZ_BERR;
 	}
+	*status = state;
 	return precision;
 }
 
-double getRealPrecision_float(float valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio)
+double getRealPrecision_float(float valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status)
 {
+	int state = SZ_SCES;
 	double precision = 0;
 	if(errBoundMode==ABS)
 		precision = absErrBound; 
@@ -124,8 +127,9 @@ double getRealPrecision_float(float valueRangeSize, int errBoundMode, double abs
 	else
 	{
 		printf("Error: error-bound-mode is incorrect!\n");
-		exit(0);
+		state = SZ_BERR;
 	}
+	*status = state;
 	return precision;
 }
 

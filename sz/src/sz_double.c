@@ -942,16 +942,17 @@ void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *or
 	free_TightDataPointStorageD(tdps);	
 }
 
-void SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData, 
+int SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, double absErr_Bound, double rel_BoundRatio)
 {
+	int status = SZ_SCES;
 	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	double valueRangeSize = 0, medianValue = 0;
 	
 	double min = computeRangeSize_double(oriData, dataLength, &valueRangeSize, &medianValue);
 	double max = min+valueRangeSize;
-	double realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, rel_BoundRatio);
+	double realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, rel_BoundRatio, &status);
 		
 	if(valueRangeSize <= realPrecision)
 	{
@@ -978,18 +979,20 @@ int errBoundMode, double absErr_Bound, double rel_BoundRatio)
 		else if(r5==0)
 			SZ_compress_args_double_NoCkRngeNoGzip_3D(newByteData, oriData, r4*r3, r2, r1, realPrecision, outSize, valueRangeSize, medianValue);
 	}
+	return status;
 }
 
-void SZ_compress_args_double(unsigned char** newByteData, double *oriData, 
+int SZ_compress_args_double(unsigned char** newByteData, double *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
+	int status = SZ_SCES;
 	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	double valueRangeSize = 0, medianValue = 0;
 	
 	double min = computeRangeSize_double(oriData, dataLength, &valueRangeSize, &medianValue);
 	double max = min+valueRangeSize;
-	double realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio);
+	double realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
 		
 	if(valueRangeSize <= realPrecision)
 	{
@@ -1033,7 +1036,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 		else
 		{
 			printf("Error: doesn't support 5 dimensions for now.\n");
-			exit(1);
+			status = SZ_DERR;
 		}
 				
 		//Call Gzip to do the further compression.
@@ -1050,14 +1053,16 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 		else
 		{
 			printf("Error: Wrong setting of szMode in the double compression.\n");
-			exit(1);			
+			status = SZ_MERR;	
 		}
 	}
 	SZ_Finalize();
+	return status;
 }
 
-void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2, int r1, unsigned char* cmpBytes, int cmpSize)
+int SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2, int r1, unsigned char* cmpBytes, int cmpSize)
 {
+	int status = SZ_SCES;
 	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	
 	//unsigned char* tmpBytes;
@@ -1084,7 +1089,8 @@ void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2,
 		else
 		{
 			printf("Wrong value of szMode in the double compressed bytes.\n");
-			exit(0);
+			status = SZ_MERR;
+			return status;
 		}	
 	}
 	else
@@ -1120,10 +1126,16 @@ void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2,
 	else
 	if (dim == 4)
 		getSnapshotData_double_3D(newData,r4*r3,r2,r1,tdps, errBoundMode);		
+	else
+	{
+		printf("Error: currently support only at most 4 dimensions!\n");
+		status = SZ_DERR;
+	}
 	free_TightDataPointStorageD(tdps);
 	if(szMode!=SZ_BEST_SPEED && cmpSize!=16)
 		free(szTmpBytes);	
 	SZ_Finalize();	
+	return status;
 }
 
 void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue)

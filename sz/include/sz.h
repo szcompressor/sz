@@ -65,8 +65,13 @@ extern "C" {
 #define SZ_DEFAULT_COMPRESSION 2
 
 //SUCCESS returning status
-#define SZ_SCES 0 
-#define SZ_NSCS -1
+#define SZ_SCES 0  //successful
+#define SZ_NSCS -1 //Not successful
+#define SZ_FERR -2 //Failed to open input file
+#define SZ_TERR -3 //wrong data type (should be only float or double)
+#define SZ_DERR -4 //dimension error
+#define SZ_MERR -5 //sz_mode error
+#define SZ_BERR -6 //bound-mode error (should be only ABS, REL, ABS_AND_REL, ABS_OR_REL, or PW_REL)
 
 //Note: the following setting should be consistent with stateNum in Huffman.h
 //#define intvCapacity 65536
@@ -178,8 +183,8 @@ double min_d(double a, double b);
 double max_d(double a, double b);
 float min_f(float a, float b);
 float max_f(float a, float b);
-double getRealPrecision_double(double valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio);
-double getRealPrecision_float(float valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio);
+double getRealPrecision_double(double valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status);
+double getRealPrecision_float(float valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status);
 void symTransform_8bytes(unsigned char data[8]);
 void flush_to_bigEndian_8bytes(unsigned char data[8], int dataEndianType);
 void symTransform_2bytes(unsigned char data[2]);
@@ -384,17 +389,17 @@ int *outSize, double min, double max);
 void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriData, int dataLength, int *outSize);
 void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *oriData, int dataLength, int *outSize);
 
-void SZ_compress_args_float(unsigned char** newByteData, float *oriData, 
+int SZ_compress_args_float(unsigned char** newByteData, float *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio);
-void SZ_compress_args_double(unsigned char** newByteData, double *oriData, 
+int SZ_compress_args_double(unsigned char** newByteData, double *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio);
 
-void SZ_compress_args_float_wRngeNoGzip(unsigned char** newByteData, float *oriData, 
+int SZ_compress_args_float_wRngeNoGzip(unsigned char** newByteData, float *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, double absErr_Bound, double rel_BoundRatio);
-void SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData, 
+int SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio);
 
@@ -406,8 +411,8 @@ unsigned char *SZ_compress_rev_args(int dataType, void *data, void *reservedValu
 int SZ_compress_rev_args2(int dataType, void *data, void *reservedValue, unsigned char* compressed_bytes, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1);
 unsigned char *SZ_compress_rev(int dataType, void *data, void *reservedValue, int *outSize, int r5, int r4, int r3, int r2, int r1);
 
-void SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, int r1, unsigned char* cmpBytes, int cmpSize);
-void SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2, int r1, unsigned char* cmpBytes, int cmpSize);
+int SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, int r1, unsigned char* cmpBytes, int cmpSize);
+int SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2, int r1, unsigned char* cmpBytes, int cmpSize);
 void *SZ_decompress(int dataType, unsigned char *bytes, int byteLength, int r5, int r4, int r3, int r2, int r1);
 int SZ_decompress_args(int dataType, unsigned char *bytes, int byteLength, void* decompressed_array, int r5, int r4, int r3, int r2, int r1);
 

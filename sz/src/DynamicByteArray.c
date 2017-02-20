@@ -39,7 +39,7 @@ int getDBA_Data(DynamicByteArray *dba, int pos)
 {
 	if(pos>=dba->size)
 	{
-		printf("Error: wrong position of DBA.\n");
+		printf("Error: wrong position of DBA (impossible case unless bugs elsewhere in the code?).\n");
 		exit(0);
 	}
 	return dba->array[pos];

@@ -14,12 +14,12 @@
 
 void checkfilesizec_(char *srcFilePath, int *len, int *filesize)
 {
-	int i;
+	int i, status;
 	char s[*len+1];
 	for(i=0;i<*len;i++)
 		s[i]=srcFilePath[i];
 	s[*len]='\0';	
-	*filesize = checkFileSize(s);
+	*filesize = checkFileSize(s, &status);
 }
 
 void readbytefile_(char *srcFilePath, int *len, unsigned char *bytes, int *byteLength)

@@ -181,13 +181,13 @@ int SZ_Init_Params(sz_params *params)
 	if(params->quantization_intervals%2!=0)
 	{
 		printf("Error: quantization_intervals must be an even number!\n");
-		return 0;
+		return SZ_NSCS;
 	}
 
     //initialization for Huffman encoding
 	SZ_Reset();
 	
-    return 1;
+    return SZ_SCES;
 }
 
 int computeDimension(int r5, int r4, int r3, int r2, int r1)
@@ -256,7 +256,7 @@ int computeDataLength(int r5, int r4, int r3, int r2, int r1)
     @param      data           data to be compressed
     @param      outSize        the size (in bytes) after compression
     @param		r5,r4,r3,r2,r1	the sizes of each dimension (supporting only 5 dimensions at most in this version.
-    @return     compressed data (in binary stream)
+    @return     compressed data (in binary stream) or NULL(0) if any errors
 
  **/
 /*-------------------------------------------------------------------------*/
@@ -284,7 +284,6 @@ double relBoundRatio, int r5, int r4, int r3, int r2, int r1)
 	else
 	{
 		printf("Error: dataType can only be SZ_FLOAT or SZ_DOUBLE.\n");
-		exit(1);
 		return NULL;
 	}
 }
@@ -372,10 +371,15 @@ void *SZ_decompress(int dataType, unsigned char *bytes, int byteLength, int r5, 
 	else
 	{
 		printf("Error: data type cannot be the types other than SZ_FLOAT or SZ_DOUBLE\n");
-		exit(0);		
+		return NULL;		
 	}
 }
 
+/**
+ * 
+ * 
+ * return number of elements or 0 if any errors
+ * */
 int SZ_decompress_args(int dataType, unsigned char *bytes, int byteLength, void* decompressed_array, int r5, int r4, int r3, int r2, int r1)
 {
 	int i;
@@ -401,7 +405,7 @@ int SZ_decompress_args(int dataType, unsigned char *bytes, int byteLength, void*
 	else
 	{
 		printf("Error: data type cannot be the types other than SZ_FLOAT or SZ_DOUBLE\n");
-		exit(0);				
+		return 0; //indicating error				
 	}
 
 	return nbEle;
