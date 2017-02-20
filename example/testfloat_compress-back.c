@@ -1,5 +1,5 @@
 /**
- *  @file testdouble_batch_compress.c
+ *  @file test_compress.c
  *  @author Sheng Di
  *  @date April, 2015
  *  @brief This is an example of using compression interface
@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include "sz.h"
 #include "rw.h"
-#include "VarSet.h"
 
 struct timeval startTime;
 struct timeval endTime;  /* Start and end times */
@@ -43,8 +42,8 @@ int main(int argc, char * argv[])
     
     if(argc < 3)
     {
-	printf("Test case: testdouble_batch_compress [config_file] [srcFilePath] [dimension sizes...]\n");
-	printf("Example: testdouble_batch_compress sz.config testdouble_8_8_128.dat 8 8 128\n");
+	printf("Test case: testfloat_compress [config_file] [srcFilePath] [dimension sizes...]\n");
+	printf("Example: testfloat_compress sz.config testfloat_8_8_128.dat 8 8 128\n");
 	exit(0);
     }
    
@@ -64,42 +63,44 @@ int main(int argc, char * argv[])
     printf("cfgFile=%s\n", cfgFile); 
     SZ_Init(cfgFile);
     
-    sprintf(outputFilePath, "%s.bsz", oriFilePath);
+    sprintf(outputFilePath, "%s.sz", oriFilePath);
    
-    int nbEle, status;
-    double *data = readDoubleData(oriFilePath, &nbEle, &status);
-  
-    double *data2 = readDoubleData(oriFilePath, &nbEle, &status);
-    
-    SZ_batchAddVar("data", SZ_DOUBLE, data, ABS, 0.000001, 0.000001, r5,r4,r3,r2,r1);
-    SZ_batchAddVar("data2", SZ_DOUBLE, data2, ABS, 0.000001, 0.000001, r5,r4,r3,r2,r1);
-
+    int nbEle;
+    float *data = readFloatData(oriFilePath, &nbEle);
+    //float *revValue = (float *)malloc(sizeof(float));
+    //*revValue = 1.0E36;
+   
     int outSize; 
+    //char *bytes = (char *)malloc(nbEle*sizeof(float)); //
+    //SZ_compress_args2(SZ_FLOAT, data, bytes, &outSize, ABS, 0.0001, 0.0001, r5, r4, r3, r2, r1);    
+    //char *bytes = SZ_compress_rev(SZ_FLOAT, data, revValue, &outSize, r5, r4, r3, r2, r1);
     cost_start();
-    unsigned char *bytes = SZ_batch_compress(&outSize);
-    cost_end(); 
-    printf("timecost=%f\n",totalCost); 
-    writeByteData(bytes, outSize, outputFilePath, &status);
-   
-    //decompression
-    int compressedLength = outSize;
-    SZ_batch_decompress(bytes, compressedLength, &status);
-
-    //write the decompressed data to disk 
-    int dataLength, varIndex = 0;
-    SZ_Variable* p = sz_varset->header->next;
-    while(p!=NULL)
+    int i;
+    for(i=0;i<10;i++)
     {
-        sprintf(outputFilePath, "%s-batch%d.out", oriFilePath, varIndex++);
-        dataLength = computeDataLength(p->r5, p->r4, p->r3, p->r2, p->r1);
-	writeDoubleData(p->data, dataLength, outputFilePath, &status);
-        p = p->next;
+        printf("i=%d\n",i);
+    	unsigned char *bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
+    	free(bytes);
     }
-
+    cost_end();
+    printf("timecost=%f\n",totalCost); 
+    //writeByteData(bytes, outSize, outputFilePath);
+   /* //check mem leakage of decompression
+    int i;
+    float *ddata;
+    for(i=0;i<30;i++)
+    {
+	printf("start %d\n",i);
+	ddata = SZ_decompress(SZ_FLOAT, bytes, outSize, r5, r4, r3, r2, r1);
+	free(ddata);
+	printf("end %d\n", i);
+	sleep(1);
+    }
+*/
     printf("done\n");
-    
-    free(sz_varset);
-    SZ_Finalize();
+    //free(bytes); 
+    free(data);
+    //SZ_Finalize();
     
     return 0;
 }

@@ -66,12 +66,12 @@ int main(int argc, char * argv[])
     
     sprintf(outputFilePath, "%s.bsz", oriFilePath);
    
-    int nbEle;
-    float *data = readFloatData(oriFilePath, &nbEle);
+    int nbEle, status;
+    float *data = readFloatData(oriFilePath, &nbEle, &status);
     //float *revValue = (float *)malloc(sizeof(float));
     //*revValue = 1.0E36;
   
-    float *data2 = readFloatData(oriFilePath, &nbEle);
+    float *data2 = readFloatData(oriFilePath, &nbEle, &status);
     
     SZ_batchAddVar("data", SZ_FLOAT, data, ABS, 0.000001, 0.000001, r5,r4,r3,r2,r1);
     SZ_batchAddVar("data2", SZ_FLOAT, data2, ABS, 0.000001, 0.000001, r5,r4,r3,r2,r1);
@@ -84,11 +84,11 @@ int main(int argc, char * argv[])
     unsigned char *bytes = SZ_batch_compress(&outSize);
     cost_end(); 
     printf("timecost=%f\n",totalCost); 
-    writeByteData(bytes, outSize, outputFilePath);
+    writeByteData(bytes, outSize, outputFilePath, &status);
    
     //decompression
     int compressedLength = outSize;
-    SZ_batch_decompress(bytes, compressedLength);
+    SZ_batch_decompress(bytes, compressedLength, &status);
 
     //write the decompressed data to disk 
     int dataLength, varIndex = 0;
@@ -97,7 +97,7 @@ int main(int argc, char * argv[])
     {
         sprintf(outputFilePath, "%s-batch%d.out", oriFilePath, varIndex++);
         dataLength = computeDataLength(p->r5, p->r4, p->r3, p->r2, p->r1);
-		writeFloatData(p->data, dataLength, outputFilePath);
+	writeFloatData(p->data, dataLength, outputFilePath, &status);
         p = p->next;
     }
 

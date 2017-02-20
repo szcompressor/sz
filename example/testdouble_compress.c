@@ -61,12 +61,17 @@ int main(int argc, char * argv[])
 	r5 = atoi(argv[7]);
  
     printf("cfgFile=%s\n", cfgFile); 
-    SZ_Init(cfgFile);
+    int status = SZ_Init(cfgFile);
     
     sprintf(outputFilePath, "%s.sz", oriFilePath);
    
     int nbEle;
-    double *data = readDoubleData(oriFilePath, &nbEle);
+    double *data = readDoubleData(oriFilePath, &nbEle, &status);
+    if(status!=SZ_SCES)
+    {
+	printf("Error: file %s cannot be read!\n", oriFilePath);
+	exit(0);
+    }
    
     int outSize;
     cost_start(); 
@@ -76,7 +81,13 @@ int main(int argc, char * argv[])
     cost_end();
     printf("timecost=%f\n",totalCost);
 
-    writeByteData(bytes, outSize, outputFilePath);
+    writeByteData(bytes, outSize, outputFilePath, &status);
+    if(status!=SZ_SCES)
+    {
+	printf("Error: file %s cannot be written!\n", outputFilePath);
+	free(data);
+	exit(0);
+    }
     free(data);
     free(bytes);
     printf("done\n");

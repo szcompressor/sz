@@ -73,8 +73,13 @@ int main(int argc, char * argv[])
  
     sprintf(outputFilePath, "%s.out", zipFilePath);
     
-    int byteLength;
-    unsigned char *bytes = readByteData(zipFilePath, &byteLength);
+    int byteLength, status;
+    unsigned char *bytes = readByteData(zipFilePath, &byteLength, &status);
+    if(status!=SZ_SCES)
+    {
+        printf("Error: %s cannot be READ!\n", zipFilePath);
+        exit(0);
+    }
 
     cost_start();    
     double *data = SZ_decompress(SZ_DOUBLE, bytes, byteLength, r5, r4, r3, r2, r1);
@@ -85,7 +90,13 @@ int main(int argc, char * argv[])
     //int i=0;
     //for(;i<8192;i++)
     //	printf("i=%d, data=%f\n",i,data[i]);
-    writeDoubleData_inBytes(data, nbEle, outputFilePath);
+    writeDoubleData_inBytes(data, nbEle, outputFilePath, &status);
+    if(status!=SZ_SCES)
+    {
+        printf("Error: %s cannot be written!\n", outputFilePath);
+        exit(0);
+    }
+
     
     printf("done\n");
     
@@ -95,7 +106,13 @@ int main(int argc, char * argv[])
     char oriFilePath[640];
     strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
     oriFilePath[strlen(zipFilePath)-3] = '\0';
-    double *ori_data = readDoubleData(oriFilePath, &totalNbEle);
+    double *ori_data = readDoubleData(oriFilePath, &totalNbEle, &status);
+    if(status!=SZ_SCES)
+    {
+        printf("Error: %s cannot be read!\n", oriFilePath);
+        exit(0);
+    }
+
     int i;
     double Max, Min, diffMax, err, maxpw_relerr = 0, relerr;
     Max = ori_data[0];

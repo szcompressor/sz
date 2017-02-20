@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include "sz.h"
 #include "rw.h"
+#include "zc.h"
 
 struct timeval startTime;
 struct timeval endTime;  /* Start and end times */
@@ -38,41 +39,42 @@ int main(int argc, char * argv[])
 {
     int r5=0,r4=0,r3=0,r2=0,r1=0;
     char outDir[640], oriFilePath[640], outputFilePath[640];
-    char *cfgFile;
-    
-    if(argc < 3)
+    char *cfgFile, *zcFile, *solName, *varName;
+    double absErrBound;
+    if(argc < 4)
     {
-	printf("Test case: testfloat_compress [config_file] [srcFilePath] [dimension sizes...]\n");
-	printf("Example: testfloat_compress sz.config testfloat_8_8_128.dat 8 8 128\n");
+	printf("Test case: testfloat_CompDecomp [config_file] [zc.config] [solName] [varName] [errBoundMode] [absErrBound] [relErrBound] [srcFilePath] [dimension sizes...]\n");
+	printf("Example: testfloat_CompDecomp sz.config zc.config sz(1E-6) testfloat ABS 1E-6 0 testdata/x86/testfloat_8_8_128.dat 8 8 128\n");
 	exit(0);
     }
    
     cfgFile=argv[1];
-    sprintf(oriFilePath, "%s", argv[2]);
-    if(argc>=4)
-	r1 = atoi(argv[3]); //8
-    if(argc>=5)
-	r2 = atoi(argv[4]); //8
-    if(argc>=6)
-	r3 = atoi(argv[5]); //128
-    if(argc>=7)
-        r4 = atoi(argv[6]);
+    zcFile=argv[2];
+    solName=argv[3];
+    varName=argv[4];
+    absErrBound=atof(argv[5]);
+    sprintf(oriFilePath, "%s", argv[6]);
     if(argc>=8)
-        r5 = atoi(argv[7]);
+	r1 = atoi(argv[7]); //8
+    if(argc>=9)
+	r2 = atoi(argv[8]); //8
+    if(argc>=10)
+	r3 = atoi(argv[9]); //128
+    if(argc>=11)
+        r4 = atoi(argv[10]);
+    if(argc>=12)
+        r5 = atoi(argv[11]);
    
     printf("cfgFile=%s\n", cfgFile); 
-    int status = SZ_Init(cfgFile);
-    if(status == SZ_NSCS)
-	exit(0);
+    SZ_Init(cfgFile);
+   
+    printf("zcFile=%s\n", zcFile);
+    ZC_Init(zcFile);
+ 
     sprintf(outputFilePath, "%s.sz", oriFilePath);
    
     int nbEle;
-    float *data = readFloatData(oriFilePath, &nbEle, &status);
-    if(status != SZ_SCES)
-    {
-	printf("Error: data file %s cannot be read!\n", oriFilePath);
-	exit(0);
-    }
+    float *data = readFloatData(oriFilePath, &nbEle);
     //float *revValue = (float *)malloc(sizeof(float));
     //*revValue = 1.0E36;
    
@@ -80,33 +82,23 @@ int main(int argc, char * argv[])
     //char *bytes = (char *)malloc(nbEle*sizeof(float)); //
     //SZ_compress_args2(SZ_FLOAT, data, bytes, &outSize, ABS, 0.0001, 0.0001, r5, r4, r3, r2, r1);    
     //char *bytes = SZ_compress_rev(SZ_FLOAT, data, revValue, &outSize, r5, r4, r3, r2, r1);
+    ZC_DataProperty* dataProperty = ZC_startCmpr(varName, ZC_FLOAT, data, r5, r4, r3, r2, r1);
     cost_start();
-    unsigned char *bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
+    unsigned char *bytes = SZ_compress_args(SZ_FLOAT, data, &outSize, ABS, absErrBound, 0.01, r5, r4, r3, r2, r1);
+    //unsigned char *bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
     cost_end();
+    ZC_CompareData* compareResult = ZC_endCmpr(dataProperty, outSize);
     printf("timecost=%f\n",totalCost); 
-    writeByteData(bytes, outSize, outputFilePath, &status);
-    if(status != SZ_SCES)
-    {
-        printf("Error: data file %s cannot be written!\n", outputFilePath);
-        exit(0);
-    }
-
-   /* //check mem leakage of decompression
-    int i;
-    float *ddata;
-    for(i=0;i<30;i++)
-    {
-	printf("start %d\n",i);
-	ddata = SZ_decompress(SZ_FLOAT, bytes, outSize, r5, r4, r3, r2, r1);
-	free(ddata);
-	printf("end %d\n", i);
-	sleep(1);
-    }
-*/
+    writeByteData(bytes, outSize, outputFilePath);
+   
+    ZC_startDec();
+    float *decData = SZ_decompress(SZ_FLOAT, bytes, outSize, r5, r4, r3, r2, r1);
+    ZC_endDec(compareResult, solName, decData);
+    //ZC_endDec(compareResult, "sz(1E-7)", decData);
+ 
     printf("done\n");
-    free(bytes); 
-    free(data);
-    SZ_Finalize();
     
+    SZ_Finalize();
+    ZC_Finalize();
     return 0;
 }

@@ -75,8 +75,13 @@ int main(int argc, char * argv[])
 
     sprintf(outputFilePath, "%s.out", zipFilePath);
     
-    int byteLength;
-    unsigned char *bytes = readByteData(zipFilePath, &byteLength);
+    int byteLength, status;
+    unsigned char *bytes = readByteData(zipFilePath, &byteLength, &status);
+    if(status!=SZ_SCES)
+    {
+        printf("Error: %s cannot be read!\n", zipFilePath);
+        exit(0);
+    }
   
     //printf("r1=%d,r2=%d,r3=%d,r4=%d,r5=%d\n", r1,r2,r3,r4,r5);
  
@@ -90,7 +95,12 @@ int main(int argc, char * argv[])
   
     free(bytes); 
     printf("timecost=%f\n",totalCost); 
-    writeFloatData_inBytes(data, nbEle, outputFilePath);
+    writeFloatData_inBytes(data, nbEle, outputFilePath, &status);
+    if(status!=SZ_SCES)
+    {
+	printf("Error: %s cannot be written!\n", outputFilePath);
+	exit(0);
+    }
     printf("done\n");
     
     //SZ_Finalize();
@@ -98,7 +108,13 @@ int main(int argc, char * argv[])
     char oriFilePath[640];
     strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
     oriFilePath[strlen(zipFilePath)-3] = '\0';
-    float *ori_data = readFloatData(oriFilePath, &totalNbEle);
+    float *ori_data = readFloatData(oriFilePath, &totalNbEle, &status);
+    if(status!=SZ_SCES)
+    {
+        printf("Error: %s cannot be read!\n", oriFilePath);
+        exit(0);
+    }
+
     int i = 0;
     float Max = 0, Min = 0, diffMax = 0;
     Max = ori_data[0];
