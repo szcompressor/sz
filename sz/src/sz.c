@@ -378,7 +378,7 @@ void *SZ_decompress(int dataType, unsigned char *bytes, int byteLength, int r5, 
 /**
  * 
  * 
- * return number of elements or 0 if any errors
+ * return number of elements or -1 if any errors
  * */
 int SZ_decompress_args(int dataType, unsigned char *bytes, int byteLength, void* decompressed_array, int r5, int r4, int r3, int r2, int r1)
 {
@@ -405,7 +405,7 @@ int SZ_decompress_args(int dataType, unsigned char *bytes, int byteLength, void*
 	else
 	{
 		printf("Error: data type cannot be the types other than SZ_FLOAT or SZ_DOUBLE\n");
-		return 0; //indicating error				
+		return SZ_NSCS; //indicating error				
 	}
 
 	return nbEle;
@@ -553,7 +553,7 @@ unsigned char* SZ_batch_compress(int *outSize)
 	return finalCompressedBytes;
 }
 
-SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLength)
+SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLength, int *status)
 {
 	int i, j, k = 0;
 	unsigned char intByteBuf[4];
@@ -580,7 +580,8 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 	if(gzipDecpressSize!=targetUncompressSize)
 	{
 		printf("Error: incorrect decompression in zlib_uncompress3: gzipDecpressSize!=targetUncompressSize\n");
-		exit(0);
+		*status = SZ_NSCS;
+		return NULL;
 	}
 	
 	//Start analyzing the byte stream for further decompression	
@@ -600,7 +601,8 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 		if(lastVar->next!=NULL)
 		{
 			printf("Error: sz_varset.count is inconsistent with the number of variables in sz_varset->header.\n");
-			exit(0);
+			*status = SZ_NSCS;
+			return NULL;
 		}
 		for(i=0;i<varCount;i++)
 		{
@@ -614,7 +616,8 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 			else
 			{
 				printf("Error: Wrong value of decompressed type. \n Please check the correctness of the decompressed data.\n");
-				exit(0);
+				*status = SZ_NSCS;
+				return NULL;
 			}
 			
 			//get # dimensions and the size of each dimension
@@ -665,7 +668,8 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 				else
 				{
 					printf("Current version doesn't support 5 dimensions.\n");
-					exit(0);
+					*status = SZ_DERR;
+					return NULL;
 				}
 				
 				SZ_batchAddVar(varNameString, dataType, newData, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4], 0, 0, 0);
@@ -691,7 +695,8 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 				else
 				{
 					printf("Current version doesn't support 5 dimensions.\n");
-					exit(0);
+					*status = SZ_DERR;
+					return NULL;
 				}
 			
 				SZ_batchAddVar(varNameString, dataType, newData, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4], 0, 0, 0);
@@ -700,7 +705,8 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 			else
 			{
 				printf("Error: wrong dataType in the batch decompression.\n");
-				exit(0);
+				*status = SZ_TERR;
+				return NULL;
 			}
 	
 			k+=cpressedLength;
@@ -711,7 +717,8 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 		printf("Error: Inconsistency of the # variables between sz_varset and decompressed stream.\n");
 		printf("Note sz_varset.count should be either 0 or the correct number of variables stored in the decompressed stream.\n");
 		printf("Currently, sz_varset.count=%d, expected number of variables = %d\n", varNum, varCount);
-		exit(0);
+		*status = SZ_NSCS;
+		return NULL;
 	}
 	else //if(varNum>0 && varNum==varCount)
 	{
@@ -728,7 +735,8 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 			else
 			{
 				printf("Error: Wrong value of decompressed type. \n Please check the correctness of the decompressed data.\n");
-				exit(0);
+				*status = SZ_DERR;
+				return NULL;
 			}
 			
 			//get # dimensions and the size of each dimension
@@ -762,7 +770,8 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 			if(checkVarName!=0)
 			{
 				printf("Error: the varNames in the compressed stream are inconsistent with those in the sz_varset\n");
-				exit(100);
+				*status = SZ_DERR;
+				return NULL;
 			}
 						
 			//TODO: convert szTmpBytes to data array.
@@ -787,8 +796,9 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 					getSnapshotData_float_3D(&newData,dimSize[1]*dimSize[2], dimSize[3], dimSize[4],tdps, errBoundMode);
 				else
 				{
-					printf("Error: doesn't support 5 dimensions yet.\n");
-					exit(0);
+					printf("Error: doesn't support 5 dimensions yet.\n");			
+					*status = SZ_DERR;
+					return NULL;
 				}
 				
 				free_TightDataPointStorageF(tdps);	
@@ -814,7 +824,8 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 				else
 				{
 					printf("Error: doesn't support 5 dimensions yet.\n");
-					exit(0);
+					*status = SZ_DERR;
+					return NULL;
 				}
 				SZ_batchAddVar(varNameString, dataType, newData, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4], 0, 0, 0);
 				free_TightDataPointStorageD(tdps);	
@@ -822,7 +833,8 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 			else
 			{
 				printf("Error: wrong dataType in the batch decompression.\n");
-				exit(0);
+				*status = SZ_TERR;
+				return NULL;
 			}		
 			
 			free(varNameString);
@@ -832,6 +844,7 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 	}
 	free(gzipDecpressBytes);
 	SZ_Finalize();
+	*status = SZ_SCES;
 	return sz_varset;
 }
 
@@ -839,7 +852,7 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
  * @deprecated
  * @return: the length of the coefficient array.
  * */
-int getPredictionCoefficients(int layers, int dimension, int **coeff_array)
+int getPredictionCoefficients(int layers, int dimension, int **coeff_array, int *status)
 {
 	int size = 0;
 	switch(dimension)
@@ -896,8 +909,9 @@ int getPredictionCoefficients(int layers, int dimension, int **coeff_array)
 			break;
 		default:
 			printf("Error: dimension must be no greater than 3 in the current version.\n");
-			exit(1);
+			*status = SZ_DERR;
 	}
+	*status = SZ_SCES;
 	return size;
 }
 

@@ -333,7 +333,7 @@ int computeDimension(int r5, int r4, int r3, int r2, int r1);
 void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue);
 void computeReqLength_float(float realPrecision, short radExpo, int* reqLength, float* medianValue);
 
-int getPredictionCoefficients(int layers, int dimension, int **coeff_array);
+int getPredictionCoefficients(int layers, int dimension, int **coeff_array, int *status);
 
 void compute_segment_precisions_float_1D(float *oriData, int dataLength, float* pwrErrBound, unsigned char* pwrErrBoundBytes);
 unsigned int optimize_intervals_float_1D(float *oriData, int dataLength, double realPrecision);
@@ -418,7 +418,7 @@ int SZ_decompress_args(int dataType, unsigned char *bytes, int byteLength, void*
 
 void filloutDimArray(int* dim, int r5, int r4, int r3, int r2, int r1);
 unsigned char* SZ_batch_compress(int *outSize);
-SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int length);
+SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int length, int *status);
 
 void SZ_Finalize();
 
