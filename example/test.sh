@@ -44,3 +44,7 @@ echo ./testdouble_compress sz.config $testdataDir/testdouble_8_8_8_128.dat 8 8 8
 ./testdouble_compress sz.config $testdataDir/testdouble_8_8_8_128.dat 8 8 8 128
 echo ./testdouble_decompress sz.config $testdataDir/testdouble_8_8_8_128.dat.sz 8 8 8 128
 ./testdouble_decompress sz.config $testdataDir/testdouble_8_8_8_128.dat.sz 8 8 8 128
+
+#echo ============== testing batch compression and batch decompression in Fortran =======
+#echo ./testdouble_batch_f sz.config
+#./testdouble_batch_f sz.config
