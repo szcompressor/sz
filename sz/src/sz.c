@@ -44,7 +44,7 @@ double absErrBound;
 double relBoundRatio;
 double pw_relBoundRatio;
 int segment_size;
-int versionNumber[3] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_REVISION};
+int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 
 int spaceFillingCurveTransform; //default is 0, or 1 set by sz.config
 int reOrgSize; //the granularity of the reganization of the original data
@@ -53,7 +53,7 @@ int intvCapacity = 0;
 int intvRadius = 0;
 
 int layers = 1;
-float predThreshold = 0.97;
+float predThreshold = 0.98;
 int sampleDistance = 10;
 char optQuantMode = 0; //opt Quantization (0: fixed ; 1: optimized)
 

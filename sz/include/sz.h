@@ -33,7 +33,8 @@ extern "C" {
 #define SZ_VERNUM 0x0130
 #define SZ_VER_MAJOR 1
 #define SZ_VER_MINOR 4
-#define SZ_VER_REVISION 9
+#define SZ_VER_BUILD 9
+#define SZ_VER_REVISION 1
 
 #define HZ 102
 #define SZ 101
@@ -109,7 +110,7 @@ extern double relBoundRatio;
 extern double pw_relBoundRatio;
 extern int segment_size;
 
-extern int versionNumber[3];
+extern int versionNumber[4];
 
 extern int layers;
 extern float predThreshold;
