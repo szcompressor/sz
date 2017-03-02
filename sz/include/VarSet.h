@@ -40,7 +40,7 @@ typedef struct SZ_VarSet
 	struct SZ_Variable *lastVar;
 } SZ_VarSet;
 
-void free_Variable_keepDecompressedData(SZ_Variable* v);
+void free_Variable_keepOriginalData(SZ_Variable* v);
 void free_Variable_keepCompressedBytes(SZ_Variable* v);
 void free_Variable_all(SZ_Variable* v);
 void SZ_batchAddVar(char* varName, int dataType, void* data, 
@@ -52,8 +52,8 @@ int SZ_batchDelVar(char* varName);
 SZ_Variable* SZ_searchVar(char* varName);
 void* SZ_getVarData(char* varName, int *r5, int *r4, int *r3, int *r2, int *r1);
 
-void free_VarSet_vset(SZ_VarSet *vset);
-void free_VarSet(void);
+void free_VarSet_vset(SZ_VarSet *vset, int mode);
+void SZ_freeVarSet(int mode);
 
 #ifdef __cplusplus
 }

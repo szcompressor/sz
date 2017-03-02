@@ -677,3 +677,24 @@ void decode_withTree(unsigned char *s, int targetLength, int *out)
 		encodeStartIndex = 1+3*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned char);
 	decode(s+4+encodeStartIndex, targetLength, root, out);
 }
+
+void SZ_ReleaseHuffman()
+{
+	if(pool!=NULL)
+	{
+		int i;
+		free(pool);
+		pool = NULL;
+		free(qqq);
+		qqq = NULL;
+		for(i=0;i<stateNum;i++)
+		{
+			if(code[i]!=NULL)
+				free(code[i]);
+		}
+		free(code);
+		code = NULL;
+		free(cout);
+		cout = NULL;				
+	}
+}

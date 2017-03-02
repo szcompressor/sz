@@ -509,35 +509,59 @@ void sz_batch_compress_c_(unsigned char* bytes, int *outSize)
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
-void sz_batch_decompress_c_(unsigned char* bytes, int *byteLength)
+void sz_batch_decompress_c_(unsigned char* bytes, int *byteLength, int *ierr)
 {
-	SZ_batch_decompress(bytes, *byteLength);
+	SZ_batch_decompress(bytes, *byteLength, ierr);
 }
-void sz_getvardata_float_(char* varName, int *len, float* data, int *r1, int *r2, int *r3, int *r4, int *r5)
+
+void sz_getvardim_c_(char* varName, int *len, int *dim, int *r1, int *r2, int *r3, int *r4, int *r5)
 {
 	int i;
+    char s2[*len+1];
+    for(i=0;i<*len;i++)
+        s2[i]=varName[i];
+    s2[*len]='\0';
+    
+    SZ_getVarData(s2, r5, r4, r3, r2, r1);
+    *dim = computeDimension(*r5, *r4, *r3, *r2, *r1);
+}
+
+void compute_total_batch_size_c_(int *totalSize)
+{
+	*totalSize = compute_total_batch_size();
+}
+
+void sz_getvardata_float_(char* varName, int *len, float* data)
+{
+	int i;
+	int r1, r2, r3, r4, r5;
     char s2[*len+1];
     for(i=0;i<*len;i++)
         s2[i]=varName[i];
     s2[*len]='\0';	
 	
-	float* tmp_data = (float*)SZ_getVarData(s2, r5, r4, r3, r2, r1);
-	int size = computeDataLength(*r5, *r4, *r3, *r2, *r1);
+	float* tmp_data = (float*)SZ_getVarData(s2, &r5, &r4, &r3, &r2, &r1);
+	int size = computeDataLength(r5, r4, r3, r2, r1);
 	memcpy(data, tmp_data, size*sizeof(float));
 	free(tmp_data);	
 }
-void sz_getvardata_double_(char* varName, int *len, double* data, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_getvardata_double_(char* varName, int *len, double* data)
 {
 	int i;
+	int r1, r2, r3, r4, r5;
     char s2[*len+1];
     for(i=0;i<*len;i++)
         s2[i]=varName[i];
     s2[*len]='\0';	
     
-	double* tmp_data = (double*)SZ_getVarData(s2, r5, r4, r3, r2, r1);
-	int size = computeDataLength(*r5, *r4, *r3, *r2, *r1);
+	double* tmp_data = (double*)SZ_getVarData(s2, &r5, &r4, &r3, &r2, &r1);
+	int size = computeDataLength(r5, r4, r3, r2, r1);
 	memcpy(data, tmp_data, size*sizeof(double));
-	free(tmp_data);
+	//free(tmp_data);
 }
 
+void sz_freevarset_c_(int *mode)
+{
+	SZ_freeVarSet(*mode);
+}
 

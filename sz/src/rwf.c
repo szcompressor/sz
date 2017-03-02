@@ -24,66 +24,66 @@ void checkfilesizec_(char *srcFilePath, int *len, int *filesize)
 
 void readbytefile_(char *srcFilePath, int *len, unsigned char *bytes, int *byteLength)
 {
-	int i;
+	int i, ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=srcFilePath[i];
     s[*len]='\0';
-    unsigned char *tmp_bytes = readByteData(s, byteLength);
+    unsigned char *tmp_bytes = readByteData(s, byteLength, &ierr);
     memcpy(bytes, tmp_bytes, *byteLength);
     free(tmp_bytes);
 }
 
 void readdoublefile_(char *srcFilePath, int *len, double *data, int *nbEle)
 {
-	int i;
+	int i, ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=srcFilePath[i];
     s[*len]='\0';	
-	double *tmp_data = readDoubleData(s, nbEle);
+	double *tmp_data = readDoubleData(s, nbEle, &ierr);
 	memcpy(data, tmp_data, *nbEle);
 	free(tmp_data);
 }
 
 void readfloatfile_(char *srcFilePath, int *len, float *data, int *nbEle)
 {
-	int i;
+	int i, ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=srcFilePath[i];
     s[*len]='\0';
-	float *tmp_data = readFloatData(s, nbEle);
+	float *tmp_data = readFloatData(s, nbEle, &ierr);
 	memcpy(data, tmp_data, *nbEle);
 	free(tmp_data);
 }
 
 void writebytefile_(unsigned char *bytes, int *byteLength, char *tgtFilePath, int *len)
 {
-	int i;
+	int i, ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=tgtFilePath[i];
     s[*len]='\0';
-	writeByteData(bytes, *byteLength, s);
+	writeByteData(bytes, *byteLength, s, &ierr);
 }
 
 void writedoublefile_(double *data, int *nbEle, char *tgtFilePath, int *len)
 {
-	int i;
+	int i, ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=tgtFilePath[i];
     s[*len]='\0';	
-	writeDoubleData(data, *nbEle, s);
+	writeDoubleData(data, *nbEle, s, &ierr);
 }
 
 void writefloatfile_(float *data, int *nbEle, char *tgtFilePath, int *len)
 {
-	int i;
+	int i, ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=tgtFilePath[i];
     s[*len]='\0';
-	writeFloatData(data, *nbEle, s);
+	writeFloatData(data, *nbEle, s, &ierr);
 }

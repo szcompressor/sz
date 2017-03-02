@@ -73,6 +73,9 @@ extern "C" {
 #define SZ_MERR -5 //sz_mode error
 #define SZ_BERR -6 //bound-mode error (should be only ABS, REL, ABS_AND_REL, ABS_OR_REL, or PW_REL)
 
+#define SZ_MAINTAIN_VAR_DATA 0
+#define SZ_DESTROY_WHOLE_VARSET 1
+
 //Note: the following setting should be consistent with stateNum in Huffman.h
 //#define intvCapacity 65536
 //#define intvRadius 32768
@@ -318,10 +321,12 @@ void sz_batchaddvar_d4_double_(char* varName, int *len, double* data, int *errBo
 void sz_batchaddvar_d5_double_(char* varName, int *len, double* data, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3, int *r4, int *r5);
 void sz_batchdelvar_c_(char* varName, int *len, int *errState);
 void sz_batch_compress_c_(unsigned char* bytes, int *outSize);
-void sz_batch_decompress_c_(unsigned char* bytes, int *byteLength);
-void sz_getvardata_float_(char* varName, int *len, float* data, int *r1, int *r2, int *r3, int *r4, int *r5);
-void sz_getvardata_double_(char* varName, int *len, double* data, int *r1, int *r2, int *r3, int *r4, int *r5);
-
+void sz_batch_decompress_c_(unsigned char* bytes, int *byteLength, int *ierr);
+void sz_getvardim_c_(char* varName, int *len, int *dim, int *r1, int *r2, int *r3, int *r4, int *r5);
+void compute_total_batch_size_c_(int *totalSize);
+void sz_getvardata_float_(char* varName, int *len, float* data);
+void sz_getvardata_double_(char* varName, int *len, double* data);
+void sz_freevarset_c_(int *mode);
 
 //sz.h
 void SZ_Reset();
@@ -417,6 +422,9 @@ void *SZ_decompress(int dataType, unsigned char *bytes, int byteLength, int r5, 
 int SZ_decompress_args(int dataType, unsigned char *bytes, int byteLength, void* decompressed_array, int r5, int r4, int r3, int r2, int r1);
 
 void filloutDimArray(int* dim, int r5, int r4, int r3, int r2, int r1);
+int compute_total_batch_size();
+int isZlibFormat(unsigned char magic1, unsigned char magic2);
+
 unsigned char* SZ_batch_compress(int *outSize);
 SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int length, int *status);
 

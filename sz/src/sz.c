@@ -59,7 +59,7 @@ char optQuantMode = 0; //opt Quantization (0: fixed ; 1: optimized)
 
 int szMode = SZ_BEST_COMPRESSION;
 
-SZ_VarSet* sz_varset;
+SZ_VarSet* sz_varset = NULL;
 
 sz_params *conf_params = NULL;
 
@@ -70,10 +70,6 @@ int SZ_Init(char *configFilePath)
 	int loadFileResult = SZ_LoadConf();
 	if(loadFileResult==SZ_NSCS)
 		return SZ_NSCS;
-	sz_varset = (SZ_VarSet*)malloc(sizeof(SZ_VarSet));
-	sz_varset->header = (SZ_Variable*)malloc(sizeof(SZ_Variable));
-	sz_varset->lastVar = sz_varset->header;
-	sz_varset->count = 0;
 	
 	return SZ_SCES;
 }
@@ -85,7 +81,7 @@ void SZ_Reset()
     {
 		pool = (struct node_t*)malloc(allNodes*2*sizeof(struct node_t));
 		qqq = (node*)malloc(allNodes*2*sizeof(node));
-		code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
+		code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));
 		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
 	}
 	
@@ -445,8 +441,41 @@ void filloutDimArray(int* dim, int r5, int r4, int r3, int r2, int r1)
 	}
 }
 
-unsigned char* SZ_batch_compress(int *outSize)
+int compute_total_batch_size()
 {
+	int eleNum = 0, totalSize = 0;
+	SZ_Variable* p = sz_varset->header;
+	while(p->next!=NULL)
+	{
+		eleNum = computeDataLength(p->next->r5, p->next->r4, p->next->r3, p->next->r2, p->next->r1);
+		if(p->next->dataType==SZ_FLOAT)
+			totalSize += (eleNum*4);
+		else
+			totalSize += (eleNum*8);
+		p=p->next;
+	}
+	return totalSize;
+}
+
+int isZlibFormat(unsigned char magic1, unsigned char magic2)
+{
+	if(magic1==104&&magic2==5) //DC+BS
+		return 1;
+	if(magic1==104&&magic2==129) //DC+DC
+		return 1;
+	if(magic1==104&&magic2==222) //DC+BC
+		return 1;
+	if(magic1==120&&magic2==1) //BC+BS
+		return 1;
+	if(magic1==120&&magic2==156) //BC+DC
+		return 1;
+	if(magic1==120&&magic2==218) //BC+BS
+		return 1;
+	return 0;
+}
+
+unsigned char* SZ_batch_compress(int *outSize)
+{	
 	int dataLength;
 	DynamicByteArray* dba; 
 	new_DBA(&dba, 32768);
@@ -483,6 +512,8 @@ unsigned char* SZ_batch_compress(int *outSize)
 			
 			p->compressedBytes = newByteData;
 		}
+		
+		SZ_ReleaseHuffman();
 		
 		//TODO: copy metadata information (totally 1+4*x+4+(1+y) bytes)
 		//byte format of variable storage: meta 1 bytes (000000xy) x=0 SZ/1 HZ, y=0 float/1 double ; 
@@ -535,8 +566,18 @@ unsigned char* SZ_batch_compress(int *outSize)
 	convertDBAtoBytes(dba, &tmpFinalCompressedBytes);
 	
 	unsigned char* tmpCompressedBytes2;
-	int tmpGzipSize = (int)zlib_compress2(tmpFinalCompressedBytes, dba->size, &tmpCompressedBytes2, gzipMode);
-	free(tmpFinalCompressedBytes);
+	int tmpGzipSize = 0;
+	
+	if(szMode!=SZ_BEST_SPEED)
+	{
+		tmpGzipSize = (int)zlib_compress2(tmpFinalCompressedBytes, dba->size, &tmpCompressedBytes2, gzipMode);
+		free(tmpFinalCompressedBytes);		
+	}
+	else
+	{
+		tmpCompressedBytes2 = tmpFinalCompressedBytes;
+		tmpGzipSize = dba->size;
+	}	
 	
 	unsigned char* finalCompressedBytes = (unsigned char*) malloc(sizeof(unsigned char)*(4+tmpGzipSize));
 	
@@ -548,8 +589,8 @@ unsigned char* SZ_batch_compress(int *outSize)
 	free(tmpCompressedBytes2);
 	
 	*outSize = 4+tmpGzipSize;
-	free(dba);
-	SZ_Finalize();
+	free_DBA(dba);
+	
 	return finalCompressedBytes;
 }
 
@@ -575,7 +616,16 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 	
 	//Gzip decompression
 	unsigned char* gzipDecpressBytes;
-	int gzipDecpressSize = zlib_uncompress2(&(compressedStream[4]), (unsigned long)compressedLength, &gzipDecpressBytes, (unsigned long)targetUncompressSize);
+	int gzipDecpressSize = 0;
+	if(isZlibFormat(compressedStream[4], compressedStream[5])!=0)
+	{
+		gzipDecpressSize = zlib_uncompress2(&(compressedStream[4]), (unsigned long)compressedLength, &gzipDecpressBytes, (unsigned long)targetUncompressSize);
+	}
+	else
+	{
+		gzipDecpressSize = compressedLength;
+		gzipDecpressBytes = &(compressedStream[4]);
+	}
 	
 	if(gzipDecpressSize!=targetUncompressSize)
 	{
@@ -672,7 +722,7 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 					return NULL;
 				}
 				
-				SZ_batchAddVar(varNameString, dataType, newData, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4], 0, 0, 0);
+				SZ_batchAddVar(varNameString, dataType, newData, 0, 0, 0, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);
 				free_TightDataPointStorageF(tdps);			
 			}	
 			else if(dataType==SZ_DOUBLE)
@@ -699,7 +749,7 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 					return NULL;
 				}
 			
-				SZ_batchAddVar(varNameString, dataType, newData, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4], 0, 0, 0);
+				SZ_batchAddVar(varNameString, dataType, newData, 0, 0, 0, dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);
 				free_TightDataPointStorageD(tdps);					
 			}
 			else
@@ -843,7 +893,7 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 		}
 	}
 	free(gzipDecpressBytes);
-	SZ_Finalize();
+	SZ_ReleaseHuffman();
 	*status = SZ_SCES;
 	return sz_varset;
 }
@@ -917,21 +967,6 @@ int getPredictionCoefficients(int layers, int dimension, int **coeff_array, int 
 
 void SZ_Finalize()
 {
-	if(pool!=NULL)
-	{
-		int i;
-		free(pool);
-		pool = NULL;
-		free(qqq);
-		qqq = NULL;
-		for(i=0;i<stateNum;i++)
-		{
-			if(code[i]!=NULL)
-				free(code[i]);
-		}
-		free(code);
-		code = NULL;
-		free(cout);
-		cout = NULL;				
-	}
+	//if(sz_varset!=NULL)
+	//	free_VarSet();
 }

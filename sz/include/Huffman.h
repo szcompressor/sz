@@ -56,7 +56,7 @@ void unpad_tree_uint(unsigned int* L, unsigned int* R, unsigned int* C, unsigned
 node reconstruct_HuffTree_from_bytes_anyStates(unsigned char* bytes, int nodeCount);
 void encode_withTree(int *s, int length, unsigned char **out, int *outSize);
 void decode_withTree(unsigned char *s, int targetLength, int *out);
-
+void SZ_ReleaseHuffman();
 
 #ifdef __cplusplus
 }

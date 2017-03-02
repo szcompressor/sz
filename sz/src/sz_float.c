@@ -1070,7 +1070,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 			status = SZ_MERR; //mode error			
 		}
 	}
-	SZ_Finalize();
+	SZ_ReleaseHuffman();
 	return status;
 }
 
@@ -1156,7 +1156,7 @@ int SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, in
 	free_TightDataPointStorageF(tdps);
 	if(szMode!=SZ_BEST_SPEED && cmpSize!=12)
 		free(szTmpBytes);
-	SZ_Finalize();	
+	SZ_ReleaseHuffman();	
 	return status;
 }
 
