@@ -16,8 +16,8 @@ MPIRUN 		= mpirun
 SZFLAG 	= -I$(SZPATH)/include $(SZPATH)/lib/libsz.a $(SZPATH)/lib/libzlib.a
 
 ##   TARGETS
-#all: 		testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress
-all: 		testdouble_compress_f testdouble_decompress_f testdouble_batch_compress_f
+all: 		testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress
+#all: 		testdouble_compress_f testdouble_decompress_f testdouble_batch_compress_f
 
 testfloat_compress:	testfloat_compress.c
 	$(CC) -lm -g -o testfloat_compress testfloat_compress.c $(SZFLAG)
