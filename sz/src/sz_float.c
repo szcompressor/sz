@@ -1088,9 +1088,15 @@ int SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, in
 	int targetUncompressSize = dataLength <<2; //i.e., *4
 	//tmpSize must be "much" smaller than dataLength
 	int tmpSize = 12, i;
-	unsigned char* szTmpBytes;
+	unsigned char* szTmpBytes;	
+	
 	if(cmpSize!=12)
 	{
+		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
+		if(isZlib)
+			szMode = SZ_BEST_COMPRESSION;
+		else
+			szMode = SZ_BEST_SPEED;		
 		if(szMode==SZ_BEST_SPEED)
 		{
 			tmpSize = cmpSize;

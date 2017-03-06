@@ -1072,6 +1072,11 @@ int SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2, 
 	unsigned char* szTmpBytes;
 	if(cmpSize!=16)
 	{
+		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
+		if(isZlib)
+			szMode = SZ_BEST_COMPRESSION;
+		else
+			szMode = SZ_BEST_SPEED;		
 		if(szMode==SZ_BEST_SPEED)
 		{
 			tmpSize = cmpSize;
