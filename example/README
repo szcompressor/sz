@@ -26,3 +26,5 @@ int r1: size of dimension 1
 Return: the compressed bytes
 
 Warm reminder: Please remember to release the memory occupied by the variable after calling the compress/decompress function if it's not used any longer in case of memory leakcage.
+
+Note: Compiling testfloat_CompDecomp.c requires to install z-checker library first (https://github.com/CODARcode/Z-checker)
