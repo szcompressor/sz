@@ -366,7 +366,7 @@ unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** 
 		memset(t, 0, nodeCount*sizeof(unsigned char));
 
 		pad_tree_uchar(L,R,C,t,0,qq[1]);
-		
+
 		unsigned int totalSize = 1+3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned int);	
 		*out = (unsigned char*)malloc(totalSize*sizeof(unsigned char));
 		(*out)[0] = (unsigned char)sysEndianType;
@@ -416,6 +416,11 @@ unsigned int convert_HuffTree_to_bytes_anyStates(int nodeCount, unsigned char** 
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
 		memset(t, 0, nodeCount*sizeof(unsigned char));
 		pad_tree_uint(L,R,C,t,0,qq[1]);
+		
+		//debug
+		//node root = new_node2(0,0);
+		//unpad_tree_uint(L,R,C,t,0,root);		
+		
 		unsigned int totalSize = 1+3*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned char);
 		*out = (unsigned char*)malloc(totalSize);
 		(*out)[0] = (unsigned char)sysEndianType;

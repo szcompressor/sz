@@ -19,6 +19,8 @@
 #include "DynamicIntArray.h"
 #include "VarSet.h"
 #include "Huffman.h"
+#include "TightDataPointStorageD.h"
+#include "TightDataPointStorageF.h"
 
 #ifdef _WIN32
 #define PATH_SEPARATOR ';'
@@ -34,7 +36,7 @@ extern "C" {
 #define SZ_VER_MAJOR 1
 #define SZ_VER_MINOR 4
 #define SZ_VER_BUILD 9
-#define SZ_VER_REVISION 1
+#define SZ_VER_REVISION 3
 
 #define HZ 102
 #define SZ 101
@@ -372,22 +374,45 @@ unsigned int optimize_intervals_double_3D_pwr(double *oriData, int r1, int r2, i
 //void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, int dataLength, double realPrecision, int *outSize);
 int computeBlockEdgeSize(int segmentSize);
 
+TightDataPointStorageF* SZ_compress_float_1D_MDQ(float *oriData, 
+int dataLength, double realPrecision, float valueRangeSize, float medianValue_f);
+
+void SZ_compress_args_float_StoreOriData(float* oriData, int dataLength, TightDataPointStorageF* tdps, 
+unsigned char** newByteData, int *outSize);
 void SZ_compress_args_float_NoCkRngeNoGzip_1D(unsigned char** newByteData, float *oriData, int dataLength, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f);
 void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr(unsigned char** newByteData, float *oriData, int dataLength, 
 int *outSize, float min, float max);
+
+TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, int r1, int r2, double realPrecision, float valueRangeSize, float medianValue_f);
+
 void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float *oriData, int r1, int r2, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f);
 int computeBlockEdgeSize_2D(int segmentSize);
 void SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr(unsigned char** newByteData, float *oriData, int r1, int r2, 
 int *outSize, float min, float max);
+
+TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, int r1, int r2, int r3, double realPrecision, float valueRangeSize, float medianValue_f);
+
 int computeBlockEdgeSize_3D(int segmentSize);
 void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f);
 void SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, 
 int *outSize, float min, float max);
+
+TightDataPointStorageD* SZ_compress_double_1D_MDQ(double *oriData, 
+int dataLength, double realPrecision, double valueRangeSize, double medianValue_d);
+
+void SZ_compress_args_double_StoreOriData(double* oriData, int dataLength, TightDataPointStorageD* tdps, 
+unsigned char** newByteData, int *outSize);
 void SZ_compress_args_double_NoCkRngeNoGzip_1D(unsigned char** newByteData, double *oriData, int dataLength, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d);
 void SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr(unsigned char** newByteData, double *oriData, 
 int dataLength, int *outSize, double min, double max);
+
+TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, int r1, int r2, double realPrecision, double valueRangeSize, double medianValue_d);
+
 void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, double *oriData, int r1, int r2, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d);
 void SZ_compress_args_double_NoCkRngeNoGzip_2D_pwr(unsigned char** newByteData, double *oriData, int r1, int r2, int *outSize, double min, double max);
+
+TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, int r1, int r2, int r3, double realPrecision, double valueRangeSize, double medianValue_d);
+
 void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, double *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d);
 void SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, double *oriData, int r1, int r2, int r3, 
 int *outSize, double min, double max);
@@ -402,6 +427,16 @@ int SZ_compress_args_double(unsigned char** newByteData, double *oriData,
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio);
 
+int SZ_compress_args_float_subblock(unsigned char* compressedBytes, float *oriData, 
+int r5, int r4, int r3, int r2, int r1, 
+int R5, int R4, int R3, int R2, int R1, 
+int *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio);
+
+int SZ_compress_args_double_subblock(unsigned char* compressedBytes, double *oriData, 
+int r5, int r4, int r3, int r2, int r1, 
+int R5, int R4, int R3, int R2, int R1, 
+int *outSize, int errBoundMode, double absErr_Bound, double rel_BoundRatio);
+
 int SZ_compress_args_float_wRngeNoGzip(unsigned char** newByteData, float *oriData, 
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, double absErr_Bound, double rel_BoundRatio);
@@ -412,6 +447,9 @@ int errBoundMode, double absErr_Bound, double relBoundRatio);
 unsigned char *SZ_compress(int dataType, void *data, int *outSize, int r5, int r4, int r3, int r2, int r1);
 unsigned char *SZ_compress_args(int dataType, void *data, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1);
 int SZ_compress_args2(int dataType, void *data, unsigned char* compressed_bytes, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1);
+int SZ_compress_args3(int dataType, void *data, unsigned char* compressed_bytes, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 
+int r5, int r4, int r3, int r2, int r1, 
+int R5, int R4, int R3, int R2, int R1);
 
 unsigned char *SZ_compress_rev_args(int dataType, void *data, void *reservedValue, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1);
 int SZ_compress_rev_args2(int dataType, void *data, void *reservedValue, unsigned char* compressed_bytes, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, int r5, int r4, int r3, int r2, int r1);

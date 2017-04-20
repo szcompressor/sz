@@ -45,6 +45,7 @@ void new_TightDataPointStorageF_Empty(TightDataPointStorageF **this)
 	
 	(*this)->segment_size = 0;
 	(*this)->pwrErrBoundBytes = NULL;
+	(*this)->pwrErrBoundBytes_size = 0;	
 }
 
 int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsigned char* flatBytes, int flatBytesLength)
@@ -1381,11 +1382,12 @@ void new_TightDataPointStorageF(TightDataPointStorageF **this,
 
 	encode_withTree(type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
 	
+	
 //	printf("typeArray_size=%d\n", (*this)->typeArray_size);
 	//sdi: Debug
-	//SZ_Reset();
-	//unsigned short type_[dataSeriesLength];
-	//decode_withTree((*this)->typeArray, (*this)->typeArray_size, type_);
+//	SZ_Reset();
+//	int type_[dataSeriesLength];
+//	decode_withTree((*this)->typeArray, (*this)->typeArray_size, type_);
 
 	/*for (i = 0; i < stateNum; i++)
 		if (code[i])
@@ -1419,17 +1421,14 @@ void new_TightDataPointStorageF(TightDataPointStorageF **this,
 	(*this)->pwrErrBoundBytes_size = pwrErrBoundBytes_size;
 }
 
-//TODO: convert TightDataPointStorageD to bytes...
-void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** bytes, int *size)
+void convertTDPStoBytes_float(TightDataPointStorageF* tdps, unsigned char* bytes, unsigned char* dsLengthBytes, unsigned char sameByte)
 {
-	int i, k = 0;
+	int i = 0, k = 0;
 	unsigned char intervalsBytes[4];
 	unsigned char typeArrayLengthBytes[4];
 	unsigned char rTypeLengthBytes[4];
-	unsigned char dsLengthBytes[4];
 	unsigned char exactLengthBytes[4];
 	unsigned char exactMidBytesLength[4];
-	unsigned char reservedValueBytes[4];
 	unsigned char realPrecisionBytes[8];
 	
 	unsigned char medianValueBytes[4];
@@ -1437,6 +1436,182 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 	unsigned char segment_sizeBytes[4];
 	unsigned char pwrErrBoundBytes_sizeBytes[4];
 	unsigned char max_quant_intervals_Bytes[4];
+	
+	
+	for(i = 0;i<3;i++)//3 bytes
+		bytes[k++] = versionNumber[i];
+	for(i = 0;i<4;i++)//4 bytes
+		bytes[k++] = dsLengthBytes[i];
+		
+	bytes[k++] = sameByte;	//1	byte		
+	
+	intToBytes_bigEndian(max_quant_intervals_Bytes, conf_params->max_quant_intervals);
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = max_quant_intervals_Bytes[i];		
+	
+	if(errorBoundMode==PW_REL)
+	{
+		bytes[k++] = tdps->radExpo; //1 byte			
+		
+		intToBytes_bigEndian(segment_sizeBytes, segment_size);
+		for(i = 0;i<4;i++)//4
+			bytes[k++] = segment_sizeBytes[i];				
+			
+		intToBytes_bigEndian(pwrErrBoundBytes_sizeBytes, tdps->pwrErrBoundBytes_size);
+		for(i = 0;i<4;i++)//4
+			bytes[k++] = pwrErrBoundBytes_sizeBytes[i];					
+	}
+	
+	intToBytes_bigEndian(intervalsBytes, tdps->intervals);
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = intervalsBytes[i];			
+	
+	floatToBytes(medianValueBytes, tdps->medianValue);
+	for (i = 0; i < 4; i++)// 4
+		bytes[k++] = medianValueBytes[i];		
+
+	bytes[k++] = tdps->reqLength; //1 byte
+
+	if(errorBoundMode==PW_REL)
+		doubleToBytes(realPrecisionBytes, pw_relBoundRatio);
+	else
+		doubleToBytes(realPrecisionBytes, tdps->realPrecision);
+
+	for (i = 0; i < 8; i++)// 8
+		bytes[k++] = realPrecisionBytes[i];			
+
+	intToBytes_bigEndian(typeArrayLengthBytes, tdps->typeArray_size);
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = typeArrayLengthBytes[i];
+
+	intToBytes_bigEndian(exactLengthBytes, tdps->exactDataNum);
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = exactLengthBytes[i];
+
+	intToBytes_bigEndian(exactMidBytesLength, tdps->exactMidBytes_size);
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = exactMidBytesLength[i];
+
+	memcpy(&(bytes[k]), tdps->typeArray, tdps->typeArray_size);
+	k += tdps->typeArray_size;
+	if(errorBoundMode==PW_REL)
+	{
+		memcpy(&(bytes[k]), tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size);
+		k += tdps->pwrErrBoundBytes_size;
+	}
+
+	memcpy(&(bytes[k]), tdps->leadNumArray, tdps->leadNumArray_size);
+	k += tdps->leadNumArray_size;
+	memcpy(&(bytes[k]), tdps->exactMidBytes, tdps->exactMidBytes_size);
+	k += tdps->exactMidBytes_size;
+
+	if(tdps->residualMidBits!=NULL)
+	{
+		memcpy(&(bytes[k]), tdps->residualMidBits, tdps->residualMidBits_size);
+		k += tdps->residualMidBits_size;
+	}	
+}
+
+void convertTDPStoBytes_float_reserve(TightDataPointStorageF* tdps, unsigned char* bytes, unsigned char* dsLengthBytes, unsigned char sameByte)
+{
+	int i = 0, k = 0;
+	unsigned char intervalsBytes[4];
+	unsigned char typeArrayLengthBytes[4];
+	unsigned char rTypeLengthBytes[4];
+	unsigned char exactLengthBytes[4];
+	unsigned char exactMidBytesLength[4];
+	unsigned char realPrecisionBytes[8];
+	unsigned char reservedValueBytes[4];
+	
+	unsigned char medianValueBytes[4];
+	
+	unsigned char segment_sizeBytes[4];
+	unsigned char pwrErrBoundBytes_sizeBytes[4];
+	unsigned char max_quant_intervals_Bytes[4];	
+	
+	for(i = 0;i<3;i++)//3
+		bytes[k++] = versionNumber[i];
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = dsLengthBytes[i];
+
+	bytes[k++] = sameByte;						//1
+
+	intToBytes_bigEndian(max_quant_intervals_Bytes, conf_params->max_quant_intervals);
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = max_quant_intervals_Bytes[i];
+
+	if(errorBoundMode==PW_REL)
+	{
+		bytes[k++] = tdps->radExpo; //1 byte			
+		
+		intToBytes_bigEndian(segment_sizeBytes, segment_size);
+		for(i = 0;i<4;i++)//4
+			bytes[k++] = segment_sizeBytes[i];				
+			
+		intToBytes_bigEndian(pwrErrBoundBytes_sizeBytes, tdps->pwrErrBoundBytes_size);
+		for(i = 0;i<4;i++)//4
+			bytes[k++] = pwrErrBoundBytes_sizeBytes[i];					
+	}
+	
+	intToBytes_bigEndian(intervalsBytes, tdps->intervals);
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = intervalsBytes[i];	
+
+	floatToBytes(medianValueBytes, tdps->medianValue);
+	for (i = 0; i < 4; i++)// 4
+		bytes[k++] = medianValueBytes[i];		
+
+	bytes[k++] = tdps->reqLength; //1 byte
+
+	floatToBytes(realPrecisionBytes, tdps->realPrecision);
+	for (i = 0; i < 8; i++)// 8
+		bytes[k++] = realPrecisionBytes[i];
+
+	intToBytes_bigEndian(typeArrayLengthBytes, tdps->typeArray_size);
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = typeArrayLengthBytes[i];
+
+	intToBytes_bigEndian(rTypeLengthBytes, tdps->rtypeArray_size);
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = rTypeLengthBytes[i];
+
+	intToBytes_bigEndian(exactLengthBytes, tdps->exactDataNum);
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = exactLengthBytes[i];
+
+	intToBytes_bigEndian(exactMidBytesLength, tdps->exactMidBytes_size);
+	for(i = 0;i<4;i++)//4
+		bytes[k++] = exactMidBytesLength[i];
+
+	floatToBytes(reservedValueBytes, tdps->reservedValue);
+	for (i = 0; i < 4; i++)// 4
+		bytes[k++] = reservedValueBytes[i];
+
+	memcpy(&(bytes[k]), tdps->rtypeArray, tdps->rtypeArray_size);
+	k += tdps->rtypeArray_size;
+	memcpy(&(bytes[k]), tdps->typeArray, tdps->typeArray_size);
+	k += tdps->typeArray_size;
+	if(errorBoundMode==PW_REL)
+	{
+		memcpy(&(bytes[k]), tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size);
+		k += tdps->pwrErrBoundBytes_size;
+	}
+	memcpy(&(bytes[k]), tdps->leadNumArray, tdps->leadNumArray_size);
+	k += tdps->leadNumArray_size;
+	memcpy(&(bytes[k]), tdps->exactMidBytes, tdps->exactMidBytes_size);
+	k += tdps->exactMidBytes_size;
+	if(tdps->residualMidBits!=NULL)
+	{
+		memcpy(&(bytes[k]), tdps->residualMidBits, tdps->residualMidBits_size);
+		k += tdps->residualMidBits_size;
+	}	
+}
+
+//convert TightDataPointStorageD to bytes...
+void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** bytes, int *size)
+{
+	int i, k = 0;
+	unsigned char dsLengthBytes[4];
 	
 	intToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//4
 	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
@@ -1463,12 +1638,10 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 	}
 	else if (tdps->rtypeArray == NULL)
 	{
-		int pwrErrBoundBytes_size = 0;
 		int residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;
 		int segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
 		if(errorBoundMode==PW_REL)
 		{			
-			pwrErrBoundBytes_size = tdps->pwrErrBoundBytes_size;
 			segmentL = 4;
 			radExpoL = 1;
 			pwrBoundArrayL = 4;
@@ -1476,93 +1649,20 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 
 		int totalByteLength = 3 + 4 + 1 + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 4 + 1 + 8 + 4 + 4 + 4  
 				+ tdps->typeArray_size + tdps->leadNumArray_size 
-				+ tdps->exactMidBytes_size + residualMidBitsLength + pwrErrBoundBytes_size;
+				+ tdps->exactMidBytes_size + residualMidBitsLength + tdps->pwrErrBoundBytes_size;
 
 		*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
 
-		for(i = 0;i<3;i++)//3 bytes
-			(*bytes)[k++] = versionNumber[i];
-		for(i = 0;i<4;i++)//4 bytes
-			(*bytes)[k++] = dsLengthBytes[i];
-			
-		(*bytes)[k++] = sameByte;	//1	byte		
-		
-		intToBytes_bigEndian(max_quant_intervals_Bytes, conf_params->max_quant_intervals);
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = max_quant_intervals_Bytes[i];		
-		
-		if(errorBoundMode==PW_REL)
-		{
-			(*bytes)[k++] = tdps->radExpo; //1 byte			
-			
-			intToBytes_bigEndian(segment_sizeBytes, segment_size);
-			for(i = 0;i<4;i++)//4
-				(*bytes)[k++] = segment_sizeBytes[i];				
-				
-			intToBytes_bigEndian(pwrErrBoundBytes_sizeBytes, tdps->pwrErrBoundBytes_size);
-			for(i = 0;i<4;i++)//4
-				(*bytes)[k++] = pwrErrBoundBytes_sizeBytes[i];					
-		}
-		
-		intToBytes_bigEndian(intervalsBytes, tdps->intervals);
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = intervalsBytes[i];			
-		
-		floatToBytes(medianValueBytes, tdps->medianValue);
-		for (i = 0; i < 4; i++)// 4
-			(*bytes)[k++] = medianValueBytes[i];		
-
-		(*bytes)[k++] = tdps->reqLength; //1 byte
-
-		if(errorBoundMode==PW_REL)
-			doubleToBytes(realPrecisionBytes, pw_relBoundRatio);
-		else
-			doubleToBytes(realPrecisionBytes, tdps->realPrecision);
-
-		for (i = 0; i < 8; i++)// 8
-			(*bytes)[k++] = realPrecisionBytes[i];			
-
-		intToBytes_bigEndian(typeArrayLengthBytes, tdps->typeArray_size);
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = typeArrayLengthBytes[i];
-
-		intToBytes_bigEndian(exactLengthBytes, tdps->exactDataNum);
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = exactLengthBytes[i];
-
-		intToBytes_bigEndian(exactMidBytesLength, tdps->exactMidBytes_size);
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = exactMidBytesLength[i];
-
-		memcpy(&((*bytes)[k]), tdps->typeArray, tdps->typeArray_size);
-		k += tdps->typeArray_size;
-		if(errorBoundMode==PW_REL)
-		{
-			memcpy(&((*bytes)[k]), tdps->pwrErrBoundBytes, pwrErrBoundBytes_size);
-			k += pwrErrBoundBytes_size;
-		}
-
-		memcpy(&((*bytes)[k]), tdps->leadNumArray, tdps->leadNumArray_size);
-		k += tdps->leadNumArray_size;
-		memcpy(&((*bytes)[k]), tdps->exactMidBytes, tdps->exactMidBytes_size);
-		k += tdps->exactMidBytes_size;
-
-		if(tdps->residualMidBits!=NULL)
-		{
-			memcpy(&((*bytes)[k]), tdps->residualMidBits, tdps->residualMidBits_size);
-			k += tdps->residualMidBits_size;
-		}
+		convertTDPStoBytes_float(tdps, *bytes, dsLengthBytes, sameByte);
 		
 		*size = totalByteLength;
 	}
 	else //the case with reserved value
 	{
-		int pwrErrBoundBytes_size = 0;
 		int residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;		
 		int segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
 		if(errorBoundMode==PW_REL)
 		{
-			pwrErrBoundBytes_size = tdps->pwrErrBoundBytes_size;
 			segmentL = 4;
 			radExpoL = 1;
 			pwrBoundArrayL = 4;
@@ -1570,7 +1670,7 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 
 		int totalByteLength = 3 + 4 + 1 + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 4 + 1 + 8 + 4 + 4 + 4 + 4 + 4 + tdps->rtypeArray_size
 				+ tdps->typeArray_size + tdps->leadNumArray_size
-				+ tdps->exactMidBytes_size + residualMidBitsLength + pwrErrBoundBytes_size;
+				+ tdps->exactMidBytes_size + residualMidBitsLength + tdps->pwrErrBoundBytes_size;
 
 		sameByte = (unsigned char) (sameByte | 0x08); // 00001000, the 4th bit
 		// denotes whether it is
@@ -1581,83 +1681,83 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 
 		*bytes = (unsigned char*)malloc(sizeof(unsigned char)*totalByteLength);
 
-		for(i = 0;i<3;i++)//3
-			(*bytes)[k++] = versionNumber[i];
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = dsLengthBytes[i];
-
-		(*bytes)[k++] = sameByte;						//1
-
-		intToBytes_bigEndian(max_quant_intervals_Bytes, conf_params->max_quant_intervals);
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = max_quant_intervals_Bytes[i];
-
-		if(errorBoundMode==PW_REL)
-		{
-			(*bytes)[k++] = tdps->radExpo; //1 byte			
-			
-			intToBytes_bigEndian(segment_sizeBytes, segment_size);
-			for(i = 0;i<4;i++)//4
-				(*bytes)[k++] = segment_sizeBytes[i];				
-				
-			intToBytes_bigEndian(pwrErrBoundBytes_sizeBytes, tdps->pwrErrBoundBytes_size);
-			for(i = 0;i<4;i++)//4
-				(*bytes)[k++] = pwrErrBoundBytes_sizeBytes[i];					
-		}
+		convertTDPStoBytes_float_reserve(tdps, *bytes, dsLengthBytes, sameByte);
 		
-		intToBytes_bigEndian(intervalsBytes, tdps->intervals);
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = intervalsBytes[i];	
+		*size = totalByteLength;
+	}
+}
 
-		floatToBytes(medianValueBytes, tdps->medianValue);
-		for (i = 0; i < 4; i++)// 4
-			(*bytes)[k++] = medianValueBytes[i];		
+void convertTDPStoFlatBytes_float_args(TightDataPointStorageF *tdps, unsigned char* bytes, int *size)
+{
+	int i, k = 0;
+	unsigned char dsLengthBytes[4];
+	
+	intToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//4
+	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
+	sameByte = sameByte | (szMode << 1);
+	if(tdps->isLossless)
+		sameByte = (unsigned char) (sameByte | 0x10);
+	if(errorBoundMode==PW_REL)
+		sameByte = (unsigned char) (sameByte | 0x20); // 00100000, the 5th bit
 
-		(*bytes)[k++] = tdps->reqLength; //1 byte
+	if(tdps->allSameData==1)
+	{
+		int totalByteLength = 3 + 4 + 1 + tdps->exactMidBytes_size;
+		//*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
 
-		floatToBytes(realPrecisionBytes, tdps->realPrecision);
-		for (i = 0; i < 8; i++)// 8
-			(*bytes)[k++] = realPrecisionBytes[i];
+		for (i = 0; i < 3; i++)//3
+			bytes[k++] = versionNumber[i];
+		for (i = 0; i < 4; i++)
+			bytes[k++] = dsLengthBytes[i];
+		bytes[k++] = sameByte;
+		for (i = 0; i < tdps->exactMidBytes_size; i++)
+			bytes[k++] = tdps->exactMidBytes[i];
 
-		intToBytes_bigEndian(typeArrayLengthBytes, tdps->typeArray_size);
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = typeArrayLengthBytes[i];
+		*size = totalByteLength;
+	}
+	else if (tdps->rtypeArray == NULL)
+	{
+		int residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;
+		int segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
+		if(errorBoundMode==PW_REL)
+		{			
+			segmentL = 4;
+			radExpoL = 1;
+			pwrBoundArrayL = 4;
+		}
 
-		intToBytes_bigEndian(rTypeLengthBytes, tdps->rtypeArray_size);
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = rTypeLengthBytes[i];
+		int totalByteLength = 3 + 4 + 1 + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 4 + 1 + 8 + 4 + 4 + 4  
+				+ tdps->typeArray_size + tdps->leadNumArray_size 
+				+ tdps->exactMidBytes_size + residualMidBitsLength + tdps->pwrErrBoundBytes_size;
 
-		intToBytes_bigEndian(exactLengthBytes, tdps->exactDataNum);
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = exactLengthBytes[i];
-
-		intToBytes_bigEndian(exactMidBytesLength, tdps->exactMidBytes_size);
-		for(i = 0;i<4;i++)//4
-			(*bytes)[k++] = exactMidBytesLength[i];
-
-		floatToBytes(reservedValueBytes, tdps->reservedValue);
-		for (i = 0; i < 4; i++)// 4
-			(*bytes)[k++] = reservedValueBytes[i];
-
-		memcpy(&((*bytes)[k]), tdps->rtypeArray, tdps->rtypeArray_size);
-		k += tdps->rtypeArray_size;
-		memcpy(&((*bytes)[k]), tdps->typeArray, tdps->typeArray_size);
-		k += tdps->typeArray_size;
+		convertTDPStoBytes_float(tdps, bytes, dsLengthBytes, sameByte);
+		
+		*size = totalByteLength;
+	}
+	else //the case with reserved value
+	{
+		int residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;		
+		int segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
 		if(errorBoundMode==PW_REL)
 		{
-			memcpy(&((*bytes)[k]), tdps->pwrErrBoundBytes, pwrErrBoundBytes_size);
-			k += pwrErrBoundBytes_size;
-		}
-		memcpy(&((*bytes)[k]), tdps->leadNumArray, tdps->leadNumArray_size);
-		k += tdps->leadNumArray_size;
-		memcpy(&((*bytes)[k]), tdps->exactMidBytes, tdps->exactMidBytes_size);
-		k += tdps->exactMidBytes_size;
-		if(tdps->residualMidBits!=NULL)
-		{
-			memcpy(&((*bytes)[k]), tdps->residualMidBits, tdps->residualMidBits_size);
-			k += tdps->residualMidBits_size;
+			segmentL = 4;
+			radExpoL = 1;
+			pwrBoundArrayL = 4;
 		}
 
+		int totalByteLength = 3 + 4 + 1 + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 4 + 1 + 8 + 4 + 4 + 4 + 4 + 4 + tdps->rtypeArray_size
+				+ tdps->typeArray_size + tdps->leadNumArray_size
+				+ tdps->exactMidBytes_size + residualMidBitsLength + tdps->pwrErrBoundBytes_size;
+
+		sameByte = (unsigned char) (sameByte | 0x08); // 00001000, the 4th bit
+		// denotes whether it is
+		// with "reserved value"
+		
+		if(errorBoundMode==PW_REL)
+			sameByte = (unsigned char) (sameByte | 0x10); // 00001000, the 5th bit
+
+		convertTDPStoBytes_float_reserve(tdps, bytes, dsLengthBytes, sameByte);
+		
 		*size = totalByteLength;
 	}
 }

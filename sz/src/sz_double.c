@@ -164,10 +164,9 @@ unsigned int optimize_intervals_double_3D(double *oriData, int r1, int r2, int r
 	return powerOf2;
 }
 
-void SZ_compress_args_double_NoCkRngeNoGzip_1D(unsigned char** newByteData, double *oriData, 
-int dataLength, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d)
+TightDataPointStorageD* SZ_compress_double_1D_MDQ(double *oriData, 
+int dataLength, double realPrecision, double valueRangeSize, double medianValue_d)
 {
-	SZ_Reset();
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 		quantization_intervals = optimize_intervals_double_1D(oriData, dataLength, realPrecision);
@@ -277,8 +276,6 @@ int dataLength, double realPrecision, int *outSize, double valueRangeSize, doubl
 		listAdd_double(last3CmprsData, vce->data);
 	}//end of for
 		
-//	char* expSegmentsInBytes;
-//	int expSegmentsInBytes_size = convertESCToBytes(esc, &expSegmentsInBytes);
 	int exactDataNum = exactLeadNumArray->size;
 	
 	TightDataPointStorageD* tdps;
@@ -298,55 +295,59 @@ int dataLength, double realPrecision, int *outSize, double valueRangeSize, doubl
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
-	
-	//free_ExpSegmentConstructor(esc);
-		
-	//TODO: return bytes....
-	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
-
-	int doubleSize = sizeof(double);
-	if(*outSize>dataLength*doubleSize)
-	{
-		int k = 0, i;
-		tdps->isLossless = 1;
-		int totalByteLength = 3 + 4 + 1 + doubleSize*dataLength;
-		*newByteData = (unsigned char*)malloc(totalByteLength);
-		
-		unsigned char dsLengthBytes[4];
-		intToBytes_bigEndian(dsLengthBytes, dataLength);//4
-		for (i = 0; i < 3; i++)//3
-			(*newByteData)[k++] = versionNumber[i];
-		for (i = 0; i < 4; i++)//4
-			(*newByteData)[k++] = dsLengthBytes[i];
-		(*newByteData)[k++] = 16;	//=00010000	
-
-		if(sysEndianType==BIG_ENDIAN_SYSTEM)
-			memcpy((*newByteData)+8, oriData, dataLength*doubleSize);
-		else
-		{
-			unsigned char* p = (*newByteData)+8;
-			for(i=0;i<dataLength;i++,p+=doubleSize)
-				doubleToBytes(p, oriData[i]);
-		}
-		*outSize = totalByteLength;
-	}
-
-//	free_DBA(exactMidByteArray);	
-	
 	free(vce);
-	free(lce);
-	free_TightDataPointStorageD(tdps);	
-	free(exactMidByteArray);
+	free(lce);	
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);	
+	
+	return tdps;	
 }
 
-/**
- * 
- * Note: @r1 is high dimension
- * 		 @r2 is low dimension 
- * */
-void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, double *oriData, int r1, int r2, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d)
+void SZ_compress_args_double_StoreOriData(double* oriData, int dataLength, TightDataPointStorageD* tdps, 
+unsigned char** newByteData, int *outSize)
 {
-	SZ_Reset();	
+	int doubleSize = sizeof(double);
+	int k = 0, i;
+	tdps->isLossless = 1;
+	int totalByteLength = 3 + 4 + 1 + doubleSize*dataLength;
+	*newByteData = (unsigned char*)malloc(totalByteLength);
+	
+	unsigned char dsLengthBytes[4];
+	intToBytes_bigEndian(dsLengthBytes, dataLength);//4
+	for (i = 0; i < 3; i++)//3
+		(*newByteData)[k++] = versionNumber[i];
+	for (i = 0; i < 4; i++)//4
+		(*newByteData)[k++] = dsLengthBytes[i];
+	(*newByteData)[k++] = 16;	//=00010000	
+
+	if(sysEndianType==BIG_ENDIAN_SYSTEM)
+		memcpy((*newByteData)+8, oriData, dataLength*doubleSize);
+	else
+	{
+		unsigned char* p = (*newByteData)+8;
+		for(i=0;i<dataLength;i++,p+=doubleSize)
+			doubleToBytes(p, oriData[i]);
+	}
+	*outSize = totalByteLength;
+}
+
+
+void SZ_compress_args_double_NoCkRngeNoGzip_1D(unsigned char** newByteData, double *oriData, 
+int dataLength, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d)
+{
+	SZ_Reset();
+
+	TightDataPointStorageD* tdps = SZ_compress_double_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_d);
+
+	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
+	
+	if(*outSize>dataLength*sizeof(double))
+		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+	
+	free_TightDataPointStorageD(tdps);	
+}
+
+TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, int r1, int r2, double realPrecision, double valueRangeSize, double medianValue_d)
+{
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
@@ -558,24 +559,36 @@ void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, doub
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	free(type);
-	
-	//free_ExpSegmentConstructor(esc);
-		
-	//TODO: return bytes....
-	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
-
-//	free_DBA(exactMidByteArray);	
-	
+	free(type);	
 	free(vce);
-	free(lce);
-	free_TightDataPointStorageD(tdps);
-	free(exactMidByteArray);	
+	free(lce);	
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
+	
+	return tdps;
 }
 
-void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, double *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d)
+/**
+ * 
+ * Note: @r1 is high dimension
+ * 		 @r2 is low dimension 
+ * */
+void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, double *oriData, int r1, int r2, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d)
 {
 	SZ_Reset();	
+
+	TightDataPointStorageD* tdps = SZ_compress_double_2D_MDQ(oriData, r1, r2, realPrecision, valueRangeSize, medianValue_d);
+
+	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
+	
+	int dataLength = r1*r2;
+	if(*outSize>dataLength*sizeof(double))
+		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);	
+	
+	free_TightDataPointStorageD(tdps);
+}
+
+TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, int r1, int r2, int r3, double realPrecision, double valueRangeSize, double medianValue_d)
+{
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
@@ -757,7 +770,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 	for (k = 1; k < r1; k++)
 	{
 		/* Process Row-0 data 0*/
-		index = k*r2*r3;
+		index = k*r23;
 		pred1D = P1[0];
 		diff = spaceFillingValue[index] - pred1D;
 
@@ -785,7 +798,8 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 	    /* Process Row-0 data 1 --> data r3-1 */
 		for (j = 1; j < r3; j++)
 		{
-			index = k*r2*r3+j;
+			//index = k*r2*r3+j;
+			index ++;
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 			diff = spaceFillingValue[index] - pred2D;
 
@@ -815,7 +829,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 		for (i = 1; i < r2; i++)
 		{
 			/* Process Row-i data 0 */
-			index = k*r2*r3 + i*r3;
+			index = k*r23 + i*r3;
 			index2D = i*r3;
 			pred2D = P0[index2D-r3] + P1[index2D] - P1[index2D-r3];
 			diff = spaceFillingValue[index] - pred2D;
@@ -843,7 +857,8 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 			/* Process Row-i data 1 --> data r3-1 */
 			for (j = 1; j < r3; j++)
 			{
-				index = k*r2*r3 + i*r3 + j;
+				//index = k*r2*r3 + i*r3 + j;
+				index ++;
 				index2D = i*r3 + j;
 				pred3D = P0[index2D-1] + P0[index2D-r3]+ P1[index2D] - P0[index2D-r3-1] - P1[index2D-r3] - P1[index2D-1] + P1[index2D-r3-1];
 				diff = spaceFillingValue[index] - pred3D;
@@ -900,18 +915,27 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
+	free(vce);
+	free(lce);	
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);	
+	
+	return tdps;	
+}
 
-	//free_ExpSegmentConstructor(esc);
 
-	//TODO: return bytes....
+void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, double *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d)
+{
+	SZ_Reset();	
+
+	TightDataPointStorageD* tdps = SZ_compress_double_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_d);
+
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
 
-//	free_DBA(exactMidByteArray);
+	int dataLength = r1*r2*r3;
+	if(*outSize>dataLength*sizeof(double))
+		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
 
-	free(vce);
-	free(lce);
 	free_TightDataPointStorageD(tdps);
-	free(exactMidByteArray);
 }
 
 void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *oriData, int dataLength, int *outSize)
@@ -940,6 +964,15 @@ void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *or
 	//memcpy(*newByteData, tmpByteData, 16);
 	*outSize = 16;
 	free_TightDataPointStorageD(tdps);	
+}
+
+//TODO
+int SZ_compress_args_double_subblock(unsigned char* compressedBytes, double *oriData, 
+int r5, int r4, int r3, int r2, int r1, 
+int R5, int R4, int R3, int R2, int R1, 
+int *outSize, int errBoundMode, double absErr_Bound, double rel_BoundRatio)
+{
+	
 }
 
 int SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData, 

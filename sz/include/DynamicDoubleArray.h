@@ -25,7 +25,7 @@ void new_DDA(DynamicDoubleArray **dda, int cap);
 void convertDDAtoDoubles(DynamicDoubleArray *dba, double **data);
 void free_DDA(DynamicDoubleArray *dda);
 double getDDA_Data(DynamicDoubleArray *dda, int pos);
-void addDDA_Data(DynamicDoubleArray *dda, int value);
+void addDDA_Data(DynamicDoubleArray *dda, double value);
 
 #ifdef __cplusplus
 }

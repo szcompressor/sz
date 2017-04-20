@@ -45,7 +45,7 @@ double getDDA_Data(DynamicDoubleArray *dda, int pos)
 	return dda->array[pos];
 }
 
-void addDDA_Data(DynamicDoubleArray *dda, int value)
+void addDDA_Data(DynamicDoubleArray *dda, double value)
 {
 	if(dda->size==dda->capacity)
 	{

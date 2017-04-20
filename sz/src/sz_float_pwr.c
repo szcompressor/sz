@@ -1,8 +1,9 @@
 /**
- *  @file sz_float.c
+ *  @file sz_float_pwr.c
  *  @author Sheng Di and Dingwen Tao
  *  @date Aug, 2016
  *  @brief SZ_Init, Compression and Decompression functions
+ * This file contains the compression/decompression functions related to point-wise relative errors
  *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
  */

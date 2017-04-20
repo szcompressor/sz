@@ -45,7 +45,7 @@ float getDFA_Data(DynamicFloatArray *dfa, int pos)
 	return dfa->array[pos];
 }
 
-void addDFA_Data(DynamicFloatArray *dfa, int value)
+void addDFA_Data(DynamicFloatArray *dfa, float value)
 {
 	if(dfa->size==dfa->capacity)
 	{

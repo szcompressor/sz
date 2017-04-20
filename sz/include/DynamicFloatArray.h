@@ -25,7 +25,7 @@ void new_DFA(DynamicFloatArray **dfa, int cap);
 void convertDFAtoFloats(DynamicFloatArray *dfa, float **data);
 void free_DFA(DynamicFloatArray *dfa);
 float getDFA_Data(DynamicFloatArray *dfa, int pos);
-void addDFA_Data(DynamicFloatArray *dfa, int value);
+void addDFA_Data(DynamicFloatArray *dfa, float value);
 
 #ifdef __cplusplus
 }

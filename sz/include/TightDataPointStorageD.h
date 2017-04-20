@@ -75,7 +75,12 @@ void new_TightDataPointStorageD(TightDataPointStorageD **this,
 		unsigned char* resiBitLength, int resiBitLengthSize, 
 		double realPrecision, double medianValue, char reqLength, unsigned int intervals, 
 		unsigned char* pwrErrBoundBytes, int pwrErrBoundBytes_size, unsigned char radExpo);
+
+void convertTDPStoBytes_double(TightDataPointStorageD* tdps, unsigned char* bytes, unsigned char* dsLengthBytes, unsigned char sameByte);
+void convertTDPStoBytes_double_reserve(TightDataPointStorageD* tdps, unsigned char* bytes, unsigned char* dsLengthBytes, unsigned char sameByte);
 void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char** bytes, int *size);
+void convertTDPStoFlatBytes_double_args(TightDataPointStorageD *tdps, unsigned char* bytes, int *size);
+
 void free_TightDataPointStorageD(TightDataPointStorageD *tdps);
 
 #ifdef __cplusplus

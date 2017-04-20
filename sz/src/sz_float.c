@@ -162,10 +162,9 @@ unsigned int optimize_intervals_float_3D(float *oriData, int r1, int r2, int r3,
 	return powerOf2;
 }
 
-void SZ_compress_args_float_NoCkRngeNoGzip_1D(unsigned char** newByteData, float *oriData, 
-int dataLength, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
+TightDataPointStorageF* SZ_compress_float_1D_MDQ(float *oriData, 
+int dataLength, double realPrecision, float valueRangeSize, float medianValue_f)
 {
-	SZ_Reset();	
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 		quantization_intervals = optimize_intervals_float_1D(oriData, dataLength, realPrecision);
@@ -313,59 +312,59 @@ int dataLength, double realPrecision, int *outSize, float valueRangeSize, float 
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	free(type);
+	free(type);	
+	free(vce);
+	free(lce);	
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
 	
-	//free_ExpSegmentConstructor(esc);
-		
+	return tdps;
+}
+
+void SZ_compress_args_float_StoreOriData(float* oriData, int dataLength, TightDataPointStorageF* tdps, 
+unsigned char** newByteData, int *outSize)
+{
+	int floatSize=sizeof(float);	
+	int k = 0, i;
+	tdps->isLossless = 1;
+	int totalByteLength = 3 + 4 + 1 + floatSize*dataLength;
+	*newByteData = (unsigned char*)malloc(totalByteLength);
+	
+	unsigned char dsLengthBytes[4];
+	intToBytes_bigEndian(dsLengthBytes, dataLength);//4
+	for (i = 0; i < 3; i++)//3
+		(*newByteData)[k++] = versionNumber[i];
+	for (i = 0; i < 4; i++)//4
+		(*newByteData)[k++] = dsLengthBytes[i];
+	(*newByteData)[k++] = 16;	//=00010000	
+	
+	if(sysEndianType==BIG_ENDIAN_SYSTEM)
+		memcpy((*newByteData)+8, oriData, dataLength*floatSize);
+	else
+	{
+		unsigned char* p = (*newByteData)+8;
+		for(i=0;i<dataLength;i++,p+=floatSize)
+			floatToBytes(p, oriData[i]);
+	}
+	*outSize = totalByteLength;
+}
+
+void SZ_compress_args_float_NoCkRngeNoGzip_1D(unsigned char** newByteData, float *oriData, 
+int dataLength, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
+{
+	SZ_Reset();	
+	TightDataPointStorageF* tdps = SZ_compress_float_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_f);
+			
 	//TODO: return bytes....
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 	
-	int floatSize=sizeof(float);
-	if(*outSize>dataLength*floatSize)
-	{
-		int k = 0, i;
-		tdps->isLossless = 1;
-		int totalByteLength = 3 + 4 + 1 + floatSize*dataLength;
-		*newByteData = (unsigned char*)malloc(totalByteLength);
-		
-		unsigned char dsLengthBytes[4];
-		intToBytes_bigEndian(dsLengthBytes, dataLength);//4
-		for (i = 0; i < 3; i++)//3
-			(*newByteData)[k++] = versionNumber[i];
-		for (i = 0; i < 4; i++)//4
-			(*newByteData)[k++] = dsLengthBytes[i];
-		(*newByteData)[k++] = 16;	//=00010000	
-		
-		if(sysEndianType==BIG_ENDIAN_SYSTEM)
-			memcpy((*newByteData)+8, oriData, dataLength*floatSize);
-		else
-		{
-			unsigned char* p = (*newByteData)+8;
-			for(i=0;i<dataLength;i++,p+=floatSize)
-				floatToBytes(p, oriData[i]);
-		}
-		*outSize = totalByteLength;
-	}
+	if(*outSize>dataLength*sizeof(float))
+		SZ_compress_args_float_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
 	
-//	TightDataPointStorageF* tdps2;
-//	new_TightDataPointStorageF_fromFlatBytes(&tdps2, *newByteData, outSize);
-
-//	free_DBA(exactMidByteArray);	
-	
-	free(vce);
-	free(lce);
 	free_TightDataPointStorageF(tdps);
-	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
 }
 
-/**
- * 
- * Note: @r1 is high dimension
- * 		 @r2 is low dimension 
- * */
-void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float *oriData, int r1, int r2, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
+TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, int r1, int r2, double realPrecision, float valueRangeSize, float medianValue_f)
 {
-	SZ_Reset();	
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
@@ -572,27 +571,35 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
-	
-	//free_ExpSegmentConstructor(esc);
-		
-	//TODO: return bytes....
-	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
-	
-//	TightDataPointStorageF* tdps2;
-//	new_TightDataPointStorageF_fromFlatBytes(&tdps2, *newByteData, outSize);
-
-	//free_DBA(exactMidByteArray);	
-	
 	free(vce);
 	free(lce);
-	free_TightDataPointStorageF(tdps);	
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
+	
+	return tdps;	
 }
 
-void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
+/**
+ * 
+ * Note: @r1 is high dimension
+ * 		 @r2 is low dimension 
+ * */
+void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float *oriData, int r1, int r2, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
 {
 	SZ_Reset();	
+		
+	TightDataPointStorageF* tdps = SZ_compress_float_2D_MDQ(oriData, r1, r2, realPrecision, valueRangeSize, medianValue_f);
 
+	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
+
+	int dataLength = r1*r2;
+	if(*outSize>dataLength*sizeof(float))
+		SZ_compress_args_float_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+	
+	free_TightDataPointStorageF(tdps);	
+}
+
+TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, int r1, int r2, int r3, double realPrecision, float valueRangeSize, float medianValue_f)
+{
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
@@ -772,7 +779,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 	for (k = 1; k < r1; k++)
 	{
 		/* Process Row-0 data 0*/
-		index = k*r2*r3;		
+		index = k*r23;		
 		pred1D = P1[0];
 		diff = spaceFillingValue[index] - pred1D;
 
@@ -799,7 +806,8 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 	    /* Process Row-0 data 1 --> data r3-1 */
 		for (j = 1; j < r3; j++)
 		{
-			index = k*r2*r3+j;		
+			//index = k*r2*r3+j;		
+			index ++;
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 			diff = spaceFillingValue[index] - pred2D;
 
@@ -831,7 +839,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 		for (i = 1; i < r2; i++)
 		{
 			/* Process Row-i data 0 */
-			index = k*r2*r3 + i*r3;
+			index = k*r23 + i*r3;
 			index2D = i*r3;		
 			pred2D = P0[index2D-r3] + P1[index2D] - P1[index2D-r3];
 			diff = spaceFillingValue[index] - pred2D;
@@ -859,7 +867,10 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 			/* Process Row-i data 1 --> data r3-1 */
 			for (j = 1; j < r3; j++)
 			{
-				index = k*r2*r3 + i*r3 + j;			
+//				if(k==63&&i==43&&j==27)
+//					printf("i=%d\n", i);
+				//index = k*r2*r3 + i*r3 + j;			
+				index ++;
 				index2D = i*r3 + j;
 				pred3D = P0[index2D-1] + P0[index2D-r3]+ P1[index2D] - P0[index2D-r3-1] - P1[index2D-r3] - P1[index2D-1] + P1[index2D-r3-1];
 				diff = spaceFillingValue[index] - pred3D;
@@ -919,14 +930,28 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	free(type);
+	free(type);	
+	free(vce);
+	free(lce);
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
+	
+	return tdps;	
+}
+
+
+void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
+{
+	SZ_Reset();	
+
+	TightDataPointStorageF* tdps = SZ_compress_float_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_f);
 
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 
-	free(vce);
-	free(lce);
+	int dataLength = r1*r2*r3;
+	if(*outSize>dataLength*sizeof(float))
+		SZ_compress_args_float_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+
 	free_TightDataPointStorageF(tdps);
-	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
 }
 
 void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriData, int dataLength, int *outSize)
@@ -997,8 +1022,19 @@ int errBoundMode, double absErr_Bound, double rel_BoundRatio)
 	return status;
 }
 
+//TODO
+int SZ_compress_args_float_subblock(unsigned char* compressedBytes, float *oriData, 
+int r5, int r4, int r3, int r2, int r1, 
+int R5, int R4, int R3, int R2, int R1, 
+int *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
+{
+	
+}
+
+
 int SZ_compress_args_float(unsigned char** newByteData, float *oriData, 
-int r5, int r4, int r3, int r2, int r1, int *outSize, 
+int r5, int r4, int r3, int r2, int r1, 
+int *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
 	int status = SZ_SCES;
