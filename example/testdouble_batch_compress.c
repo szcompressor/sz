@@ -96,10 +96,11 @@ int main(int argc, char * argv[])
         p = p->next;
     }
 
-    printf("done\n");
+    printf("done\n"); 
     
-    free(sz_varset);
-    SZ_Finalize();
+    free(bytes);
+    SZ_freeVarSet(SZ_DESTROY_WHOLE_VARSET);
+    //SZ_Finalize();
     
     return 0;
 }

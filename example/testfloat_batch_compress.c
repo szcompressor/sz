@@ -103,7 +103,6 @@ int main(int argc, char * argv[])
 
     printf("done\n");
     
-    free(sz_varset);
     SZ_Finalize();
     
     return 0;

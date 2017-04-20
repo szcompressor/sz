@@ -90,6 +90,7 @@ host_triplet = @host@
 @FORTRAN_TRUE@	testdouble_decompress$(EXEEXT) \
 @FORTRAN_TRUE@	testfloat_batch_compress$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_batch_compress$(EXEEXT) \
+@FORTRAN_TRUE@	testdouble_batch_f$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_compress_f$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_decompress_f$(EXEEXT)
 subdir = example
@@ -115,6 +116,12 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am__testdouble_batch_f_SOURCES_DIST = testdouble_batch_f.f90
+@FORTRAN_TRUE@am_testdouble_batch_f_OBJECTS =  \
+@FORTRAN_TRUE@	testdouble_batch_f.$(OBJEXT)
+testdouble_batch_f_OBJECTS = $(am_testdouble_batch_f_OBJECTS)
+@FORTRAN_TRUE@testdouble_batch_f_DEPENDENCIES = ../sz/.libs/libsz.a \
+@FORTRAN_TRUE@	../zlib/.libs/libzlib.a
 am_testdouble_compress_OBJECTS = testdouble_compress.$(OBJEXT)
 testdouble_compress_OBJECTS = $(am_testdouble_compress_OBJECTS)
 testdouble_compress_DEPENDENCIES = ../sz/.libs/libsz.a \
@@ -201,13 +208,14 @@ am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
 am__v_FCLD_0 = @echo "  FCLD    " $@;
 am__v_FCLD_1 = 
 SOURCES = $(testdouble_batch_compress_SOURCES) \
-	$(testdouble_compress_SOURCES) \
+	$(testdouble_batch_f_SOURCES) $(testdouble_compress_SOURCES) \
 	$(testdouble_compress_f_SOURCES) \
 	$(testdouble_decompress_SOURCES) \
 	$(testdouble_decompress_f_SOURCES) \
 	$(testfloat_batch_compress_SOURCES) \
 	$(testfloat_compress_SOURCES) $(testfloat_decompress_SOURCES)
 DIST_SOURCES = $(testdouble_batch_compress_SOURCES) \
+	$(am__testdouble_batch_f_SOURCES_DIST) \
 	$(testdouble_compress_SOURCES) \
 	$(am__testdouble_compress_f_SOURCES_DIST) \
 	$(testdouble_decompress_SOURCES) \
@@ -368,6 +376,8 @@ testdouble_compress_SOURCES = testdouble_compress.c
 testdouble_compress_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
 testdouble_decompress_SOURCES = testdouble_decompress.c
 testdouble_decompress_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
+@FORTRAN_TRUE@testdouble_batch_f_SOURCES = testdouble_batch_f.f90
+@FORTRAN_TRUE@testdouble_batch_f_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
 @FORTRAN_TRUE@testdouble_compress_f_SOURCES = testdouble_compress_f.f90
 @FORTRAN_TRUE@testdouble_compress_f_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
 @FORTRAN_TRUE@testdouble_decompress_f_SOURCES = testdouble_decompress_f.f90
@@ -463,6 +473,10 @@ clean-binPROGRAMS:
 testdouble_batch_compress$(EXEEXT): $(testdouble_batch_compress_OBJECTS) $(testdouble_batch_compress_DEPENDENCIES) $(EXTRA_testdouble_batch_compress_DEPENDENCIES) 
 	@rm -f testdouble_batch_compress$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(testdouble_batch_compress_OBJECTS) $(testdouble_batch_compress_LDADD) $(LIBS)
+
+testdouble_batch_f$(EXEEXT): $(testdouble_batch_f_OBJECTS) $(testdouble_batch_f_DEPENDENCIES) $(EXTRA_testdouble_batch_f_DEPENDENCIES) 
+	@rm -f testdouble_batch_f$(EXEEXT)
+	$(AM_V_FCLD)$(FCLINK) $(testdouble_batch_f_OBJECTS) $(testdouble_batch_f_LDADD) $(LIBS)
 
 testdouble_compress$(EXEEXT): $(testdouble_compress_OBJECTS) $(testdouble_compress_DEPENDENCIES) $(EXTRA_testdouble_compress_DEPENDENCIES) 
 	@rm -f testdouble_compress$(EXEEXT)

@@ -77,10 +77,17 @@ MODULE SZ
 		MODULE PROCEDURE SZ_BatchAddVar_d5_Fortran_REAL_K8
 	END INTERFACE SZ_BatchAddVar
 
-
 	INTERFACE SZ_GetVarData
-		MODULE PROCEDURE SZ_GetVarData_Fortran_REAL_K4
-		MODULE PROCEDURE SZ_GetVarData_Fortran_REAL_K8
+		MODULE PROCEDURE SZ_GetVarData_d1_Fortran_REAL_K4
+		MODULE PROCEDURE SZ_GetVarData_d2_Fortran_REAL_K4
+		MODULE PROCEDURE SZ_GetVarData_d3_Fortran_REAL_K4
+		MODULE PROCEDURE SZ_GetVarData_d4_Fortran_REAL_K4
+		MODULE PROCEDURE SZ_GetVarData_d5_Fortran_REAL_K4
+		MODULE PROCEDURE SZ_GetVarData_d1_Fortran_REAL_K8
+		MODULE PROCEDURE SZ_GetVarData_d2_Fortran_REAL_K8
+		MODULE PROCEDURE SZ_GetVarData_d3_Fortran_REAL_K8
+		MODULE PROCEDURE SZ_GetVarData_d4_Fortran_REAL_K8
+		MODULE PROCEDURE SZ_GetVarData_d5_Fortran_REAL_K8								
 	END INTERFACE SZ_GetVarData
 
 	CONTAINS
@@ -98,11 +105,18 @@ MODULE SZ
 		CALL SZ_Finalize_c()
 	END SUBROUTINE SZ_Finalize
 
+	SUBROUTINE SZ_FREE_VARSET(mode)
+		implicit none
+		INTEGER :: mode !0,1,2, or 3
+		
+		CALL SZ_Freevarset_c(mode)
+	END SUBROUTINE SZ_FREE_VARSET
+
 !batch-mode functions
 
 	SUBROUTINE SZ_BatchDelVar(varName, ierr)
 		implicit none
-		CHARACTER(len=128) :: varName
+		CHARACTER(len=*) :: varName
 		INTEGER :: ierr
 		CALL SZ_BatchDelVar_c(varName, len(trim(varName)), ierr)
 	END SUBROUTINE SZ_BatchDelVar
@@ -111,17 +125,22 @@ MODULE SZ
 		implicit none
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		INTEGER(kind=4) :: OutSize
+		INTEGER(kind=4) :: alloSize
+		
+		CALL compute_total_batch_size_c(alloSize)
+		allocate(Bytes(alloSize)) !allocate the largest possible memory
 
 		CALL SZ_Batch_Compress_c(Bytes, OutSize)
 		
 	END SUBROUTINE SZ_Batch_Compress
 
-	SUBROUTINE SZ_Batch_Decompress(Bytes, OutSize)
+	SUBROUTINE SZ_Batch_Decompress(Bytes, OutSize, ierr)
 		implicit none
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		INTEGER(kind=4) :: OutSize
+		INTEGER :: ierr
 
-		CALL SZ_Batch_Decompress_c(Bytes, OutSize)
+		CALL SZ_Batch_Decompress_c(Bytes, OutSize, ierr)
 	END SUBROUTINE SZ_Batch_Decompress
 
 !Compress functions that extract the dimension sizes and call C translation interface (single-precision)
@@ -943,7 +962,7 @@ MODULE SZ
 
 	SUBROUTINE SZ_BatchAddVar_d1_Fortran_REAL_K4(varName, VAR, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
-		CHARACTER(len=128) :: varName
+		CHARACTER(len=*) :: varName
 		REAL(KIND=4), DIMENSION(:) :: VAR
 		INTEGER(kind=4) :: ErrBoundMode, R1
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
@@ -954,7 +973,7 @@ MODULE SZ
 
 	SUBROUTINE SZ_BatchAddVar_d2_Fortran_REAL_K4(varName, VAR, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none		
-		CHARACTER(len=128) :: varName
+		CHARACTER(len=*) :: varName
 		REAL(KIND=4), DIMENSION(:,:) :: VAR
 		INTEGER(kind=4) :: ErrBoundMode, R1, R2
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
@@ -966,7 +985,7 @@ MODULE SZ
 
 	SUBROUTINE SZ_BatchAddVar_d3_Fortran_REAL_K4(varName, VAR, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none		
-		CHARACTER(len=128) :: varName
+		CHARACTER(len=*) :: varName
 		REAL(KIND=4), DIMENSION(:,:,:) :: VAR
 		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
@@ -979,7 +998,7 @@ MODULE SZ
 
 	SUBROUTINE SZ_BatchAddVar_d4_Fortran_REAL_K4(varName, VAR, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
-		CHARACTER(len=128) :: varName
+		CHARACTER(len=*) :: varName
 		REAL(KIND=4), DIMENSION(:,:,:,:) :: VAR
 		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3, R4
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
@@ -993,7 +1012,7 @@ MODULE SZ
 
 	SUBROUTINE SZ_BatchAddVar_d5_Fortran_REAL_K4(varName, VAR, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
-		CHARACTER(len=128) :: varName
+		CHARACTER(len=*) :: varName
 		REAL(KIND=4), DIMENSION(:,:,:,:,:) :: VAR
 		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3, R4, R5
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
@@ -1009,7 +1028,7 @@ MODULE SZ
 !------batch add double
 	SUBROUTINE SZ_BatchAddVar_d1_Fortran_REAL_K8(varName, VAR, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
-		CHARACTER(len=128) :: varName
+		CHARACTER(len=*) :: varName
 		REAL(KIND=8), DIMENSION(:) :: VAR
 		INTEGER(kind=4) :: ErrBoundMode, R1
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
@@ -1020,7 +1039,7 @@ MODULE SZ
 
 	SUBROUTINE SZ_BatchAddVar_d2_Fortran_REAL_K8(varName, VAR, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
-		CHARACTER(len=128) :: varName
+		CHARACTER(len=*) :: varName
 		REAL(KIND=8), DIMENSION(:,:) :: VAR
 		INTEGER(kind=4) :: ErrBoundMode, R1, R2
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
@@ -1032,7 +1051,7 @@ MODULE SZ
 
 	SUBROUTINE SZ_BatchAddVar_d3_Fortran_REAL_K8(varName, VAR, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
-		CHARACTER(len=128) :: varName
+		CHARACTER(len=*) :: varName
 		REAL(KIND=8), DIMENSION(:,:,:) :: VAR
 		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
@@ -1045,7 +1064,7 @@ MODULE SZ
 
 	SUBROUTINE SZ_BatchAddVar_d4_Fortran_REAL_K8(varName, VAR, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
-		CHARACTER(len=128) :: varName
+		CHARACTER(len=*) :: varName
 		REAL(KIND=8), DIMENSION(:,:,:,:) :: VAR
 		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3, R4
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
@@ -1059,7 +1078,7 @@ MODULE SZ
 
 	SUBROUTINE SZ_BatchAddVar_d5_Fortran_REAL_K8(varName, VAR, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
-		CHARACTER(len=128) :: varName
+		CHARACTER(len=*) :: varName
 		REAL(KIND=8), DIMENSION(:,:,:,:,:) :: VAR
 		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3, R4, R5
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
@@ -1072,24 +1091,104 @@ MODULE SZ
 		CALL SZ_batchAddVar_d5_Double(varName, len(trim(varName)), VAR, ErrBoundMode, AbsErrBound, RelBoundRatio, R1, R2, R3, R4, R5)
 	END SUBROUTINE SZ_BatchAddVar_d5_Fortran_REAL_K8
 
-	SUBROUTINE SZ_GetVarData_Fortran_REAL_K4(varName, VAR, R1, R2, R3, R4, R5)
+	SUBROUTINE SZ_GetVarDim(varName, DIMEN, R1, R2, R3, R4, R5)
 		implicit none
-		CHARACTER(len=128), INTENT(IN) :: varName
-		REAL(KIND=4), INTENT(OUT) :: VAR
+		CHARACTER(len=*), INTENT(IN) :: varName
+		INTEGER(kind=4), INTENT(OUT) :: DIMEN
 		INTEGER(kind=4), INTENT(OUT) :: R1, R2, R3, R4, R5
-
-		CALL SZ_getVarData_Float(varName, len(trim(varName)), VAR, R1, R2, R3, R4, R5)
 		
-	END SUBROUTINE SZ_GetVarData_Fortran_REAL_K4
+		CALL SZ_GetVarDim_c(varName, len(trim(varName)), DIMEN, R1, R2, R3, R4, R5)
+		
+	END SUBROUTINE SZ_GetVarDim
 
-	SUBROUTINE SZ_GetVarData_Fortran_REAL_K8(varName, VAR, R1, R2, R3, R4, R5)
+	SUBROUTINE SZ_GetVarData_d1_Fortran_REAL_K4(varName, VAR)
 		implicit none
-		CHARACTER(len=128), INTENT(IN) :: varName
-		REAL(KIND=8), INTENT(OUT) :: VAR
-		INTEGER(kind=4), INTENT(OUT) :: R1, R2, R3, R4, R5
+		CHARACTER(len=*), INTENT(IN) :: varName
+		REAL(KIND=4), DIMENSION(:), allocatable :: VAR
 
-		CALL SZ_getVarData_Double(varName, len(trim(varName)), VAR, R1, R2, R3, R4, R5)
+		CALL SZ_getVarData_Float(varName, len(trim(varName)), VAR)
 		
-	END SUBROUTINE SZ_GetVarData_Fortran_REAL_K8
+	END SUBROUTINE SZ_GetVarData_d1_Fortran_REAL_K4
+	
+	SUBROUTINE SZ_GetVarData_d2_Fortran_REAL_K4(varName, VAR)
+		implicit none
+		CHARACTER(len=*), INTENT(IN) :: varName
+		REAL(KIND=4), DIMENSION(:,:), allocatable :: VAR
+
+		CALL SZ_getVarData_Float(varName, len(trim(varName)), VAR)
+		
+	END SUBROUTINE SZ_GetVarData_d2_Fortran_REAL_K4	
+
+	SUBROUTINE SZ_GetVarData_d3_Fortran_REAL_K4(varName, VAR)
+		implicit none
+		CHARACTER(len=*), INTENT(IN) :: varName
+		REAL(KIND=4), DIMENSION(:,:,:), allocatable :: VAR
+
+		CALL SZ_getVarData_Float(varName, len(trim(varName)), VAR)
+		
+	END SUBROUTINE SZ_GetVarData_d3_Fortran_REAL_K4	
+
+	SUBROUTINE SZ_GetVarData_d4_Fortran_REAL_K4(varName, VAR)
+		implicit none
+		CHARACTER(len=*), INTENT(IN) :: varName
+		REAL(KIND=4), DIMENSION(:,:,:,:), allocatable :: VAR
+
+		CALL SZ_getVarData_Float(varName, len(trim(varName)), VAR)
+		
+	END SUBROUTINE SZ_GetVarData_d4_Fortran_REAL_K4	
+
+	SUBROUTINE SZ_GetVarData_d5_Fortran_REAL_K4(varName, VAR)
+		implicit none
+		CHARACTER(len=*), INTENT(IN) :: varName
+		REAL(KIND=4), DIMENSION(:,:,:,:,:), allocatable :: VAR
+
+		CALL SZ_getVarData_Float(varName, len(trim(varName)), VAR)
+		
+	END SUBROUTINE SZ_GetVarData_d5_Fortran_REAL_K4
+
+	SUBROUTINE SZ_GetVarData_d1_Fortran_REAL_K8(varName, VAR)
+		implicit none
+		CHARACTER(len=*), INTENT(IN) :: varName
+		REAL(KIND=8), DIMENSION(:), allocatable :: VAR
+
+		CALL SZ_getVarData_Double(varName, len(trim(varName)), VAR)
+		
+	END SUBROUTINE SZ_GetVarData_d1_Fortran_REAL_K8
+	
+	SUBROUTINE SZ_GetVarData_d2_Fortran_REAL_K8(varName, VAR)
+		implicit none
+		CHARACTER(len=*), INTENT(IN) :: varName
+		REAL(KIND=8), DIMENSION(:,:), allocatable :: VAR
+
+		CALL SZ_getVarData_Double(varName, len(trim(varName)), VAR)
+		
+	END SUBROUTINE SZ_GetVarData_d2_Fortran_REAL_K8	
+
+	SUBROUTINE SZ_GetVarData_d3_Fortran_REAL_K8(varName, VAR)
+		implicit none
+		CHARACTER(len=*), INTENT(IN) :: varName
+		REAL(KIND=8), DIMENSION(:,:,:), allocatable :: VAR
+
+		CALL SZ_getVarData_Double(varName, len(trim(varName)), VAR)
+		
+	END SUBROUTINE SZ_GetVarData_d3_Fortran_REAL_K8	
+
+	SUBROUTINE SZ_GetVarData_d4_Fortran_REAL_K8(varName, VAR)
+		implicit none
+		CHARACTER(len=*), INTENT(IN) :: varName
+		REAL(KIND=8), DIMENSION(:,:,:,:), allocatable :: VAR
+
+		CALL SZ_getVarData_Double(varName, len(trim(varName)), VAR)
+		
+	END SUBROUTINE SZ_GetVarData_d4_Fortran_REAL_K8	
+
+	SUBROUTINE SZ_GetVarData_d5_Fortran_REAL_K8(varName, VAR)
+		implicit none
+		CHARACTER(len=*), INTENT(IN) :: varName
+		REAL(KIND=8), DIMENSION(:,:,:,:,:), allocatable :: VAR
+
+		CALL SZ_getVarData_Double(varName, len(trim(varName)), VAR)
+		
+	END SUBROUTINE SZ_GetVarData_d5_Fortran_REAL_K8
 
 END MODULE SZ
