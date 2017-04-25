@@ -68,6 +68,11 @@ int main(int argc, char * argv[])
     ZC_endDec(compareResult, solName, decData);
     //ZC_endDec(compareResult, "sz(1E-7)", decData);
  
+    freeDataProperty(dataProperty);
+    freeCompareResult(compareResult);
+    free(data);
+    free(bytes);
+    free(decData);
     printf("done\n");
     
     SZ_Finalize();
