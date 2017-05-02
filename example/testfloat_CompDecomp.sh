@@ -16,7 +16,7 @@ dimSizes="3600 1800"
 for file in $fileList
 do
         echo testfloat_CompDecomp sz.config zc.config "sz($absErrBound)" "$file" $absErrBound "$targetDir/$file" $dimSizes
-        testfloat_CompDecomp sz.config zc.config "sz($absErrBound)" "$file" $absErrBound "$targetDir/$file" $dimSizes
+        ./testfloat_CompDecomp sz.config zc.config "sz($absErrBound)" "$file" $absErrBound "$targetDir/$file" $dimSizes
 done
 
 echo "complete"
