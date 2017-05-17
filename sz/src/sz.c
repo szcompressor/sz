@@ -309,7 +309,6 @@ int e5, int e4, int e3, int e2, int e1)
 	}
 	else if(dataType==SZ_DOUBLE)
 	{
-		unsigned char *newByteData;
 		SZ_compress_args_double_subblock(compressed_bytes, (double *)data, 
 		r5, r4, r3, r2, r1,
 		s5, s4, s3, s2, s1,

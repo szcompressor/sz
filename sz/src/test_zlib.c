@@ -84,6 +84,49 @@ unsigned long zlib_compress2(unsigned char* data, unsigned long dataLength, unsi
     return outSize;
 }
 
+
+unsigned long zlib_compress3(unsigned char* data, unsigned long dataLength, unsigned char* compressBytes, int level)
+{
+	unsigned long outSize;
+
+	z_stream stream = {0};
+    int err;
+
+    stream.next_in = data;
+    stream.avail_in = dataLength;
+#ifdef MAXSEG_64K
+    /* Check for source > 64K on 16-bit machine: */
+    if ((uLong)stream.avail_in != dataLength) return Z_BUF_ERROR;
+#endif
+
+    stream.next_out = compressBytes;
+    stream.avail_out = dataLength;
+    stream.zalloc = (alloc_func)0;
+    stream.zfree = (free_func)0;
+    stream.opaque = (voidpf)0;
+
+    //err = deflateInit(&stream, level); //default  windowBits == 15.
+    int windowBits = 14; //8-15
+    if(szMode==SZ_BEST_COMPRESSION)
+		windowBits = 15;
+
+    err = deflateInit2(&stream, level, Z_DEFLATED, windowBits, DEF_MEM_LEVEL,
+                         Z_DEFAULT_STRATEGY);//Z_FIXED); //Z_DEFAULT_STRATEGY
+    if (err != Z_OK) return err;
+
+    err = deflate(&stream, Z_FINISH);
+    if (err != Z_STREAM_END) {
+        deflateEnd(&stream);
+        return err == Z_OK ? Z_BUF_ERROR : err;
+    }
+
+    err = deflateEnd(&stream);
+
+    outSize = stream.total_out;
+    return outSize;
+}
+
+
 unsigned long zlib_uncompress(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize)
 {
 	unsigned long outSize;
