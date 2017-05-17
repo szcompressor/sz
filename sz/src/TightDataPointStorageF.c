@@ -72,7 +72,7 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 
 	unsigned char sameRByte = flatBytes[index++]; //1
 	int same = sameRByte & 0x01;
-	szMode = (sameRByte & 0x06)>>1;
+	//szMode = (sameRByte & 0x06)>>1;
 	(*this)->isLossless = (sameRByte & 0x10)>>4;
 	int isPW_REL = (sameRByte & 0x20)>>5;
 	int errorBoundMode = ABS;

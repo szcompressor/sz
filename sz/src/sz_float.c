@@ -1266,23 +1266,6 @@ int *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
 			printf("Error: doesn't support 5 dimensions for now.\n");
 			status = SZ_DERR; //dimension error
 		}
-		//Call Gzip to do the further compression.
-		//TODO
-//		if(szMode==SZ_BEST_SPEED)
-//		{
-//			*outSize = tmpOutSize;
-//			*newByteData = tmpByteData;
-//		}
-//		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
-//		{
-//			*outSize = (int)zlib_compress2(tmpByteData, tmpOutSize, newByteData, gzipMode);
-//			free(tmpByteData);
-//		}
-//		else
-//		{
-//			printf("Error: Wrong setting of szMode in the float compression.\n");
-//			status = SZ_MERR; //mode error
-//		}
 	}
 	SZ_ReleaseHuffman();
 	return status;
