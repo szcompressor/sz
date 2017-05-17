@@ -17,6 +17,25 @@
 #include "TightDataPointStorageD.h"
 #include "CompressElement.h"
 
+float computeRangeSize_float(float* oriData, int size, float* valueRangeSize, float* medianValue)
+{
+	int i = 0;
+	float min = oriData[0];
+	float max = min;
+	for(i=1;i<size;i++)
+	{
+		float data = oriData[i];
+		if(min>data)
+			min = data;
+		else if(max<data)
+			max = data;
+	}
+
+	*valueRangeSize = max - min;
+	*medianValue = min + *valueRangeSize/2;
+	return min;
+}
+
 double computeRangeSize_double(double* oriData, int size, double* valueRangeSize, double* medianValue)
 {
 	int i = 0;
@@ -36,24 +55,65 @@ double computeRangeSize_double(double* oriData, int size, double* valueRangeSize
 	return min;
 }
 
-float computeRangeSize_float(float* oriData, int size, float* valueRangeSize, float* medianValue)
+float computeRangeSize_float_subblock(float* oriData, float* valueRangeSize, float* medianValue,
+int r5, int r4, int r3, int r2, int r1,
+int s5, int s4, int s3, int s2, int s1,
+int e5, int e4, int e3, int e2, int e1)
 {
-	int i = 0;
-	float min = oriData[0];
+	int i1, i2, i3, i4, i5;
+	int index_start = s5*(r4*r3*r2*r1) + s4*(r3*r2*r1) + s3*(r2*r1) + s2*r1 + s1;
+	float min = oriData[index_start];
 	float max = min;
-	for(i=1;i<size;i++)
+
+	for (i5 = s5; i5 < e5; i5++)
+	for (i4 = s4; i4 < e4; i4++)
+	for (i3 = s3; i3 < e3; i3++)
+	for (i2 = s2; i2 < e2; i2++)
+	for (i1 = s1; i1 < e1; i1++)
 	{
-		float data = oriData[i];
-		if(min>data)
+		int index = i5*(r4*r3*r2*r1) + i4*(r3*r2*r1) + i3*(r2*r1) + i2*r1 + i1;
+		float data = oriData[index];
+		if (min>data)
 			min = data;
 		else if(max<data)
 			max = data;
 	}
-	
+
 	*valueRangeSize = max - min;
 	*medianValue = min + *valueRangeSize/2;
 	return min;
 }
+
+
+float computeRangeSize_double_subblock(double* oriData, double* valueRangeSize, double* medianValue,
+int r5, int r4, int r3, int r2, int r1,
+int s5, int s4, int s3, int s2, int s1,
+int e5, int e4, int e3, int e2, int e1)
+{
+	int i1, i2, i3, i4, i5;
+	int index_start = s5*(r4*r3*r2*r1) + s4*(r3*r2*r1) + s3*(r2*r1) + s2*r1 + s1;
+	double min = oriData[index_start];
+	double max = min;
+
+	for (i5 = s5; i5 < e5; i5++)
+	for (i4 = s4; i4 < e4; i4++)
+	for (i3 = s3; i3 < e3; i3++)
+	for (i2 = s2; i2 < e2; i2++)
+	for (i1 = s1; i1 < e1; i1++)
+	{
+		int index = i5*(r4*r3*r2*r1) + i4*(r3*r2*r1) + i3*(r2*r1) + i2*r1 + i1;
+		double data = oriData[index];
+		if (min>data)
+			min = data;
+		else if(max<data)
+			max = data;
+	}
+
+	*valueRangeSize = max - min;
+	*medianValue = min + *valueRangeSize/2;
+	return min;
+}
+
 
 double min_d(double a, double b)
 {

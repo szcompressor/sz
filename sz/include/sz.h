@@ -185,6 +185,14 @@ double fabs(double value);
 //dataCompression.c
 double computeRangeSize_double(double* oriData, int size, double* valueRangeSize, double* medianValue);
 float computeRangeSize_float(float* oriData, int size, float* valueRangeSize, float* medianValue);
+float computeRangeSize_double_subblock(double* oriData, double* valueRangeSize, double* medianValue,
+int r5, int r4, int r3, int r2, int r1,
+int s5, int s4, int s3, int s2, int s1,
+int e5, int e4, int e3, int e2, int e1);
+float computeRangeSize_float_subblock(float* oriData, float* valueRangeSize, float* medianValue,
+int r5, int r4, int r3, int r2, int r1,
+int s5, int s4, int s3, int s2, int s1,
+int e5, int e4, int e3, int e2, int e1);
 double min_d(double a, double b);
 double max_d(double a, double b);
 float min_f(float a, float b);
@@ -416,6 +424,25 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, int r1, int r
 void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, double *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, double valueRangeSize, double medianValue_d);
 void SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, double *oriData, int r1, int r2, int r3, 
 int *outSize, double min, double max);
+
+void SZ_compress_args_float_NoCkRngeNoGzip_1D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
+int r1, int s1, int e1);
+void SZ_compress_args_float_NoCkRngeNoGzip_2D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
+int r2, int r1, int s2, int s1, int e2, int e1);
+void SZ_compress_args_float_NoCkRngeNoGzip_3D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
+int r3, int r2, int r1, int s3, int s2, int s1, int e3, int e2, int e1);
+void SZ_compress_args_float_NoCkRngeNoGzip_4D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
+int r4, int r3, int r2, int r1, int s4, int s3, int s2, int s1, int e4, int e3, int e2, int e1);
+
+void SZ_compress_args_double_NoCkRngeNoGzip_1D_subblock(unsigned char* compressedBytes, double *oriData, double realPrecision, int *outSize, double valueRangeSize, double medianValue_f,
+int r1, int s1, int e1);
+void SZ_compress_args_double_NoCkRngeNoGzip_2D_subblock(unsigned char* compressedBytes, double *oriData, double realPrecision, int *outSize, double valueRangeSize, double medianValue_f,
+int r2, int r1, int s2, int s1, int e2, int e1);
+void SZ_compress_args_double_NoCkRngeNoGzip_3D_subblock(unsigned char* compressedBytes, double *oriData, double realPrecision, int *outSize, double valueRangeSize, double medianValue_f,
+int r3, int r2, int r1, int s3, int s2, int s1, int e3, int e2, int e1);
+void SZ_compress_args_double_NoCkRngeNoGzip_4D_subblock(unsigned char* compressedBytes, double *oriData, double realPrecision, int *outSize, double valueRangeSize, double medianValue_f,
+int r4, int r3, int r2, int r1, int s4, int s3, int s2, int s1, int e4, int e3, int e2, int e1);
+
 
 void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriData, int dataLength, int *outSize);
 void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *oriData, int dataLength, int *outSize);

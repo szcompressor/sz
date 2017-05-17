@@ -1022,17 +1022,6 @@ int errBoundMode, double absErr_Bound, double rel_BoundRatio)
 	return status;
 }
 
-//TODO
-int SZ_compress_args_float_subblock(unsigned char* compressedBytes, float *oriData, 
-int r5, int r4, int r3, int r2, int r1, 
-int s5, int s4, int s3, int s2, int s1,
-int e5, int e4, int e3, int e2, int e1,
-int *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
-{
-	
-}
-
-
 int SZ_compress_args_float(unsigned char** newByteData, float *oriData, 
 int r5, int r4, int r3, int r2, int r1, 
 int *outSize, 
@@ -1214,4 +1203,111 @@ void computeReqLength_float(float realPrecision, short radExpo, int* reqLength, 
 		*reqLength = 32;
 		*medianValue = 0;
 	}			
+}
+
+//TODO
+int SZ_compress_args_float_subblock(unsigned char* compressedBytes, float *oriData,
+int r5, int r4, int r3, int r2, int r1,
+int s5, int s4, int s3, int s2, int s1,
+int e5, int e4, int e3, int e2, int e1,
+int *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
+{
+	int status = SZ_SCES;
+	float valueRangeSize = 0, medianValue = 0;
+	float min = computeRangeSize_float_subblock(oriData, &valueRangeSize, &medianValue, r5, r4, r3, r2, r1, s5, s4, s3, s2, s1, e5, e4, e3, e2, e1);
+	float max = min+valueRangeSize;
+
+	double realPrecision = getRealPrecision_float(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
+
+	if(valueRangeSize <= realPrecision)
+	{
+		//TODO
+		//SZ_compress_args_float_withinRange_subblock();
+	}
+	else
+	{
+		if (r2==0)
+		{
+			//TODO
+//			if(errBoundMode==PW_REL)
+//				SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr(&tmpByteData, oriData, r1, &tmpOutSize, min, max);
+//			else
+				SZ_compress_args_float_NoCkRngeNoGzip_1D_subblock(compressedBytes, oriData, realPrecision, outSize, valueRangeSize, medianValue, r1, s1, e1);
+		}
+		else
+		if (r3==0)
+		{
+			//TODO
+//			if(errBoundMode==PW_REL)
+//				SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr(&tmpByteData, oriData, r2, r1, &tmpOutSize, min, max);
+//			else
+				SZ_compress_args_float_NoCkRngeNoGzip_2D_subblock(compressedBytes, oriData, realPrecision, outSize, valueRangeSize, medianValue, r2, r1, s2, s1, e2, e1);
+		}
+		else
+		if (r4==0)
+		{
+			//TODO
+//			if(errBoundMode==PW_REL)
+//				SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr(&tmpByteData, oriData, r3, r2, r1, &tmpOutSize, min, max);
+//			else
+				SZ_compress_args_float_NoCkRngeNoGzip_3D_subblock(compressedBytes, oriData, realPrecision, outSize, valueRangeSize, medianValue, r3, r2, r1, s3, s2, s1, e3, e2, e1);
+		}
+		else
+		if (r5==0)
+		{
+			//TODO
+//			if(errBoundMode==PW_REL)
+//				SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr(&tmpByteData, oriData, r4*r3, r2, r1, &tmpOutSize, min, max);
+//			else
+				SZ_compress_args_float_NoCkRngeNoGzip_4D_subblock(compressedBytes, oriData, realPrecision, outSize, valueRangeSize, medianValue, r4, r3, r2, r1, s4, s3, s2, s1, e4, e3, e2, e1);
+		}
+		else
+		{
+			printf("Error: doesn't support 5 dimensions for now.\n");
+			status = SZ_DERR; //dimension error
+		}
+		//Call Gzip to do the further compression.
+		//TODO
+//		if(szMode==SZ_BEST_SPEED)
+//		{
+//			*outSize = tmpOutSize;
+//			*newByteData = tmpByteData;
+//		}
+//		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
+//		{
+//			*outSize = (int)zlib_compress2(tmpByteData, tmpOutSize, newByteData, gzipMode);
+//			free(tmpByteData);
+//		}
+//		else
+//		{
+//			printf("Error: Wrong setting of szMode in the float compression.\n");
+//			status = SZ_MERR; //mode error
+//		}
+	}
+	SZ_ReleaseHuffman();
+	return status;
+}
+
+void SZ_compress_args_float_NoCkRngeNoGzip_1D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
+int r1, int s1, int e1)
+{
+
+}
+
+void SZ_compress_args_float_NoCkRngeNoGzip_2D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
+int r2, int r1, int s2, int s1, int e2, int e1)
+{
+
+}
+
+void SZ_compress_args_float_NoCkRngeNoGzip_3D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
+int r3, int r2, int r1, int s3, int s2, int s1, int e3, int e2, int e1)
+{
+
+}
+
+void SZ_compress_args_float_NoCkRngeNoGzip_4D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
+int r4, int r3, int r2, int r1, int s4, int s3, int s2, int s1, int e4, int e3, int e2, int e1)
+{
+
 }
