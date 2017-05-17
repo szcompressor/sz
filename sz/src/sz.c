@@ -293,14 +293,16 @@ int SZ_compress_args2(int dataType, void *data, unsigned char* compressed_bytes,
 }
 
 int SZ_compress_args3(int dataType, void *data, unsigned char* compressed_bytes, int *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 
-int r5, int r4, int r3, int r2, int r1, 
-int R5, int R4, int R3, int R2, int R1)
+int r5, int r4, int r3, int r2, int r1,
+int s5, int s4, int s3, int s2, int s1,
+int e5, int e4, int e3, int e2, int e1)
 {
 	if(dataType==SZ_FLOAT)
 	{
 		SZ_compress_args_float_subblock(compressed_bytes, (float *)data, 
-		r5, r4, r3, r2, r1, 
-		R5, R4, R3, R2, R1, 
+		r5, r4, r3, r2, r1,
+		s5, s4, s3, s2, s1,
+		e5, e4, e3, e2, e1,
 		outSize, errBoundMode, absErrBound, relBoundRatio);
 		
 		return SZ_SCES;
@@ -309,8 +311,9 @@ int R5, int R4, int R3, int R2, int R1)
 	{
 		unsigned char *newByteData;
 		SZ_compress_args_double_subblock(compressed_bytes, (double *)data, 
-		r5, r4, r3, r2, r1, 
-		R5, R4, R3, R2, R1, 
+		r5, r4, r3, r2, r1,
+		s5, s4, s3, s2, s1,
+		e5, e4, e3, e2, e1,
 		outSize, errBoundMode, absErrBound, relBoundRatio);
 		
 		return SZ_SCES;

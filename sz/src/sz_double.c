@@ -969,7 +969,8 @@ void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *or
 //TODO
 int SZ_compress_args_double_subblock(unsigned char* compressedBytes, double *oriData, 
 int r5, int r4, int r3, int r2, int r1, 
-int R5, int R4, int R3, int R2, int R1, 
+int s5, int s4, int s3, int s2, int s1,
+int e5, int e4, int e3, int e2, int e1,
 int *outSize, int errBoundMode, double absErr_Bound, double rel_BoundRatio)
 {
 	
