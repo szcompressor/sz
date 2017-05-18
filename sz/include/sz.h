@@ -380,6 +380,15 @@ int r1, int r2, int r3, int R2, int R3, int edgeSize, unsigned char* pwrErrBound
 unsigned int optimize_intervals_double_3D(double *oriData, int r1, int r2, int r3, double realPrecision);
 unsigned int optimize_intervals_double_3D_pwr(double *oriData, int r1, int r2, int r3, int R2, int R3, int edgeSize, double* pwrErrBound);
 
+
+unsigned int optimize_intervals_float_1D_block(float *oriData, double realPrecision, int r1, int s1, int e1);
+unsigned int optimize_intervals_float_2D_block(float *oriData, double realPrecision, int r1, int r2, int s1, int s2, int e1, int e2);
+unsigned int optimize_intervals_float_3D_block(float *oriData, double realPrecision, int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3);
+
+unsigned int optimize_intervals_double_1D_block(double *oriData, double realPrecision, int r1, int s1, int e1);;
+unsigned int optimize_intervals_double_2D_block(double *oriData, double realPrecision, int r1, int r2, int s1, int s2, int e1, int e2);
+unsigned int optimize_intervals_double_3D_block(double *oriData, double realPrecision, int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3);
+
 //void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, int dataLength, double realPrecision, int *outSize);
 int computeBlockEdgeSize(int segmentSize);
 
@@ -448,20 +457,20 @@ int r4, int r3, int r2, int r1, int s4, int s3, int s2, int s1, int e4, int e3, 
 TightDataPointStorageF* SZ_compress_float_1D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
 int r1, int s1, int e1);
 TightDataPointStorageF* SZ_compress_float_2D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
-int r2, int r1, int s2, int s1, int e2, int e1);
+int r1, int r2, int s1, int s2, int e1, int e2);
 TightDataPointStorageF* SZ_compress_float_3D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
-int r3, int r2, int r1, int s3, int s2, int s1, int e3, int e2, int e1);
+int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3);
 TightDataPointStorageF* SZ_compress_float_4D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
-int r4, int r3, int r2, int r1, int s4, int s3, int s2, int s1, int e4, int e3, int e2, int e1);
+int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, int e3, int e4);
 
 TightDataPointStorageD* SZ_compress_double_1D_MDQ_subblock(double *oriData, double realPrecision, double valueRangeSize, double medianValue_d,
 int r1, int s1, int e1);
 TightDataPointStorageD* SZ_compress_double_2D_MDQ_subblock(double *oriData, double realPrecision, double valueRangeSize, double medianValue_d,
-int r2, int r1, int s2, int s1, int e2, int e1);
+int r1, int r2, int s1, int s2, int e1, int e2);
 TightDataPointStorageD* SZ_compress_double_3D_MDQ_subblock(double *oriData, double realPrecision, double valueRangeSize, double medianValue_d,
-int r3, int r2, int r1, int s3, int s2, int s1, int e3, int e2, int e1);
+int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3);
 TightDataPointStorageD* SZ_compress_double_4D_MDQ_subblock(double *oriData, double realPrecision, double valueRangeSize, double medianValue_d,
-int r4, int r3, int r2, int r1, int s4, int s3, int s2, int s1, int e4, int e3, int e2, int e1);
+int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, int e3, int e4);
 
 void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriData, int dataLength, int *outSize);
 void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *oriData, int dataLength, int *outSize);

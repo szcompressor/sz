@@ -1302,21 +1302,236 @@ int r1, int s1, int e1)
 void SZ_compress_args_float_NoCkRnge_2D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
 int r2, int r1, int s2, int s1, int e2, int e1)
 {
+	SZ_Reset();
+	TightDataPointStorageF* tdps = SZ_compress_float_2D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_f, r2, r1, s2, s1, e2, e1);
 
+	if (szMode==SZ_BEST_SPEED)
+		convertTDPStoFlatBytes_float_args(tdps, compressedBytes, outSize);
+	else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
+	{
+		unsigned char *tmpCompBytes;
+		int tmpOutSize;
+		convertTDPStoFlatBytes_float(tdps, &tmpCompBytes, &tmpOutSize);
+		*outSize = (int)zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
+		free(tmpCompBytes);
+	}
+	else
+	{
+		printf ("Error: Wrong setting of szMode in the double compression.\n");
+	}
+
+	//TODO
+//	if(*outSize>dataLength*sizeof(float))
+//		SZ_compress_args_float_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+
+	free_TightDataPointStorageF(tdps);
 }
 
 void SZ_compress_args_float_NoCkRnge_3D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
 int r3, int r2, int r1, int s3, int s2, int s1, int e3, int e2, int e1)
 {
+	SZ_Reset();
+	TightDataPointStorageF* tdps = SZ_compress_float_3D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_f, r3, r2, r1, s3, s2, s1, e3, e2, e1);
 
+	if (szMode==SZ_BEST_SPEED)
+		convertTDPStoFlatBytes_float_args(tdps, compressedBytes, outSize);
+	else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
+	{
+		unsigned char *tmpCompBytes;
+		int tmpOutSize;
+		convertTDPStoFlatBytes_float(tdps, &tmpCompBytes, &tmpOutSize);
+		*outSize = (int)zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
+		free(tmpCompBytes);
+	}
+	else
+	{
+		printf ("Error: Wrong setting of szMode in the double compression.\n");
+	}
+
+	//TODO
+//	if(*outSize>dataLength*sizeof(float))
+//		SZ_compress_args_float_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+
+	free_TightDataPointStorageF(tdps);
 }
 
 void SZ_compress_args_float_NoCkRnge_4D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
 int r4, int r3, int r2, int r1, int s4, int s3, int s2, int s1, int e4, int e3, int e2, int e1)
 {
+	SZ_Reset();
+	TightDataPointStorageF* tdps = SZ_compress_float_4D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_f, r4, r3, r2, r1, s4, s3, s2, s1, e4, e3, e2, e1);
+
+	if (szMode==SZ_BEST_SPEED)
+		convertTDPStoFlatBytes_float_args(tdps, compressedBytes, outSize);
+	else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
+	{
+		unsigned char *tmpCompBytes;
+		int tmpOutSize;
+		convertTDPStoFlatBytes_float(tdps, &tmpCompBytes, &tmpOutSize);
+		*outSize = (int)zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
+		free(tmpCompBytes);
+	}
+	else
+	{
+		printf ("Error: Wrong setting of szMode in the double compression.\n");
+	}
+
+	//TODO
+//	if(*outSize>dataLength*sizeof(float))
+//		SZ_compress_args_float_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+
+	free_TightDataPointStorageF(tdps);
 
 }
 
+unsigned int optimize_intervals_float_1D_block(float *oriData, double realPrecision, int r1, int s1, int e1)
+{
+	int dataLength = e1 - s1 + 1;
+	oriData = oriData + s1;
+
+	int i = 0;
+	unsigned long radiusIndex;
+	float pred_value = 0, pred_err;
+	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
+	memset(intervals, 0, maxRangeRadius*sizeof(int));
+	int totalSampleSize = dataLength/sampleDistance;
+	for(i=2;i<dataLength;i++)
+	{
+		if(i%sampleDistance==0)
+		{
+			pred_value = 2*oriData[i-1] - oriData[i-2];
+			//pred_value = oriData[i-1];
+			pred_err = fabs(pred_value - oriData[i]);
+			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
+			if(radiusIndex>=maxRangeRadius)
+				radiusIndex = maxRangeRadius - 1;
+			intervals[radiusIndex]++;
+		}
+	}
+	//compute the appropriate number
+	int targetCount = (int)(totalSampleSize*predThreshold);
+	int sum = 0;
+	for(i=0;i<maxRangeRadius;i++)
+	{
+		sum += intervals[i];
+		if(sum>targetCount)
+			break;
+	}
+	if(i>=maxRangeRadius)
+		i = maxRangeRadius-1;
+
+	unsigned int accIntervals = 2*(i+1);
+	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
+
+	if(powerOf2<32)
+		powerOf2 = 32;
+
+	free(intervals);
+	//printf("accIntervals=%d, powerOf2=%d\n", accIntervals, powerOf2);
+	return powerOf2;
+}
+
+unsigned int optimize_intervals_float_2D_block(float *oriData, double realPrecision, int r1, int r2, int s1, int s2, int e1, int e2)
+{
+	int R1 = e1 - s1 + 1;
+	int R2 = e2 - s2 + 1;
+
+	int i,j, index;
+	unsigned long radiusIndex;
+	float pred_value = 0, pred_err;
+	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
+	memset(intervals, 0, maxRangeRadius*sizeof(int));
+	int totalSampleSize = R1*R2/sampleDistance;
+	for(i=s1;i<=e1;i++)
+	{
+		for(j=s2;j<=e2;j++)
+		{
+			if((i+j)%sampleDistance==0)
+			{
+				index = i*r2+j;
+				pred_value = oriData[index-1] + oriData[index-r2] - oriData[index-r2-1];
+				pred_err = fabs(pred_value - oriData[index]);
+				radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
+				if(radiusIndex>=maxRangeRadius)
+					radiusIndex = maxRangeRadius - 1;
+				intervals[radiusIndex]++;
+			}
+		}
+	}
+	//compute the appropriate number
+	int targetCount = (int)(totalSampleSize*predThreshold);
+	int sum = 0;
+	for(i=0;i<maxRangeRadius;i++)
+	{
+		sum += intervals[i];
+		if(sum>targetCount)
+			break;
+	}
+	if(i>=maxRangeRadius)
+		i = maxRangeRadius-1;
+	unsigned int accIntervals = 2*(i+1);
+	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
+
+	if(powerOf2<32)
+		powerOf2 = 32;
+
+	free(intervals);
+	//printf("maxRangeRadius = %d, accIntervals=%d, powerOf2=%d\n", maxRangeRadius, accIntervals, powerOf2);
+	return powerOf2;
+}
+
+unsigned int optimize_intervals_float_3D_block(float *oriData, double realPrecision, int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3)
+{
+	int R1 = e1 - s1 + 1;
+	int R2 = e2 - s2 + 1;
+	int R3 = e3 - s3 + 1;
+
+	int i,j,k, index;
+	unsigned long radiusIndex;
+	float pred_value = 0, pred_err;
+	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
+	memset(intervals, 0, maxRangeRadius*sizeof(int));
+	int totalSampleSize = R1*R2*R3/sampleDistance;
+	for(i=s1;i<=e1;i++)
+	{
+		for(j=s2;j<=e2;j++)
+		{
+			for(k=s3;k<=e3;k++)
+			{
+				if((i+j+k)%sampleDistance==0)
+				{
+					index = i*r2*r3+j*r3+k;
+					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r2*r3]
+					- oriData[index-1-r2*r3] - oriData[index-r3-1] - oriData[index-r3-r2*r3] + oriData[index-r3-r2*r3-1];
+					pred_err = fabs(pred_value - oriData[index]);
+					radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
+					if(radiusIndex>=maxRangeRadius)
+						radiusIndex = maxRangeRadius - 1;
+					intervals[radiusIndex]++;
+				}
+			}
+		}
+	}
+	//compute the appropriate number
+	int targetCount = (int)(totalSampleSize*predThreshold);
+	int sum = 0;
+	for(i=0;i<maxRangeRadius;i++)
+	{
+		sum += intervals[i];
+		if(sum>targetCount)
+			break;
+	}
+	if(i>=maxRangeRadius)
+		i = maxRangeRadius-1;
+	unsigned int accIntervals = 2*(i+1);
+	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
+
+	if(powerOf2<32)
+		powerOf2 = 32;
+
+	free(intervals);
+	return powerOf2;
+}
 
 TightDataPointStorageF* SZ_compress_float_1D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
 int r1, int s1, int e1)
@@ -1324,7 +1539,7 @@ int r1, int s1, int e1)
 	int dataLength = e1 - s1 + 1;
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
-		quantization_intervals = optimize_intervals_float_1D(oriData+s1, dataLength, realPrecision);
+		quantization_intervals = optimize_intervals_float_1D_block(oriData, realPrecision, r1, s1, e1);
 	else
 		quantization_intervals = intvCapacity;
 	updateQuantizationInfo(quantization_intervals);
@@ -1451,21 +1666,224 @@ int r1, int s1, int e1)
 }
 
 TightDataPointStorageF* SZ_compress_float_2D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
-int r2, int r1, int s2, int s1, int e2, int e1)
+int r1, int r2, int s1, int s2, int e1, int e2)
 {
+	unsigned int quantization_intervals;
+	if(optQuantMode==1)
+	{
+		quantization_intervals = optimize_intervals_float_2D_block(oriData, realPrecision, r1, r2, s1, s2, e1, e2);
+		updateQuantizationInfo(quantization_intervals);
+	}
+	else
+		quantization_intervals = intvCapacity;
+
+	int i,j, reqLength;
+	float pred1D, pred2D;
+	float diff = 0.0;
+	double itvNum = 0;
+	float *P0, *P1;
+
+	//int dataLength = r1*r2;
+	int R1 = s1 - e1 + 1;
+	int R2 = s2 - e2 + 1;
+	int dataLength = R1*R2;
+
+	P0 = (float*)malloc(R2*sizeof(float));
+	memset(P0, 0, R2*sizeof(float));
+	P1 = (float*)malloc(R2*sizeof(float));
+	memset(P1, 0, R2*sizeof(float));
+
+	float medianValue = medianValue_f;
+	short radExpo = getExponent_float(valueRangeSize/2);
+	computeReqLength_float(realPrecision, radExpo, &reqLength, &medianValue);
+
+	int* type = (int*) malloc(dataLength*sizeof(int));
+
+	float* spaceFillingValue = oriData; //
+
+	DynamicByteArray *resiBitLengthArray;
+	new_DBA(&resiBitLengthArray, DynArrayInitLen);
+
+	DynamicIntArray *exactLeadNumArray;
+	new_DIA(&exactLeadNumArray, DynArrayInitLen);
+
+	DynamicByteArray *exactMidByteArray;
+	new_DBA(&exactMidByteArray, DynArrayInitLen);
+
+	DynamicIntArray *resiBitArray;
+	new_DIA(&resiBitArray, DynArrayInitLen);
+
+	unsigned char preDataBytes[4];
+	intToBytes_bigEndian(preDataBytes, 0);
+
+	int reqBytesLength = reqLength/8;
+	int resiBitsLength = reqLength%8;
+
+	FloatValueCompressElement *vce = (FloatValueCompressElement*)malloc(sizeof(FloatValueCompressElement));
+	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
+
+	/* Process Row-s1 data s2*/
+	int index;
+	index = s1*r2+s2;
+	type[0] = 0;
+	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+	compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+	memcpy(preDataBytes,vce->curBytes,4);
+	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+	P1[0] = vce->data;
+
+	/* Process Row-s1 data s2+1*/
+	index = s1*r2+(s2+1);
+	pred1D = P1[0];
+	diff = spaceFillingValue[index] - pred1D;
+
+	itvNum =  fabs(diff)/realPrecision + 1;
+
+	if (itvNum < intvCapacity)
+	{
+		if (diff < 0) itvNum = -itvNum;
+		type[1] = (int) (itvNum/2) + intvRadius;
+		P1[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+	}
+	else
+	{
+		type[1] = 0;
+
+		addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+		compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+		memcpy(preDataBytes,vce->curBytes,4);
+		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+		P1[1] = vce->data;
+	}
+
+    /* Process Row-s1 data s2+2 --> data e2 */
+	for (j = 2; j < r2; j++)
+	{
+		index = s1*r2+(s2+j);
+		pred1D = 2*P1[j-1] - P1[j-2];
+		diff = spaceFillingValue[j] - pred1D;
+
+		itvNum = fabs(diff)/realPrecision + 1;
+
+		if (itvNum < intvCapacity)
+		{
+			if (diff < 0) itvNum = -itvNum;
+			type[j] = (int) (itvNum/2) + intvRadius;
+			P1[j] = pred1D + 2 * (type[j] - intvRadius) * realPrecision;
+		}
+		else
+		{
+			type[j] = 0;
+
+			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+			compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+			memcpy(preDataBytes,vce->curBytes,4);
+			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+			P1[j] = vce->data;
+		}
+	}
+
+	/* Process Row-s1+1 --> Row-e1 */
+	for (i = 1; i < R1; i++)
+	{
+		/* Process row-s1+i data s2 */
+		index = (s1+i)*r2+s2;
+		pred1D = P1[0];
+		diff = spaceFillingValue[index] - pred1D;
+
+		itvNum = fabs(diff)/realPrecision + 1;
+
+		if (itvNum < intvCapacity)
+		{
+			if (diff < 0) itvNum = -itvNum;
+			type[index] = (int) (itvNum/2) + intvRadius;
+			P0[0] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+		}
+		else
+		{
+			type[index] = 0;
+
+			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+			compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+			memcpy(preDataBytes,vce->curBytes,4);
+			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+			P0[0] = vce->data;
+		}
+
+		/* Process row-s1+i data s2+1 --> e2 */
+		for (j = 1; j < R2; j++)
+		{
+			index = (s1+i)*r2+(s2+j);
+			pred2D = P0[j-1] + P1[j] - P1[j-1];
+
+			diff = spaceFillingValue[index] - pred2D;
+
+			itvNum = fabs(diff)/realPrecision + 1;
+
+			if (itvNum < intvCapacity)
+			{
+				if (diff < 0) itvNum = -itvNum;
+				type[index] = (int) (itvNum/2) + intvRadius;
+				P0[j] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+			}
+			else
+			{
+				type[index] = 0;
+
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,4);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+				P0[j] = vce->data;
+			}
+		}
+
+		float *Pt;
+		Pt = P1;
+		P1 = P0;
+		P0 = Pt;
+	}
+
+	if(R2!=1)
+		free(P0);
+	free(P1);
+	int exactDataNum = exactLeadNumArray->size;
+
 	TightDataPointStorageF* tdps;
+
+	new_TightDataPointStorageF(&tdps, dataLength, exactDataNum,
+			type, exactMidByteArray->array, exactMidByteArray->size,
+			exactLeadNumArray->array,
+			resiBitArray->array, resiBitArray->size,
+			resiBitLengthArray->array, resiBitLengthArray->size,
+			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
+
+	//free memory
+	free_DBA(resiBitLengthArray);
+	free_DIA(exactLeadNumArray);
+	free_DIA(resiBitArray);
+	free(type);
+	free(vce);
+	free(lce);
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
+
 	return tdps;
 }
 
 TightDataPointStorageF* SZ_compress_float_3D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
-int r3, int r2, int r1, int s3, int s2, int s1, int e3, int e2, int e1)
+int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3)
 {
 	TightDataPointStorageF* tdps;
 	return tdps;
 }
 
 TightDataPointStorageF* SZ_compress_float_4D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
-int r4, int r3, int r2, int r1, int s4, int s3, int s2, int s1, int e4, int e3, int e2, int e1)
+int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, int e3, int e4)
 {
 	TightDataPointStorageF* tdps;
 	return tdps;
