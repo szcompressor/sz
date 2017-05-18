@@ -1684,8 +1684,8 @@ int r1, int r2, int s1, int s2, int e1, int e2)
 	float *P0, *P1;
 
 	//int dataLength = r1*r2;
-	int R1 = s1 - e1 + 1;
-	int R2 = s2 - e2 + 1;
+	int R1 = e1 - s1 + 1;
+	int R2 = e2 - s2 + 1;
 	int dataLength = R1*R2;
 
 	P0 = (float*)malloc(R2*sizeof(float));
