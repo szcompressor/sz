@@ -1831,6 +1831,8 @@ int r1, int r2, int s1, int s2, int e1, int e2)
 			gIndex = (s1+i)*r2+(s2+j);
 			lIndex = i*R2+j;
 
+//			printf ("global index = %d, local index = %d\n", gIndex, lIndex);
+
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 
 			diff = spaceFillingValue[gIndex] - pred2D;
@@ -2189,6 +2191,8 @@ int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3)
 				gIndex = (s1+k)*r23+(s2+i)*r3+s3+j;
 				lIndex = k*R23+i*R3+j;
 				index2D = i*R3+j;
+
+//				printf ("global index = %d, local index = %d\n", gIndex, lIndex);
 
 				pred3D = P0[index2D-1] + P0[index2D-R3]+ P1[index2D] - P0[index2D-R3-1] - P1[index2D-R3] - P1[index2D-1] + P1[index2D-R3-1];
 				diff = spaceFillingValue[gIndex] - pred3D;
