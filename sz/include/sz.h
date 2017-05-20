@@ -384,10 +384,13 @@ unsigned int optimize_intervals_double_3D_pwr(double *oriData, int r1, int r2, i
 unsigned int optimize_intervals_float_1D_block(float *oriData, double realPrecision, int r1, int s1, int e1);
 unsigned int optimize_intervals_float_2D_block(float *oriData, double realPrecision, int r1, int r2, int s1, int s2, int e1, int e2);
 unsigned int optimize_intervals_float_3D_block(float *oriData, double realPrecision, int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3);
+unsigned int optimize_intervals_float_4D_block(float *oriData, double realPrecision, int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, int e3, int e4);
+
 
 unsigned int optimize_intervals_double_1D_block(double *oriData, double realPrecision, int r1, int s1, int e1);;
 unsigned int optimize_intervals_double_2D_block(double *oriData, double realPrecision, int r1, int r2, int s1, int s2, int e1, int e2);
 unsigned int optimize_intervals_double_3D_block(double *oriData, double realPrecision, int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3);
+unsigned int optimize_intervals_double_4D_block(double *oriData, double realPrecision, int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, int e3, int e4);
 
 //void SZ_compress_args_float_NoCkRngeNoGzip(char** newByteData, float *oriData, int dataLength, double realPrecision, int *outSize);
 int computeBlockEdgeSize(int segmentSize);
