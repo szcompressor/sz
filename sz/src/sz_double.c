@@ -1283,6 +1283,7 @@ TightDataPointStorageD* SZ_compress_double_4D_MDQ(double *oriData, int r1, int r
 					pred3D = P0[index2D-1] + P0[index2D-r4]+ P1[index2D] - P0[index2D-r4-1] - P1[index2D-r4] - P1[index2D-1] + P1[index2D-r4-1];
 					diff = spaceFillingValue[index] - pred3D;
 
+
 					itvNum = fabs(diff)/realPrecision + 1;
 
 					if (itvNum < intvCapacity)
@@ -1571,7 +1572,7 @@ int SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2, 
 		getSnapshotData_double_3D(newData,r3,r2,r1,tdps, errBoundMode);
 	else
 	if (dim == 4)
-		getSnapshotData_double_3D(newData,r4*r3,r2,r1,tdps, errBoundMode);		
+		getSnapshotData_double_4D(newData,r4,r3,r2,r1,tdps, errBoundMode);
 	else
 	{
 		printf("Error: currently support only at most 4 dimensions!\n");
@@ -1621,36 +1622,49 @@ int *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
 		if (r2==0)
 		{
 			//TODO
-//			if(errBoundMode==PW_REL)
-//				SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr(&tmpByteData, oriData, r1, &tmpOutSize, min, max);
-//			else
+			if(errBoundMode==PW_REL)
+			{
+				//TODO
+				//SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr_subblock();
+				printf ("Current subblock version does not support point-wise relative error bound.\n");
+			}
+			else
 				SZ_compress_args_double_NoCkRnge_1D_subblock(compressedBytes, oriData, realPrecision, outSize, valueRangeSize, medianValue, r1, s1, e1);
 		}
 		else
 		if (r3==0)
 		{
-			//TODO
-//			if(errBoundMode==PW_REL)
-//				SZ_compress_args_double_NoCkRngeNoGzip_2D_pwr(&tmpByteData, oriData, r2, r1, &tmpOutSize, min, max);
-//			else
+			if(errBoundMode==PW_REL)
+			{
+				//TODO
+				//SZ_compress_args_double_NoCkRngeNoGzip_2D_pwr_subblock();
+				printf ("Current subblock version does not support point-wise relative error bound.\n");
+			}
+			else
 				SZ_compress_args_double_NoCkRnge_2D_subblock(compressedBytes, oriData, realPrecision, outSize, valueRangeSize, medianValue, r2, r1, s2, s1, e2, e1);
 		}
 		else
 		if (r4==0)
 		{
-			//TODO
-//			if(errBoundMode==PW_REL)
-//				SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(&tmpByteData, oriData, r3, r2, r1, &tmpOutSize, min, max);
-//			else
+			if(errBoundMode==PW_REL)
+			{
+				//TODO
+				//SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr_subblock();
+				printf ("Current subblock version does not support point-wise relative error bound.\n");
+			}
+			else
 				SZ_compress_args_double_NoCkRnge_3D_subblock(compressedBytes, oriData, realPrecision, outSize, valueRangeSize, medianValue, r3, r2, r1, s3, s2, s1, e3, e2, e1);
 		}
 		else
 		if (r5==0)
 		{
-			//TODO
-//			if(errBoundMode==PW_REL)
-//				SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(&tmpByteData, oriData, r4*r3, r2, r1, &tmpOutSize, min, max);
-//			else
+			if(errBoundMode==PW_REL)
+			{
+				//TODO
+				//SZ_compress_args_double_NoCkRngeNoGzip_4D_pwr_subblock();
+				printf ("Current subblock version does not support point-wise relative error bound.\n");
+			}
+			else
 				SZ_compress_args_double_NoCkRnge_4D_subblock(compressedBytes, oriData, realPrecision, outSize, valueRangeSize, medianValue, r4, r3, r2, r1, s4, s3, s2, s1, e4, e3, e2, e1);
 		}
 		else

@@ -64,9 +64,13 @@ float* extractRealPrecision_3D_float(int R1, int R2, int R3, int blockSize, Tigh
 void decompressDataSeries_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
 void decompressDataSeries_float_3D_pwr(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps);
 
+void decompressDataSeries_float_4D(float** data, int r1, int r2, int r3, int r4, TightDataPointStorageF* tdps);
+
 void getSnapshotData_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps, int errBoundMode);
 void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorageF* tdps, int errBoundMode);
 void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps, int errBoundMode);
+void getSnapshotData_float_4D(float** data, int r1, int r2, int r3, int r4, TightDataPointStorageF* tdps, int errBoundMode);
+
 void new_TightDataPointStorageF(TightDataPointStorageF **this,
 		int dataSeriesLength, int exactDataNum,
 		int* type, unsigned char* exactMidBytes, int exactMidBytes_size,
