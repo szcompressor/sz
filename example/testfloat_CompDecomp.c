@@ -48,11 +48,11 @@ int main(int argc, char * argv[])
     }
     else
     {
-	echo "Error: Z-checker checking doesn't support this error bound mode: %s, but only ABS, REL, and PW_REL.\n", errBoundMode);
+	printf("Error: Z-checker checking doesn't support this error bound mode: %s, but only ABS, REL, and PW_REL.\n", errBoundMode);
 	exit(0); 
     }
 
-    absErrBound=atof(arg[6]);
+    absErrBound=atof(argv[6]);
     sprintf(oriFilePath, "%s", argv[7]);
     if(argc>=9)
 	r1 = atoi(argv[8]); //8
