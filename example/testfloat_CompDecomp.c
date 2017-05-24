@@ -24,8 +24,8 @@ int main(int argc, char * argv[])
     int errboundmode;
     if(argc < 9)
     {
-	printf("Test case: testfloat_CompDecomp [config_file] [zc.config] [solName] [varName] [errBoundMode] [absErrBound] [relErrBound] [srcFilePath] [dimension sizes...]\n");
-	printf("Example: testfloat_CompDecomp sz.config zc.config sz(1E-6) testfloat ABS 1E-6 0 testdata/x86/testfloat_8_8_128.dat 8 8 128\n");
+	printf("Test case: testfloat_CompDecomp [config_file] [zc.config] [solName] [varName] [errBoundMode] [err bound] [srcFilePath] [dimension sizes...]\n");
+	printf("Example: testfloat_CompDecomp sz.config zc.config sz(1E-6) testfloat ABS 1E-6 testdata/x86/testfloat_8_8_128.dat 8 8 128\n");
 	exit(0);
     }
    
@@ -72,7 +72,7 @@ int main(int argc, char * argv[])
     ZC_Init(zcFile);
  
     sprintf(outputFilePath, "%s.sz", oriFilePath);
-   
+  
     int nbEle, status = SZ_SCES;
     float *data = readFloatData(oriFilePath, &nbEle, &status);
    
@@ -88,7 +88,7 @@ int main(int argc, char * argv[])
     float *decData = SZ_decompress(SZ_FLOAT, bytes, outSize, r5, r4, r3, r2, r1);
     ZC_endDec(compareResult, solName, decData);
     //ZC_endDec(compareResult, "sz(1E-7)", decData);
- 
+
     freeDataProperty(dataProperty);
     freeCompareResult(compareResult);
     free(data);
