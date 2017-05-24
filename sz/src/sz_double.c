@@ -1426,6 +1426,7 @@ int SZ_compress_args_double(unsigned char** newByteData, double *oriData,
 int r5, int r4, int r3, int r2, int r1, int *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
+	errorBoundMode = errBoundMode;
 	if(errBoundMode==PW_REL)
 		pw_relBoundRatio = relBoundRatio;	
 	int status = SZ_SCES;
