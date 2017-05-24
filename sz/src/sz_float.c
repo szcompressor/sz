@@ -1287,6 +1287,8 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, int r1, int r2,
 					index = l*r234+k*r34+i*r4+j;
 					index2D = i*r4+j;
 
+					//printf ("global index = %d, prediction index = %d\n", index, index2D);
+
 					pred3D = P0[index2D-1] + P0[index2D-r4]+ P1[index2D] - P0[index2D-r4-1] - P1[index2D-r4] - P1[index2D-1] + P1[index2D-r4-1];
 					diff = spaceFillingValue[index] - pred3D;
 

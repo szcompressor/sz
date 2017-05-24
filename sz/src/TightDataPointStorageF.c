@@ -1197,7 +1197,7 @@ void decompressDataSeries_float_4D(float** data, int r1, int r2, int r3, int r4,
 	int dataSeriesLength = r1*r2*r3*r4;
 	int r234 = r2*r3*r4;
 	int r34 = r3*r4;
-//	printf ("%d %d %d\n", r1, r2, r3);
+//	printf ("%d %d %d %d\n", r1, r2, r3, r4);
 	unsigned char* leadNum;
 	double realPrecision = tdps->realPrecision;
 
@@ -1561,9 +1561,10 @@ void decompressDataSeries_float_4D(float** data, int r1, int r2, int r3, int r4,
 			}
 
 			/* Process Row-0 data 1 --> data r4-1 */
-			for (jj = 1; jj < r3; jj++)
+			for (jj = 1; jj < r4; jj++)
 			{
 				index = ll*r234+kk*r34+jj;
+
 				pred2D = (*data)[index-1] + (*data)[index-r34] - (*data)[index-r34-1];
 
 				type_ = type[index];

@@ -1204,7 +1204,7 @@ void decompressDataSeries_double_4D(double** data, int r1, int r2, int r3, int r
 	int dataSeriesLength = r1*r2*r3*r4;
 	int r234 = r2*r3*r4;
 	int r34 = r3*r4;
-//	printf ("%d %d %d\n", r1, r2, r3);
+//	printf ("%d %d %d\n", r1, r2, r3, r4);
 
 	unsigned char* leadNum;
 	double realPrecision = tdps->realPrecision;
