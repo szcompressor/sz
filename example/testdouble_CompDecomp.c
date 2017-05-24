@@ -23,8 +23,8 @@ int main(int argc, char * argv[])
     int errboundmode;
     if(argc < 9)
     {
-        printf("Test case: testfloat_CompDecomp [config_file] [zc.config] [solName] [varName] [errBoundMode] [absErrBound] [relErrBound] [srcFilePath] [dimension sizes...]\n");
-        printf("Example: testfloat_CompDecomp sz.config zc.config sz(1E-6) testfloat ABS 1E-6 0 testdata/x86/testfloat_8_8_128.dat 8 8 128\n");
+        printf("Test case: testfloat_CompDecomp [config_file] [zc.config] [solName] [varName] [errBoundMode] [ErrBound] [srcFilePath] [dimension sizes...]\n");
+        printf("Example: testfloat_CompDecomp sz.config zc.config sz(1E-6) testfloat ABS 1E-6 testdata/x86/testfloat_8_8_128.dat 8 8 128\n");
         exit(0);
     }
 
