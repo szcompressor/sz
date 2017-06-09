@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
 			free(bytes);
 			sprintf(outputFilePath, "%s.out", inPath);			
 			writeFloatData_inBytes(data, nbEle, outputFilePath, &status);
-			free(data);
+
 			if(status!=SZ_SCES)
 			{
 				printf("Error: %s cannot be written!\n", outputFilePath);
@@ -273,7 +273,8 @@ int main(int argc, char* argv[])
 			printf ("Max relative error = %f\n", diffMax/(Max-Min));
 			printf ("Max pw relative error = %f\n", maxpw_relerr);
 			printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
-			printf ("acEff=%f\n", acEff);				
+			printf ("acEff=%f\n", acEff);
+			free(data);				
 		}
 		else
 		{
@@ -289,7 +290,6 @@ int main(int argc, char* argv[])
 			free(bytes);
 			sprintf(outputFilePath, "%s.out", inPath);				
 			writeDoubleData_inBytes(data, nbEle, outputFilePath, &status);
-			free(data);
 			if(status!=SZ_SCES)
 			{
 				printf("Error: %s cannot be written!\n", outputFilePath);
@@ -312,9 +312,12 @@ int main(int argc, char* argv[])
 			double Max = 0, Min = 0, diffMax = 0;
 			Max = ori_data[0];
 			Min = ori_data[0];
-			diffMax = fabs(data[0] - ori_data[0]);
+			diffMax = data[0]>ori_data[0]?data[0]-ori_data[0]:ori_data[0]-data[0];
+			
+			//diffMax = fabs(data[0] - ori_data[0]);
 			int k = 0;
 			double sum1 = 0, sum2 = 0;
+						
 			for (i = 0; i < nbEle; i++)
 			{
 				sum1 += ori_data[i];
@@ -325,7 +328,7 @@ int main(int argc, char* argv[])
 
 			double sum3 = 0, sum4 = 0;
 			double sum = 0, prodSum = 0, relerr = 0;
-
+			
 			double maxpw_relerr = 0; 
 			for (i = 0; i < nbEle; i++)
 			{
@@ -362,7 +365,8 @@ int main(int argc, char* argv[])
 			printf ("Max relative error = %f\n", diffMax/(Max-Min));
 			printf ("Max pw relative error = %f\n", maxpw_relerr);
 			printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
-			printf ("acEff=%f\n", acEff);			
+			printf ("acEff=%f\n", acEff);
+			free(data);			
 		}
 		printf("decompression time = %f seconds.\n", totalCost);
 		printf("decompressed data file: %s\n", outputFilePath);		
