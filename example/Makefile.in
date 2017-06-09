@@ -83,13 +83,13 @@ host_triplet = @host@
 @FORTRAN_FALSE@	testdouble_compress$(EXEEXT) \
 @FORTRAN_FALSE@	testdouble_decompress$(EXEEXT) \
 @FORTRAN_FALSE@	testfloat_batch_compress$(EXEEXT) \
-@FORTRAN_FALSE@	testdouble_batch_compress$(EXEEXT)
+@FORTRAN_FALSE@	testdouble_batch_compress$(EXEEXT) sz$(EXEEXT)
 @FORTRAN_TRUE@bin_PROGRAMS = testfloat_compress$(EXEEXT) \
 @FORTRAN_TRUE@	testfloat_decompress$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_compress$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_decompress$(EXEEXT) \
 @FORTRAN_TRUE@	testfloat_batch_compress$(EXEEXT) \
-@FORTRAN_TRUE@	testdouble_batch_compress$(EXEEXT) \
+@FORTRAN_TRUE@	testdouble_batch_compress$(EXEEXT) sz$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_batch_f$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_compress_f$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_decompress_f$(EXEEXT)
@@ -106,16 +106,19 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
+sz_SOURCES = sz.c
+sz_OBJECTS = sz.$(OBJEXT)
+sz_DEPENDENCIES = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 am_testdouble_batch_compress_OBJECTS =  \
 	testdouble_batch_compress.$(OBJEXT)
 testdouble_batch_compress_OBJECTS =  \
 	$(am_testdouble_batch_compress_OBJECTS)
 testdouble_batch_compress_DEPENDENCIES = ../sz/.libs/libsz.a \
 	../zlib/.libs/libzlib.a
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 am__testdouble_batch_f_SOURCES_DIST = testdouble_batch_f.f90
 @FORTRAN_TRUE@am_testdouble_batch_f_OBJECTS =  \
 @FORTRAN_TRUE@	testdouble_batch_f.$(OBJEXT)
@@ -207,14 +210,14 @@ AM_V_FCLD = $(am__v_FCLD_@AM_V@)
 am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
 am__v_FCLD_0 = @echo "  FCLD    " $@;
 am__v_FCLD_1 = 
-SOURCES = $(testdouble_batch_compress_SOURCES) \
+SOURCES = sz.c $(testdouble_batch_compress_SOURCES) \
 	$(testdouble_batch_f_SOURCES) $(testdouble_compress_SOURCES) \
 	$(testdouble_compress_f_SOURCES) \
 	$(testdouble_decompress_SOURCES) \
 	$(testdouble_decompress_f_SOURCES) \
 	$(testfloat_batch_compress_SOURCES) \
 	$(testfloat_compress_SOURCES) $(testfloat_decompress_SOURCES)
-DIST_SOURCES = $(testdouble_batch_compress_SOURCES) \
+DIST_SOURCES = sz.c $(testdouble_batch_compress_SOURCES) \
 	$(am__testdouble_batch_f_SOURCES_DIST) \
 	$(testdouble_compress_SOURCES) \
 	$(am__testdouble_compress_f_SOURCES_DIST) \
@@ -386,6 +389,8 @@ testfloat_batch_compress_SOURCES = testfloat_batch_compress.c
 testfloat_batch_compress_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
 testdouble_batch_compress_SOURCES = testdouble_batch_compress.c
 testdouble_batch_compress_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
+sz_SOURCS = sz.c
+sz_LDADD = ../sz/.libs/libsz.a ../zlib/.libs/libzlib.a
 all: all-am
 
 .SUFFIXES:
@@ -470,6 +475,10 @@ clean-binPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
+sz$(EXEEXT): $(sz_OBJECTS) $(sz_DEPENDENCIES) $(EXTRA_sz_DEPENDENCIES) 
+	@rm -f sz$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(sz_OBJECTS) $(sz_LDADD) $(LIBS)
+
 testdouble_batch_compress$(EXEEXT): $(testdouble_batch_compress_OBJECTS) $(testdouble_batch_compress_DEPENDENCIES) $(EXTRA_testdouble_batch_compress_DEPENDENCIES) 
 	@rm -f testdouble_batch_compress$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(testdouble_batch_compress_OBJECTS) $(testdouble_batch_compress_LDADD) $(LIBS)
@@ -512,6 +521,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_batch_compress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_compress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_decompress.Po@am__quote@
