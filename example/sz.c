@@ -45,6 +45,11 @@ void usage()
 	printf("	-2 <nx> <ny> : dimensions for 2D data such as data[ny][nx]\n");
 	printf("	-3 <nx> <ny> <nz> : dimensions for 3D data such as data[nz][ny][nx] \n");
 	printf("	-4 <nx> <ny> <nz> <np>: dimensions for 4D data such as data[np][nz][ny][nx] \n");
+	printf("* examples: \n");
+	printf("	sz -z -f -c sz.config -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128\n");
+	printf("	sz -x -f -i testdata/x86/testfloat_8_8_128.dat.sz -3 8 8 128\n");
+	printf("	sz -z -d -c sz.config -i testdata/x86/testdouble_8_8_128.dat -3 8 8 128\n");
+	printf("	sz -x -d -i testdata/x86/testdouble_8_8_128.dat.sz -3 8 8 128\n");
 	exit(0);
 }
 
