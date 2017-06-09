@@ -261,6 +261,7 @@ int dataLength, double realPrecision, float valueRangeSize, float medianValue_f)
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
 				
 	//add the first data	
+	type[0] = 0;
 	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);

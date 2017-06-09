@@ -51,8 +51,8 @@ typedef struct TightDataPointStorageF
 	int pwrErrBoundBytes_size;
 } TightDataPointStorageF;
 
-void new_TightDataPointStorageF_Empty(TightDataPointStorageF **this);
-int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsigned char* flatBytes, int flatBytesLength);
+void new_TightDataPointStorageF_Empty(TightDataPointStorageF **self);
+int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **self, unsigned char* flatBytes, int flatBytesLength);
 void decompressDataSeries_float_1D(float** data, int dataSeriesLength, TightDataPointStorageF* tdps);
 void decompressDataSeries_float_1D_pwr(float** data, int dataSeriesLength, TightDataPointStorageF* tdps);
 
@@ -71,7 +71,7 @@ void getSnapshotData_float_2D(float** data, int r1, int r2, TightDataPointStorag
 void getSnapshotData_float_3D(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps, int errBoundMode);
 void getSnapshotData_float_4D(float** data, int r1, int r2, int r3, int r4, TightDataPointStorageF* tdps, int errBoundMode);
 
-void new_TightDataPointStorageF(TightDataPointStorageF **this,
+void new_TightDataPointStorageF(TightDataPointStorageF **self,
 		int dataSeriesLength, int exactDataNum,
 		int* type, unsigned char* exactMidBytes, int exactMidBytes_size,
 		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
