@@ -302,10 +302,10 @@ int checkVersion(char* version)
 	return 1;
 }
 
-double fabs(double value)
+/*double fabs(double value)
 {
 	if(value<0)
 		return -value;
 	else
 		return value;
-}
+}*/

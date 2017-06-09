@@ -2,7 +2,7 @@
 ##   Makefile to test SZ library.
 
 ##   PLEASE SET THIS VARIABLE BEFORE COMPILING
-SZPATH		= /home/fti/sz-1.4.9-beta-install
+SZPATH		= /home/shdi/sz-1.4.9-beta-install
 ##   COMPILERS
 CC		= gcc
 FT		= gfortran
@@ -16,7 +16,7 @@ MPIRUN 		= mpirun
 SZFLAG 	= -I$(SZPATH)/include $(SZPATH)/lib/libsz.a $(SZPATH)/lib/libzlib.a
 
 ##   TARGETS
-all: 		testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress
+all: 		testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz
 #all: 		testdouble_compress_f testdouble_decompress_f testdouble_batch_compress_f
 
 testfloat_compress:	testfloat_compress.c
@@ -45,6 +45,9 @@ testfloat_batch_compress:      testfloat_batch_compress.c
 
 testdouble_batch_compress:      testdouble_batch_compress.c
 	$(CC) -lm -g -o testdouble_batch_compress testdouble_batch_compress.c $(SZFLAG)
+
+sz:	sz.c
+	$(CC) -lm -O3 -o sz sz.c $(SZFLAG)
 
 clean:
 	rm -f test*_compress test*_decompress test*_compress_f test*_decompress_f testfloat_batch_compress testdouble_batch_compress_f
