@@ -26,9 +26,8 @@ void cost_end()
 }
 
 
-void usage(int i)
+void usage()
 {
-	printf("---%d", i);
 	printf("Usage: sz <options>\n");
 	printf("Options:\n");
 	printf("* operation type:\n");
@@ -81,12 +80,12 @@ int main(int argc, char* argv[])
 	int status;
 	int nbEle;
 	if(argc==1)
-		usage(0);
+		usage();
 	
 	for(i=1;i<argc;i++)
 	{
 		if (argv[i][0] != '-' || argv[i][2])
-			usage(1);
+			usage();
 		switch (argv[i][1])
 		{
 		case 'b': 
@@ -112,44 +111,44 @@ int main(int argc, char* argv[])
 			break;
 		case 'i':
 			if (++i == argc)
-				usage(2);
+				usage();
 			inPath = argv[i];		
 			break;
 		case 's':
 			if (++i == argc)
-				usage(3);
+				usage();
 			cmpPath = argv[i];
 			break;
 		case 'c':
 			if (++i == argc)
-				usage(4);
+				usage();
 			conPath = argv[i];
 			break;
 		case '1': 
 			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1)
-				usage(5);
+				usage();
 
 			break;
 		case '2':
 			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 || 
 				++i == argc || sscanf(argv[i], "%d", &r2) != 1)
-				usage(6);
+				usage();
 			break;
 		case '3':
 			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 ||
 				++i == argc || sscanf(argv[i], "%d", &r2) != 1 ||
 				++i == argc || sscanf(argv[i], "%d", &r3) != 1)
-				usage(7);		
+				usage();		
 			break;
 		case '4':
 			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 ||
 				++i == argc || sscanf(argv[i], "%d", &r2) != 1 ||
 				++i == argc || sscanf(argv[i], "%d", &r3) != 1 ||
 				++i == argc || sscanf(argv[i], "%d", &r4) != 1)
-				usage(8);		
+				usage();		
 			break;
 		default: 
-			usage(9);
+			usage();
 			break;
 		}
 	}
