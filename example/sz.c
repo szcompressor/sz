@@ -26,8 +26,9 @@ void cost_end()
 }
 
 
-void usage()
+void usage(int i)
 {
+	printf("---%d", i);
 	printf("Usage: sz <options>\n");
 	printf("Options:\n");
 	printf("* operation type:\n");
@@ -39,12 +40,18 @@ void usage()
 	printf("* configuration file: \n");
 	printf("	-c <configuration file> : configuration file sz.config\n");	
 	printf("* input data file:\n");
-	printf("	-i <original data file> : original data file in binary format\n");
+	printf("	-i <original data file> : original data file\n");
+	printf("	-s <compressed data file> : compressed data file in decompression\n");
+	printf("* output type of decompressed file: \n");
+	printf("	-b (by default) : decompressed file stored in binary format\n");
+	printf("	-t : decompreadded file stored in text format\n");
 	printf("* dimensions: \n");
 	printf("	-1 <nx> : dimension for 1D data such as data[nx]\n");
 	printf("	-2 <nx> <ny> : dimensions for 2D data such as data[ny][nx]\n");
 	printf("	-3 <nx> <ny> <nz> : dimensions for 3D data such as data[nz][ny][nx] \n");
 	printf("	-4 <nx> <ny> <nz> <np>: dimensions for 4D data such as data[np][nz][ny][nx] \n");
+	printf("* print compression results: \n");
+	printf("	-a : print compression results such as distortions\n");
 	printf("* examples: \n");
 	printf("	sz -z -f -c sz.config -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128\n");
 	printf("	sz -x -f -i testdata/x86/testfloat_8_8_128.dat.sz -3 8 8 128\n");
@@ -56,9 +63,12 @@ void usage()
 
 int main(int argc, char* argv[])
 {
+	int binaryOutput = 1;
+	int printCmpResults = 0;
 	int isCompression = 0; //1 : compression ; 0: decompression
 	int dataType = 0; //0: single precision ; 1: double precision
 	char* inPath = NULL;
+	char* cmpPath = NULL;
 	char* conPath = NULL;
 	
 	int r5 = 0;
@@ -71,14 +81,23 @@ int main(int argc, char* argv[])
 	int status;
 	int nbEle;
 	if(argc==1)
-		usage();
+		usage(0);
 	
 	for(i=1;i<argc;i++)
 	{
 		if (argv[i][0] != '-' || argv[i][2])
-			usage();
+			usage(1);
 		switch (argv[i][1])
 		{
+		case 'b': 
+			binaryOutput = 1;
+			break;
+		case 't': 
+			binaryOutput = 0;
+			break;
+		case 'a':
+			printCmpResults = 1;
+			break;
 		case 'z':
 			isCompression = 1;
 			break;
@@ -93,39 +112,44 @@ int main(int argc, char* argv[])
 			break;
 		case 'i':
 			if (++i == argc)
-				usage();
+				usage(2);
 			inPath = argv[i];		
-			break; 
+			break;
+		case 's':
+			if (++i == argc)
+				usage(3);
+			cmpPath = argv[i];
+			break;
 		case 'c':
 			if (++i == argc)
-				usage();
+				usage(4);
 			conPath = argv[i];
 			break;
 		case '1': 
 			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1)
-				usage();
+				usage(5);
 
 			break;
 		case '2':
 			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 || 
 				++i == argc || sscanf(argv[i], "%d", &r2) != 1)
-				usage();
+				usage(6);
 			break;
 		case '3':
 			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 ||
 				++i == argc || sscanf(argv[i], "%d", &r2) != 1 ||
 				++i == argc || sscanf(argv[i], "%d", &r3) != 1)
-				usage();		
+				usage(7);		
 			break;
 		case '4':
 			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 ||
 				++i == argc || sscanf(argv[i], "%d", &r2) != 1 ||
 				++i == argc || sscanf(argv[i], "%d", &r3) != 1 ||
 				++i == argc || sscanf(argv[i], "%d", &r4) != 1)
-				usage();		
+				usage(8);		
 			break;
 		default: 
-			usage();
+			usage(9);
 			break;
 		}
 	}
@@ -193,18 +217,21 @@ int main(int argc, char* argv[])
 			nbEle = r1*r2*r3*r4*r5;		
 		if(dataType == 0)
 		{
-			unsigned char *bytes = readByteData(inPath, &byteLength, &status);
+			unsigned char *bytes = readByteData(cmpPath, &byteLength, &status);
 			if(status!=SZ_SCES)
 			{
-				printf("Error: %s cannot be read!\n", inPath);
+				printf("Error: %s cannot be read!\n", cmpPath);
 				exit(0);
 			}
 			cost_start();
 			float *data = SZ_decompress(SZ_FLOAT, bytes, byteLength, r5, r4, r3, r2, r1);			
 			cost_end();
 			free(bytes);
-			sprintf(outputFilePath, "%s.out", inPath);			
-			writeFloatData_inBytes(data, nbEle, outputFilePath, &status);
+			sprintf(outputFilePath, "%s.out", cmpPath);	
+			if(binaryOutput==1)		
+				writeFloatData_inBytes(data, nbEle, outputFilePath, &status);
+			else //txt output
+				writeFloatData(data, nbEle, outputFilePath, &status);
 
 			if(status!=SZ_SCES)
 			{
@@ -212,81 +239,86 @@ int main(int argc, char* argv[])
 				exit(0);
 			}
 			
-			//compute the distortion / compression errors...
-			char oriFilePath[640];
-			int totalNbEle;
-			strncpy(oriFilePath, inPath, (unsigned)strlen(inPath)-3);
-			oriFilePath[strlen(inPath)-3] = '\0';
-			float *ori_data = readFloatData(oriFilePath, &totalNbEle, &status);
-			if(status!=SZ_SCES)
+			if(printCmpResults)
 			{
-				printf("Error: %s cannot be read!\n", oriFilePath);
-				exit(0);
-			}
-
-			int i = 0;
-			float Max = 0, Min = 0, diffMax = 0;
-			Max = ori_data[0];
-			Min = ori_data[0];
-			diffMax = fabs(data[0] - ori_data[0]);
-			int k = 0;
-			double sum1 = 0, sum2 = 0;
-			for (i = 0; i < nbEle; i++)
-			{
-				sum1 += ori_data[i];
-				sum2 += data[i];
-			}
-			double mean1 = sum1/nbEle;
-			double mean2 = sum2/nbEle;
-
-			double sum3 = 0, sum4 = 0;
-			double sum = 0, prodSum = 0, relerr = 0;
-
-			double maxpw_relerr = 0; 
-			for (i = 0; i < nbEle; i++)
-			{
-				if (Max < ori_data[i]) Max = ori_data[i];
-				if (Min > ori_data[i]) Min = ori_data[i];
-				
-				float err = fabs(data[i] - ori_data[i]);
-				if(ori_data[i]!=0)
+				if(inPath==NULL)
 				{
-					relerr = err/ori_data[i];
-					if(maxpw_relerr<relerr)
-						maxpw_relerr = relerr;
+					printf("Error: Since you add -a option (analysis), please specify the original data path by -i <path>.\n");
+					exit(0);
+				}
+				//compute the distortion / compression errors...
+				int totalNbEle;
+				float *ori_data = readFloatData(inPath, &totalNbEle, &status);
+				if(status!=SZ_SCES)
+				{
+					printf("Error: %s cannot be read!\n", inPath);
+					exit(0);
 				}
 
-				if (diffMax < err)
-					diffMax = err;
-				prodSum += (ori_data[i]-mean1)*(data[i]-mean2);
-				sum3 += (ori_data[i] - mean1)*(ori_data[i]-mean1);
-				sum4 += (data[i] - mean2)*(data[i]-mean2);
-				sum += err*err;	
+				int i = 0;
+				float Max = 0, Min = 0, diffMax = 0;
+				Max = ori_data[0];
+				Min = ori_data[0];
+				diffMax = fabs(data[0] - ori_data[0]);
+				int k = 0;
+				double sum1 = 0, sum2 = 0;
+				for (i = 0; i < nbEle; i++)
+				{
+					sum1 += ori_data[i];
+					sum2 += data[i];
+				}
+				double mean1 = sum1/nbEle;
+				double mean2 = sum2/nbEle;
+
+				double sum3 = 0, sum4 = 0;
+				double sum = 0, prodSum = 0, relerr = 0;
+
+				double maxpw_relerr = 0; 
+				for (i = 0; i < nbEle; i++)
+				{
+					if (Max < ori_data[i]) Max = ori_data[i];
+					if (Min > ori_data[i]) Min = ori_data[i];
+					
+					float err = fabs(data[i] - ori_data[i]);
+					if(ori_data[i]!=0)
+					{
+						relerr = err/ori_data[i];
+						if(maxpw_relerr<relerr)
+							maxpw_relerr = relerr;
+					}
+
+					if (diffMax < err)
+						diffMax = err;
+					prodSum += (ori_data[i]-mean1)*(data[i]-mean2);
+					sum3 += (ori_data[i] - mean1)*(ori_data[i]-mean1);
+					sum4 += (data[i] - mean2)*(data[i]-mean2);
+					sum += err*err;	
+				}
+				double std1 = sqrt(sum3/nbEle);
+				double std2 = sqrt(sum4/nbEle);
+				double ee = prodSum/nbEle;
+				double acEff = ee/std1/std2;
+
+				double mse = sum/nbEle;
+				double range = Max - Min;
+				double psnr = 20*log10(range)-10*log10(mse);
+				double nrmse = sqrt(mse)/range;
+
+				printf ("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, range);
+				printf ("Max absolute error = %.10f\n", diffMax);
+				printf ("Max relative error = %f\n", diffMax/(Max-Min));
+				printf ("Max pw relative error = %f\n", maxpw_relerr);
+				printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
+				printf ("acEff=%f\n", acEff);	
 			}
-			double std1 = sqrt(sum3/nbEle);
-			double std2 = sqrt(sum4/nbEle);
-			double ee = prodSum/nbEle;
-			double acEff = ee/std1/std2;
-
-			double mse = sum/nbEle;
-			double range = Max - Min;
-			double psnr = 20*log10(range)-10*log10(mse);
-			double nrmse = sqrt(mse)/range;
-
-			printf ("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, range);
-			printf ("Max absolute error = %.10f\n", diffMax);
-			printf ("Max relative error = %f\n", diffMax/(Max-Min));
-			printf ("Max pw relative error = %f\n", maxpw_relerr);
-			printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
-			printf ("acEff=%f\n", acEff);
 			free(data);				
 		}
 		else
 		{
-			unsigned char *bytes = readByteData(inPath, &byteLength, &status);
+			unsigned char *bytes = readByteData(cmpPath, &byteLength, &status);
 			if(status!=SZ_SCES)
 			{
-				printf("Error: %s cannot be read!\n", inPath);
+				printf("Error: %s cannot be read!\n", cmpPath);
 				exit(0);
 			}
 			cost_start();
@@ -294,83 +326,92 @@ int main(int argc, char* argv[])
 			cost_end();
 			free(bytes);
 			sprintf(outputFilePath, "%s.out", inPath);				
-			writeDoubleData_inBytes(data, nbEle, outputFilePath, &status);
+			if(binaryOutput==1)		
+				writeDoubleData_inBytes(data, nbEle, outputFilePath, &status);
+			else //txt output
+				writeDoubleData(data, nbEle, outputFilePath, &status);			
 			if(status!=SZ_SCES)
 			{
 				printf("Error: %s cannot be written!\n", outputFilePath);
 				exit(0);
 			}
 			
-			//compute the distortion / compression errors...
-			char oriFilePath[640];
-			int totalNbEle;
-			strncpy(oriFilePath, inPath, (unsigned)strlen(inPath)-3);
-			oriFilePath[strlen(inPath)-3] = '\0';
-			double *ori_data = readDoubleData(oriFilePath, &totalNbEle, &status);
-			if(status!=SZ_SCES)
+			if(printCmpResults)
 			{
-				printf("Error: %s cannot be read!\n", oriFilePath);
-				exit(0);
-			}
-
-			int i = 0;
-			double Max = 0, Min = 0, diffMax = 0;
-			Max = ori_data[0];
-			Min = ori_data[0];
-			diffMax = data[0]>ori_data[0]?data[0]-ori_data[0]:ori_data[0]-data[0];
-			
-			//diffMax = fabs(data[0] - ori_data[0]);
-			int k = 0;
-			double sum1 = 0, sum2 = 0;
-						
-			for (i = 0; i < nbEle; i++)
-			{
-				sum1 += ori_data[i];
-				sum2 += data[i];
-			}
-			double mean1 = sum1/nbEle;
-			double mean2 = sum2/nbEle;
-
-			double sum3 = 0, sum4 = 0;
-			double sum = 0, prodSum = 0, relerr = 0;
-			
-			double maxpw_relerr = 0; 
-			for (i = 0; i < nbEle; i++)
-			{
-				if (Max < ori_data[i]) Max = ori_data[i];
-				if (Min > ori_data[i]) Min = ori_data[i];
-				
-				float err = fabs(data[i] - ori_data[i]);
-				if(ori_data[i]!=0)
+				if(inPath==NULL)
 				{
-					relerr = err/ori_data[i];
-					if(maxpw_relerr<relerr)
-						maxpw_relerr = relerr;
+					printf("Error: Since you add -a option (analysis), please specify the original data path by -i <path>.\n");
+					exit(0);
 				}
 
-				if (diffMax < err)
-					diffMax = err;
-				prodSum += (ori_data[i]-mean1)*(data[i]-mean2);
-				sum3 += (ori_data[i] - mean1)*(ori_data[i]-mean1);
-				sum4 += (data[i] - mean2)*(data[i]-mean2);
-				sum += err*err;	
+				//compute the distortion / compression errors...
+				int totalNbEle;
+				double *ori_data = readDoubleData(inPath, &totalNbEle, &status);
+				if(status!=SZ_SCES)
+				{
+					printf("Error: %s cannot be read!\n", inPath);
+					exit(0);
+				}
+
+				int i = 0;
+				double Max = 0, Min = 0, diffMax = 0;
+				Max = ori_data[0];
+				Min = ori_data[0];
+				diffMax = data[0]>ori_data[0]?data[0]-ori_data[0]:ori_data[0]-data[0];
+			
+				//diffMax = fabs(data[0] - ori_data[0]);
+				int k = 0;
+				double sum1 = 0, sum2 = 0;
+							
+				for (i = 0; i < nbEle; i++)
+				{
+					sum1 += ori_data[i];
+					sum2 += data[i];
+				}
+				double mean1 = sum1/nbEle;
+				double mean2 = sum2/nbEle;
+
+				double sum3 = 0, sum4 = 0;
+				double sum = 0, prodSum = 0, relerr = 0;
+				
+				double maxpw_relerr = 0; 
+				for (i = 0; i < nbEle; i++)
+				{
+					if (Max < ori_data[i]) Max = ori_data[i];
+					if (Min > ori_data[i]) Min = ori_data[i];
+					
+					float err = fabs(data[i] - ori_data[i]);
+					if(ori_data[i]!=0)
+					{
+						relerr = err/ori_data[i];
+						if(maxpw_relerr<relerr)
+							maxpw_relerr = relerr;
+					}
+
+					if (diffMax < err)
+						diffMax = err;
+					prodSum += (ori_data[i]-mean1)*(data[i]-mean2);
+					sum3 += (ori_data[i] - mean1)*(ori_data[i]-mean1);
+					sum4 += (data[i] - mean2)*(data[i]-mean2);
+					sum += err*err;	
+				}
+				double std1 = sqrt(sum3/nbEle);
+				double std2 = sqrt(sum4/nbEle);
+				double ee = prodSum/nbEle;
+				double acEff = ee/std1/std2;
+
+				double mse = sum/nbEle;
+				double range = Max - Min;
+				double psnr = 20*log10(range)-10*log10(mse);
+				double nrmse = sqrt(mse)/range;
+
+				printf ("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, range);
+				printf ("Max absolute error = %.10f\n", diffMax);
+				printf ("Max relative error = %f\n", diffMax/(Max-Min));
+				printf ("Max pw relative error = %f\n", maxpw_relerr);
+				printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
+				printf ("acEff=%f\n", acEff);
 			}
-			double std1 = sqrt(sum3/nbEle);
-			double std2 = sqrt(sum4/nbEle);
-			double ee = prodSum/nbEle;
-			double acEff = ee/std1/std2;
-
-			double mse = sum/nbEle;
-			double range = Max - Min;
-			double psnr = 20*log10(range)-10*log10(mse);
-			double nrmse = sqrt(mse)/range;
-
-			printf ("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, range);
-			printf ("Max absolute error = %.10f\n", diffMax);
-			printf ("Max relative error = %f\n", diffMax/(Max-Min));
-			printf ("Max pw relative error = %f\n", maxpw_relerr);
-			printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
-			printf ("acEff=%f\n", acEff);
 			free(data);			
 		}
 		printf("decompression time = %f seconds.\n", totalCost);
