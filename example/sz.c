@@ -153,6 +153,16 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	if ((r1==0) && (r2==0) && (r3==0) && (r4==0) && (r5==0))
+	{
+		printf ("Error: please specify dimensions.\n");
+		printf("-1 <nx> : dimension for 1D data such as data[nx]\n");
+		printf("-2 <nx> <ny> : dimensions for 2D data such as data[ny][nx]\n");
+		printf("-3 <nx> <ny> <nz> : dimensions for 3D data such as data[nz][ny][nx] \n");
+		printf("-4 <nx> <ny> <nz> <np>: dimensions for 4D data such as data[np][nz][ny][nx] \n");
+		exit(0);
+	}
+
 	if(isCompression == 1)
 	{
 		if(conPath==NULL)
@@ -161,6 +171,7 @@ int main(int argc, char* argv[])
 			printf("Please add -c sz.config in the command\n");
 			exit(0); 
 		}
+
 		int outSize;
 		char outputFilePath[256];		
 		SZ_Init(conPath);
@@ -196,8 +207,15 @@ int main(int argc, char* argv[])
 				exit(0);
 			}			
 		}
+
 		printf("compression time = %f\n", totalCost);
 		printf("compressed data file: %s\n", outputFilePath);
+
+
+		if (printCmpResults == 1)
+		{
+			printf ("Error: -a can be only used in decompression.\n");
+		}
 	}
 	else //decompression
 	{
