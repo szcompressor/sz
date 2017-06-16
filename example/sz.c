@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
 	else //decompression
 	{
 		int byteLength;
-		char outputFilePath[256];		
+		char outputFilePath[256];
 		
 		if(r2==0)
 			nbEle = r1;
@@ -231,7 +231,8 @@ int main(int argc, char* argv[])
 		else if(r5==0)
 			nbEle = r1*r2*r3*r4;
 		else
-			nbEle = r1*r2*r3*r4*r5;		
+			nbEle = r1*r2*r3*r4*r5;
+
 		if(dataType == 0)
 		{
 			unsigned char *bytes = readByteData(cmpPath, &byteLength, &status);
@@ -342,7 +343,7 @@ int main(int argc, char* argv[])
 			double *data = SZ_decompress(SZ_DOUBLE, bytes, byteLength, r5, r4, r3, r2, r1);			
 			cost_end();
 			free(bytes);
-			sprintf(outputFilePath, "%s.out", inPath);				
+			sprintf(outputFilePath, "%s.out", cmpPath);
 			if(binaryOutput==1)		
 				writeDoubleData_inBytes(data, nbEle, outputFilePath, &status);
 			else //txt output
