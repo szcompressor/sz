@@ -123,3 +123,8 @@ SZ 1.4.7-beta   Fix some mem leakage bugs. Fix the bugs about memory crash or se
 SZ 1.4.9-beta	Support point-wise relative error bound setting, and optional Fortran compilation.
 SZ 1.4.9.1-beta Fix the bug in the fortran interface about SZ_batch_compression
 SZ 1.4.9.2-beta Update the user guide by describing how to optimize the compression quality on demand.
+
+===references===
+Please see the following implementation references:
+[1] SZ-1.4: Dingwen Tao, Sheng Di, Zizhong Chen, and Franck Cappello. Significantly improving lossy compression for scientific data sets based on multidimensional prediction and error-controlled quantization. In 2017 IEEE International Parallel and Distributed Processing Symposium, IPDPS 2017, Orlando, Florida, USA, May 29-June 2, pages 1129-1139, 2017.
+[2] SZ-1.1: Sheng Di, and Franck Cappello. Fast error-bounded lossy HPC data compression with SZ. In 2016 IEEE International Parallel and Distributed Processing Symposium, IPDPS 2016, Chicago, IL, USA, May 23-27, 2016, pages 730–739, 2016.
