@@ -50,5 +50,5 @@ sz:	sz.c
 	$(CC) -O3 -o sz sz.c $(SZFLAG) -lm
 
 clean:
-	rm -f test*_compress test*_decompress test*_compress_f test*_decompress_f testfloat_batch_compress testdouble_batch_compress_f
+	rm -f test*_compress test*_decompress test*_compress_f test*_decompress_f testfloat_batch_compress testdouble_batch_compress_f sz
 
