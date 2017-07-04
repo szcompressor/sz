@@ -33,8 +33,8 @@ unsigned int optimize_intervals_float_1D(float *oriData, int dataLength, double 
 	{
 		if(i%sampleDistance==0)
 		{
-			pred_value = 2*oriData[i-1] - oriData[i-2];
-			//pred_value = oriData[i-1];
+			//pred_value = 2*oriData[i-1] - oriData[i-2];
+			pred_value = oriData[i-1];
 			pred_err = fabs(pred_value - oriData[i]);
 			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
@@ -293,11 +293,11 @@ int dataLength, double realPrecision, float valueRangeSize, float medianValue_f)
 	
 	for(i=2;i<dataLength;i++)
 	{
-//		if(i==6)
+//		if(i==2869438)
 //			printf("i=%d\n", i);
 		curData = spaceFillingValue[i];
-		pred = 2*last3CmprsData[0] - last3CmprsData[1];
-		//pred = last3CmprsData[0];
+		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
+		pred = last3CmprsData[0];
 		predAbsErr = fabs(curData - pred);	
 		if(predAbsErr<=checkRadius)
 		{
@@ -396,7 +396,11 @@ unsigned char** newByteData, int *outSize)
 	{
 		unsigned char* p = (*newByteData)+8;
 		for(i=0;i<dataLength;i++,p+=floatSize)
+		{
+			if(i==2869438)
+				printf("i=%d\n", i);
 			floatToBytes(p, oriData[i]);
+		}
 	}
 	*outSize = totalByteLength;
 }
@@ -411,7 +415,7 @@ int dataLength, double realPrecision, int *outSize, float valueRangeSize, float 
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 	
 	if(*outSize>dataLength*sizeof(float))
-		SZ_compress_args_float_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+		SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
 	
 	free_TightDataPointStorageF(tdps);
 }
@@ -1545,7 +1549,7 @@ int SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, in
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
-			tmpSize = zlib_uncompress2(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize);			
+			tmpSize = zlib_uncompress2(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+8);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
 			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 			//memcpy(szTmpBytes, tmpBytes, tmpSize);
 			//free(tmpBytes); //release useless memory		

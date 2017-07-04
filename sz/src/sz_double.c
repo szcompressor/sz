@@ -33,8 +33,8 @@ unsigned int optimize_intervals_double_1D(double *oriData, int dataLength, doubl
 	{
 		if(i%sampleDistance==0)
 		{
-			pred_value = 2*oriData[i-1] - oriData[i-2];
-			//pred_value = oriData[i-1];
+			//pred_value = 2*oriData[i-1] - oriData[i-2];
+			pred_value = oriData[i-1];
 			pred_err = fabs(pred_value - oriData[i]);
 			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
@@ -297,8 +297,8 @@ int dataLength, double realPrecision, double valueRangeSize, double medianValue_
 	{				
 		//printf("%.30G\n",last3CmprsData[0]);
 		curData = spaceFillingValue[i];
-		pred = 2*last3CmprsData[0] - last3CmprsData[1];
-		//pred = last3CmprsData[0];
+		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
+		pred = last3CmprsData[0];
 		predAbsErr = fabs(curData - pred);	
 		if(predAbsErr<=checkRadius)
 		{
@@ -1532,7 +1532,7 @@ int SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2, 
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 			
-			tmpSize = zlib_uncompress2(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize);			
+			tmpSize = zlib_uncompress2(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+8);			
 			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 			//memcpy(szTmpBytes, tmpBytes, tmpSize);
 			//free(tmpBytes); //release useless memory		
