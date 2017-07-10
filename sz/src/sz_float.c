@@ -1872,9 +1872,9 @@ unsigned int optimize_intervals_float_2D_subblock(float *oriData, double realPre
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
 	int totalSampleSize = R1*R2/sampleDistance;
-	for(i=s1;i<=e1;i++)
+	for(i=s1+1;i<=e1;i++)
 	{
-		for(j=s2;j<=e2;j++)
+		for(j=s2+1;j<=e2;j++)
 		{
 			if((i+j)%sampleDistance==0)
 			{
@@ -1924,11 +1924,11 @@ unsigned int optimize_intervals_float_3D_subblock(float *oriData, double realPre
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
 	int totalSampleSize = R1*R2*R3/sampleDistance;
-	for(i=s1;i<=e1;i++)
+	for(i=s1+1;i<=e1;i++)
 	{
-		for(j=s2;j<=e2;j++)
+		for(j=s2+1;j<=e2;j++)
 		{
-			for(k=s3;k<=e3;k++)
+			for(k=s3+1;k<=e3;k++)
 			{
 				if((i+j+k)%sampleDistance==0)
 				{
@@ -1982,13 +1982,13 @@ int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, 
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
 	int totalSampleSize = R1*R2*R3*R4/sampleDistance;
-	for(i=s1;i<=e1;i++)
+	for(i=s1+1;i<=e1;i++)
 	{
-		for(j=s2;j<=e2;j++)
+		for(j=s2+1;j<=e2;j++)
 		{
-			for(k=s3;k<=e3;k++)
+			for(k=s3+1;k<=e3;k++)
 			{
-				for (l=s4;l<=e4;l++)
+				for (l=s4+1;l<=e4;l++)
 				{
 					if((i+j+k+l)%sampleDistance==0)
 					{
