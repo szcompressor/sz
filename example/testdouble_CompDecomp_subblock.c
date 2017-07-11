@@ -93,7 +93,8 @@ int main(int argc, char * argv[])
 
     if (maxDiff <= absEB)
     {
-    	printf ("Maximum Absolute Error is %f\n", maxDiff);
+    	printf ("Maximum Absolute Error is %lf\n", maxDiff);
+    	printf ("Absolute Error bound is %lf\n", absEB);
     	printf ("Test passed.\n");
     }
 
