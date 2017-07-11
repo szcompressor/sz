@@ -68,6 +68,8 @@ int main(int argc, char * argv[])
     else
     if (r5 == 0)
     	decompData = SZ_decompress(SZ_FLOAT, bytes, outSize, 0, r4/2+1, r3/2+1, r2/2+1, r1/64+1);
+    else
+		printf("Error: doesn't support 5 dimensions for now.\n");
 
     printf ("Subblock data's decompression is done.\n");
 
