@@ -4,6 +4,8 @@
 #include "sz.h"
 #include "rw.h"
 
+double absEB = 1E-4;
+
 int main(int argc, char * argv[])
 {
     int r5=0,r4=0,r3=0,r2=0,r1=0;
@@ -42,16 +44,16 @@ int main(int argc, char * argv[])
     oriData = readDoubleData(oriFilePath, &nbEle, &status);
     if(status != SZ_SCES)
     {
-	printf("Error: data file %s cannot be read!\n", oriFilePath);
-	exit(0);
+    	printf("Error: data file %s cannot be read!\n", oriFilePath);
+    	exit(0);
     }
 
     int outSize;
     unsigned char *bytes = (unsigned char *)malloc(nbEle*sizeof(double));
 
-    /* Compress a subblock of the original data */
-    SZ_compress_args3(SZ_DOUBLE, oriData, bytes, &outSize, REL, 1E-3, 1E-3,
-    		r5, r4, r3, r2, r1, 0, 0, 0, 0, 0, r5/2, r4/2, r3/4, r2/4, r1/64);
+    /* Compress a subblock (half) of the original data */
+    SZ_compress_args3(SZ_DOUBLE, oriData, bytes, &outSize, ABS, absEB, 0,
+    		r5, r4, r3, r2, r1, 0, 0, 0, 0, 0, r5/2, r4/2, r3/2, r2/2, r1/2);
     printf ("Subblock data's compression is done.\n");
 
     /* Decompress the subblock */
@@ -62,7 +64,7 @@ int main(int argc, char * argv[])
     	decompData = SZ_decompress(SZ_DOUBLE, bytes, outSize, 0, 0, 0, r2/2+1, r1/2+1);
     else
     if (r4 == 0)
-    	decompData = SZ_decompress(SZ_DOUBLE, bytes, outSize, 0, 0, r3/4+1, r2/4+1, r1/64+1);
+    	decompData = SZ_decompress(SZ_DOUBLE, bytes, outSize, 0, 0, r3/2+1, r2/2+1, r1/2+1);
     else
     if (r5 == 0)
     	decompData = SZ_decompress(SZ_DOUBLE, bytes, outSize, 0, r4/2+1, r3/2+1, r2/2+1, r1/2+1);
@@ -75,9 +77,9 @@ int main(int argc, char * argv[])
     int index1 = 0, index2 = 0;
     for (i5 = 0; i5 <= r5/2; i5++)
     	for (i4 = 0; i4 <= r4/2; i4++)
-    		for (i3 = 0; i3 <= r3/4; i3++)
-    			for (i2 = 0; i2 <= r2/4; i2++)
-    				for (i1 = 0; i1 <= r1/64; i1++)
+    		for (i3 = 0; i3 <= r3/2; i3++)
+    			for (i2 = 0; i2 <= r2/2; i2++)
+    				for (i1 = 0; i1 <= r1/2; i1++)
     				{
     					index1 = i5*(r4*r3*r2*r1)+i4*(r3*r2*r1)+i3*(r2*r1)+i2*r1+i1;
     					double data1 = oriData[index1];
@@ -87,7 +89,11 @@ int main(int argc, char * argv[])
     						maxDiff = diff;
     				}
 
-    printf ("Max Abs Error = %lf\n", maxDiff);
+    if (maxDiff <= absEB)
+    {
+    	printf ("Maximum Absolute Error is %f\n", maxDiff);
+    	printf ("Test passed.\n");
+    }
 
     free(bytes);
     free(oriData);

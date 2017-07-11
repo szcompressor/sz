@@ -4,6 +4,8 @@
 #include "sz.h"
 #include "rw.h"
 
+float absEB = 1E-4;
+
 int main(int argc, char * argv[])
 {
     int r5=0,r4=0,r3=0,r2=0,r1=0;
@@ -50,22 +52,22 @@ int main(int argc, char * argv[])
     unsigned char *bytes = (unsigned char *)malloc(nbEle*sizeof(float));
 
     /* Compress a subblock of the original data */
-    SZ_compress_args3(SZ_FLOAT, oriData, bytes, &outSize, REL, 1E-3, 1E-3,
-    		r5, r4, r3, r2, r1, 0, 0, 0, 0, 0, r5/2, r4/2, r3/4, r2/4, r1/64);
+    SZ_compress_args3(SZ_FLOAT, oriData, bytes, &outSize, ABS, absEB, 0,
+    		r5, r4, r3, r2, r1, 0, 0, 0, 0, 0, r5/2, r4/2, r3/2, r2/2, r1/64);
     printf ("Subblock data's compression is done.\n");
 
     /* Decompress the subblock */
     if (r2 == 0)
-    	decompData = SZ_decompress(SZ_FLOAT, bytes, outSize, 0, 0, 0, 0, r1/2+1);
+    	decompData = SZ_decompress(SZ_FLOAT, bytes, outSize, 0, 0, 0, 0, r1/64+1);
     else
     if (r3 == 0)
-    	decompData = SZ_decompress(SZ_FLOAT, bytes, outSize, 0, 0, 0, r2/2+1, r1/2+1);
+    	decompData = SZ_decompress(SZ_FLOAT, bytes, outSize, 0, 0, 0, r2/2+1, r1/64+1);
     else
     if (r4 == 0)
-    	decompData = SZ_decompress(SZ_FLOAT, bytes, outSize, 0, 0, r3/4+1, r2/4+1, r1/64+1);
+    	decompData = SZ_decompress(SZ_FLOAT, bytes, outSize, 0, 0, r3/2+1, r2/2+1, r1/64+1);
     else
     if (r5 == 0)
-    	decompData = SZ_decompress(SZ_FLOAT, bytes, outSize, 0, r4/2+1, r3/2+1, r2/2+1, r1/2+1);
+    	decompData = SZ_decompress(SZ_FLOAT, bytes, outSize, 0, r4/2+1, r3/2+1, r2/2+1, r1/64+1);
 
     printf ("Subblock data's decompression is done.\n");
 
@@ -75,8 +77,8 @@ int main(int argc, char * argv[])
     int index1 = 0, index2 = 0;
     for (i5 = 0; i5 <= r5/2; i5++)
         for (i4 = 0; i4 <= r4/2; i4++)
-            for (i3 = 0; i3 <= r3/4; i3++)
-                for (i2 = 0; i2 <= r2/4; i2++)
+            for (i3 = 0; i3 <= r3/2; i3++)
+                for (i2 = 0; i2 <= r2/2; i2++)
                     for (i1 = 0; i1 <= r1/64; i1++)
                     {
                     	index1 = i5*(r4*r3*r2*r1)+i4*(r3*r2*r1)+i3*(r2*r1)+i2*r1+i1;
@@ -85,10 +87,13 @@ int main(int argc, char * argv[])
                     	float diff = fabs(data1-data2);
                     	if (diff > maxDiff)
                     		maxDiff = diff;
-//                    	printf ("index1 = %d, index2 = %d, data1 = %f, data2 = %f\n", index1, index2, data1, data2);
                     }
 
-    printf ("Max Abs Error = %f\n", maxDiff);
+    if (maxDiff <= absEB)
+    {
+    	printf ("Maximum Absolute Error is %f\n", maxDiff);
+    	printf ("Test passed.\n");
+    }
 
     free(bytes); 
     free(oriData);
