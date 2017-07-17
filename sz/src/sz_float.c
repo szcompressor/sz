@@ -33,8 +33,8 @@ unsigned int optimize_intervals_float_1D(float *oriData, int dataLength, double 
 	{
 		if(i%sampleDistance==0)
 		{
-			//pred_value = 2*oriData[i-1] - oriData[i-2];
-			pred_value = oriData[i-1];
+			pred_value = 2*oriData[i-1] - oriData[i-2];
+			//pred_value = oriData[i-1];
 			pred_err = fabs(pred_value - oriData[i]);
 			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
