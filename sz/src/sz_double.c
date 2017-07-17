@@ -297,8 +297,8 @@ int dataLength, double realPrecision, double valueRangeSize, double medianValue_
 	{				
 		//printf("%.30G\n",last3CmprsData[0]);
 		curData = spaceFillingValue[i];
-		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
-		pred = last3CmprsData[0];
+		pred = 2*last3CmprsData[0] - last3CmprsData[1];
+		//pred = last3CmprsData[0];
 		predAbsErr = fabs(curData - pred);	
 		if(predAbsErr<=checkRadius)
 		{
