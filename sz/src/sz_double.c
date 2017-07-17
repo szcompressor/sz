@@ -1493,7 +1493,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 		}
 		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
 		{
-			*outSize = (int)zlib_compress2(tmpByteData, tmpOutSize, newByteData, gzipMode);
+			*outSize = (int)zlib_compress5(tmpByteData, tmpOutSize, newByteData, gzipMode);
 			free(tmpByteData);
 		}
 		else
@@ -1532,7 +1532,7 @@ int SZ_decompress_args_double(double** newData, int r5, int r4, int r3, int r2, 
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 			
-			tmpSize = zlib_uncompress2(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+8);			
+			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+8);			
 			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 			//memcpy(szTmpBytes, tmpBytes, tmpSize);
 			//free(tmpBytes); //release useless memory		

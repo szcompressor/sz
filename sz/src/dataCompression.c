@@ -212,12 +212,6 @@ void symTransform_8bytes(unsigned char data[8])
 	data[4] = tmp;
 }
 
-void flush_to_bigEndian_8bytes(unsigned char data[8], int dataEndianType)
-{
-	if(dataEndianType==LITTLE_ENDIAN_DATA)
-		symTransform_8bytes(data);
-}
-
 inline void symTransform_2bytes(unsigned char data[2])
 {
 	unsigned char tmp = data[0];
@@ -234,24 +228,6 @@ void symTransform_4bytes(unsigned char data[4])
 	tmp = data[1];
 	data[1] = data[2];
 	data[2] = tmp;
-}
-
-void flush_to_bigEndian_4bytes(unsigned char data[4])
-{
-	if(dataEndianType==LITTLE_ENDIAN_DATA)
-		symTransform_4bytes(data);
-}
-
-void bigEndian_to_OSEndian_double(unsigned char data[8])
-{
-	if(dataEndianType==LITTLE_ENDIAN_DATA)
-		symTransform_8bytes(data);
-}
-
-void bigEndian_to_OSEndian_float(unsigned char data[4])
-{
-	if(dataEndianType==LITTLE_ENDIAN_DATA)
-		symTransform_4bytes(data);
 }
 
 void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, 

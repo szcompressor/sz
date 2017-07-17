@@ -602,7 +602,7 @@ unsigned char* SZ_batch_compress(int *outSize)
 	
 	if(szMode!=SZ_BEST_SPEED)
 	{
-		tmpGzipSize = (int)zlib_compress2(tmpFinalCompressedBytes, dba->size, &tmpCompressedBytes2, gzipMode);
+		tmpGzipSize = (int)zlib_compress5(tmpFinalCompressedBytes, dba->size, &tmpCompressedBytes2, gzipMode);
 		free(tmpFinalCompressedBytes);		
 	}
 	else
@@ -651,7 +651,7 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, int compressedLe
 	int gzipDecpressSize = 0;
 	if(isZlibFormat(compressedStream[4], compressedStream[5])!=0)
 	{
-		gzipDecpressSize = zlib_uncompress2(&(compressedStream[4]), (unsigned long)compressedLength, &gzipDecpressBytes, (unsigned long)targetUncompressSize);
+		gzipDecpressSize = zlib_uncompress5(&(compressedStream[4]), (unsigned long)compressedLength, &gzipDecpressBytes, (unsigned long)targetUncompressSize);
 	}
 	else
 	{
