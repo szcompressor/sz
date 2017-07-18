@@ -1992,7 +1992,7 @@ int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, 
 				{
 					if((i+j+k+l)%sampleDistance==0)
 					{
-						index = i*r234+j*r34+k*r4;
+						index = i*r234+j*r34+k*r4+l;
 						pred_value = oriData[index-1] + oriData[index-r4] + oriData[index-r34]
 									- oriData[index-1-r34] - oriData[index-r4-1] - oriData[index-r4-r34] + oriData[index-r4-r34-1];
 						pred_err = fabs(pred_value - oriData[index]);

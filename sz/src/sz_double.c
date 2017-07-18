@@ -1961,7 +1961,7 @@ int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, 
 	double pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	int totalSampleSize = R1*R2*R3/sampleDistance;
+	int totalSampleSize = R1*R2*R3*R4/sampleDistance;
 	for(i=s1+1;i<=e1;i++)
 	{
 		for(j=s2+1;j<=e2;j++)
