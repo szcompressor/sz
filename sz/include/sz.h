@@ -78,7 +78,10 @@ extern "C" {
 
 #define SZ_MAINTAIN_VAR_DATA 0
 #define SZ_DESTROY_WHOLE_VARSET 1
-
+	
+//#define SZ_ZLIB_BUFFER_SIZE 1048576	
+#define SZ_ZLIB_BUFFER_SIZE 1024
+	
 //Note: the following setting should be consistent with stateNum in Huffman.h
 //#define intvCapacity 65536
 //#define intvRadius 32768
@@ -200,12 +203,8 @@ float max_f(float a, float b);
 double getRealPrecision_double(double valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status);
 double getRealPrecision_float(float valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status);
 void symTransform_8bytes(unsigned char data[8]);
-void flush_to_bigEndian_8bytes(unsigned char data[8], int dataEndianType);
 void symTransform_2bytes(unsigned char data[2]);
 void symTransform_4bytes(unsigned char data[4]);
-void flush_to_bigEndian_4bytes(unsigned char data[4]);
-void bigEndian_to_OSEndian_double(unsigned char data[8]);
-void bigEndian_to_OSEndian_float(unsigned char data[4]);
 void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, 
 		int reqLength, int reqBytesLength, int resiBitsLength);
 void compressSingleDoubleValue(DoubleValueCompressElement *vce, double tgtValue, double precision, double medianValue, 
@@ -259,6 +258,10 @@ void decompressBitArraybySimpleLZ77(int** result, unsigned char* bytes, int byte
 unsigned long zlib_compress(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level);
 unsigned long zlib_compress2(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level);
 unsigned long zlib_compress3(unsigned char* data, unsigned long dataLength, unsigned char* compressBytes, int level);
+unsigned long zlib_compress4(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level);
+unsigned long zlib_compress5(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level);
+unsigned long zlib_uncompress4(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize);
+unsigned long zlib_uncompress5(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize);
 unsigned long zlib_uncompress(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize);
 unsigned long zlib_uncompress2(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize);
 
