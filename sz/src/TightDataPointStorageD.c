@@ -1941,7 +1941,7 @@ void getSnapshotData_double_4D(double** data, int r1, int r2, int r3, int r4, Ti
 			if(errBoundMode!=PW_REL)
 				decompressDataSeries_double_4D(&decmpData, r1, r2, r3, r4, tdps);
 			else
-				decompressDataSeries_double_3D_pwr(&decmpData, r1, r2, r3, tdps);
+				decompressDataSeries_double_3D_pwr(&decmpData, r1*r2, r3, r4, tdps);
 				//ToDo
 				//decompressDataSeries_double_4D_pwr(&decmpData, r1, r2, r3, r4, tdps);
 			// insert the decompressed data
