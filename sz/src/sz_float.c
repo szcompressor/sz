@@ -397,8 +397,6 @@ unsigned char** newByteData, int *outSize)
 		unsigned char* p = (*newByteData)+8;
 		for(i=0;i<dataLength;i++,p+=floatSize)
 		{
-			if(i==2869438)
-				printf("i=%d\n", i);
 			floatToBytes(p, oriData[i]);
 		}
 	}
