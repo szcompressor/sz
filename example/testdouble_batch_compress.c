@@ -91,7 +91,7 @@ int main(int argc, char * argv[])
     SZ_Variable* p = sz_varset->header->next;
     while(p!=NULL)
     {
-        sprintf(outputFilePath, "%s-batch%d.out", oriFilePath, varIndex++);
+        sprintf(outputFilePath, "%s-batch%zu.out", oriFilePath, varIndex++);
         dataLength = computeDataLength(p->r5, p->r4, p->r3, p->r2, p->r1);
 	writeDoubleData(p->data, dataLength, outputFilePath, &status);
         p = p->next;
