@@ -51,7 +51,7 @@ void free_Variable_all(SZ_Variable* v)
 
 void SZ_batchAddVar(char* varName, int dataType, void* data, 
 			int errBoundMode, double absErrBound, double relBoundRatio,
-			int r5, int r4, int r3, int r2, int r1)
+			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {	
 	if(sz_varset==NULL)
 	{
@@ -128,7 +128,7 @@ SZ_Variable* SZ_searchVar(char* varName)
 	return NULL;
 }
 
-void* SZ_getVarData(char* varName, int *r5, int *r4, int *r3, int *r2, int *r1)
+void* SZ_getVarData(char* varName, size_t *r5, size_t *r4, size_t *r3, size_t *r2, size_t *r1)
 {
 	SZ_Variable* v = SZ_searchVar(varName);
 	*r5 = v->r5;

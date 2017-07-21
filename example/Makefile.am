@@ -2,9 +2,9 @@ AUTOMAKE_OPTIONS=foreign
 AM_CFLAGS = -I../sz/include -I../zlib
 AM_FCFLAGS = -I../sz/include -I../sz -I../zlib
 if FORTRAN
-bin_PROGRAMS=testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz testdouble_batch_f testdouble_compress_f testdouble_decompress_f
+bin_PROGRAMS=testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz testdouble_batch_f testdouble_compress_f testdouble_decompress_f testfloat_CompDecomp_subblock testdouble_CompDecomp_subblock
 else
-bin_PROGRAMS=testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz
+bin_PROGRAMS=testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz testfloat_CompDecomp_subblock testdouble_CompDecomp_subblock
 endif
 testfloat_compress_SOURCES=testfloat_compress.c
 testfloat_compress_LDADD=../sz/.libs/libsz.a ../zlib/.libs/libzlib.a -lm
@@ -26,5 +26,9 @@ testfloat_batch_compress_SOURCES=testfloat_batch_compress.c
 testfloat_batch_compress_LDADD=../sz/.libs/libsz.a ../zlib/.libs/libzlib.a -lm
 testdouble_batch_compress_SOURCES=testdouble_batch_compress.c
 testdouble_batch_compress_LDADD=../sz/.libs/libsz.a ../zlib/.libs/libzlib.a -lm
-sz_SOURCS=sz.c
+testfloat_CompDecomp_subblock_SOURCES=testfloat_CompDecomp_subblock.c
+testfloat_CompDecomp_subblock_LDADD=../sz/.libs/libsz.a ../zlib/.libs/libzlib.a -lm
+testdouble_CompDecomp_subblock_SOURCES=testdouble_CompDecomp_subblock.c
+testdouble_CompDecomp_subblock_LDADD=../sz/.libs/libsz.a ../zlib/.libs/libzlib.a -lm
+sz_SOURCES=sz.c
 sz_LDADD=../sz/.libs/libsz.a ../zlib/.libs/libzlib.a -lm

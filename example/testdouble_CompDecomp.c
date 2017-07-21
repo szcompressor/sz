@@ -16,7 +16,7 @@
 
 int main(int argc, char * argv[])
 {
-    int r5=0,r4=0,r3=0,r2=0,r1=0;
+    size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     char outDir[640], oriFilePath[640], outputFilePath[640];
     char *cfgFile, *zcFile, *solName, *varName, *errBoundMode;
     double absErrBound;
@@ -72,10 +72,11 @@ int main(int argc, char * argv[])
  
     sprintf(outputFilePath, "%s.sz", oriFilePath);
    
-    int nbEle, status = SZ_SCES;
+    size_t nbEle; 
+    int status = SZ_SCES;
     double *data = readDoubleData(oriFilePath, &nbEle, &status);
    
-    int outSize; 
+    size_t outSize; 
     ZC_DataProperty* dataProperty = ZC_startCmpr(varName, ZC_DOUBLE, data, r5, r4, r3, r2, r1);
    
     unsigned char *bytes = SZ_compress_args(SZ_DOUBLE, data, &outSize, errboundmode, absErrBound, absErrBound, r5, r4, r3, r2, r1);

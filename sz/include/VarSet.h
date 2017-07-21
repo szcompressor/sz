@@ -14,22 +14,23 @@
 extern "C" {
 #endif
 
+#include <stdio.h>
 typedef struct SZ_Variable
 {
 	char* varName;
 	char compressType; //102 means HZ; 101 means SZ 
 	int dataType; //SZ_FLOAT or SZ_DOUBLE
-	int r5;
-	int r4;
-	int r3;
-	int r2;
-	int r1;
+	size_t r5;
+	size_t r4;
+	size_t r3;
+	size_t r2;
+	size_t r1;
 	int errBoundMode;
 	double absErrBound;
 	double relBoundRatio;
 	void* data;
 	unsigned char* compressedBytes;
-	int compressedSize;
+	size_t compressedSize;
 	struct SZ_Variable* next;
 } SZ_Variable;
 
@@ -45,12 +46,12 @@ void free_Variable_keepCompressedBytes(SZ_Variable* v);
 void free_Variable_all(SZ_Variable* v);
 void SZ_batchAddVar(char* varName, int dataType, void* data, 
 			int errBoundMode, double absErrBound, double relBoundRatio,
-			int r5, int r4, int r3, int r2, int r1);
+			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 int SZ_batchDelVar_vset(SZ_VarSet* vset, char* varName);
 int SZ_batchDelVar(char* varName);
 
 SZ_Variable* SZ_searchVar(char* varName);
-void* SZ_getVarData(char* varName, int *r5, int *r4, int *r3, int *r2, int *r1);
+void* SZ_getVarData(char* varName, size_t *r5, size_t *r4, size_t *r3, size_t *r2, size_t *r1);
 
 void free_VarSet_vset(SZ_VarSet *vset, int mode);
 void SZ_freeVarSet(int mode);

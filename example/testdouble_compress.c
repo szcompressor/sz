@@ -36,7 +36,7 @@ void cost_end()
 
 int main(int argc, char * argv[])
 {
-    int r5=0,r4=0,r3=0,r2=0,r1=0;
+    size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     char outDir[640], oriFilePath[640], outputFilePath[640];
     char *cfgFile;
     
@@ -65,7 +65,7 @@ int main(int argc, char * argv[])
     
     sprintf(outputFilePath, "%s.sz", oriFilePath);
    
-    int nbEle;
+    size_t nbEle;
     double *data = readDoubleData(oriFilePath, &nbEle, &status);
     if(status!=SZ_SCES)
     {
@@ -73,7 +73,7 @@ int main(int argc, char * argv[])
 	exit(0);
     }
    
-    int outSize;
+    size_t outSize;
     cost_start(); 
     unsigned char *bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
     //char *bytes = (char *)malloc(nbEle*sizeof(double)); //

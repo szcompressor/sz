@@ -8,7 +8,7 @@ float absEB = 1E-4;
 
 int main(int argc, char * argv[])
 {
-    int r5=0,r4=0,r3=0,r2=0,r1=0;
+    size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     char outDir[640], oriFilePath[640], outputFilePath[640];
     char *cfgFile;
     
@@ -38,7 +38,7 @@ int main(int argc, char * argv[])
     if(status == SZ_NSCS)
 	exit(0);
    
-    int nbEle;
+    size_t nbEle;
     float *oriData, *decompData;
 
     oriData = readFloatData(oriFilePath, &nbEle, &status);
@@ -48,7 +48,7 @@ int main(int argc, char * argv[])
 	exit(0);
     }
   
-    int outSize; 
+    size_t outSize; 
     unsigned char *bytes = (unsigned char *)malloc(nbEle*sizeof(float));
 
     /* Compress a subblock of the original data */
@@ -75,8 +75,8 @@ int main(int argc, char * argv[])
 
     float maxDiff = 0;
 
-    int i1, i2, i3, i4, i5;
-    int index1 = 0, index2 = 0;
+    size_t i1, i2, i3, i4, i5;
+    size_t index1 = 0, index2 = 0;
     for (i5 = 0; i5 <= r5/2; i5++)
         for (i4 = 0; i4 <= r4/2; i4++)
             for (i3 = 0; i3 <= r3/2; i3++)

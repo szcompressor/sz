@@ -26,7 +26,7 @@ unsigned long **code = NULL;//TODO
 unsigned char *cout = NULL;
 int n_inode = 0;
  
-node new_node(int freq, unsigned int c, node a, node b)
+node new_node(size_t freq, unsigned int c, node a, node b)
 {
 	node n = pool + n_nodes++;
 	if (freq) 
@@ -121,11 +121,11 @@ void build_code(node n, int len, unsigned long out1, unsigned long out2)
 	}
 }
 
-void init(int *s, int length)
+void init(int *s, size_t length)
 {
-	int i, *freq = (int *)malloc(allNodes*sizeof(int));
-	int index;
-	memset(freq, 0, allNodes*sizeof(int));
+	size_t i, index;
+	size_t *freq = (size_t *)malloc(allNodes*sizeof(size_t));
+	memset(freq, 0, allNodes*sizeof(size_t));
 	for(i = 0;i < length;i++) 
 	{
 		//index = 0;
@@ -146,9 +146,9 @@ void init(int *s, int length)
 	free(freq);
 }
  
-void encode(int *s, int length, unsigned char *out, int *outSize)
+void encode(int *s, size_t length, unsigned char *out, size_t *outSize)
 {
-	int i = 0;
+	size_t i = 0;
 	unsigned char curByte, bitSize = 0, byteSize, byteSizep;
 	int state;
 	unsigned char *p = out;
@@ -255,10 +255,10 @@ void encode(int *s, int length, unsigned char *out, int *outSize)
 	printf("avg bit size = %f\n", ((float)totalBitSize)/length);*/
 }
  
-void decode(unsigned char *s, int targetLength, node t, int *out)
+void decode(unsigned char *s, size_t targetLength, node t, int *out)
 {
-	unsigned long i = 0, byteIndex = 0;
-	int r, count=0;
+	size_t i = 0, byteIndex = 0, count = 0;
+	int r; 
 	node n = t;
 	char byte;
 	
@@ -522,7 +522,7 @@ node reconstruct_HuffTree_from_bytes_anyStates(unsigned char* bytes, int nodeCou
 		if(cmpSysEndianType!=(unsigned char)sysEndianType)
 		{
 			unsigned char* p = (unsigned char*)(bytes+1+2*nodeCount*sizeof(unsigned char));
-			int i = 0, size = nodeCount*sizeof(unsigned int);
+			size_t i = 0, size = nodeCount*sizeof(unsigned int);
 			while(1)
 			{
 				symTransform_4bytes(p);
@@ -560,7 +560,7 @@ node reconstruct_HuffTree_from_bytes_anyStates(unsigned char* bytes, int nodeCou
 		if(cmpSysEndianType!=(unsigned char)sysEndianType)
 		{
 			unsigned char* p = (unsigned char*)(bytes+1);
-			int i = 0, size = 3*nodeCount*sizeof(unsigned int);
+			size_t i = 0, size = 3*nodeCount*sizeof(unsigned int);
 			while(1)
 			{
 				symTransform_4bytes(p);
@@ -600,7 +600,7 @@ node reconstruct_HuffTree_from_bytes_anyStates(unsigned char* bytes, int nodeCou
 		if(cmpSysEndianType!=(unsigned char)sysEndianType)
 		{
 			unsigned char* p = (unsigned char*)(bytes+1);
-			int i = 0, size = 3*nodeCount*sizeof(unsigned int);
+			size_t i = 0, size = 3*nodeCount*sizeof(unsigned int);
 			while(1)
 			{
 				symTransform_4bytes(p);
@@ -628,9 +628,9 @@ node reconstruct_HuffTree_from_bytes_anyStates(unsigned char* bytes, int nodeCou
 	}
 }
 
-void encode_withTree(int *s, int length, unsigned char **out, int *outSize)
+void encode_withTree(int *s, size_t length, unsigned char **out, size_t *outSize)
 {
-	int i, nodeCount = 0;
+	size_t i, nodeCount = 0;
 	unsigned char *treeBytes, buffer[4];
 	
 	init(s, length);
@@ -644,7 +644,7 @@ void encode_withTree(int *s, int length, unsigned char **out, int *outSize)
 	memcpy(*out, buffer, 4);
 	memcpy(*out+4, treeBytes, treeByteSize);
 	free(treeBytes);
-	int enCodeSize = 0;
+	size_t enCodeSize = 0;
 	encode(s, length, *out+4+treeByteSize, &enCodeSize);
 	*outSize = 4+treeByteSize+enCodeSize;
 	
@@ -657,10 +657,10 @@ void encode_withTree(int *s, int length, unsigned char **out, int *outSize)
  * @par *out rememmber to allocate targetLength short_type data for it beforehand.
  * 
  * */
-void decode_withTree(unsigned char *s, int targetLength, int *out)
+void decode_withTree(unsigned char *s, size_t targetLength, int *out)
 {
-	int encodeStartIndex;
-	int nodeCount = bytesToInt_bigEndian(s);
+	size_t encodeStartIndex;
+	size_t nodeCount = bytesToInt_bigEndian(s);
 	node root = reconstruct_HuffTree_from_bytes_anyStates(s+4, nodeCount);
 	
 	//sdi: Debug
@@ -687,7 +687,7 @@ void SZ_ReleaseHuffman()
 {
 	if(pool!=NULL)
 	{
-		int i;
+		size_t i;
 		free(pool);
 		pool = NULL;
 		free(qqq);

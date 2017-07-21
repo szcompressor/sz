@@ -14,13 +14,14 @@
 extern "C" {
 #endif
 
+#include <stdio.h> 
 //Note: when changing the following settings, intvCapacity in sz.h should be changed as well.
 //#define allNodes 131072
 //#define stateNum 65536
 
 typedef struct node_t {
 	struct node_t *left, *right;
-	int freq;
+	size_t freq;
 	char t; //in_node:0; otherwise:1
 	unsigned int c;
 } *node;
@@ -38,14 +39,14 @@ extern unsigned long **code;
 extern unsigned char *cout;
 extern int n_inode; //n_inode is for decompression
 
-node new_node(int freq, unsigned int c, node a, node b);
+node new_node(size_t freq, unsigned int c, node a, node b);
 node new_node2(unsigned int c, unsigned char t);
 void qinsert(node n);
 node qremove();
 void build_code(node n, int len, unsigned long out1, unsigned long out2);
-void init(int *s, int length);
-void encode(int *s, int length, unsigned char *out, int *outSize);
-void decode(unsigned char *s, int targetLength, node t, int *out);
+void init(int *s, size_t length);
+void encode(int *s, size_t length, unsigned char *out, size_t *outSize);
+void decode(unsigned char *s, size_t targetLength, node t, int *out);
 void pad_tree_uchar(unsigned char* L, unsigned char* R, unsigned int* C, unsigned char* t, unsigned int i, node root);
 void pad_tree_ushort(unsigned short* L, unsigned short* R, unsigned int* C, unsigned char* t, unsigned int i, node root);
 void pad_tree_uint(unsigned int* L, unsigned int* R, unsigned int* C, unsigned char* t, unsigned int i, node root);
@@ -54,8 +55,8 @@ void unpad_tree_uchar(unsigned char* L, unsigned char* R, unsigned int* C, unsig
 void unpad_tree_ushort(unsigned short* L, unsigned short* R, unsigned int* C, unsigned char* t, unsigned int i, node root);
 void unpad_tree_uint(unsigned int* L, unsigned int* R, unsigned int* C, unsigned char* t, unsigned int i, node root);
 node reconstruct_HuffTree_from_bytes_anyStates(unsigned char* bytes, int nodeCount);
-void encode_withTree(int *s, int length, unsigned char **out, int *outSize);
-void decode_withTree(unsigned char *s, int targetLength, int *out);
+void encode_withTree(int *s, size_t length, unsigned char **out, size_t *outSize);
+void decode_withTree(unsigned char *s, size_t targetLength, int *out);
 void SZ_ReleaseHuffman();
 
 #ifdef __cplusplus

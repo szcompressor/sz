@@ -15,12 +15,12 @@
 #include "Huffman.h"
 //#include "rw.h"
 
-void decompressDataSeries_double_1D_pwr(double** data, int dataSeriesLength, TightDataPointStorageD* tdps) 
+void decompressDataSeries_double_1D_pwr(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	unsigned char tmpPrecBytes[8] = {0}; //used when needing to convert bytes to float values
 	unsigned char* bp = tdps->pwrErrBoundBytes;
-	int i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 								// in resiMidBits, p is to track the
 								// byte_index of resiMidBits, l is for
 								// leadNum
@@ -43,7 +43,7 @@ void decompressDataSeries_double_1D_pwr(double** data, int dataSeriesLength, Tig
 	
 	memset(preBytes, 0, 8);
 
-	int curByteIndex = 0;
+	size_t curByteIndex = 0;
 	int reqLength, reqBytesLength, resiBitsLength, resiBits, reqExpo, reqMantLength; 
 	unsigned char leadingNum;	
 	double medianValue, exactData, predValue, realPrecision;
@@ -127,9 +127,9 @@ void decompressDataSeries_double_1D_pwr(double** data, int dataSeriesLength, Tig
 	return;
 }
 
-double* extractRealPrecision_2D_double(int R1, int R2, int blockSize, TightDataPointStorageD* tdps)
+double* extractRealPrecision_2D_double(size_t R1, size_t R2, int blockSize, TightDataPointStorageD* tdps)
 {
-	int i,j,k=0, I;
+	size_t i,j,k=0, I;
 	unsigned char* bytes = tdps->pwrErrBoundBytes;
 	unsigned char tmpBytes[8] = {0};
 	double* result = (double*)malloc(sizeof(double)*R1*R2);
@@ -146,16 +146,16 @@ double* extractRealPrecision_2D_double(int R1, int R2, int blockSize, TightDataP
 	return result;
 }
 
-void decompressDataSeries_double_2D_pwr(double** data, int r1, int r2, TightDataPointStorageD* tdps) 
+void decompressDataSeries_double_2D_pwr(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	//printf("tdps->intervals=%d, intvRadius=%d\n", tdps->intervals, intvRadius);
 	
-	int i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
-	int dataSeriesLength = r1*r2;
+	size_t dataSeriesLength = r1*r2;
 	//	printf ("%d %d\n", r1, r2);
 
 	unsigned char* leadNum;
@@ -176,17 +176,17 @@ void decompressDataSeries_double_2D_pwr(double** data, int r1, int r2, TightData
 
 	memset(preBytes, 0, 8);
 
-	int curByteIndex = 0;
+	size_t curByteIndex = 0;
 	int reqLength, reqBytesLength, resiBitsLength, resiBits, reqExpo, reqMantLength; 
 	unsigned char leadingNum;	
 	double medianValue, exactData, predValue, realPrecision;
 	int type_;
 	double pred1D, pred2D;
-	int ii, jj, II = 0, JJ = 0, updateReqLength = 1;
+	size_t ii, jj, II = 0, JJ = 0, updateReqLength = 1;
 
 	int blockSize = computeBlockEdgeSize_2D(tdps->segment_size);
-	int R1 = 1+(r1-1)/blockSize;
-	int R2 = 1+(r2-1)/blockSize;		
+	size_t R1 = 1+(r1-1)/blockSize;
+	size_t R2 = 1+(r2-1)/blockSize;		
 	double* pwrErrBound = extractRealPrecision_2D_double(R1, R2, blockSize, tdps);
 
 	realPrecision = pwrErrBound[0];	
@@ -357,7 +357,7 @@ void decompressDataSeries_double_2D_pwr(double** data, int r1, int r2, TightData
 		}
 	}
 
-	int index;
+	size_t index;
 	/* Process Row-1 --> Row-r1-1 */
 	for (ii = 1; ii < r1; ii++)
 	{
@@ -504,10 +504,10 @@ void decompressDataSeries_double_2D_pwr(double** data, int r1, int r2, TightData
 	return;
 }
 
-double* extractRealPrecision_3D_double(int R1, int R2, int R3, int blockSize, TightDataPointStorageD* tdps)
+double* extractRealPrecision_3D_double(size_t R1, size_t R2, size_t R3, int blockSize, TightDataPointStorageD* tdps)
 {
-	int i,j,k=0, IR, JR, p = 0;
-	int R23 = R2*R3;
+	size_t i,j,k=0, IR, JR, p = 0;
+	size_t R23 = R2*R3;
 	unsigned char* bytes = tdps->pwrErrBoundBytes;
 	unsigned char tmpBytes[4] = {0};
 	double* result = (double*)malloc(sizeof(double)*R1*R2*R3);
@@ -528,15 +528,15 @@ double* extractRealPrecision_3D_double(int R1, int R2, int R3, int blockSize, Ti
 	return result;
 }
 
-void decompressDataSeries_double_3D_pwr(double** data, int r1, int r2, int r3, TightDataPointStorageD* tdps) 
+void decompressDataSeries_double_3D_pwr(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
-	int i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
-	int dataSeriesLength = r1*r2*r3;
-	int r23 = r2*r3;
+	size_t dataSeriesLength = r1*r2*r3;
+	size_t r23 = r2*r3;
 //	printf ("%d %d %d\n", r1, r2, r3);
 
 	unsigned char* leadNum;
@@ -559,19 +559,19 @@ void decompressDataSeries_double_3D_pwr(double** data, int r1, int r2, int r3, T
 
 	memset(preBytes, 0, 8);
 
-	int curByteIndex = 0;
+	size_t curByteIndex = 0;
 	int reqLength, reqBytesLength, resiBitsLength, resiBits, reqExpo, reqMantLength; 
 	unsigned char leadingNum;
 	double medianValue, exactData, predValue, realPrecision;
 	int type_;
 	double pred1D, pred2D, pred3D;
-	int ii, jj, kk, II = 0, JJ = 0, KK = 0, updateReqLength = 1;
+	size_t ii, jj, kk, II = 0, JJ = 0, KK = 0, updateReqLength = 1;
 
 	int blockSize = computeBlockEdgeSize_3D(tdps->segment_size);
-	int R1 = 1+(r1-1)/blockSize;
-	int R2 = 1+(r2-1)/blockSize;		
-	int R3 = 1+(r3-1)/blockSize;
-	int R23 = R2*R3;
+	size_t R1 = 1+(r1-1)/blockSize;
+	size_t R2 = 1+(r2-1)/blockSize;		
+	size_t R3 = 1+(r3-1)/blockSize;
+	size_t R23 = R2*R3;
 	double* pwrErrBound = extractRealPrecision_3D_double(R1, R2, R3, blockSize, tdps);
 
 	realPrecision = pwrErrBound[0];	
@@ -744,7 +744,7 @@ void decompressDataSeries_double_3D_pwr(double** data, int r1, int r2, int r3, T
 		}
 	}
 
-	int index;
+	size_t index;
 	/* Process Row-1 --> Row-r2-1 */
 	for (ii = 1; ii < r2; ii++)
 	{
@@ -962,8 +962,6 @@ void decompressDataSeries_double_3D_pwr(double** data, int r1, int r2, int r3, T
 		{
 			index = kk*r23+jj;
 
-			if(index==46788)
-				printf("index=%d\n", index);
 			if(jj%blockSize==0)
 				JJ++;
 

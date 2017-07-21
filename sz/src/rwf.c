@@ -14,17 +14,18 @@
 
 void checkfilesizec_(char *srcFilePath, int *len, int *filesize)
 {
-	int i, status;
+	int i; 
+	int status;
 	char s[*len+1];
 	for(i=0;i<*len;i++)
 		s[i]=srcFilePath[i];
-	s[*len]='\0';	
+	s[*len]='\0';
 	*filesize = checkFileSize(s, &status);
 }
 
-void readbytefile_(char *srcFilePath, int *len, unsigned char *bytes, int *byteLength)
+void readbytefile_(char *srcFilePath, size_t *len, unsigned char *bytes, int *byteLength)
 {
-	int i, ierr;
+	size_t i, ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=srcFilePath[i];
@@ -34,9 +35,10 @@ void readbytefile_(char *srcFilePath, int *len, unsigned char *bytes, int *byteL
     free(tmp_bytes);
 }
 
-void readdoublefile_(char *srcFilePath, int *len, double *data, int *nbEle)
+void readdoublefile_(char *srcFilePath, size_t *len, double *data, int *nbEle)
 {
-	int i, ierr;
+	size_t i; 
+	int ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=srcFilePath[i];
@@ -46,9 +48,10 @@ void readdoublefile_(char *srcFilePath, int *len, double *data, int *nbEle)
 	free(tmp_data);
 }
 
-void readfloatfile_(char *srcFilePath, int *len, float *data, int *nbEle)
+void readfloatfile_(char *srcFilePath, size_t *len, float *data, int *nbEle)
 {
-	int i, ierr;
+	size_t i; 
+	int ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=srcFilePath[i];
@@ -58,9 +61,10 @@ void readfloatfile_(char *srcFilePath, int *len, float *data, int *nbEle)
 	free(tmp_data);
 }
 
-void writebytefile_(unsigned char *bytes, int *byteLength, char *tgtFilePath, int *len)
+void writebytefile_(unsigned char *bytes, int *byteLength, char *tgtFilePath, size_t *len)
 {
-	int i, ierr;
+	size_t i; 
+	int ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=tgtFilePath[i];
@@ -68,9 +72,10 @@ void writebytefile_(unsigned char *bytes, int *byteLength, char *tgtFilePath, in
 	writeByteData(bytes, *byteLength, s, &ierr);
 }
 
-void writedoublefile_(double *data, int *nbEle, char *tgtFilePath, int *len)
+void writedoublefile_(double *data, size_t *nbEle, char *tgtFilePath, size_t *len)
 {
-	int i, ierr;
+	size_t i
+	int ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=tgtFilePath[i];
@@ -78,9 +83,10 @@ void writedoublefile_(double *data, int *nbEle, char *tgtFilePath, int *len)
 	writeDoubleData(data, *nbEle, s, &ierr);
 }
 
-void writefloatfile_(float *data, int *nbEle, char *tgtFilePath, int *len)
+void writefloatfile_(float *data, size_t *nbEle, char *tgtFilePath, size_t *len)
 {
-	int i, ierr;
+	size_t i; 
+	int ierr;
     char s[*len+1];
     for(i=0;i<*len;i++)
         s[i]=tgtFilePath[i];

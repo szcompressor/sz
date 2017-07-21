@@ -1,5 +1,5 @@
 /**
- *  @file test_zlib.c
+ *  @file callZlib.c
  *  @author Sheng Di
  *  @date June, 2016
  *  @brief gzip compressor code: the interface to call zlib

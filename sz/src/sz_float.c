@@ -21,14 +21,13 @@
 #include "zlib.h"
 #include "rw.h"
 
-unsigned int optimize_intervals_float_1D(float *oriData, int dataLength, double realPrecision)
+unsigned int optimize_intervals_float_1D(float *oriData, size_t dataLength, double realPrecision)
 {	
-	int i = 0;
-	unsigned long radiusIndex;
+	size_t i = 0, radiusIndex;
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	int totalSampleSize = dataLength/sampleDistance;
+	size_t totalSampleSize = dataLength/sampleDistance;
 	for(i=2;i<dataLength;i++)
 	{
 		if(i%sampleDistance==0)
@@ -43,7 +42,7 @@ unsigned int optimize_intervals_float_1D(float *oriData, int dataLength, double 
 		}
 	}
 	//compute the appropriate number
-	int targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = totalSampleSize*predThreshold;
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -65,14 +64,14 @@ unsigned int optimize_intervals_float_1D(float *oriData, int dataLength, double 
 	return powerOf2;
 }
 
-unsigned int optimize_intervals_float_2D(float *oriData, int r1, int r2, double realPrecision)
+unsigned int optimize_intervals_float_2D(float *oriData, size_t r1, size_t r2, double realPrecision)
 {	
-	int i,j, index;
-	unsigned long radiusIndex;
+	size_t i,j, index;
+	size_t radiusIndex;
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	int totalSampleSize = r1*r2/sampleDistance;
+	size_t totalSampleSize = r1*r2/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
 		for(j=1;j<r2;j++)
@@ -90,7 +89,7 @@ unsigned int optimize_intervals_float_2D(float *oriData, int r1, int r2, double 
 		}
 	}
 	//compute the appropriate number
-	int targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = (int)(totalSampleSize*predThreshold);
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -111,15 +110,15 @@ unsigned int optimize_intervals_float_2D(float *oriData, int r1, int r2, double 
 	return powerOf2;
 }
 
-unsigned int optimize_intervals_float_3D(float *oriData, int r1, int r2, int r3, double realPrecision)
+unsigned int optimize_intervals_float_3D(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision)
 {	
-	int i,j,k, index;
-	unsigned long radiusIndex;
-	int r23=r2*r3;
+	size_t i,j,k, index;
+	size_t radiusIndex;
+	size_t r23=r2*r3;
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	int totalSampleSize = r1*r2*r3/sampleDistance;
+	size_t totalSampleSize = r1*r2*r3/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
 		for(j=1;j<r2;j++)
@@ -132,7 +131,7 @@ unsigned int optimize_intervals_float_3D(float *oriData, int r1, int r2, int r3,
 					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23] 
 					- oriData[index-1-r23] - oriData[index-r3-1] - oriData[index-r3-r23] + oriData[index-r3-r23-1];
 					pred_err = fabs(pred_value - oriData[index]);
-					radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
+					radiusIndex = (pred_err/realPrecision+1)/2;
 					if(radiusIndex>=maxRangeRadius)
 						radiusIndex = maxRangeRadius - 1;
 					intervals[radiusIndex]++;
@@ -141,7 +140,7 @@ unsigned int optimize_intervals_float_3D(float *oriData, int r1, int r2, int r3,
 		}
 	}
 	//compute the appropriate number
-	int targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = totalSampleSize*predThreshold;
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -163,16 +162,16 @@ unsigned int optimize_intervals_float_3D(float *oriData, int r1, int r2, int r3,
 }
 
 
-unsigned int optimize_intervals_float_4D(float *oriData, int r1, int r2, int r3, int r4, double realPrecision)
+unsigned int optimize_intervals_float_4D(float *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision)
 {
-	int i,j,k,l, index;
-	unsigned long radiusIndex;
-	int r234=r2*r3*r4;
-	int r34=r3*r4;
+	size_t i,j,k,l, index;
+	size_t radiusIndex;
+	size_t r234=r2*r3*r4;
+	size_t r34=r3*r4;
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	int totalSampleSize = r1*r2*r3*r4/sampleDistance;
+	size_t totalSampleSize = r1*r2*r3*r4/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
 		for(j=1;j<r2;j++)
@@ -197,7 +196,7 @@ unsigned int optimize_intervals_float_4D(float *oriData, int r1, int r2, int r3,
 		}
 	}
 	//compute the appropriate number
-	int targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = totalSampleSize*predThreshold;
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -207,6 +206,7 @@ unsigned int optimize_intervals_float_4D(float *oriData, int r1, int r2, int r3,
 	}
 	if(i>=maxRangeRadius)
 		i = maxRangeRadius-1;
+
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 
@@ -218,7 +218,7 @@ unsigned int optimize_intervals_float_4D(float *oriData, int r1, int r2, int r3,
 }
 
 TightDataPointStorageF* SZ_compress_float_1D_MDQ(float *oriData, 
-int dataLength, double realPrecision, float valueRangeSize, float medianValue_f)
+size_t dataLength, double realPrecision, float valueRangeSize, float medianValue_f)
 {
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
@@ -227,7 +227,8 @@ int dataLength, double realPrecision, float valueRangeSize, float medianValue_f)
 		quantization_intervals = intvCapacity;
 	updateQuantizationInfo(quantization_intervals);	
 	//clearHuffmanMem();
-	int i, reqLength;
+	size_t i;
+	int reqLength;
 	float medianValue = medianValue_f;
 	short reqExpo = getPrecisionReqLength_float((float)realPrecision);
 	short radExpo = getExponent_float(valueRangeSize/2);
@@ -373,38 +374,41 @@ int dataLength, double realPrecision, float valueRangeSize, float medianValue_f)
 	return tdps;
 }
 
-void SZ_compress_args_float_StoreOriData(float* oriData, int dataLength, TightDataPointStorageF* tdps, 
-unsigned char** newByteData, int *outSize)
+void SZ_compress_args_float_StoreOriData(float* oriData, size_t dataLength, TightDataPointStorageF* tdps, 
+unsigned char** newByteData, size_t *outSize)
 {
 	int floatSize=sizeof(float);	
-	int k = 0, i;
+	size_t k = 0, i;
 	tdps->isLossless = 1;
-	int totalByteLength = 3 + 4 + 1 + floatSize*dataLength;
+	size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + floatSize*dataLength;
 	*newByteData = (unsigned char*)malloc(totalByteLength);
 	
-	unsigned char dsLengthBytes[4];
-	intToBytes_bigEndian(dsLengthBytes, dataLength);//4
+	unsigned char dsLengthBytes[8];
 	for (i = 0; i < 3; i++)//3
 		(*newByteData)[k++] = versionNumber[i];
-	for (i = 0; i < 4; i++)//4
-		(*newByteData)[k++] = dsLengthBytes[i];
-	(*newByteData)[k++] = 16;	//=00010000	
+
+	if(SZ_SIZE_TYPE==4)//1
+		(*newByteData)[k++] = 16; //00010000
+	else
+		(*newByteData)[k++] = 80;	//01010000: 01000000 indicates the SZ_SIZE_TYPE=8
 	
+	sizeToBytes(dsLengthBytes,dataLength); //SZ_SIZE_TYPE: 4 or 8	
+	for (i = 0; i < SZ_SIZE_TYPE; i++)
+		(*newByteData)[k++] = dsLengthBytes[i];
+		
 	if(sysEndianType==BIG_ENDIAN_SYSTEM)
-		memcpy((*newByteData)+8, oriData, dataLength*floatSize);
+		memcpy((*newByteData)+4+SZ_SIZE_TYPE, oriData, dataLength*floatSize);
 	else
 	{
-		unsigned char* p = (*newByteData)+8;
+		unsigned char* p = (*newByteData)+4+SZ_SIZE_TYPE;
 		for(i=0;i<dataLength;i++,p+=floatSize)
-		{
 			floatToBytes(p, oriData[i]);
-		}
-	}
+	}	
 	*outSize = totalByteLength;
 }
 
 void SZ_compress_args_float_NoCkRngeNoGzip_1D(unsigned char** newByteData, float *oriData, 
-int dataLength, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
+size_t dataLength, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f)
 {
 	SZ_Reset();	
 	TightDataPointStorageF* tdps = SZ_compress_float_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_f);
@@ -418,7 +422,7 @@ int dataLength, double realPrecision, int *outSize, float valueRangeSize, float 
 	free_TightDataPointStorageF(tdps);
 }
 
-TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, int r1, int r2, double realPrecision, float valueRangeSize, float medianValue_f)
+TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size_t r2, double realPrecision, float valueRangeSize, float medianValue_f)
 {
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
@@ -428,14 +432,14 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, int r1, int r2,
 	}	
 	else
 		quantization_intervals = intvCapacity;
-	
-	int i,j, reqLength;
+	size_t i,j; 
+	int reqLength;
 	float pred1D, pred2D;
 	float diff = 0.0;
 	double itvNum = 0;
 	float *P0, *P1;
 		
-	int dataLength = r1*r2;	
+	size_t dataLength = r1*r2;	
 	
 	P0 = (float*)malloc(r2*sizeof(float));
 	memset(P0, 0, r2*sizeof(float));
@@ -463,6 +467,7 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, int r1, int r2,
 	DynamicIntArray *resiBitArray;
 	new_DIA(&resiBitArray, DynArrayInitLen);
 	
+	type[0] = 0;
 	unsigned char preDataBytes[4];
 	intToBytes_bigEndian(preDataBytes, 0);
 	
@@ -533,7 +538,7 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, int r1, int r2,
 	}
 
 	/* Process Row-1 --> Row-r1-1 */
-	int index;
+	size_t index;
 	for (i = 1; i < r1; i++)
 	{	
 		/* Process row-i data 0 */
@@ -564,8 +569,7 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, int r1, int r2,
 		/* Process row-i data 1 --> r2-1*/
 		for (j = 1; j < r2; j++)
 		{
-			index = i*r2+j;		
-
+			index = i*r2+j;
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 
 			diff = spaceFillingValue[index] - pred2D;
@@ -634,7 +638,7 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, int r1, int r2,
  * Note: @r1 is high dimension
  * 		 @r2 is low dimension 
  * */
-void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float *oriData, int r1, int r2, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
+void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float *oriData, size_t r1, size_t r2, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f)
 {
 	SZ_Reset();	
 		
@@ -642,14 +646,14 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float
 
 	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 
-	int dataLength = r1*r2;
+	size_t dataLength = r1*r2;
 	if(*outSize>dataLength*sizeof(float))
 		SZ_compress_args_float_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
 	
 	free_TightDataPointStorageF(tdps);	
 }
 
-TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, int r1, int r2, int r3, double realPrecision, float valueRangeSize, float medianValue_f)
+TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, float valueRangeSize, float medianValue_f)
 {
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
@@ -660,14 +664,15 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, int r1, int r2,
 	else
 		quantization_intervals = intvCapacity;
 	//clearHuffmanMem();
-	int i,j,k, reqLength;
+	size_t i,j,k; 
+	int reqLength;
 	float pred1D, pred2D, pred3D;
 	float diff = 0.0;
 	double itvNum = 0;
 	float *P0, *P1;
 
-	int dataLength = r1*r2*r3;
-	int r23 = r2*r3;
+	size_t dataLength = r1*r2*r3;
+	size_t r23 = r2*r3;
 	P0 = (float*)malloc(r23*sizeof(float));
 	P1 = (float*)malloc(r23*sizeof(float));
 
@@ -763,7 +768,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, int r1, int r2,
 	}
 
 	/* Process Row-1 --> Row-r2-1 */
-	int index;
+	size_t index;
 	for (i = 1; i < r2; i++)
 	{
 		/* Process row-i data 0 */
@@ -794,7 +799,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, int r1, int r2,
 		/* Process row-i data 1 --> data r3-1*/
 		for (j = 1; j < r3; j++)
 		{
-			index = i*r3+j;			
+			index = i*r3+j;
 			pred2D = P1[index-1] + P1[index-r3] - P1[index-r3-1];
 
 			diff = spaceFillingValue[index] - pred2D;
@@ -827,7 +832,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, int r1, int r2,
 	for (k = 1; k < r1; k++)
 	{
 		/* Process Row-0 data 0*/
-		index = k*r23;		
+		index = k*r23;
 		pred1D = P1[0];
 		diff = spaceFillingValue[index] - pred1D;
 
@@ -851,10 +856,11 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, int r1, int r2,
 			P0[0] = vce->data;
 		}
 
+
 	    /* Process Row-0 data 1 --> data r3-1 */
 		for (j = 1; j < r3; j++)
 		{
-			//index = k*r2*r3+j;		
+			//index = k*r2*r3+j;
 			index ++;
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 			diff = spaceFillingValue[index] - pred2D;
@@ -883,7 +889,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, int r1, int r2,
 		}
 
 	    /* Process Row-1 --> Row-r2-1 */
-		int index2D;
+		size_t index2D;
 		for (i = 1; i < r2; i++)
 		{
 			/* Process Row-i data 0 */
@@ -987,7 +993,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, int r1, int r2,
 }
 
 
-void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
+void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f)
 {
 	SZ_Reset();	
 
@@ -1003,7 +1009,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 }
 
 
-TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, int r1, int r2, int r3, int r4, double realPrecision, float valueRangeSize, float medianValue_f)
+TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision, float valueRangeSize, float medianValue_f)
 {
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
@@ -1014,15 +1020,17 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, int r1, int r2,
 	else
 		quantization_intervals = intvCapacity;
 
-	int i,j,k, reqLength;
+	size_t i,j,k; 
+	int reqLength;
 	float pred1D, pred2D, pred3D;
 	float diff = 0.0;
 	double itvNum = 0;
 	float *P0, *P1;
 
-	int dataLength = r1*r2*r3*r4;
-	int r234 = r2*r3*r4;
-	int r34 = r3*r4;
+	size_t dataLength = r1*r2*r3*r4;
+
+	size_t r234 = r2*r3*r4;
+	size_t r34 = r3*r4;
 
 	P0 = (float*)malloc(r34*sizeof(float));
 	P1 = (float*)malloc(r34*sizeof(float));
@@ -1056,14 +1064,15 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, int r1, int r2,
 	FloatValueCompressElement *vce = (FloatValueCompressElement*)malloc(sizeof(FloatValueCompressElement));
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
 
-	int l;
+
+	size_t l;
 	for (l = 0; l < r1; l++)
 	{
 
 		///////////////////////////	Process layer-0 ///////////////////////////
 		/* Process Row-0 data 0*/
-		int index = l*r234;
-		int index2D = 0;
+		size_t index = l*r234;
+		size_t index2D = 0;
 
 		type[index] = 0;
 		addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
@@ -1290,10 +1299,9 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, int r1, int r2,
 					index = l*r234+k*r34+i*r4+j;
 					index2D = i*r4+j;
 
-					//printf ("global index = %d, prediction index = %d\n", index, index2D);
-
 					pred3D = P0[index2D-1] + P0[index2D-r4]+ P1[index2D] - P0[index2D-r4-1] - P1[index2D-r4] - P1[index2D-1] + P1[index2D-r4-1];
 					diff = spaceFillingValue[index] - pred3D;
+
 
 					itvNum = fabs(diff)/realPrecision + 1;
 
@@ -1349,7 +1357,7 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, int r1, int r2,
 	return tdps;
 }
 
-void SZ_compress_args_float_NoCkRngeNoGzip_4D(unsigned char** newByteData, float *oriData, int r1, int r2, int r3, int r4, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f)
+void SZ_compress_args_float_NoCkRngeNoGzip_4D(unsigned char** newByteData, float *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f)
 {
 	SZ_Reset();
 
@@ -1364,7 +1372,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_4D(unsigned char** newByteData, float
 	free_TightDataPointStorageF(tdps);
 }
 
-void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriData, int dataLength, int *outSize)
+void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriData, size_t dataLength, size_t *outSize)
 {
 	TightDataPointStorageF* tdps = (TightDataPointStorageF*) malloc(sizeof(TightDataPointStorageF));
 	tdps->rtypeArray = NULL;
@@ -1381,22 +1389,22 @@ void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriD
 	floatToBytes(tdps->exactMidBytes, value);
 	tdps->exactMidBytes_size = 4;
 	
-	int tmpOutSize;
+	size_t tmpOutSize;
 	//unsigned char *tmpByteData;
 	convertTDPStoFlatBytes_float(tdps, newByteData, &tmpOutSize);
 
 	//*newByteData = (unsigned char*)malloc(sizeof(unsigned char)*12); //for floating-point data (1+3+4+4)
 	//memcpy(*newByteData, tmpByteData, 12);
-	*outSize = 12;
+	*outSize = 8+SZ_SIZE_TYPE; //8==3+1+4(float_size)
 	free_TightDataPointStorageF(tdps);	
 }
 
 int SZ_compress_args_float_wRngeNoGzip(unsigned char** newByteData, float *oriData, 
-int r5, int r4, int r3, int r2, int r1, int *outSize, 
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
 	int status = SZ_SCES;
-	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
+	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	float valueRangeSize = 0, medianValue = 0;
 	
 	float min = computeRangeSize_float(oriData, dataLength, &valueRangeSize, &medianValue);
@@ -1433,15 +1441,14 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 }
 
 int SZ_compress_args_float(unsigned char** newByteData, float *oriData, 
-int r5, int r4, int r3, int r2, int r1, 
-int *outSize, 
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
 	errorBoundMode = errBoundMode;
 	if(errBoundMode==PW_REL)
 		pw_relBoundRatio = relBoundRatio;	
 	int status = SZ_SCES;
-	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
+	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	float valueRangeSize = 0, medianValue = 0;
 	
 	float min = computeRangeSize_float(oriData, dataLength, &valueRangeSize, &medianValue);
@@ -1454,7 +1461,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 	}
 	else
 	{
-		int tmpOutSize = 0;
+		size_t tmpOutSize = 0;
 		unsigned char* tmpByteData;
 		if (r2==0)
 		{
@@ -1520,18 +1527,18 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
  * 
  * @return status SUCCESSFUL (SZ_SCES) or not (other error codes) 
  * */
-int SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, int r1, unsigned char* cmpBytes, int cmpSize)
+int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, unsigned char* cmpBytes, size_t cmpSize)
 {
 	int status = SZ_SCES;
-	int dataLength = computeDataLength(r5,r4,r3,r2,r1);
+	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	
 	//unsigned char* tmpBytes;
-	int targetUncompressSize = dataLength <<2; //i.e., *4
+	size_t targetUncompressSize = dataLength <<2; //i.e., *4
 	//tmpSize must be "much" smaller than dataLength
-	int tmpSize = 12, i;
+	size_t i, tmpSize = 8+SZ_SIZE_TYPE;
 	unsigned char* szTmpBytes;	
 	
-	if(cmpSize!=12)
+	if(cmpSize!=8+SZ_SIZE_TYPE)
 	{
 		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
 		if(isZlib)
@@ -1547,7 +1554,7 @@ int SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, in
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
-			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+8);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
+			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+SZ_SIZE_TYPE);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
 			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 			//memcpy(szTmpBytes, tmpBytes, tmpSize);
 			//free(tmpBytes); //release useless memory		
@@ -1561,13 +1568,11 @@ int SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, in
 	}
 	else
 		szTmpBytes = cmpBytes;
-	
 	//TODO: convert szTmpBytes to data array.
 	TightDataPointStorageF* tdps;
 	int errBoundMode = new_TightDataPointStorageF_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
 	
 	//writeByteData(tdps->typeArray, tdps->typeArray_size, "decompress-typebytes.tbt");
-	
 	int dim = computeDimension(r5,r4,r3,r2,r1);	
 	int floatSize = sizeof(float);
 	if(tdps->isLossless)
@@ -1575,11 +1580,11 @@ int SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, in
 		*newData = (float*)malloc(floatSize*dataLength);
 		if(sysEndianType==BIG_ENDIAN_SYSTEM)
 		{
-			memcpy(*newData, szTmpBytes+8, dataLength*floatSize);
+			memcpy(*newData, szTmpBytes+4+SZ_SIZE_TYPE, dataLength*floatSize);
 		}
 		else
 		{
-			unsigned char* p = szTmpBytes+8;
+			unsigned char* p = szTmpBytes+4+SZ_SIZE_TYPE;
 			for(i=0;i<dataLength;i++,p+=floatSize)
 				(*newData)[i] = bytesToFloat(p);
 		}		
@@ -1601,7 +1606,7 @@ int SZ_decompress_args_float(float** newData, int r5, int r4, int r3, int r2, in
 		status = SZ_DERR;
 	}
 	free_TightDataPointStorageF(tdps);
-	if(szMode!=SZ_BEST_SPEED && cmpSize!=12)
+	if(szMode!=SZ_BEST_SPEED && cmpSize!=8+SZ_SIZE_TYPE)
 		free(szTmpBytes);
 	SZ_ReleaseHuffman();	
 	return status;
@@ -1622,10 +1627,10 @@ void computeReqLength_float(float realPrecision, short radExpo, int* reqLength, 
 
 //TODO
 int SZ_compress_args_float_subblock(unsigned char* compressedBytes, float *oriData,
-int r5, int r4, int r3, int r2, int r1,
-int s5, int s4, int s3, int s2, int s1,
-int e5, int e4, int e3, int e2, int e1,
-int *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1,
+size_t s5, size_t s4, size_t s3, size_t s2, size_t s1,
+size_t e5, size_t e4, size_t e3, size_t e2, size_t e1,
+size_t *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
 	int status = SZ_SCES;
 	float valueRangeSize = 0, medianValue = 0;
@@ -1699,8 +1704,8 @@ int *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
 	return status;
 }
 
-void SZ_compress_args_float_NoCkRnge_1D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
-int r1, int s1, int e1)
+void SZ_compress_args_float_NoCkRnge_1D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f,
+size_t r1, size_t s1, size_t e1)
 {
 	SZ_Reset();
 	TightDataPointStorageF* tdps = SZ_compress_float_1D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_f, r1, s1, e1);
@@ -1710,7 +1715,7 @@ int r1, int s1, int e1)
 	else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
 	{
 		unsigned char *tmpCompBytes;
-		int tmpOutSize;
+		size_t tmpOutSize;
 		convertTDPStoFlatBytes_float(tdps, &tmpCompBytes, &tmpOutSize);
 		*outSize = (int)zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
 		free(tmpCompBytes);
@@ -1727,8 +1732,8 @@ int r1, int s1, int e1)
 	free_TightDataPointStorageF(tdps);
 }
 
-void SZ_compress_args_float_NoCkRnge_2D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
-int r2, int r1, int s2, int s1, int e2, int e1)
+void SZ_compress_args_float_NoCkRnge_2D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f,
+size_t r2, size_t r1, size_t s2, size_t s1, size_t e2, size_t e1)
 {
 	SZ_Reset();
 	TightDataPointStorageF* tdps = SZ_compress_float_2D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_f, r2, r1, s2, s1, e2, e1);
@@ -1738,7 +1743,7 @@ int r2, int r1, int s2, int s1, int e2, int e1)
 	else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
 	{
 		unsigned char *tmpCompBytes;
-		int tmpOutSize;
+		size_t tmpOutSize;
 		convertTDPStoFlatBytes_float(tdps, &tmpCompBytes, &tmpOutSize);
 		*outSize = (int)zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
 		free(tmpCompBytes);
@@ -1755,8 +1760,8 @@ int r2, int r1, int s2, int s1, int e2, int e1)
 	free_TightDataPointStorageF(tdps);
 }
 
-void SZ_compress_args_float_NoCkRnge_3D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
-int r3, int r2, int r1, int s3, int s2, int s1, int e3, int e2, int e1)
+void SZ_compress_args_float_NoCkRnge_3D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f,
+size_t r3, size_t r2, size_t r1, size_t s3, size_t s2, size_t s1, size_t e3, size_t e2, size_t e1)
 {
 	SZ_Reset();
 	TightDataPointStorageF* tdps = SZ_compress_float_3D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_f, r3, r2, r1, s3, s2, s1, e3, e2, e1);
@@ -1766,7 +1771,7 @@ int r3, int r2, int r1, int s3, int s2, int s1, int e3, int e2, int e1)
 	else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
 	{
 		unsigned char *tmpCompBytes;
-		int tmpOutSize;
+		size_t tmpOutSize;
 		convertTDPStoFlatBytes_float(tdps, &tmpCompBytes, &tmpOutSize);
 		*outSize = (int)zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
 		free(tmpCompBytes);
@@ -1783,8 +1788,8 @@ int r3, int r2, int r1, int s3, int s2, int s1, int e3, int e2, int e1)
 	free_TightDataPointStorageF(tdps);
 }
 
-void SZ_compress_args_float_NoCkRnge_4D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, int *outSize, float valueRangeSize, float medianValue_f,
-int r4, int r3, int r2, int r1, int s4, int s3, int s2, int s1, int e4, int e3, int e2, int e1)
+void SZ_compress_args_float_NoCkRnge_4D_subblock(unsigned char* compressedBytes, float *oriData, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f,
+size_t r4, size_t r3, size_t r2, size_t r1, size_t s4, size_t s3, size_t s2, size_t s1, size_t e4, size_t e3, size_t e2, size_t e1)
 {
 	SZ_Reset();
 	TightDataPointStorageF* tdps = SZ_compress_float_4D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_f, r4, r3, r2, r1, s4, s3, s2, s1, e4, e3, e2, e1);
@@ -1794,7 +1799,7 @@ int r4, int r3, int r2, int r1, int s4, int s3, int s2, int s1, int e4, int e3, 
 	else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
 	{
 		unsigned char *tmpCompBytes;
-		int tmpOutSize;
+		size_t tmpOutSize;
 		convertTDPStoFlatBytes_float(tdps, &tmpCompBytes, &tmpOutSize);
 		*outSize = (int)zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
 		free(tmpCompBytes);
@@ -1812,17 +1817,17 @@ int r4, int r3, int r2, int r1, int s4, int s3, int s2, int s1, int e4, int e3, 
 
 }
 
-unsigned int optimize_intervals_float_1D_subblock(float *oriData, double realPrecision, int r1, int s1, int e1)
+unsigned int optimize_intervals_float_1D_subblock(float *oriData, double realPrecision, size_t r1, size_t s1, size_t e1)
 {
-	int dataLength = e1 - s1 + 1;
+	size_t dataLength = e1 - s1 + 1;
 	oriData = oriData + s1;
 
-	int i = 0;
+	size_t i = 0;
 	unsigned long radiusIndex;
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	int totalSampleSize = dataLength/sampleDistance;
+	size_t totalSampleSize = dataLength/sampleDistance;
 	for(i=2;i<dataLength;i++)
 	{
 		if(i%sampleDistance==0)
@@ -1837,7 +1842,7 @@ unsigned int optimize_intervals_float_1D_subblock(float *oriData, double realPre
 		}
 	}
 	//compute the appropriate number
-	int targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = totalSampleSize*predThreshold;
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -1859,17 +1864,17 @@ unsigned int optimize_intervals_float_1D_subblock(float *oriData, double realPre
 	return powerOf2;
 }
 
-unsigned int optimize_intervals_float_2D_subblock(float *oriData, double realPrecision, int r1, int r2, int s1, int s2, int e1, int e2)
+unsigned int optimize_intervals_float_2D_subblock(float *oriData, double realPrecision, size_t r1, size_t r2, size_t s1, size_t s2, size_t e1, size_t e2)
 {
-	int R1 = e1 - s1 + 1;
-	int R2 = e2 - s2 + 1;
+	size_t R1 = e1 - s1 + 1;
+	size_t R2 = e2 - s2 + 1;
 
-	int i,j, index;
+	size_t i,j, index;
 	unsigned long radiusIndex;
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	int totalSampleSize = R1*R2/sampleDistance;
+	size_t totalSampleSize = R1*R2/sampleDistance;
 	for(i=s1+1;i<=e1;i++)
 	{
 		for(j=s2+1;j<=e2;j++)
@@ -1887,7 +1892,7 @@ unsigned int optimize_intervals_float_2D_subblock(float *oriData, double realPre
 		}
 	}
 	//compute the appropriate number
-	int targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = totalSampleSize*predThreshold;
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -1908,20 +1913,20 @@ unsigned int optimize_intervals_float_2D_subblock(float *oriData, double realPre
 	return powerOf2;
 }
 
-unsigned int optimize_intervals_float_3D_subblock(float *oriData, double realPrecision, int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3)
+unsigned int optimize_intervals_float_3D_subblock(float *oriData, double realPrecision, size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, size_t e2, size_t e3)
 {
-	int R1 = e1 - s1 + 1;
-	int R2 = e2 - s2 + 1;
-	int R3 = e3 - s3 + 1;
+	size_t R1 = e1 - s1 + 1;
+	size_t R2 = e2 - s2 + 1;
+	size_t R3 = e3 - s3 + 1;
 
-	int r23 = r2*r3;
+	size_t r23 = r2*r3;
 
-	int i,j,k, index;
+	size_t i,j,k, index;
 	unsigned long radiusIndex;
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	int totalSampleSize = R1*R2*R3/sampleDistance;
+	size_t totalSampleSize = R1*R2*R3/sampleDistance;
 	for(i=s1+1;i<=e1;i++)
 	{
 		for(j=s2+1;j<=e2;j++)
@@ -1943,7 +1948,7 @@ unsigned int optimize_intervals_float_3D_subblock(float *oriData, double realPre
 		}
 	}
 	//compute the appropriate number
-	int targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = totalSampleSize*predThreshold;
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -1964,22 +1969,22 @@ unsigned int optimize_intervals_float_3D_subblock(float *oriData, double realPre
 }
 
 unsigned int optimize_intervals_float_4D_subblock(float *oriData, double realPrecision,
-int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, int e3, int e4)
+size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, size_t s4, size_t e1, size_t e2, size_t e3, size_t e4)
 {
-	int R1 = e1 - s1 + 1;
-	int R2 = e2 - s2 + 1;
-	int R3 = e3 - s3 + 1;
-	int R4 = e4 - s4 + 1;
+	size_t R1 = e1 - s1 + 1;
+	size_t R2 = e2 - s2 + 1;
+	size_t R3 = e3 - s3 + 1;
+	size_t R4 = e4 - s4 + 1;
 
-	int r34 = r3*r4;
-	int r234 = r2*r3*r4;
+	size_t r34 = r3*r4;
+	size_t r234 = r2*r3*r4;
 
-	int i,j,k,l, index;
+	size_t i,j,k,l, index;
 	unsigned long radiusIndex;
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	int totalSampleSize = R1*R2*R3*R4/sampleDistance;
+	size_t totalSampleSize = R1*R2*R3*R4/sampleDistance;
 	for(i=s1+1;i<=e1;i++)
 	{
 		for(j=s2+1;j<=e2;j++)
@@ -2004,7 +2009,7 @@ int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, 
 		}
 	}
 	//compute the appropriate number
-	int targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = totalSampleSize*predThreshold;
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -2014,6 +2019,7 @@ int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, 
 	}
 	if(i>=maxRangeRadius)
 		i = maxRangeRadius-1;
+
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 
@@ -2025,9 +2031,9 @@ int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, 
 }
 
 TightDataPointStorageF* SZ_compress_float_1D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
-int r1, int s1, int e1)
+size_t r1, size_t s1, size_t e1)
 {
-	int dataLength = e1 - s1 + 1;
+	size_t dataLength = e1 - s1 + 1;
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 		quantization_intervals = optimize_intervals_float_1D_subblock(oriData, realPrecision, r1, s1, e1);
@@ -2035,7 +2041,8 @@ int r1, int s1, int e1)
 		quantization_intervals = intvCapacity;
 	updateQuantizationInfo(quantization_intervals);
 
-	int i, reqLength;
+	size_t i; 
+	int reqLength;
 	float medianValue = medianValue_f;
 	short reqExpo = getPrecisionReqLength_float((float)realPrecision);
 	short radExpo = getExponent_float(valueRangeSize/2);
@@ -2157,7 +2164,7 @@ int r1, int s1, int e1)
 }
 
 TightDataPointStorageF* SZ_compress_float_2D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
-int r1, int r2, int s1, int s2, int e1, int e2)
+size_t r1, size_t r2, size_t s1, size_t s2, size_t e1, size_t e2)
 {
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
@@ -2168,15 +2175,16 @@ int r1, int r2, int s1, int s2, int e1, int e2)
 	else
 		quantization_intervals = intvCapacity;
 
-	int i,j, reqLength;
+	size_t i,j; 
+	int reqLength;
 	float pred1D, pred2D;
 	float diff = 0.0;
 	double itvNum = 0;
 	float *P0, *P1;
 
-	int R1 = e1 - s1 + 1;
-	int R2 = e2 - s2 + 1;
-	int dataLength = R1*R2;
+	size_t R1 = e1 - s1 + 1;
+	size_t R2 = e2 - s2 + 1;
+	size_t dataLength = R1*R2;
 
 	P0 = (float*)malloc(R2*sizeof(float));
 	memset(P0, 0, R2*sizeof(float));
@@ -2213,8 +2221,8 @@ int r1, int r2, int s1, int s2, int e1, int e2)
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
 
 	/* Process Row-s1 data s2*/
-	int gIndex;
-	int lIndex;
+	size_t gIndex;
+	size_t lIndex;
 
 	gIndex = s1*r2+s2;
 	lIndex = 0;
@@ -2355,7 +2363,7 @@ int r1, int r2, int s1, int s2, int e1, int e2)
 
 	free(P0);
 	free(P1);
-	int exactDataNum = exactLeadNumArray->size;
+	size_t exactDataNum = exactLeadNumArray->size;
 
 	TightDataPointStorageF* tdps;
 
@@ -2379,7 +2387,7 @@ int r1, int r2, int s1, int s2, int e1, int e2)
 }
 
 TightDataPointStorageF* SZ_compress_float_3D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
-int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3)
+size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, size_t e2, size_t e3)
 {
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
@@ -2390,19 +2398,20 @@ int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3)
 	else
 		quantization_intervals = intvCapacity;
 
-	int i,j,k, reqLength;
+	size_t i,j,k; 
+	int reqLength;
 	float pred1D, pred2D, pred3D;
 	float diff = 0.0;
 	double itvNum = 0;
 	float *P0, *P1;
 
-	int R1 = e1 - s1 + 1;
-	int R2 = e2 - s2 + 1;
-	int R3 = e3 - s3 + 1;
-	int dataLength = R1*R2*R3;
+	size_t R1 = e1 - s1 + 1;
+	size_t R2 = e2 - s2 + 1;
+	size_t R3 = e3 - s3 + 1;
+	size_t dataLength = R1*R2*R3;
 
-	int r23 = r2*r3;
-	int R23 = R2*R3;
+	size_t r23 = r2*r3;
+	size_t R23 = R2*R3;
 
 	P0 = (float*)malloc(R23*sizeof(float));
 	P1 = (float*)malloc(R23*sizeof(float));
@@ -2440,9 +2449,9 @@ int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3)
 
 	///////////////////////////	Process layer-s1 ///////////////////////////
 	/* Process Row-s2 data s3*/
-	int gIndex; 	//global index
-	int lIndex; 	//local index
-	int index2D; 	//local 2D index
+	size_t gIndex; 	//global index
+	size_t lIndex; 	//local index
+	size_t index2D; 	//local 2D index
 
 	gIndex = s1*r23+s2*r3+s3;
 	lIndex = 0;
@@ -2739,7 +2748,7 @@ int r1, int r2, int r3, int s1, int s2, int s3, int e1, int e2, int e3)
 }
 
 TightDataPointStorageF* SZ_compress_float_4D_MDQ_subblock(float *oriData, double realPrecision, float valueRangeSize, float medianValue_f,
-int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, int e3, int e4)
+size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, size_t s4, size_t e1, size_t e2, size_t e3, size_t e4)
 {
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
@@ -2750,23 +2759,24 @@ int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, 
 	else
 		quantization_intervals = intvCapacity;
 
-	int i,j,k, reqLength;
+	size_t i,j,k; 
+	int reqLength;
 	float pred1D, pred2D, pred3D;
 	float diff = 0.0;
 	double itvNum = 0;
 	float *P0, *P1;
 
-	int R1 = e1 - s1 + 1;
-	int R2 = e2 - s2 + 1;
-	int R3 = e3 - s3 + 1;
-	int R4 = e4 - s4 + 1;
+	size_t R1 = e1 - s1 + 1;
+	size_t R2 = e2 - s2 + 1;
+	size_t R3 = e3 - s3 + 1;
+	size_t R4 = e4 - s4 + 1;
 
-	int dataLength = R1*R2*R3*R4;
+	size_t dataLength = R1*R2*R3*R4;
 
-	int r34 = r3*r4;
-	int r234 = r2*r3*r4;
-	int R34 = R3*R4;
-	int R234 = R2*R3*R4;
+	size_t r34 = r3*r4;
+	size_t r234 = r2*r3*r4;
+	size_t R34 = R3*R4;
+	size_t R234 = R2*R3*R4;
 
 	P0 = (float*)malloc(R34*sizeof(float));
 	P1 = (float*)malloc(R34*sizeof(float));
@@ -2801,15 +2811,15 @@ int r1, int r2, int r3, int r4, int s1, int s2, int s3, int s4, int e1, int e2, 
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
 
 
-	int l;
+	size_t l;
 	for (l = 0; l < R1; l++)
 	{
 
 		///////////////////////////	Process layer-s2 ///////////////////////////
 		/* Process Row-s3 data s4*/
-		int gIndex; 	//global index
-		int lIndex; 	//local index
-		int index2D; 	//local 2D index
+		size_t gIndex; 	//global index
+		size_t lIndex; 	//local index
+		size_t index2D; 	//local 2D index
 
 		gIndex = (s1+l)*r234+s2*r34+s3*r4+s4;
 		lIndex = l*R234;

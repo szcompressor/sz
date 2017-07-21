@@ -1,0 +1,59 @@
+/**
+ *  @file dataCompression.h
+ *  @author Sheng Di
+ *  @date July, 2017
+ *  @brief Header file for the dataCompression.c.
+ *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
+ *      See COPYRIGHT in top-level directory.
+ */
+
+#ifndef _DataCompression_H
+#define _DataCompression_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "sz.h"
+#include <stdio.h>
+
+//dataCompression.c
+double computeRangeSize_double(double* oriData, size_t size, double* valueRangeSize, double* medianValue);
+float computeRangeSize_float(float* oriData, size_t size, float* valueRangeSize, float* medianValue);
+float computeRangeSize_double_subblock(double* oriData, double* valueRangeSize, double* medianValue,
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1,
+size_t s5, size_t s4, size_t s3, size_t s2, size_t s1,
+size_t e5, size_t e4, size_t e3, size_t e2, size_t e1);
+float computeRangeSize_float_subblock(float* oriData, float* valueRangeSize, float* medianValue,
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1,
+size_t s5, size_t s4, size_t s3, size_t s2, size_t s1,
+size_t e5, size_t e4, size_t e3, size_t e2, size_t e1);
+double min_d(double a, double b);
+double max_d(double a, double b);
+float min_f(float a, float b);
+float max_f(float a, float b);
+double getRealPrecision_double(double valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status);
+double getRealPrecision_float(float valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status);
+void symTransform_8bytes(unsigned char data[8]);
+void symTransform_2bytes(unsigned char data[2]);
+void symTransform_4bytes(unsigned char data[4]);
+void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, 
+		int reqLength, int reqBytesLength, int resiBitsLength);
+void compressSingleDoubleValue(DoubleValueCompressElement *vce, double tgtValue, double precision, double medianValue, 
+		int reqLength, int reqBytesLength, int resiBitsLength);
+int compIdenticalLeadingBytesCount_double(unsigned char* preBytes, unsigned char* curBytes);
+int compIdenticalLeadingBytesCount_float(unsigned char* preBytes, unsigned char* curBytes);
+void addExactData(DynamicByteArray *exactMidByteArray, DynamicIntArray *exactLeadNumArray, 
+		DynamicIntArray *resiBitArray, LossyCompressionElement *lce);
+
+int getPredictionCoefficients(int layers, int dimension, int **coeff_array, int *status);
+
+int computeBlockEdgeSize_3D(int segmentSize);
+int computeBlockEdgeSize_2D(int segmentSize);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ----- #ifndef _DataCompression_H  ----- */
+

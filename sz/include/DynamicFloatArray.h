@@ -14,17 +14,18 @@
 extern "C" {
 #endif
 
+#include <stdio.h>
 typedef struct DynamicFloatArray
 {	
 	float* array;
-	int size;
-	int capacity;
+	size_t size;
+	size_t capacity;
 } DynamicFloatArray;
 
-void new_DFA(DynamicFloatArray **dfa, int cap);
+void new_DFA(DynamicFloatArray **dfa, size_t cap);
 void convertDFAtoFloats(DynamicFloatArray *dfa, float **data);
 void free_DFA(DynamicFloatArray *dfa);
-float getDFA_Data(DynamicFloatArray *dfa, int pos);
+float getDFA_Data(DynamicFloatArray *dfa, size_t pos);
 void addDFA_Data(DynamicFloatArray *dfa, float value);
 
 #ifdef __cplusplus

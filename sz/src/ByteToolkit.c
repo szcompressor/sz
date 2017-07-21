@@ -29,7 +29,7 @@ int bytesToInt_bigEndian(unsigned char* bytes)
 	
 	res <<= 8;
 	temp = bytes[3] & 0xff;
-	res |= temp;		
+	res |= temp;
 	
 	return res;
 }
@@ -56,7 +56,6 @@ void intToBytes_bigEndian(unsigned char *b, unsigned int num)
 long bytesToLong_bigEndian(unsigned char* b) {
 	long temp = 0;
 	long res = 0;
-	int i;
 
 	res <<= 8;
 	temp = b[0] & 0xff;
@@ -278,9 +277,9 @@ void doubleToBytes(unsigned char *b, double num)
 		symTransform_8bytes(b);
 }
 
-int extractBytes(unsigned char* byteArray, int k, int validLength)
+int extractBytes(unsigned char* byteArray, size_t k, int validLength)
 {
-	int outIndex = k/8;
+	size_t outIndex = k/8;
 	int innerIndex = k%8;
 	unsigned char intBytes[4];
 	int length = innerIndex + validLength;
@@ -292,8 +291,7 @@ int extractBytes(unsigned char* byteArray, int k, int validLength)
 	
 	int i;
 	for(i = 0;i<byteNum;i++)
-		intBytes[4-byteNum+i] = byteArray[outIndex+i];
-	
+		intBytes[SZ_SIZE_TYPE-byteNum+i] = byteArray[outIndex+i];
 	int result = bytesToInt_bigEndian(intBytes);
 	int rightMovSteps = innerIndex +(8 - (innerIndex+validLength)%8)%8;
 	result = result << innerIndex;
@@ -385,10 +383,10 @@ int getRightMovingCode(int kMod8, int resiBitLength)
 	}
 }
 
-unsigned short* convertByteDataToShortArray(unsigned char* bytes, int byteLength)
+unsigned short* convertByteDataToShortArray(unsigned char* bytes, size_t byteLength)
 {
 	lshort ls;
-	int i, stateLength = byteLength/2;
+	size_t i, stateLength = byteLength/2;
 	unsigned short* states = (unsigned short*)malloc(stateLength*sizeof(short));
 	for(i=0;i<stateLength;i++)
 	{
@@ -399,10 +397,10 @@ unsigned short* convertByteDataToShortArray(unsigned char* bytes, int byteLength
 	return states;
 } 
 
-void convertShortArrayToBytes(unsigned short* states, int stateLength, unsigned char* bytes)
+void convertShortArrayToBytes(unsigned short* states, size_t stateLength, unsigned char* bytes)
 {
 	lshort ls;
-	int i, byteLength = byteLength*2;
+	size_t i, byteLength = byteLength*2;
 	for(i=0;i<stateLength;i++)
 	{
 		ls.svalue = states[i];
@@ -410,3 +408,22 @@ void convertShortArrayToBytes(unsigned short* states, int stateLength, unsigned 
 		bytes[i*2+1] = ls.byte[1];
 	}
 }
+
+size_t bytesToSize(unsigned char* bytes)
+{
+	size_t result = 0;
+	if(SZ_SIZE_TYPE==4)	
+		result = bytesToInt_bigEndian(bytes);//4		
+	else
+		result = bytesToLong_bigEndian(bytes);//8	
+	return result;
+}
+
+void sizeToBytes(unsigned char* outBytes, size_t size)
+{
+	if(SZ_SIZE_TYPE==4)
+		intToBytes_bigEndian(outBytes, size);//4
+	else
+		longToBytes_bigEndian(outBytes, size);//8
+}
+

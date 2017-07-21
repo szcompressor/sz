@@ -22,9 +22,9 @@
 #include "zlib.h"
 #include "rw.h"
 
-void compute_segment_precisions_double_1D(double *oriData, int dataLength, double* pwrErrBound, unsigned char* pwrErrBoundBytes)
+void compute_segment_precisions_double_1D(double *oriData, size_t dataLength, double* pwrErrBound, unsigned char* pwrErrBoundBytes)
 {
-	int i = 0, j = 0, k = 0;
+	size_t i = 0, j = 0, k = 0;
 	double realPrecision = oriData[0]!=0?fabs(pw_relBoundRatio*oriData[0]):pw_relBoundRatio; 
 	double approxPrecision;
 	unsigned char realPrecBytes[8];
@@ -63,9 +63,9 @@ void compute_segment_precisions_double_1D(double *oriData, int dataLength, doubl
 	pwrErrBoundBytes[k++] = realPrecBytes[1];
 }
 
-unsigned int optimize_intervals_double_1D_pwr(double *oriData, int dataLength, double* pwrErrBound)
+unsigned int optimize_intervals_double_1D_pwr(double *oriData, size_t dataLength, double* pwrErrBound)
 {	
-	int i = 0, j = 0;
+	size_t i = 0, j = 0;
 	double realPrecision = pwrErrBound[j++];	
 	unsigned long radiusIndex;
 	double pred_value = 0, pred_err;
@@ -88,7 +88,7 @@ unsigned int optimize_intervals_double_1D_pwr(double *oriData, int dataLength, d
 		}
 	}
 	//compute the appropriate number
-	int targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = totalSampleSize*predThreshold;
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -110,9 +110,9 @@ unsigned int optimize_intervals_double_1D_pwr(double *oriData, int dataLength, d
 }
 
 void compute_segment_precisions_double_2D(double *oriData, double* pwrErrBound, 
-int r1, int r2, int R2, int edgeSize, unsigned char* pwrErrBoundBytes, double Min, double Max)
+size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundBytes, double Min, double Max)
 {
-	int i = 0, j = 0, k = 0, p = 0, index = 0, J; //I=-1,J=-1 if they are needed
+	size_t i = 0, j = 0, k = 0, p = 0, index = 0, J; //I=-1,J=-1 if they are needed
 	double realPrecision; 
 	double approxPrecision;
 	unsigned char realPrecBytes[8];
@@ -166,16 +166,16 @@ int r1, int r2, int R2, int edgeSize, unsigned char* pwrErrBoundBytes, double Mi
 	free(minAbsValues);
 }
 
-unsigned int optimize_intervals_double_2D_pwr(double *oriData, int r1, int r2, int R2, int edgeSize, double* pwrErrBound)
+unsigned int optimize_intervals_double_2D_pwr(double *oriData, size_t r1, size_t r2, size_t R2, size_t edgeSize, double* pwrErrBound)
 {	
-	int i = 0,j = 0, index, I=0, J=0;
+	size_t i = 0,j = 0, index, I=0, J=0;
 	double realPrecision = pwrErrBound[0];	
 	unsigned long radiusIndex;
 	double pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	int totalSampleSize = r1*r2/sampleDistance;
-	int ir2;
+	size_t totalSampleSize = r1*r2/sampleDistance;
+	size_t ir2;
 	for(i=1;i<r1;i++)
 	{
 		ir2 = i*r2;
@@ -203,7 +203,7 @@ unsigned int optimize_intervals_double_2D_pwr(double *oriData, int r1, int r2, i
 		}
 	}
 	//compute the appropriate number
-	int targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = totalSampleSize*predThreshold;
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -225,10 +225,10 @@ unsigned int optimize_intervals_double_2D_pwr(double *oriData, int r1, int r2, i
 }
 
 void compute_segment_precisions_double_3D(double *oriData, double* pwrErrBound, 
-int r1, int r2, int r3, int R2, int R3, int edgeSize, unsigned char* pwrErrBoundBytes, double Min, double Max)
+size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned char* pwrErrBoundBytes, double Min, double Max)
 {
-	int i = 0, j = 0, k = 0, p = 0, q = 0, index = 0, J = 0, K = 0; //I=-1,J=-1 if they are needed
-	int r23 = r2*r3, ir, jr;
+	size_t i = 0, j = 0, k = 0, p = 0, q = 0, index = 0, J = 0, K = 0; //I=-1,J=-1 if they are needed
+	size_t r23 = r2*r3, ir, jr;
 	double realPrecision; 
 	double approxPrecision;
 	unsigned char realPrecBytes[8];
@@ -327,17 +327,17 @@ int r1, int r2, int r3, int R2, int R3, int edgeSize, unsigned char* pwrErrBound
 	free2DArray_double(minAbsValues, R2);
 }
 
-unsigned int optimize_intervals_double_3D_pwr(double *oriData, int r1, int r2, int r3, int R2, int R3, int edgeSize, double* pwrErrBound)
+unsigned int optimize_intervals_double_3D_pwr(double *oriData, size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, double* pwrErrBound)
 {	
-	int i,j,k, ir,jr,index, I = 0,J=0,K=0;
+	size_t i,j,k, ir,jr,index, I = 0,J=0,K=0;
 	double realPrecision = pwrErrBound[0];		
 	unsigned long radiusIndex;
-	int r23=r2*r3;
-	int R23 = R2*R3;
+	size_t r23=r2*r3;
+	size_t R23 = R2*R3;
 	double pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	int totalSampleSize = r1*r2*r3/sampleDistance;
+	size_t totalSampleSize = r1*r2*r3/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
 		ir = i*r23;
@@ -374,7 +374,7 @@ unsigned int optimize_intervals_double_3D_pwr(double *oriData, int r1, int r2, i
 		}
 	}
 	//compute the appropriate number
-	int targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = totalSampleSize*predThreshold;
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -396,12 +396,12 @@ unsigned int optimize_intervals_double_3D_pwr(double *oriData, int r1, int r2, i
 }
 
 void SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr(unsigned char** newByteData, double *oriData, 
-int dataLength, int *outSize, double min, double max)
+size_t dataLength, size_t *outSize, double min, double max)
 {
 	SZ_Reset();	
-	int pwrLength = dataLength%segment_size==0?dataLength/segment_size:dataLength/segment_size+1;
+	size_t pwrLength = dataLength%segment_size==0?dataLength/segment_size:dataLength/segment_size+1;
 	double* pwrErrBound = (double*)malloc(sizeof(double)*pwrLength);
-	int pwrErrBoundBytes_size = sizeof(unsigned char)*pwrLength*2;
+	size_t pwrErrBoundBytes_size = sizeof(unsigned char)*pwrLength*2;
 	unsigned char* pwrErrBoundBytes = (unsigned char*)malloc(pwrErrBoundBytes_size);
 	
 	compute_segment_precisions_double_1D(oriData, dataLength, pwrErrBound, pwrErrBoundBytes);
@@ -415,7 +415,8 @@ int dataLength, int *outSize, double min, double max)
 	else
 		quantization_intervals = intvCapacity;
 	//clearHuffmanMem();
-	int i = 0, j = 0, reqLength;
+	size_t i = 0, j = 0;
+	int reqLength;
 	double realPrecision = pwrErrBound[j++];	
 	double medianValue = 0;
 	double radius = fabs(max)<fabs(min)?fabs(min):fabs(max);
@@ -569,24 +570,33 @@ int dataLength, int *outSize, double min, double max)
 	int doubleSize=sizeof(double);
 	if(*outSize>dataLength*doubleSize)
 	{
-		int k = 0, i;
+		size_t k = 0, i;
 		tdps->isLossless = 1;
-		int totalByteLength = 3 + 4 + 1 + doubleSize*dataLength;
+		size_t totalByteLength = 3 + 4 + 1 + doubleSize*dataLength;
 		*newByteData = (unsigned char*)malloc(totalByteLength);
 		
 		unsigned char dsLengthBytes[4];
 		intToBytes_bigEndian(dsLengthBytes, dataLength);//4
 		for (i = 0; i < 3; i++)//3
 			(*newByteData)[k++] = versionNumber[i];
-		for (i = 0; i < 4; i++)//4
+		
+		if(SZ_SIZE_TYPE==4)
+		{
+			(*newByteData)[k++] = 16;	//=00010000	
+		}
+		else 
+		{
+			(*newByteData)[k++] = 80;
+		}
+		for (i = 0; i < SZ_SIZE_TYPE; i++)//4 or 8
 			(*newByteData)[k++] = dsLengthBytes[i];
-		(*newByteData)[k++] = 16;	//=00010000	
+
 		
 		if(sysEndianType==BIG_ENDIAN_SYSTEM)
-			memcpy((*newByteData)+8, oriData, dataLength*doubleSize);
+			memcpy((*newByteData)+4+SZ_SIZE_TYPE, oriData, dataLength*doubleSize);
 		else
 		{
-			unsigned char* p = (*newByteData)+8;
+			unsigned char* p = (*newByteData)+4+SZ_SIZE_TYPE;
 			for(i=0;i<dataLength;i++,p+=doubleSize)
 				doubleToBytes(p, oriData[i]);
 		}
@@ -607,16 +617,16 @@ int dataLength, int *outSize, double min, double max)
  * Note: @r1 is high dimension
  * 		 @r2 is low dimension 
  * */
-void SZ_compress_args_double_NoCkRngeNoGzip_2D_pwr(unsigned char** newByteData, double *oriData, int r1, int r2,
-int *outSize, double min, double max)
+void SZ_compress_args_double_NoCkRngeNoGzip_2D_pwr(unsigned char** newByteData, double *oriData, size_t r1, size_t r2,
+size_t *outSize, double min, double max)
 {
 	SZ_Reset();	
-	int dataLength=r1*r2;
+	size_t dataLength=r1*r2;
 	int blockEdgeSize = computeBlockEdgeSize_2D(segment_size);
-	int R1 = 1+(r1-1)/blockEdgeSize;
-	int R2 = 1+(r2-1)/blockEdgeSize;
+	size_t R1 = 1+(r1-1)/blockEdgeSize;
+	size_t R2 = 1+(r2-1)/blockEdgeSize;
 	double* pwrErrBound = (double*)malloc(sizeof(double)*R1*R2);
-	int pwrErrBoundBytes_size = sizeof(unsigned char)*R1*R2*2;
+	size_t pwrErrBoundBytes_size = sizeof(unsigned char)*R1*R2*2;
 	unsigned char* pwrErrBoundBytes = (unsigned char*)malloc(pwrErrBoundBytes_size);
 	
 	compute_segment_precisions_double_2D(oriData, pwrErrBound, r1, r2, R2, blockEdgeSize, pwrErrBoundBytes, min, max);
@@ -631,7 +641,8 @@ int *outSize, double min, double max)
 	//clearHuffmanMem();	
 	//printf("quantization_intervals=%d\n",quantization_intervals);
 	
-	int i=0,j=0,I=0,J=0,reqLength;
+	size_t i=0,j=0,I=0,J=0; 
+	int reqLength;
 	double realPrecision = pwrErrBound[I*R2+J];	
 	double pred1D, pred2D;
 	double diff = 0.0;
@@ -754,7 +765,7 @@ int *outSize, double min, double max)
 	}
 
 	/* Process Row-1 --> Row-r1-1 */
-	int index;
+	size_t index;
 	for (i = 1; i < r1; i++)
 	{	
 		/* Process row-i data 0 */
@@ -875,17 +886,18 @@ int *outSize, double min, double max)
 	free(exactMidByteArray);
 }
 
-void SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, double *oriData, int r1, int r2, int r3, int *outSize, double min, double max)
+void SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, double *oriData, 
+size_t r1, size_t r2, size_t r3, size_t *outSize, double min, double max)
 {
 	SZ_Reset();	
-	int dataLength=r1*r2*r3;
+	size_t dataLength=r1*r2*r3;
 	
 	int blockEdgeSize = computeBlockEdgeSize_3D(segment_size);
-	int R1 = 1+(r1-1)/blockEdgeSize;
-	int R2 = 1+(r2-1)/blockEdgeSize;
-	int R3 = 1+(r3-1)/blockEdgeSize;
+	size_t R1 = 1+(r1-1)/blockEdgeSize;
+	size_t R2 = 1+(r2-1)/blockEdgeSize;
+	size_t R3 = 1+(r3-1)/blockEdgeSize;
 	double* pwrErrBound = (double*)malloc(sizeof(double)*R1*R2*R3);
-	int pwrErrBoundBytes_size = sizeof(unsigned char)*R1*R2*R3*2;
+	size_t pwrErrBoundBytes_size = sizeof(unsigned char)*R1*R2*R3*2;
 	unsigned char* pwrErrBoundBytes = (unsigned char*)malloc(pwrErrBoundBytes_size);	
 	
 	compute_segment_precisions_double_3D(oriData, pwrErrBound, r1, r2, r3, R2, R3, blockEdgeSize, pwrErrBoundBytes, min, max);	
@@ -898,15 +910,16 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, 
 	else
 		quantization_intervals = intvCapacity;
 	//clearHuffmanMem();
-	int i=0,j=0,k=0, reqLength, I = 0, J = 0, K = 0;
+	size_t i=0,j=0,k=0, I = 0, J = 0, K = 0;
+	int reqLength;
 	double realPrecision = pwrErrBound[0];		
 	double pred1D, pred2D, pred3D;
 	double diff = 0.0;
 	double itvNum = 0;
 	double *P0, *P1;
 
-	int r23 = r2*r3;
-	int R23 = R2*R3;
+	size_t r23 = r2*r3;
+	size_t R23 = R2*R3;
 	P0 = (double*)malloc(r23*sizeof(double));
 	P1 = (double*)malloc(r23*sizeof(double));
 	double radius = fabs(max)<fabs(min)?fabs(min):fabs(max);
@@ -1028,7 +1041,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, 
 	}
 
 	/* Process Row-1 --> Row-r2-1 */
-	int index;
+	size_t index;
 	K = 0;
 	for (i = 1; i < r2; i++)
 	{
@@ -1167,8 +1180,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, 
 		for (j = 1; j < r3; j++)
 		{
 			index = k*r23+j;	
-				if(index==46788)
-					printf("index=%d\n", index);
+
 			if(j%blockEdgeSize==0)
 			{
 				J++;
@@ -1208,7 +1220,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, 
 		}
 
 	    /* Process Row-1 --> Row-r2-1 */
-		int index2D;
+		size_t index2D;
 		for (i = 1; i < r2; i++)
 		{
 			/* Process Row-i data 0 */

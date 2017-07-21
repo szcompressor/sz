@@ -17,9 +17,9 @@
 #include "TightDataPointStorageD.h"
 #include "CompressElement.h"
 
-float computeRangeSize_float(float* oriData, int size, float* valueRangeSize, float* medianValue)
+float computeRangeSize_float(float* oriData, size_t size, float* valueRangeSize, float* medianValue)
 {
-	int i = 0;
+	size_t i = 0;
 	float min = oriData[0];
 	float max = min;
 	for(i=1;i<size;i++)
@@ -36,9 +36,9 @@ float computeRangeSize_float(float* oriData, int size, float* valueRangeSize, fl
 	return min;
 }
 
-double computeRangeSize_double(double* oriData, int size, double* valueRangeSize, double* medianValue)
+double computeRangeSize_double(double* oriData, size_t size, double* valueRangeSize, double* medianValue)
 {
-	int i = 0;
+	size_t i = 0;
 	double min = oriData[0];
 	double max = min;
 	for(i=1;i<size;i++)
@@ -56,12 +56,12 @@ double computeRangeSize_double(double* oriData, int size, double* valueRangeSize
 }
 
 float computeRangeSize_float_subblock(float* oriData, float* valueRangeSize, float* medianValue,
-int r5, int r4, int r3, int r2, int r1,
-int s5, int s4, int s3, int s2, int s1,
-int e5, int e4, int e3, int e2, int e1)
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1,
+size_t s5, size_t s4, size_t s3, size_t s2, size_t s1,
+size_t e5, size_t e4, size_t e3, size_t e2, size_t e1)
 {
-	int i1, i2, i3, i4, i5;
-	int index_start = s5*(r4*r3*r2*r1) + s4*(r3*r2*r1) + s3*(r2*r1) + s2*r1 + s1;
+	size_t i1, i2, i3, i4, i5;
+	size_t index_start = s5*(r4*r3*r2*r1) + s4*(r3*r2*r1) + s3*(r2*r1) + s2*r1 + s1;
 	float min = oriData[index_start];
 	float max = min;
 
@@ -71,7 +71,7 @@ int e5, int e4, int e3, int e2, int e1)
 	for (i2 = s2; i2 <= e2; i2++)
 	for (i1 = s1; i1 <= e1; i1++)
 	{
-		int index = i5*(r4*r3*r2*r1) + i4*(r3*r2*r1) + i3*(r2*r1) + i2*r1 + i1;
+		size_t index = i5*(r4*r3*r2*r1) + i4*(r3*r2*r1) + i3*(r2*r1) + i2*r1 + i1;
 		float data = oriData[index];
 		if (min>data)
 			min = data;
@@ -86,12 +86,12 @@ int e5, int e4, int e3, int e2, int e1)
 
 
 float computeRangeSize_double_subblock(double* oriData, double* valueRangeSize, double* medianValue,
-int r5, int r4, int r3, int r2, int r1,
-int s5, int s4, int s3, int s2, int s1,
-int e5, int e4, int e3, int e2, int e1)
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1,
+size_t s5, size_t s4, size_t s3, size_t s2, size_t s1,
+size_t e5, size_t e4, size_t e3, size_t e2, size_t e1)
 {
-	int i1, i2, i3, i4, i5;
-	int index_start = s5*(r4*r3*r2*r1) + s4*(r3*r2*r1) + s3*(r2*r1) + s2*r1 + s1;
+	size_t i1, i2, i3, i4, i5;
+	size_t index_start = s5*(r4*r3*r2*r1) + s4*(r3*r2*r1) + s3*(r2*r1) + s2*r1 + s1;
 	double min = oriData[index_start];
 	double max = min;
 
@@ -101,7 +101,7 @@ int e5, int e4, int e3, int e2, int e1)
 	for (i2 = s2; i2 <= e2; i2++)
 	for (i1 = s1; i1 <= e1; i1++)
 	{
-		int index = i5*(r4*r3*r2*r1) + i4*(r3*r2*r1) + i3*(r2*r1) + i2*r1 + i1;
+		size_t index = i5*(r4*r3*r2*r1) + i4*(r3*r2*r1) + i3*(r2*r1) + i2*r1 + i1;
 		double data = oriData[index];
 		if (min>data)
 			min = data;
@@ -322,4 +322,71 @@ void addExactData(DynamicByteArray *exactMidByteArray, DynamicIntArray *exactLea
 		if(resMidBitsLength!=0)
 			addDIA_Data(resiBitArray, lce->residualMidBits);
 	}
+}
+
+/**
+ * @deprecated
+ * @return: the length of the coefficient array.
+ * */
+int getPredictionCoefficients(int layers, int dimension, int **coeff_array, int *status)
+{
+	size_t size = 0;
+	switch(dimension)
+	{
+		case 1:
+			switch(layers)
+			{
+				case 1:
+					*coeff_array = (int*)malloc(sizeof(int));
+					(*coeff_array)[0] = 1;
+					size = 1;
+					break;
+				case 2:
+					*coeff_array = (int*)malloc(2*sizeof(int));
+					(*coeff_array)[0] = 2;
+					(*coeff_array)[1] = -1;
+					size = 2;
+					break;
+				case 3:
+					*coeff_array = (int*)malloc(3*sizeof(int));
+					(*coeff_array)[0] = 3;
+					(*coeff_array)[1] = -3;
+					(*coeff_array)[2] = 1;
+					break;
+			}	
+			break;
+		case 2:
+			switch(layers)
+			{
+				case 1:
+				
+					break;
+				case 2:
+				
+					break;
+				case 3:
+				
+					break;
+			}				
+			break;
+		case 3:
+			switch(layers)
+			{
+				case 1:
+				
+					break;
+				case 2:
+				
+					break;
+				case 3:
+				
+					break;
+			}			
+			break;
+		default:
+			printf("Error: dimension must be no greater than 3 in the current version.\n");
+			*status = SZ_DERR;
+	}
+	*status = SZ_SCES;
+	return size;
 }

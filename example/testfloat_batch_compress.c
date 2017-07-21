@@ -37,7 +37,7 @@ void cost_end()
 
 int main(int argc, char * argv[])
 {
-    int r5=0,r4=0,r3=0,r2=0,r1=0;
+    size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     char outDir[640], oriFilePath[640], outputFilePath[640];
     char *cfgFile;
     
@@ -66,7 +66,8 @@ int main(int argc, char * argv[])
     
     sprintf(outputFilePath, "%s.bsz", oriFilePath);
    
-    int nbEle, status;
+    size_t nbEle; 
+    int status;
     float *data = readFloatData(oriFilePath, &nbEle, &status);
     //float *revValue = (float *)malloc(sizeof(float));
     //*revValue = 1.0E36;
@@ -76,7 +77,7 @@ int main(int argc, char * argv[])
     SZ_batchAddVar("data", SZ_FLOAT, data, ABS, 0.000001, 0.000001, r5,r4,r3,r2,r1);
     SZ_batchAddVar("data2", SZ_FLOAT, data2, ABS, 0.000001, 0.000001, r5,r4,r3,r2,r1);
 
-    int outSize; 
+    size_t outSize; 
     //char *bytes = (char *)malloc(nbEle*sizeof(float)); //
     //SZ_compress_args2(SZ_FLOAT, data, bytes, &outSize, ABS, 0.0001, 0.0001, r5, r4, r3, r2, r1);    
     //char *bytes = SZ_compress_rev(SZ_FLOAT, data, revValue, &outSize, r5, r4, r3, r2, r1);
@@ -87,11 +88,12 @@ int main(int argc, char * argv[])
     writeByteData(bytes, outSize, outputFilePath, &status);
    
     //decompression
-    int compressedLength = outSize;
+    size_t compressedLength = outSize;
     SZ_batch_decompress(bytes, compressedLength, &status);
 
     //write the decompressed data to disk 
-    int dataLength, varIndex = 0;
+    size_t dataLength; 
+    int varIndex = 0;
     SZ_Variable* p = sz_varset->header->next;
     while(p!=NULL)
     {
