@@ -28,9 +28,6 @@ testfloat_decompress:	testfloat_decompress.c
 testdouble_compress:	testdouble_compress.c
 	$(CC)  -g -O3 -o testdouble_compress testdouble_compress.c $(SZFLAG)
 
-testfloat_compress_subblock:	testfloat_compress_subblock.c
-	$(CC)  -g -O3 -o testfloat_compress_subblock testfloat_compress_subblock.c $(SZFLAG)
-
 testdouble_decompress:	testdouble_decompress.c
 	$(CC)  -g -O3 -o testdouble_decompress testdouble_decompress.c $(SZFLAG)
 
