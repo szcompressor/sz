@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS=foreign
 if FORTRAN
 include_HEADERS=include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
 		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h include/szf.h\
-		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h\
+		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\
 		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h sz.mod rw.mod
 
 lib_LTLIBRARIES=libsz.la
@@ -22,7 +22,7 @@ libsz_la_LINK=$(AM_V_CC)$(LIBTOOL) --tag=FC --mode=link $(FCLD) $(libsz_la_CFLAG
 else
 include_HEADERS=include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
 		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h include/szf.h\
-		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h\
+		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\
 		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h
 
 lib_LTLIBRARIES=libsz.la

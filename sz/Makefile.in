@@ -261,8 +261,9 @@ am__include_HEADERS_DIST = include/CompressElement.h \
 	include/DynamicFloatArray.h include/VarSet.h include/sz.h \
 	include/Huffman.h include/ByteToolkit.h include/szf.h \
 	include/sz_float.h include/sz_double.h include/callZlib.h \
-	include/iniparser.h include/DynamicByteArray.h \
-	include/DynamicIntArray.h include/TightDataPointStorageD.h \
+	include/iniparser.h include/TypeManager.h \
+	include/DynamicByteArray.h include/DynamicIntArray.h \
+	include/TightDataPointStorageD.h \
 	include/TightDataPointStorageF.h sz.mod rw.mod
 HEADERS = $(include_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
@@ -408,12 +409,12 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@include_HEADERS = include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
 @FORTRAN_FALSE@		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h include/szf.h\
-@FORTRAN_FALSE@		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h\
+@FORTRAN_FALSE@		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\
 @FORTRAN_FALSE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h
 
 @FORTRAN_TRUE@include_HEADERS = include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
 @FORTRAN_TRUE@		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h include/szf.h\
-@FORTRAN_TRUE@		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h\
+@FORTRAN_TRUE@		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\
 @FORTRAN_TRUE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h sz.mod rw.mod
 
 @FORTRAN_FALSE@lib_LTLIBRARIES = libsz.la
