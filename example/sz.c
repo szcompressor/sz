@@ -126,26 +126,26 @@ int main(int argc, char* argv[])
 			conPath = argv[i];
 			break;
 		case '1': 
-			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1)
+			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1)
 				usage();
 
 			break;
 		case '2':
-			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 || 
-				++i == argc || sscanf(argv[i], "%d", &r2) != 1)
+			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r2) != 1)
 				usage();
 			break;
 		case '3':
-			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 ||
-				++i == argc || sscanf(argv[i], "%d", &r2) != 1 ||
-				++i == argc || sscanf(argv[i], "%d", &r3) != 1)
+			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r2) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r3) != 1)
 				usage();		
 			break;
 		case '4':
-			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 ||
-				++i == argc || sscanf(argv[i], "%d", &r2) != 1 ||
-				++i == argc || sscanf(argv[i], "%d", &r3) != 1 ||
-				++i == argc || sscanf(argv[i], "%d", &r4) != 1)
+			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r2) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r3) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r4) != 1)
 				usage();		
 			break;
 		default: 
