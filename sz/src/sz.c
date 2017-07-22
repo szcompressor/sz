@@ -44,6 +44,8 @@ double absErrBound;
 double relBoundRatio;
 double pw_relBoundRatio;
 int segment_size;
+int pwr_type = -1;
+
 int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 
 int spaceFillingCurveTransform; //default is 0, or 1 set by sz.config
@@ -172,6 +174,10 @@ int SZ_Init_Params(sz_params *params)
 			sampleDistance = params->sampleDistance;
 		if(params->predThreshold > 0)
 			predThreshold = params->predThreshold;
+		if(params->segment_size > 0)
+			segment_size = params->segment_size;
+		if(params->pwr_type > 0)
+			pwr_type = params->pwr_type;
     }
 
 //	versionNumber[0] = SZ_VER_MAJOR; //0
@@ -261,7 +267,7 @@ size_t computeDataLength(size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
  **/
 /*-------------------------------------------------------------------------*/
 unsigned char* SZ_compress_args(int dataType, void *data, size_t *outSize, int errBoundMode, double absErrBound, 
-double relBoundRatio, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
+double relBoundRatio, double pwrBoundRatio, int pwrType, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
 	//TODO
 	if(dataType==SZ_FLOAT)
@@ -269,7 +275,7 @@ double relBoundRatio, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 		unsigned char *newByteData;
 		
 		SZ_compress_args_float(&newByteData, (float *)data, r5, r4, r3, r2, r1, 
-		outSize, errBoundMode, absErrBound, relBoundRatio);
+		outSize, errBoundMode, absErrBound, relBoundRatio, pwrBoundRatio, pwrType);
 		
 		return newByteData;
 	}
@@ -277,7 +283,7 @@ double relBoundRatio, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 	{
 		unsigned char *newByteData;
 		SZ_compress_args_double(&newByteData, (double *)data, r5, r4, r3, r2, r1, 
-		outSize, errBoundMode, absErrBound, relBoundRatio);
+		outSize, errBoundMode, absErrBound, relBoundRatio, pwrBoundRatio, pwrType);
 		
 		return newByteData;
 	}
@@ -288,10 +294,11 @@ double relBoundRatio, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 	}
 }
 
-int SZ_compress_args2(int dataType, void *data, unsigned char* compressed_bytes, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 
+int SZ_compress_args2(int dataType, void *data, unsigned char* compressed_bytes, size_t *outSize, 
+int errBoundMode, double absErrBound, double relBoundRatio, double pwrBoundRatio, int pwrType, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
-	unsigned char* bytes = SZ_compress_args(dataType, data, outSize, errBoundMode, absErrBound, relBoundRatio, r5, r4, r3, r2, r1);
+	unsigned char* bytes = SZ_compress_args(dataType, data, outSize, errBoundMode, absErrBound, relBoundRatio, pwrBoundRatio, pwrType, r5, r4, r3, r2, r1);
     memcpy(compressed_bytes, bytes, *outSize);
     free(bytes); 
 	return SZ_SCES;
@@ -331,7 +338,8 @@ size_t e5, size_t e4, size_t e3, size_t e2, size_t e1)
 
 unsigned char *SZ_compress(int dataType, void *data, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {	
-	unsigned char *newByteData = SZ_compress_args(dataType, data, outSize, errorBoundMode, absErrBound, relBoundRatio, r5, r4, r3, r2, r1);
+	unsigned char *newByteData = SZ_compress_args(dataType, data, outSize, errorBoundMode, absErrBound, relBoundRatio, 
+	pw_relBoundRatio, pwr_type, r5, r4, r3, r2, r1);
 	return newByteData;
 }
 

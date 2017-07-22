@@ -76,6 +76,10 @@ extern "C" {
 #define SZ_BEST_COMPRESSION 1
 #define SZ_DEFAULT_COMPRESSION 2
 
+#define SZ_PWR_MIN_TYPE 0
+#define SZ_PWR_AVG_TYPE 1
+#define SZ_PWR_MAX_TYPE 2
+
 //SUCCESS returning status
 #define SZ_SCES 0  //successful
 #define SZ_NSCS -1 //Not successful
@@ -123,6 +127,8 @@ extern double absErrBound;
 extern double relBoundRatio;
 extern double pw_relBoundRatio;
 extern int segment_size;
+
+extern int pwr_type;
 
 extern int versionNumber[4];
 
@@ -182,6 +188,7 @@ typedef struct sz_params
     double relBoundRatio;
     double pw_relBoundRatio;
     int segment_size;
+    int pwr_type;
 } sz_params;
 
 extern sz_params *conf_params;
@@ -212,9 +219,10 @@ size_t *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio);
 unsigned char *SZ_compress(int dataType, void *data, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
 unsigned char* SZ_compress_args(int dataType, void *data, size_t *outSize, int errBoundMode, double absErrBound, 
-double relBoundRatio, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
+double relBoundRatio, double pwrBoundRatio, int pwrType, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
-int SZ_compress_args2(int dataType, void *data, unsigned char* compressed_bytes, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 
+int SZ_compress_args2(int dataType, void *data, unsigned char* compressed_bytes, size_t *outSize, 
+int errBoundMode, double absErrBound, double relBoundRatio, double pwrBoundRatio, int pwrType, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
 int SZ_compress_args3(int dataType, void *data, unsigned char* compressed_bytes, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 

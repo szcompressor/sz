@@ -253,6 +253,22 @@ int SZ_ReadConf() {
 		conf_params->pw_relBoundRatio = pw_relBoundRatio;
 		segment_size = (int)iniparser_getint(ini, "PARAMETER:segment_size", 0);
 		conf_params->segment_size = segment_size;
+		
+		modeBuf = iniparser_getstring(ini, "PARAMETER:pwr_type", NULL);
+
+		if(strcmp(modeBuf, "MIN")==0)
+			pwr_type = SZ_PWR_MIN_TYPE;
+		else if(strcmp(modeBuf, "AVG")==0)
+			pwr_type = SZ_PWR_AVG_TYPE;
+		else if(strcmp(modeBuf, "MAX")==0)
+			pwr_type = SZ_PWR_MAX_TYPE;
+		else if(modeBuf!=NULL)
+		{
+			printf("[SZ] Error: Wrong pwr_type setting (please check sz.config file).\n");
+			iniparser_freedict(ini);
+			return SZ_NSCS;	
+		}
+		conf_params->pwr_type = pwr_type;
 	}
 	
 //	versionNumber[0] = SZ_VER_MAJOR; //0

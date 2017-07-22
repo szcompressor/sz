@@ -68,7 +68,7 @@ void convertByteArray2IntArray_fast_2b(size_t stepLength, unsigned char* byteArr
 	if(stepLength > byteArrayLength*4)
 	{
 		printf("Error: stepLength > byteArray.length*4\n");
-		printf("stepLength=%zu, byteArray.length=%zu\n", stepLength, byteArrayLength);
+		printf("stepLength=%d, byteArray.length=%d\n", stepLength, byteArrayLength);
 		exit(0);
 	}
 	if(stepLength>0)
@@ -155,7 +155,7 @@ void convertByteArray2IntArray_fast_3b(size_t stepLength, unsigned char* byteArr
 	if(stepLength > byteArrayLength*8/3)
 	{
 		printf("Error: stepLength > byteArray.length*8/3, impossible case unless bugs elsewhere.\n");
-		printf("stepLength=%zu, byteArray.length=%zu\n", stepLength, byteArrayLength);
+		printf("stepLength=%d, byteArray.length=%d\n", stepLength, byteArrayLength);
 		exit(0);		
 	}
 	if(stepLength>0)

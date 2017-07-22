@@ -1442,11 +1442,20 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 
 int SZ_compress_args_float(unsigned char** newByteData, float *oriData, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
-int errBoundMode, double absErr_Bound, double relBoundRatio)
+int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio, int pwrType)
 {
 	errorBoundMode = errBoundMode;
 	if(errBoundMode==PW_REL)
-		pw_relBoundRatio = relBoundRatio;	
+	{
+		pw_relBoundRatio = pwRelBoundRatio;	
+		pwr_type = pwrType;
+		if(pwrType==SZ_PWR_AVG_TYPE && r3 != 0 )
+		{
+			printf("Error: Current version doesn't support 3D data compression with point-wise relative error bound being based on pwrType=AVG\n");
+			exit(0);
+			return SZ_NSCS;
+		}
+	}		
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	float valueRangeSize = 0, medianValue = 0;

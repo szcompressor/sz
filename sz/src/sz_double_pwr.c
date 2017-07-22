@@ -30,12 +30,18 @@ void compute_segment_precisions_double_1D(double *oriData, size_t dataLength, do
 	unsigned char realPrecBytes[8];
 	double curPrecision;
 	double curValue;
+	float sum = 0;
 	for(i=0;i<dataLength;i++)
 	{
 		curValue = oriData[i];
 		if(i%segment_size==0&&i>0)
 		{
 			//get two first bytes of the realPrecision
+			if(pwr_type==SZ_PWR_AVG_TYPE)
+			{
+				realPrecision = sum/segment_size;
+				sum = 0;			
+			}
 			doubleToBytes(realPrecBytes, realPrecision);
 			memset(&realPrecBytes[2], 0, 6);
 			approxPrecision = bytesToDouble(realPrecBytes);
@@ -49,10 +55,28 @@ void compute_segment_precisions_double_1D(double *oriData, size_t dataLength, do
 		else if(curValue!=0)
 		{
 			curPrecision = fabs(pw_relBoundRatio*curValue);
-			if(realPrecision>curPrecision)
-				realPrecision = curPrecision;
+			
+			switch(pwr_type)
+			{
+			case SZ_PWR_MIN_TYPE: 
+				if(realPrecision>curPrecision)
+					realPrecision = curPrecision;	
+				break;
+			case SZ_PWR_AVG_TYPE:
+				sum += curPrecision;
+				break;
+			case SZ_PWR_MAX_TYPE:
+				if(realPrecision<curPrecision)
+					realPrecision = curPrecision;					
+				break;
+			}
 		}
 	}
+	if(pwr_type==SZ_PWR_AVG_TYPE)
+	{
+		int size = dataLength%segment_size==0?segment_size:dataLength%segment_size;
+		realPrecision = sum/size;		
+	}	
 	doubleToBytes(realPrecBytes, realPrecision);
 	memset(&realPrecBytes[2], 0, 6);
 	approxPrecision = bytesToDouble(realPrecBytes);
@@ -117,11 +141,19 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 	double approxPrecision;
 	unsigned char realPrecBytes[8];
 	double curValue, curAbsValue;
-	double* minAbsValues = (double*)malloc(R2*sizeof(double));	
+	double* statAbsValues = (double*)malloc(R2*sizeof(double));	
 	
 	double max = fabs(Min)<fabs(Max)?fabs(Max):fabs(Min); //get the max abs value.
+	double min = fabs(Min)<fabs(Max)?fabs(Min):fabs(Max);
 	for(i=0;i<R2;i++)
-		minAbsValues[i] = max;
+	{
+		if(pwr_type == SZ_PWR_MIN_TYPE)
+			statAbsValues[i] = max;
+		else if(pwr_type == SZ_PWR_MAX_TYPE)
+			statAbsValues[i] = min;
+		else
+			statAbsValues[i] = 0; //for SZ_PWR_AVG_TYPE
+	}
 	for(i=0;i<r1;i++)
 	{
 		for(j=0;j<r2;j++)
@@ -130,7 +162,27 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 			curValue = oriData[index];				
 			if(((i%edgeSize==edgeSize-1 || i==r1-1) &&j%edgeSize==0&&j>0) || (i%edgeSize==0&&j==0&&i>0))
 			{
-				realPrecision = pw_relBoundRatio*minAbsValues[J];
+				if(pwr_type==SZ_PWR_AVG_TYPE)
+				{
+					int a = edgeSize, b = edgeSize;
+					if(j==0)
+					{
+						if(r2%edgeSize==0) 
+							b = edgeSize;
+						else
+							b = r2%edgeSize;
+					}
+					if(i==r1-1)
+					{
+						if(r1%edgeSize==0)
+							a = edgeSize;
+						else
+							a = r1%edgeSize;
+					}
+					realPrecision = pw_relBoundRatio*statAbsValues[J]/(a*b);
+				}
+				else
+					realPrecision = pw_relBoundRatio*statAbsValues[J];
 				doubleToBytes(realPrecBytes, realPrecision);
 				memset(&realPrecBytes[2], 0, 6);
 				approxPrecision = bytesToDouble(realPrecBytes);
@@ -139,7 +191,12 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 				//put the two bytes in pwrErrBoundBytes
 				pwrErrBoundBytes[k++] = realPrecBytes[0];
 				pwrErrBoundBytes[k++] = realPrecBytes[1];	
-				minAbsValues[J] = max;		
+				if(pwr_type == SZ_PWR_MIN_TYPE)
+					statAbsValues[J] = max;
+				else if(pwr_type == SZ_PWR_MAX_TYPE)
+					statAbsValues[J] = min;
+				else
+					statAbsValues[J] = 0; //for SZ_PWR_AVG_TYPE		
 			}	
 			if(j==0)
 				J = 0;
@@ -148,12 +205,41 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 			if(curValue!=0)
 			{
 				curAbsValue = fabs(curValue);
-				if(minAbsValues[J]>curAbsValue)
-					minAbsValues[J] = curAbsValue;
+				
+				switch(pwr_type)
+				{
+				case SZ_PWR_MIN_TYPE: 
+					if(statAbsValues[J]>curAbsValue)
+						statAbsValues[J] = curAbsValue;	
+					break;
+				case SZ_PWR_AVG_TYPE:
+					statAbsValues[J] += curAbsValue;
+					break;
+				case SZ_PWR_MAX_TYPE:
+					if(statAbsValues[J]<curAbsValue)
+						statAbsValues[J] = curAbsValue;					
+					break;
+				}
 			}
 		}
 	}
-	realPrecision = pw_relBoundRatio*minAbsValues[J];
+		
+	if(pwr_type==SZ_PWR_AVG_TYPE)
+	{
+		int a = edgeSize, b = edgeSize;
+		if(r2%edgeSize==0) 
+			b = edgeSize;
+		else
+			b = r2%edgeSize;
+		if(r1%edgeSize==0)
+			a = edgeSize;
+		else
+			a = r1%edgeSize;
+		realPrecision = pw_relBoundRatio*statAbsValues[J]/(a*b);
+	}
+	else
+		realPrecision = pw_relBoundRatio*statAbsValues[J];		
+		
 	doubleToBytes(realPrecBytes, realPrecision);
 	realPrecBytes[2] = realPrecBytes[3] = 0;
 	approxPrecision = bytesToDouble(realPrecBytes);
@@ -163,7 +249,7 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 	pwrErrBoundBytes[k++] = realPrecBytes[0];
 	pwrErrBoundBytes[k++] = realPrecBytes[1];	
 	
-	free(minAbsValues);
+	free(statAbsValues);
 }
 
 unsigned int optimize_intervals_double_2D_pwr(double *oriData, size_t r1, size_t r2, size_t R2, size_t edgeSize, double* pwrErrBound)

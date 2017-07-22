@@ -28,6 +28,7 @@ typedef struct SZ_Variable
 	int errBoundMode;
 	double absErrBound;
 	double relBoundRatio;
+	double pwRelBoundRatio;
 	void* data;
 	unsigned char* compressedBytes;
 	size_t compressedSize;
