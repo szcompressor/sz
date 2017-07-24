@@ -272,7 +272,7 @@ double relBoundRatio, double pwrBoundRatio, int pwrType, size_t r5, size_t r4, s
 	//TODO
 	if(dataType==SZ_FLOAT)
 	{
-		unsigned char *newByteData;
+		unsigned char *newByteData = NULL;
 		
 		SZ_compress_args_float(&newByteData, (float *)data, r5, r4, r3, r2, r1, 
 		outSize, errBoundMode, absErrBound, relBoundRatio, pwrBoundRatio, pwrType);

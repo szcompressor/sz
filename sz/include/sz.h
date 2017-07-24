@@ -55,6 +55,10 @@ extern "C" {
 #define ABS_AND_REL 2
 #define ABS_OR_REL 3
 #define PW_REL 4
+#define ABS_AND_PW_REL 5
+#define ABS_OR_PW_REL 6
+#define REL_AND_PW_REL 7
+#define REL_OR_PW_REL 8
 
 #define SZ_FLOAT 0
 #define SZ_DOUBLE 1
@@ -91,9 +95,6 @@ extern "C" {
 
 #define SZ_MAINTAIN_VAR_DATA 0
 #define SZ_DESTROY_WHOLE_VARSET 1
-	
-//#define SZ_ZLIB_BUFFER_SIZE 1048576	
-#define SZ_ZLIB_BUFFER_SIZE 1024
 	
 //Note: the following setting should be consistent with stateNum in Huffman.h
 //#define intvCapacity 65536

@@ -237,6 +237,14 @@ int SZ_ReadConf() {
 			errorBoundMode=ABS_OR_REL;
 		else if(strcmp(errBoundMode, "PW_REL")==0||strcmp(errBoundMode, "pw_rel")==0)
 			errorBoundMode=PW_REL;
+		else if(strcmp(errBoundMode, "ABS_AND_PW_REL")==0||strcmp(errBoundMode, "abs_and_pw_rel")==0)
+			errorBoundMode=ABS_AND_PW_REL;
+		else if(strcmp(errBoundMode, "ABS_OR_PW_REL")==0||strcmp(errBoundMode, "abs_or_pw_rel")==0)
+			errorBoundMode=ABS_OR_PW_REL;
+		else if(strcmp(errBoundMode, "REL_AND_PW_REL")==0||strcmp(errBoundMode, "rel_and_pw_rel")==0)
+			errorBoundMode=REL_AND_PW_REL;
+		else if(strcmp(errBoundMode, "REL_OR_PW_REL")==0||strcmp(errBoundMode, "rel_or_pw_rel")==0)
+			errorBoundMode=REL_OR_PW_REL;
 		else
 		{
 			printf("[SZ] Error: Wrong error bound mode (please check sz.config file)\n");

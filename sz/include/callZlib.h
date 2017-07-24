@@ -14,6 +14,9 @@
 extern "C" {
 #endif
 
+//#define SZ_ZLIB_BUFFER_SIZE 1048576	
+#define SZ_ZLIB_BUFFER_SIZE 1024
+
 #include <stdio.h>
 
 //callZlib.c
