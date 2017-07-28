@@ -276,6 +276,8 @@ int SZ_ReadConf() {
 			iniparser_freedict(ini);
 			return SZ_NSCS;	
 		}
+		else //by default
+			pwr_type = SZ_PWR_AVG_TYPE;
 		conf_params->pwr_type = pwr_type;
 	}
 	
