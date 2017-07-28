@@ -44,7 +44,7 @@ double absErrBound;
 double relBoundRatio;
 double pw_relBoundRatio;
 int segment_size;
-int pwr_type = -1;
+int pwr_type = SZ_PWR_AVG_TYPE;
 
 int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 
