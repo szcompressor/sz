@@ -57,7 +57,7 @@ int intvRadius = 0;
 int layers = 1;
 float predThreshold = 0.98;
 int sampleDistance = 10;
-char optQuantMode = 0; //opt Quantization (0: fixed ; 1: optimized)
+char optQuantMode = 1; //opt Quantization (0: fixed ; 1: optimized)
 
 int szMode = SZ_BEST_COMPRESSION;
 
