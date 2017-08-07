@@ -1,5 +1,5 @@
 /**
- *  @file H5Z_SZ_metadata.c
+ *  @file H5Z_SZ.c
  *  @author Sheng Di
  *  @date July, 2017
  *  @brief SZ filter for HDF5
