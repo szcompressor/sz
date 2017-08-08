@@ -57,7 +57,7 @@ int intvRadius = 0;
 int layers = 1;
 float predThreshold = 0.98;
 int sampleDistance = 10;
-char optQuantMode = 1; //opt Quantization (0: fixed ; 1: optimized)
+char optQuantMode = 0; //opt Quantization (0: fixed ; 1: optimized)
 
 int szMode = SZ_BEST_COMPRESSION;
 
@@ -111,15 +111,18 @@ int SZ_Init_Params(sz_params *params)
 
     // set default values
     if(params->max_quant_intervals) 
-    {
 		maxRangeRadius = params->max_quant_intervals/2;
-    	stateNum = maxRangeRadius*2;
-		allNodes = maxRangeRadius*4;
-		intvCapacity = maxRangeRadius*2;
-		intvRadius = maxRangeRadius;
-    }
+	else
+	{
+		params->max_quant_intervals = maxRangeRadius*2;
+	}
+	stateNum = maxRangeRadius*2;
+	allNodes = maxRangeRadius*4;
+	intvCapacity = maxRangeRadius*2;
+	intvRadius = maxRangeRadius;
+
     dataEndianType    = endianType;
-    sysEndianType    = endianType;
+    //sysEndianType    = endianType;
     sol_ID                    = SZ;
     offset                    = 0;
     gzipMode               = Z_BEST_SPEED;
@@ -133,7 +136,7 @@ int SZ_Init_Params(sz_params *params)
     // set values from function arguments if avail.
     // [ENV]
     if(params->dataEndianType >= 0) dataEndianType    = params->dataEndianType;
-    if(params->sysEndianType >= 0)    sysEndianType    = params->sysEndianType;
+    //if(params->sysEndianType >= 0)    sysEndianType    = params->sysEndianType;
     if(params->sol_ID >= 0)                sol_ID                    = params->sol_ID;
 
     // [PARAMETER]
