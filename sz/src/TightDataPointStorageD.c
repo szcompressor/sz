@@ -2214,7 +2214,11 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 	size_t i, k = 0; 
 	unsigned char dsLengthBytes[8];
 	
-	intToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//
+	if(SZ_SIZE_TYPE==4)
+		intToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//4
+	else
+		longToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//8
+	
 	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
 	sameByte = sameByte | (szMode << 1);
 	if(tdps->isLossless)
@@ -2243,7 +2247,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 	else if (tdps->rtypeArray == NULL) 
 	{
 		size_t residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;
-		int segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
+		size_t segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
 		if(errorBoundMode>=PW_REL)
 		{			
 			segmentL = SZ_SIZE_TYPE;
@@ -2265,7 +2269,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 	else //the case with reserved value
 	{
 		size_t residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;
-		int segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
+		size_t segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
 		if(errorBoundMode>=PW_REL)
 		{
 			segmentL = SZ_SIZE_TYPE;

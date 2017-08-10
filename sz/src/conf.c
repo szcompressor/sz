@@ -104,6 +104,8 @@ int SZ_ReadConf() {
 		return SZ_NSCS;
 	}
 
+	printf("dataEndianType=%d\n", dataEndianType);
+
 	conf_params->dataEndianType = dataEndianType;
 
 	char *y = (char*)&x;
@@ -294,7 +296,8 @@ int SZ_ReadConf() {
 		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
 		qq = qqq - 1;		
 	}
-    
+
+	printf("dataEndianType=%d\n", dataEndianType);    
     iniparser_freedict(ini);
     return SZ_SCES;
 }
