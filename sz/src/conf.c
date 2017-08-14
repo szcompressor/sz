@@ -104,7 +104,7 @@ int SZ_ReadConf() {
 		return SZ_NSCS;
 	}
 
-	printf("dataEndianType=%d\n", dataEndianType);
+	//printf("dataEndianType=%d\n", dataEndianType);
 
 	conf_params->dataEndianType = dataEndianType;
 
@@ -297,7 +297,7 @@ int SZ_ReadConf() {
 		qq = qqq - 1;		
 	}
 
-	printf("dataEndianType=%d\n", dataEndianType);    
+	//printf("dataEndianType=%d\n", dataEndianType);    
     iniparser_freedict(ini);
     return SZ_SCES;
 }
