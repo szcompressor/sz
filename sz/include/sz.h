@@ -54,11 +54,13 @@ extern "C" {
 #define REL 1
 #define ABS_AND_REL 2
 #define ABS_OR_REL 3
-#define PW_REL 4
-#define ABS_AND_PW_REL 5
-#define ABS_OR_PW_REL 6
-#define REL_AND_PW_REL 7
-#define REL_OR_PW_REL 8
+#define PSNR 4
+
+#define PW_REL 10
+#define ABS_AND_PW_REL 11
+#define ABS_OR_PW_REL 12
+#define REL_AND_PW_REL 13
+#define REL_OR_PW_REL 14
 
 #define SZ_FLOAT 0
 #define SZ_DOUBLE 1
@@ -126,6 +128,7 @@ extern int offset;
 
 extern double absErrBound;
 extern double relBoundRatio;
+extern double psnr;
 extern double pw_relBoundRatio;
 extern int segment_size;
 
@@ -187,6 +190,7 @@ typedef struct sz_params
     int  errorBoundMode;
     double absErrBound;
     double relBoundRatio;
+    double psnr;
     double pw_relBoundRatio;
     int segment_size;
     int pwr_type;

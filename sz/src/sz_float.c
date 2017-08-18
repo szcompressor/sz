@@ -118,7 +118,7 @@ unsigned int optimize_intervals_float_3D(float *oriData, size_t r1, size_t r2, s
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	size_t totalSampleSize = r1*r2*r3/sampleDistance;
+	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
 		for(j=1;j<r2;j++)
@@ -133,7 +133,10 @@ unsigned int optimize_intervals_float_3D(float *oriData, size_t r1, size_t r2, s
 					pred_err = fabs(pred_value - oriData[index]);
 					radiusIndex = (pred_err/realPrecision+1)/2;
 					if(radiusIndex>=maxRangeRadius)
+					{
 						radiusIndex = maxRangeRadius - 1;
+						//printf("radiusIndex=%d\n", radiusIndex);
+					}
 					intervals[radiusIndex]++;
 				}
 			}
@@ -157,7 +160,7 @@ unsigned int optimize_intervals_float_3D(float *oriData, size_t r1, size_t r2, s
 		powerOf2 = 32;
 	
 	free(intervals);
-	//printf("accIntervals=%d, powerOf2=%d\n", accIntervals, powerOf2);
+	//printf("targetCount=%d, sum=%d, totalSampleSize=%d, ratio=%f, accIntervals=%d, powerOf2=%d\n", targetCount, sum, totalSampleSize, (double)sum/(double)totalSampleSize, accIntervals, powerOf2);
 	return powerOf2;
 }
 
@@ -1472,7 +1475,17 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	
 	float min = computeRangeSize_float(oriData, dataLength, &valueRangeSize, &medianValue);
 	float max = min+valueRangeSize;
-	double realPrecision = getRealPrecision_float(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
+	double realPrecision = 0; 
+	
+	if(errorBoundMode==PSNR)
+	{
+		errorBoundMode = conf_params->errorBoundMode = ABS;
+		realPrecision = conf_params->absErrBound = computeABSErrBoundFromPSNR(psnr, (double)predThreshold, (double)valueRangeSize);
+		//printf("realPrecision=%lf\n", realPrecision);
+	}
+	else
+		realPrecision = getRealPrecision_float(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
+		
 		
 	if(valueRangeSize <= realPrecision)
 	{
@@ -1484,7 +1497,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		unsigned char* tmpByteData;
 		if (r2==0)
 		{
-			if(errBoundMode>=PW_REL)
+			if(errorBoundMode>=PW_REL)
 				SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr(&tmpByteData, oriData, realPrecision, r1, &tmpOutSize, min, max);
 			else
 				SZ_compress_args_float_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
@@ -1492,7 +1505,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		else
 		if (r3==0)
 		{
-			if(errBoundMode>=PW_REL)
+			if(errorBoundMode>=PW_REL)
 				SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr(&tmpByteData, oriData, realPrecision, r2, r1, &tmpOutSize, min, max);
 			else
 				SZ_compress_args_float_NoCkRngeNoGzip_2D(&tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
@@ -1500,7 +1513,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		else
 		if (r4==0)
 		{
-			if(errBoundMode>=PW_REL)
+			if(errorBoundMode>=PW_REL)
 				SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr(&tmpByteData, oriData, realPrecision, r3, r2, r1, &tmpOutSize, min, max);
 			else
 				SZ_compress_args_float_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
@@ -1508,7 +1521,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		else
 		if (r5==0)
 		{
-			if(errBoundMode>=PW_REL)
+			if(errorBoundMode>=PW_REL)
 				SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr(&tmpByteData, oriData, realPrecision, r4*r3, r2, r1, &tmpOutSize, min, max);
 				//ToDO
 				//SZ_compress_args_float_NoCkRngeNoGzip_4D_pwr(&tmpByteData, oriData, r4, r3, r2, r1, &tmpOutSize, min, max);

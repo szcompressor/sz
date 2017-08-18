@@ -42,6 +42,7 @@ int offset;
 
 double absErrBound;
 double relBoundRatio;
+double psnr;
 double pw_relBoundRatio;
 int segment_size;
 int pwr_type = SZ_PWR_AVG_TYPE;
@@ -163,7 +164,11 @@ int SZ_Init_Params(sz_params *params)
         if( params->errorBoundMode >= 0)  errorBoundMode =  params->errorBoundMode;
 
         if(params->absErrBound >= 0) absErrBound = params->absErrBound;
+        
         if(params->relBoundRatio >= 0) relBoundRatio = params->relBoundRatio;
+        
+        if(params->psnr >= 0) psnr = params->psnr;
+        
 		if(params->quantization_intervals>0)
 		{
 			updateQuantizationInfo(params->quantization_intervals);

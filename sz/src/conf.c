@@ -7,6 +7,7 @@
  *      See COPYRIGHT in top-level directory.
  */
 
+#include <math.h>
 #include "string.h"
 #include "sz.h"
 #include "iniparser.h"
@@ -59,6 +60,14 @@ void clearHuffmanMem()
     n_nodes = 0;
     n_inode = 0;
     qend = 1;	
+} 
+ 
+double computeABSErrBoundFromPSNR(double psnr, double threshold, double value_range)
+{
+	double v1 = psnr + 10 * log10(1-2.0/3.0*threshold);
+	double v2 = v1/(-20);
+	double v3 = pow(10, v2);
+	return value_range * v3;
 } 
  
 /*-------------------------------------------------------------------------*/
@@ -239,6 +248,8 @@ int SZ_ReadConf() {
 			errorBoundMode=ABS_OR_REL;
 		else if(strcmp(errBoundMode, "PW_REL")==0||strcmp(errBoundMode, "pw_rel")==0)
 			errorBoundMode=PW_REL;
+		else if(strcmp(errBoundMode, "PSNR")==0||strcmp(errBoundMode, "psnr")==0)
+			errorBoundMode=PSNR;
 		else if(strcmp(errBoundMode, "ABS_AND_PW_REL")==0||strcmp(errBoundMode, "abs_and_pw_rel")==0)
 			errorBoundMode=ABS_AND_PW_REL;
 		else if(strcmp(errBoundMode, "ABS_OR_PW_REL")==0||strcmp(errBoundMode, "abs_or_pw_rel")==0)
@@ -259,6 +270,8 @@ int SZ_ReadConf() {
 		conf_params->absErrBound = absErrBound;
 		relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:relBoundRatio", 0);
 		conf_params->relBoundRatio = relBoundRatio;
+		psnr = (double)iniparser_getdouble(ini, "PARAMETER:psnr", 0);
+		conf_params->psnr = psnr;
 		pw_relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:pw_relBoundRatio", 0);
 		conf_params->pw_relBoundRatio = pw_relBoundRatio;
 		segment_size = (int)iniparser_getint(ini, "PARAMETER:segment_size", 0);

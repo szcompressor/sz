@@ -23,6 +23,7 @@ int SZ_ReadConf();
 int SZ_LoadConf();
 int checkVersion(char* version);
 unsigned int roundUpToPowerOf2(unsigned int base);
+double computeABSErrBoundFromPSNR(double psnr, double threshold, double value_range);
 
 #ifdef __cplusplus
 }
