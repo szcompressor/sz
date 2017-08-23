@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h>
 #include "sz.h"
 #include "rw.h"
 
@@ -174,6 +175,7 @@ int main(int argc, char* argv[])
 		}
 
 		size_t outSize;
+		float bitrate, ratio;
 		char outputFilePath[256];		
 		SZ_Init(conPath);
 		if(dataType == 0) //single precision
@@ -191,6 +193,9 @@ int main(int argc, char* argv[])
 				printf("Error: data file %s cannot be written!\n", outputFilePath);
 				exit(0);
 			}
+
+			bitrate = (float)outSize*CHAR_BIT/nbEle;
+			ratio 	= CHAR_BIT*sizeof(float)/bitrate;
 		}
 		else //dataType == 1: double precision
 		{
@@ -206,12 +211,15 @@ int main(int argc, char* argv[])
 			{
 				printf("Error: data file %s cannot be written!\n", outputFilePath);
 				exit(0);
-			}			
-		}
+			}
 
+			bitrate = (float)outSize*sizeof(char)/nbEle;
+			ratio 	= sizeof(char)*sizeof(float)/bitrate;
+		}
 		printf("compression time = %f\n", totalCost);
 		printf("compressed data file: %s\n", outputFilePath);
-
+		printf("bit-rate = %.2f\n", bitrate);
+		printf("compression ratio = %.2f\n", ratio);
 
 		if (printCmpResults == 1)
 		{
