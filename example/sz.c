@@ -218,7 +218,8 @@ int main(int argc, char* argv[])
 		}
 		printf("compression time = %f\n", totalCost);
 		printf("compressed data file: %s\n", outputFilePath);
-		printf("bit-rate = %.2f, compression ratio = %.2f\n", bitrate, ratio);
+		printf("bit-rate = %.2f\n", bitrate);
+		printf("compression ratio = %.2f\n", ratio);
 
 		if (printCmpResults == 1)
 		{
