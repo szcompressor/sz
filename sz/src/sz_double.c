@@ -25,8 +25,8 @@ unsigned int optimize_intervals_double_1D(double *oriData, size_t dataLength, do
 {	
 	size_t i = 0, radiusIndex;
 	double pred_value = 0, pred_err;
-	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
-	memset(intervals, 0, maxRangeRadius*sizeof(int));
+	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
 	size_t totalSampleSize = dataLength/sampleDistance;
 	for(i=2;i<dataLength;i++)
 	{
@@ -69,8 +69,8 @@ unsigned int optimize_intervals_double_2D(double *oriData, size_t r1, size_t r2,
 	size_t i,j, index;
 	size_t radiusIndex;
 	double pred_value = 0, pred_err;
-	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
-	memset(intervals, 0, maxRangeRadius*sizeof(int));
+	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
 	size_t totalSampleSize = r1*r2/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
@@ -116,8 +116,8 @@ unsigned int optimize_intervals_double_3D(double *oriData, size_t r1, size_t r2,
 	size_t radiusIndex;
 	size_t r23=r2*r3;
 	double pred_value = 0, pred_err;
-	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
-	memset(intervals, 0, maxRangeRadius*sizeof(int));
+	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
 	size_t totalSampleSize = r1*r2*r3/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
