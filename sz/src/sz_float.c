@@ -112,43 +112,43 @@ unsigned int optimize_intervals_float_2D(float *oriData, size_t r1, size_t r2, d
 	if(powerOf2<32)
 		powerOf2 = 32;
 
-	struct timeval costStart, costEnd;
-	double cost_est = 0;
-
-	gettimeofday(&costStart, NULL);
-
-	//compute estimate of bit-rate and distortion
-	double est_br = 0;
-	double est_psnr = 0;
-	double c1 = log2(targetCount)+1;
-	double c2 = -20.0*log10(realPrecision) + 20.0*log10(max-min) + 10.0*log10(3);
-
-	for (i = 0; i < powerOf2/2; i++)
-	{
-		int count = intervals[i];
-		if (count != 0)
-			est_br += count*log2(count);
-		est_psnr += count;
-	}
-
-	//compute estimate of bit-rate
-	est_br -= c1*est_psnr;
-	est_br /= totalSampleSize;
-	est_br = -est_br;
-
-	//compute estimate of psnr
-	est_psnr /= totalSampleSize;
+//	struct timeval costStart, costEnd;
+//	double cost_est = 0;
+//
+//	gettimeofday(&costStart, NULL);
+//
+//	//compute estimate of bit-rate and distortion
+//	double est_br = 0;
+//	double est_psnr = 0;
+//	double c1 = log2(targetCount)+1;
+//	double c2 = -20.0*log10(realPrecision) + 20.0*log10(max-min) + 10.0*log10(3);
+//
+//	for (i = 0; i < powerOf2/2; i++)
+//	{
+//		int count = intervals[i];
+//		if (count != 0)
+//			est_br += count*log2(count);
+//		est_psnr += count;
+//	}
+//
+//	//compute estimate of bit-rate
+//	est_br -= c1*est_psnr;
+//	est_br /= totalSampleSize;
+//	est_br = -est_br;
+//
+//	//compute estimate of psnr
+//	est_psnr /= totalSampleSize;
 //	printf ("sum of P(i) = %lf\n", est_psnr);
-	est_psnr = -10.0*log10(est_psnr);
-	est_psnr += c2;
-
-	printf ("estimate bitrate = %.2f\n", est_br);
-	printf ("estimate psnr = %.2f\n",est_psnr);
-
-	gettimeofday(&costEnd, NULL);
-	cost_est = ((costEnd.tv_sec*1000000+costEnd.tv_usec)-(costStart.tv_sec*1000000+costStart.tv_usec))/1000000.0;
-
-	printf ("analysis time = %f\n", cost_est);
+//	est_psnr = -10.0*log10(est_psnr);
+//	est_psnr += c2;
+//
+//	printf ("estimate bitrate = %.2f\n", est_br);
+//	printf ("estimate psnr = %.2f\n",est_psnr);
+//
+//	gettimeofday(&costEnd, NULL);
+//	cost_est = ((costEnd.tv_sec*1000000+costEnd.tv_usec)-(costStart.tv_sec*1000000+costStart.tv_usec))/1000000.0;
+//
+//	printf ("analysis time = %f\n", cost_est);
 
 	free(intervals);
 	//printf("maxRangeRadius = %d, accIntervals=%d, powerOf2=%d\n", maxRangeRadius, accIntervals, powerOf2);
@@ -211,43 +211,43 @@ unsigned int optimize_intervals_float_3D(float *oriData, size_t r1, size_t r2, s
 	if(powerOf2<32)
 		powerOf2 = 32;
 	
-	struct timeval costStart, costEnd;
-	double cost_est = 0;
-
-	gettimeofday(&costStart, NULL);
-
-	//compute estimate of bit-rate and distortion
-	double est_br = 0;
-	double est_psnr = 0;
-	double c1 = log2(targetCount)+1;
-	double c2 = -20.0*log10(realPrecision) + 20.0*log10(max-min) + 10.0*log10(3);
-
-	for (i = 0; i < powerOf2/2; i++)
-	{
-		int count = intervals[i];
-		if (count != 0)
-			est_br += count*log2(count);
-		est_psnr += count;
-	}
-
-	//compute estimate of bit-rate
-	est_br -= c1*est_psnr;
-	est_br /= totalSampleSize;
-	est_br = -est_br;
-
-	//compute estimate of psnr
-	est_psnr /= totalSampleSize;
+//	struct timeval costStart, costEnd;
+//	double cost_est = 0;
+//
+//	gettimeofday(&costStart, NULL);
+//
+//	//compute estimate of bit-rate and distortion
+//	double est_br = 0;
+//	double est_psnr = 0;
+//	double c1 = log2(targetCount)+1;
+//	double c2 = -20.0*log10(realPrecision) + 20.0*log10(max-min) + 10.0*log10(3);
+//
+//	for (i = 0; i < powerOf2/2; i++)
+//	{
+//		int count = intervals[i];
+//		if (count != 0)
+//			est_br += count*log2(count);
+//		est_psnr += count;
+//	}
+//
+//	//compute estimate of bit-rate
+//	est_br -= c1*est_psnr;
+//	est_br /= totalSampleSize;
+//	est_br = -est_br;
+//
+//	//compute estimate of psnr
+//	est_psnr /= totalSampleSize;
 //	printf ("sum of P(i) = %lf\n", est_psnr);
-	est_psnr = -10.0*log10(est_psnr);
-	est_psnr += c2;
-
-	printf ("estimate bitrate = %.2f\n", est_br);
-	printf ("estimate psnr = %.2f\n",est_psnr);
-
-	gettimeofday(&costEnd, NULL);
-	cost_est = ((costEnd.tv_sec*1000000+costEnd.tv_usec)-(costStart.tv_sec*1000000+costStart.tv_usec))/1000000.0;
-
-	printf ("analysis time = %f\n", cost_est);
+//	est_psnr = -10.0*log10(est_psnr);
+//	est_psnr += c2;
+//
+//	printf ("estimate bitrate = %.2f\n", est_br);
+//	printf ("estimate psnr = %.2f\n",est_psnr);
+//
+//	gettimeofday(&costEnd, NULL);
+//	cost_est = ((costEnd.tv_sec*1000000+costEnd.tv_usec)-(costStart.tv_sec*1000000+costStart.tv_usec))/1000000.0;
+//
+//	printf ("analysis time = %f\n", cost_est);
 
 	free(intervals);
 	//printf("targetCount=%d, sum=%d, totalSampleSize=%d, ratio=%f, accIntervals=%d, powerOf2=%d\n", targetCount, sum, totalSampleSize, (double)sum/(double)totalSampleSize, accIntervals, powerOf2);
