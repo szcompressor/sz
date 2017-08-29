@@ -32,14 +32,14 @@ void sz_finalize_c_()
 }
 
 //compress with config (without args in function)
-void sz_compress_d1_float_(float* data, unsigned char *bytes, size_t *outSize, int *r1)	
+void sz_compress_d1_float_(float* data, unsigned char *bytes, size_t *outSize, size_t *r1)
 {
 	unsigned char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);	
 	free(tmp_bytes);
 }
 
-void sz_compress_d1_float_rev_(float* data, float *reservedValue, unsigned char *bytes, size_t *outSize, int *r1)	
+void sz_compress_d1_float_rev_(float* data, float *reservedValue, unsigned char *bytes, size_t *outSize, size_t *r1)
 {
 	unsigned char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);	
