@@ -170,8 +170,8 @@ unsigned int optimize_intervals_double_4D(double *oriData, size_t r1, size_t r2,
 	size_t r234=r2*r3*r4;
 	size_t r34=r3*r4;
 	double pred_value = 0, pred_err;
-	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
-	memset(intervals, 0, maxRangeRadius*sizeof(int));
+	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
 	size_t totalSampleSize = r1*r2*r3*r4/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
@@ -589,7 +589,7 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
 	if(r2!=1)	
 		free(P0);
 	free(P1);
-	int exactDataNum = exactLeadNumArray->size;
+	size_t exactDataNum = exactLeadNumArray->size;
 	
 	TightDataPointStorageD* tdps;
 			
@@ -954,7 +954,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 	if(r23!=1)
 		free(P0);
 	free(P1);
-	int exactDataNum = exactLeadNumArray->size;
+	size_t exactDataNum = exactLeadNumArray->size;
 
 	TightDataPointStorageD* tdps;
 
@@ -1325,7 +1325,7 @@ TightDataPointStorageD* SZ_compress_double_4D_MDQ(double *oriData, size_t r1, si
 
 	free(P0);
 	free(P1);
-	int exactDataNum = exactLeadNumArray->size;
+	size_t exactDataNum = exactLeadNumArray->size;
 
 	TightDataPointStorageD* tdps;
 
@@ -2158,7 +2158,7 @@ size_t r1, size_t s1, size_t e1)
 		listAdd_double(last3CmprsData, vce->data);
 	}//end of for
 
-	int exactDataNum = exactLeadNumArray->size;
+	size_t exactDataNum = exactLeadNumArray->size;
 
 	TightDataPointStorageD* tdps;
 
@@ -2738,7 +2738,7 @@ size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, siz
 
 	free(P0);
 	free(P1);
-	int exactDataNum = exactLeadNumArray->size;
+	size_t exactDataNum = exactLeadNumArray->size;
 
 	TightDataPointStorageD* tdps;
 
@@ -3107,7 +3107,7 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 
 	free(P0);
 	free(P1);
-	int exactDataNum = exactLeadNumArray->size;
+	size_t exactDataNum = exactLeadNumArray->size;
 
 	TightDataPointStorageD* tdps;
 
