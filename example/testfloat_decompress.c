@@ -126,7 +126,7 @@ int main(int argc, char * argv[])
     for (i = 0; i < nbEle; i++)
     {
         sum1 += ori_data[i];
-	sum2 += data[i];
+		sum2 += data[i];
     }
     double mean1 = sum1/nbEle;
     double mean2 = sum2/nbEle;

@@ -36,7 +36,7 @@ MODULE RW
 		implicit none
 		INTEGER(KIND=1), DIMENSION(:) :: Bytes
 		CHARACTER(LEN=*) :: FILE_PATH
-		INTEGER :: byteLength
+		INTEGER(KIND=C_SIZE_T) :: byteLength
 
 		CALL writeByteFile(Bytes, byteLength, FILE_PATH, len(trim(FILE_PATH)))
 	END SUBROUTINE WriteData_inBinary_d1_INTEGER_K1
@@ -137,7 +137,7 @@ MODULE RW
 	SUBROUTINE checkFileSize(FILE_PATH, BYTESIZE)
 		implicit none
 		CHARACTER(LEN=*) :: FILE_PATH
-		INTEGER(kind=4) :: BYTESIZE
+		INTEGER(kind=C_SIZE_T) :: BYTESIZE
 
 		CALL checkFileSizeC(FILE_PATH, len(trim(FILE_PATH)), BYTESIZE)
 	END SUBROUTINE checkFileSize
@@ -148,8 +148,8 @@ MODULE RW
 		INTEGER(KIND=1), DIMENSION(:), allocatable :: temp
 		INTEGER(KIND=1), DIMENSION(:), allocatable :: Bytes
 		CHARACTER(LEN=*) :: FILE_PATH
-		INTEGER :: COUNTER
-		INTEGER(KIND=4), intent(out) :: outSize !in bytes
+		INTEGER(kind=C_SIZE_T) :: COUNTER
+		INTEGER(kind=C_SIZE_T), intent(out) :: outSize !in bytes
 		
 		CALL checkFileSize(FILE_PATH, outSize)
 		allocate(temp(outSize))
@@ -167,8 +167,8 @@ MODULE RW
 		REAL(KIND=4), DIMENSION(:), allocatable :: temp
 		REAL(KIND=4), DIMENSION(:), allocatable :: VAR
 		CHARACTER(LEN=*) :: FILE_PATH
-		INTEGER(kind=4) :: COUNTER, fileSize
-		INTEGER(kind=4), intent(out) :: nbEle
+		INTEGER(kind=C_SIZE_T) :: COUNTER, fileSize
+		INTEGER(kind=C_SIZE_T), intent(out) :: nbEle
 
 		CALL checkFileSize(FILE_PATH, fileSize)
 		nbEle = fileSize/4
@@ -187,8 +187,8 @@ MODULE RW
 		REAL(KIND=8), DIMENSION(:), allocatable :: temp
 		REAL(KIND=8), DIMENSION(:), allocatable :: VAR
 		CHARACTER(LEN=*) :: FILE_PATH
-		INTEGER(kind=4) :: COUNTER, fileSize
-		INTEGER(kind=4), intent(out) :: nbEle
+		INTEGER(kind=C_SIZE_T) :: COUNTER, fileSize
+		INTEGER(kind=C_SIZE_T), intent(out) :: nbEle
 
 		CALL checkFileSize(FILE_PATH, fileSize)
 		nbEle = fileSize/8

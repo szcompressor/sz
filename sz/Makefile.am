@@ -11,7 +11,7 @@ include_HEADERS=include/CompressElement.h include/DynamicDoubleArray.h include/r
 		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h sz.mod rw.mod
 
 lib_LTLIBRARIES=libsz.la
-libsz_la_CFLAGS=-g -I./include -I../zlib/
+libsz_la_CFLAGS=-I./include -I../zlib/
 libsz_la_LDFLAGS = -version-info  1:4:0
 libsz_la_LIDADD=../zlib/.libs/libzlib.a
 libsz_la_SOURCES=src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c src/iniparser.c src/szf.c \
@@ -19,7 +19,7 @@ libsz_la_SOURCES=src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c s
 		src/TightDataPointStorageI.c src/TightDataPointStorageD.c src/TightDataPointStorageF.c \
 		src/conf.c src/DynamicDoubleArray.c src/rwf.c src/TypeManager.c \
 		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/callZlib.c src/Huffman.c \
-		src/sz_float.c src/sz_double.c src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c 
+		src/sz_float.c src/sz_double.c src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c \
 		src/szd_float.c src/szd_double.c src/szd_int8.c src/szd_int16.c src/szd_int32.c src/szd_int64.c src/sz.c\
 		src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c src/szd_double_pwr.c\
 		src/sz_interface.F90 src/rw_interface.F90

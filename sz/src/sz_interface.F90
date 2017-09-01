@@ -124,8 +124,8 @@ MODULE SZ
 	SUBROUTINE SZ_Batch_Compress(Bytes, OutSize)
 		implicit none
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: OutSize
-		INTEGER(kind=4) :: alloSize
+		INTEGER(kind=C_SIZE_T) :: OutSize
+		INTEGER(kind=C_SIZE_T) :: alloSize
 		
 		CALL compute_total_batch_size_c(alloSize)
 		allocate(Bytes(alloSize)) !allocate the largest possible memory
@@ -137,7 +137,7 @@ MODULE SZ
 	SUBROUTINE SZ_Batch_Decompress(Bytes, OutSize, ierr)
 		implicit none
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: OutSize
+		INTEGER(kind=C_SIZE_T) :: OutSize
 		INTEGER :: ierr
 
 		CALL SZ_Batch_Decompress_c(Bytes, OutSize, ierr)
@@ -148,7 +148,7 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d1_Fortran_REAL_K4(VAR, Bytes, OutSize)
 		implicit none
 		REAL(KIND=4), DIMENSION(:) :: VAR
-		INTEGER(kind=4) :: OutSize, R1
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
 		
@@ -161,7 +161,8 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d1_Fortran_REAL_K4_ARGS(VAR, Bytes, OutSize, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
 		REAL(KIND=4), DIMENSION(:) :: VAR
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1
+		INTEGER(kind=4) :: ErrBoundMode
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
@@ -175,7 +176,7 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d2_Fortran_REAL_K4(VAR, Bytes, OutSize)
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, R1, R2, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -191,7 +192,8 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d2_Fortran_REAL_K4_ARGS(VAR, Bytes, OutSize, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
@@ -207,9 +209,8 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d3_Fortran_REAL_K4(VAR, Bytes, OutSize)
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -224,10 +225,10 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d3_Fortran_REAL_K4_ARGS(VAR, Bytes, OutSize, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -242,9 +243,8 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d4_Fortran_REAL_K4(VAR, Bytes, OutSize)
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R4, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -261,10 +261,10 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d4_Fortran_REAL_K4_ARGS(VAR, Bytes, OutSize, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R4, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -280,9 +280,8 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d5_Fortran_REAL_K4(VAR, Bytes, OutSize)
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R4, R5, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R5, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -299,10 +298,10 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d5_Fortran_REAL_K4_ARGS(VAR, Bytes, OutSize, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R4, R5, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R5, R
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -321,7 +320,7 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d1_Fortran_REAL_K8(VAR, Bytes, OutSize)
 		implicit none
 		REAL(KIND=8), DIMENSION(:) :: VAR
-		INTEGER(kind=4) :: OutSize, R1
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
 		
@@ -333,7 +332,8 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d1_Fortran_REAL_K8_ARGS(VAR, Bytes, OutSize, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
 		REAL(KIND=8), DIMENSION(:) :: VAR
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
@@ -345,7 +345,7 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d2_Fortran_REAL_K8(VAR, Bytes, OutSize)
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, R1, R2, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -359,7 +359,8 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d2_Fortran_REAL_K8_ARGS(VAR, Bytes, OutSize, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
@@ -374,9 +375,8 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d3_Fortran_REAL_K8(VAR, Bytes, OutSize)
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -392,10 +392,10 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d3_Fortran_REAL_K8_ARGS(VAR, Bytes, OutSize, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -410,9 +410,8 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d4_Fortran_REAL_K8(VAR, Bytes, OutSize)
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R4, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -429,10 +428,10 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d4_Fortran_REAL_K8_ARGS(VAR, Bytes, OutSize, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R4, R
+		INTEGER(kind=C_SIZE_T) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -448,9 +447,8 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d5_Fortran_REAL_K8(VAR, Bytes, OutSize)
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R4, R5, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R5, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -467,10 +465,10 @@ MODULE SZ
 	SUBROUTINE SZ_Compress_d5_Fortran_REAL_K8_ARGS(VAR, Bytes, OutSize, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:,:,:) :: VAR
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R4, R5, R
-                REAL(kind=8) :: AbsErrBound, RelBoundRatio
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R5, R
+		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -490,7 +488,7 @@ MODULE SZ
 		implicit none
 		REAL(KIND=4), DIMENSION(:) :: VAR
 		REAL(KIND=4) :: ReValue
-		INTEGER(kind=4) :: OutSize, R1
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
 		
@@ -503,7 +501,8 @@ MODULE SZ
 		implicit none
 		REAL(KIND=4), DIMENSION(:) :: VAR
 		REAL(KIND=4) :: ReValue
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
@@ -517,7 +516,7 @@ MODULE SZ
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:) :: VAR
 		REAL(KIND=4) :: ReValue
-		INTEGER(kind=4) :: OutSize, R1, R2, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -532,7 +531,8 @@ MODULE SZ
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:) :: VAR
 		REAL(KIND=4) :: ReValue
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
@@ -548,34 +548,28 @@ MODULE SZ
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:) :: VAR
 		REAL(KIND=4) :: ReValue
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		INTEGER(kind=1), DIMENSION(:), allocatable :: temp
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
 		R3 = SIZE(VAR,3)
 		R = R1*R2*R3
-		allocate(temp(8*R)) !allocate the largest possible memory
+		allocate(Bytes(8*R)) !allocate the largest possible memory
 		
-		CALL SZ_Compress_d3_Float_Rev(VAR, ReValue, temp, OutSize, R1, R2, R3)
-		allocate(Bytes(OutSize))
-		!copy temp to Bytes		
-		do COUNTER=1, OutSize, 1
-			Bytes(COUNTER) = temp(COUNTER)
-		end do
-		deallocate(temp)	
+		CALL SZ_Compress_d3_Float_Rev(VAR, ReValue, Bytes, OutSize, R1, R2, R3)
+
 	END SUBROUTINE SZ_Compress_d3_Fortran_REAL_K4_Rev
 
 	SUBROUTINE SZ_Compress_d3_Fortran_REAL_K4_ARGS_Rev(VAR, ReValue, Bytes, OutSize, ErrBoundMode, AbsErrBound, RelBoundRatio)
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:) :: VAR
 		REAL(KIND=4) :: ReValue
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -591,9 +585,8 @@ MODULE SZ
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:,:) :: VAR
 		REAL(KIND=4) :: ReValue
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R4, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -611,10 +604,10 @@ MODULE SZ
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:,:) :: VAR
 		REAL(KIND=4) :: ReValue
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R4, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -631,9 +624,8 @@ MODULE SZ
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:,:,:) :: VAR
 		REAL(KIND=4) :: ReValue
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R4, R5, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R5, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -651,10 +643,10 @@ MODULE SZ
 		implicit none
 		REAL(KIND=4), DIMENSION(:,:,:,:,:) :: VAR
 		REAL(KIND=4) :: ReValue
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R4, R5, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R5, R
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -674,7 +666,7 @@ MODULE SZ
 		implicit none
 		REAL(KIND=8), DIMENSION(:) :: VAR
 		REAL(KIND=8) :: ReValue
-		INTEGER(kind=4) :: OutSize, R1
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
 		
@@ -687,7 +679,8 @@ MODULE SZ
 		implicit none
 		REAL(KIND=8), DIMENSION(:) :: VAR
 		REAL(KIND=8) :: ReValue
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
@@ -701,7 +694,7 @@ MODULE SZ
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:) :: VAR
 		REAL(KIND=8) :: ReValue
-		INTEGER(kind=4) :: OutSize, R1, R2, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -716,7 +709,8 @@ MODULE SZ
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:) :: VAR
 		REAL(KIND=8) :: ReValue
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
 		R1 = SIZE(VAR,1)
@@ -732,9 +726,8 @@ MODULE SZ
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:) :: VAR
 		REAL(KIND=8) :: ReValue
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -750,10 +743,10 @@ MODULE SZ
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:) :: VAR
 		REAL(KIND=8) :: ReValue
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -769,9 +762,8 @@ MODULE SZ
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:,:) :: VAR
 		REAL(KIND=8) :: ReValue
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R4, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -789,10 +781,10 @@ MODULE SZ
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:,:) :: VAR
 		REAL(KIND=8) :: ReValue
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R4, R
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -809,9 +801,8 @@ MODULE SZ
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:,:,:) :: VAR
 		REAL(KIND=8) :: ReValue
-		INTEGER(kind=4) :: OutSize, R1, R2, R3, R4, R5, R
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R5, R
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -829,10 +820,10 @@ MODULE SZ
 		implicit none
 		REAL(KIND=8), DIMENSION(:,:,:,:,:) :: VAR
 		REAL(KIND=8) :: ReValue
-		INTEGER(kind=4) :: OutSize, ErrBoundMode, R1, R2, R3, R4, R5, R
-                REAL(kind=8) :: AbsErrBound, RelBoundRatio
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: OutSize, R1, R2, R3, R4, R5, R
+		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
-		INTEGER(kind=4) :: COUNTER
 
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -852,7 +843,7 @@ MODULE SZ
 		implicit none
 		INTEGER(kind=1), DIMENSION(:) :: Bytes
 		REAL(KIND=4), DIMENSION(:), allocatable :: VAR
-		INTEGER(kind=4) :: R1, BLength
+		INTEGER(kind=C_SIZE_T) :: R1, BLength
 		BLength = SIZE(Bytes)
 		allocate(VAR(R1))
 	
@@ -863,7 +854,7 @@ MODULE SZ
 		implicit none
 		INTEGER(kind=1), DIMENSION(:) :: Bytes	
 		REAL(KIND=4), DIMENSION(:,:), allocatable :: VAR
-		INTEGER(kind=4) :: R1, R2, BLength
+		INTEGER(kind=C_SIZE_T) :: R1, R2, BLength
 		BLength = SIZE(Bytes)
 		allocate(VAR(R1,R2))
 	
@@ -874,7 +865,7 @@ MODULE SZ
 		implicit none
 		INTEGER(kind=1), DIMENSION(:) :: Bytes
 		REAL(KIND=4), DIMENSION(:,:,:), allocatable :: VAR
-		INTEGER(kind=4) :: R1, R2, R3, BLength
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3, BLength
 		BLength = SIZE(Bytes)
 		allocate(VAR(R1,R2,R3))
 	
@@ -885,7 +876,7 @@ MODULE SZ
 		implicit none
 		INTEGER(kind=1), DIMENSION(:) :: Bytes
 		REAL(KIND=4), DIMENSION(:,:,:,:), allocatable :: VAR
-		INTEGER(kind=4) :: R1, R2, R3, R4, BLength
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3, R4, BLength
 		BLength = SIZE(Bytes)
 		allocate(VAR(R1,R2,R3,R4))
 	
@@ -896,7 +887,7 @@ MODULE SZ
 		implicit none
 		INTEGER(kind=1), DIMENSION(:) :: Bytes
 		REAL(KIND=4), DIMENSION(:,:,:,:,:), allocatable :: VAR
-		INTEGER(kind=4) :: R1, R2, R3, R4, R5, BLength
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3, R4, R5, BLength
 		BLength = SIZE(Bytes)
 		allocate(VAR(R1,R2,R3,R4,R5))
 	
@@ -907,7 +898,7 @@ MODULE SZ
 		implicit none
 		INTEGER(kind=1), DIMENSION(:) :: Bytes
 		REAL(KIND=8), DIMENSION(:), allocatable :: VAR
-		INTEGER(kind=4) :: R1, BLength
+		INTEGER(kind=C_SIZE_T) :: R1, BLength
 		BLength = SIZE(Bytes)
 		allocate(VAR(R1))
 	
@@ -918,7 +909,7 @@ MODULE SZ
 		implicit none
 		INTEGER(kind=1), DIMENSION(:) :: Bytes
 		REAL(KIND=8), DIMENSION(:,:), allocatable :: VAR
-		INTEGER(kind=4) :: R1, R2, BLength
+		INTEGER(kind=C_SIZE_T) :: R1, R2, BLength
 		BLength = SIZE(Bytes)
 		allocate(VAR(R1,R2))
 	
@@ -929,7 +920,7 @@ MODULE SZ
 		implicit none
 		INTEGER(kind=1), DIMENSION(:) :: Bytes
 		REAL(KIND=8), DIMENSION(:,:,:), allocatable :: VAR
-		INTEGER(kind=4) :: R1, R2, R3, BLength
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3, BLength
 		BLength = SIZE(Bytes)
 		allocate(VAR(R1,R2,R3))
 	
@@ -940,7 +931,7 @@ MODULE SZ
 		implicit none
 		INTEGER(kind=1), DIMENSION(:) :: Bytes
 		REAL(KIND=8), DIMENSION(:,:,:,:), allocatable :: VAR
-		INTEGER(kind=4) :: R1, R2, R3, R4, BLength
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3, R4, BLength
 		BLength = SIZE(Bytes)
 		allocate(VAR(R1,R2,R3,R4))
 	
@@ -951,7 +942,7 @@ MODULE SZ
 		implicit none
 		INTEGER(kind=1), DIMENSION(:) :: Bytes
 		REAL(KIND=8), DIMENSION(:,:,:,:,:), allocatable :: VAR
-		INTEGER(kind=4) :: R1, R2, R3, R4, R5, BLength
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3, R4, R5, BLength
 		BLength = SIZE(Bytes, 1)
 		allocate(VAR(R1,R2,R3,R4,R5))
 	
@@ -964,7 +955,8 @@ MODULE SZ
 		implicit none
 		CHARACTER(len=*) :: varName
 		REAL(KIND=4), DIMENSION(:) :: VAR
-		INTEGER(kind=4) :: ErrBoundMode, R1
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: R1
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		R1 = SIZE(VAR,1)
 
@@ -975,7 +967,8 @@ MODULE SZ
 		implicit none		
 		CHARACTER(len=*) :: varName
 		REAL(KIND=4), DIMENSION(:,:) :: VAR
-		INTEGER(kind=4) :: ErrBoundMode, R1, R2
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: R1, R2
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -987,7 +980,8 @@ MODULE SZ
 		implicit none		
 		CHARACTER(len=*) :: varName
 		REAL(KIND=4), DIMENSION(:,:,:) :: VAR
-		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -1000,7 +994,8 @@ MODULE SZ
 		implicit none
 		CHARACTER(len=*) :: varName
 		REAL(KIND=4), DIMENSION(:,:,:,:) :: VAR
-		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3, R4
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3, R4
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -1014,7 +1009,8 @@ MODULE SZ
 		implicit none
 		CHARACTER(len=*) :: varName
 		REAL(KIND=4), DIMENSION(:,:,:,:,:) :: VAR
-		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3, R4, R5
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3, R4, R5
 		REAL(kind=4) :: AbsErrBound, RelBoundRatio
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -1030,7 +1026,8 @@ MODULE SZ
 		implicit none
 		CHARACTER(len=*) :: varName
 		REAL(KIND=8), DIMENSION(:) :: VAR
-		INTEGER(kind=4) :: ErrBoundMode, R1
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: R1
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		R1 = SIZE(VAR,1)
 
@@ -1041,7 +1038,8 @@ MODULE SZ
 		implicit none
 		CHARACTER(len=*) :: varName
 		REAL(KIND=8), DIMENSION(:,:) :: VAR
-		INTEGER(kind=4) :: ErrBoundMode, R1, R2
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: R1, R2
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -1053,7 +1051,8 @@ MODULE SZ
 		implicit none
 		CHARACTER(len=*) :: varName
 		REAL(KIND=8), DIMENSION(:,:,:) :: VAR
-		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -1066,7 +1065,8 @@ MODULE SZ
 		implicit none
 		CHARACTER(len=*) :: varName
 		REAL(KIND=8), DIMENSION(:,:,:,:) :: VAR
-		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3, R4
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3, R4
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -1080,7 +1080,8 @@ MODULE SZ
 		implicit none
 		CHARACTER(len=*) :: varName
 		REAL(KIND=8), DIMENSION(:,:,:,:,:) :: VAR
-		INTEGER(kind=4) :: ErrBoundMode, R1, R2, R3, R4, R5
+		INTEGER(kind=4) :: ErrBoundMode
+		INTEGER(kind=C_SIZE_T) :: R1, R2, R3, R4, R5
 		REAL(kind=8) :: AbsErrBound, RelBoundRatio
 		R1 = SIZE(VAR,1)
 		R2 = SIZE(VAR,2)
@@ -1095,7 +1096,7 @@ MODULE SZ
 		implicit none
 		CHARACTER(len=*), INTENT(IN) :: varName
 		INTEGER(kind=4), INTENT(OUT) :: DIMEN
-		INTEGER(kind=4), INTENT(OUT) :: R1, R2, R3, R4, R5
+		INTEGER(kind=C_SIZE_T), INTENT(OUT) :: R1, R2, R3, R4, R5
 		
 		CALL SZ_GetVarDim_c(varName, len(trim(varName)), DIMEN, R1, R2, R3, R4, R5)
 		

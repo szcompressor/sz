@@ -144,7 +144,8 @@ am__libsz_la_SOURCES_DIST = src/ByteToolkit.c src/dataCompression.c \
 	src/szd_float.c src/szd_double.c src/szd_int8.c \
 	src/szd_int16.c src/szd_int32.c src/szd_int64.c src/sz.c \
 	src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c \
-	src/szd_double_pwr.c src/szf.c src/rwf.c
+	src/szd_double_pwr.c src/szf.c src/rwf.c src/sz_interface.F90 \
+	src/rw_interface.F90
 am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@am_libsz_la_OBJECTS = src/libsz_la-ByteToolkit.lo \
 @FORTRAN_FALSE@	src/libsz_la-dataCompression.lo \
@@ -199,7 +200,18 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_TRUE@	src/libsz_la-sz_double.lo \
 @FORTRAN_TRUE@	src/libsz_la-sz_int8.lo src/libsz_la-sz_int16.lo \
 @FORTRAN_TRUE@	src/libsz_la-sz_int32.lo \
-@FORTRAN_TRUE@	src/libsz_la-sz_int64.lo
+@FORTRAN_TRUE@	src/libsz_la-sz_int64.lo \
+@FORTRAN_TRUE@	src/libsz_la-szd_float.lo \
+@FORTRAN_TRUE@	src/libsz_la-szd_double.lo \
+@FORTRAN_TRUE@	src/libsz_la-szd_int8.lo \
+@FORTRAN_TRUE@	src/libsz_la-szd_int16.lo \
+@FORTRAN_TRUE@	src/libsz_la-szd_int32.lo \
+@FORTRAN_TRUE@	src/libsz_la-szd_int64.lo src/libsz_la-sz.lo \
+@FORTRAN_TRUE@	src/libsz_la-sz_float_pwr.lo \
+@FORTRAN_TRUE@	src/libsz_la-sz_double_pwr.lo \
+@FORTRAN_TRUE@	src/libsz_la-szd_float_pwr.lo \
+@FORTRAN_TRUE@	src/libsz_la-szd_double_pwr.lo \
+@FORTRAN_TRUE@	src/sz_interface.lo src/rw_interface.lo
 libsz_la_OBJECTS = $(am_libsz_la_OBJECTS)
 @FORTRAN_FALSE@am_libsz_la_rpath = -rpath $(libdir)
 @FORTRAN_TRUE@am_libsz_la_rpath = -rpath $(libdir)
@@ -219,10 +231,28 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+PPFCCOMPILE = $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+LTPPFCCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=FC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(FC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_FCFLAGS) $(FCFLAGS)
+AM_V_PPFC = $(am__v_PPFC_@AM_V@)
+am__v_PPFC_ = $(am__v_PPFC_@AM_DEFAULT_V@)
+am__v_PPFC_0 = @echo "  PPFC    " $@;
+am__v_PPFC_1 = 
+FCLD = $(FC)
+FCLINK = $(LIBTOOL) $(AM_V_lt) --tag=FC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(FCLD) $(AM_FCFLAGS) $(FCFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_FCLD = $(am__v_FCLD_@AM_V@)
+am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
+am__v_FCLD_0 = @echo "  FCLD    " $@;
+am__v_FCLD_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -423,7 +453,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@lib_LTLIBRARIES = libsz.la
 @FORTRAN_TRUE@lib_LTLIBRARIES = libsz.la
 @FORTRAN_FALSE@libsz_la_CFLAGS = -g -I./include -I../zlib/
-@FORTRAN_TRUE@libsz_la_CFLAGS = -g -I./include -I../zlib/
+@FORTRAN_TRUE@libsz_la_CFLAGS = -I./include -I../zlib/
 @FORTRAN_FALSE@libsz_la_LDFLAGS = -version-info  1:4:0
 @FORTRAN_TRUE@libsz_la_LDFLAGS = -version-info  1:4:0
 @FORTRAN_FALSE@libsz_la_LIDADD = ../zlib/.libs/libzlib.a
@@ -442,14 +472,17 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@		src/TightDataPointStorageI.c src/TightDataPointStorageD.c src/TightDataPointStorageF.c \
 @FORTRAN_TRUE@		src/conf.c src/DynamicDoubleArray.c src/rwf.c src/TypeManager.c \
 @FORTRAN_TRUE@		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/callZlib.c src/Huffman.c \
-@FORTRAN_TRUE@		src/sz_float.c src/sz_double.c src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c 
+@FORTRAN_TRUE@		src/sz_float.c src/sz_double.c src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c \
+@FORTRAN_TRUE@		src/szd_float.c src/szd_double.c src/szd_int8.c src/szd_int16.c src/szd_int32.c src/szd_int64.c src/sz.c\
+@FORTRAN_TRUE@		src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c src/szd_double_pwr.c\
+@FORTRAN_TRUE@		src/sz_interface.F90 src/rw_interface.F90
 
 @FORTRAN_FALSE@libsz_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=CC --mode=link $(CCLD) $(libsz_la_CFLAGS) -O3 $(libsz_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 @FORTRAN_TRUE@libsz_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=FC --mode=link $(FCLD) $(libsz_la_CFLAGS) -O3 $(libsz_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
+.SUFFIXES: .F90 .c .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -590,6 +623,8 @@ src/libsz_la-szd_double_pwr.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/libsz_la-szf.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/libsz_la-rwf.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
+src/sz_interface.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
+src/rw_interface.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 
 libsz.la: $(libsz_la_OBJECTS) $(libsz_la_DEPENDENCIES) $(EXTRA_libsz_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libsz_la_LINK) $(am_libsz_la_rpath) $(libsz_la_OBJECTS) $(libsz_la_LIBADD) $(LIBS)
@@ -639,6 +674,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libsz_la-szd_int64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libsz_la-szd_int8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libsz_la-szf.Plo@am__quote@
+
+.F90.o:
+	$(AM_V_PPFC)$(PPFCCOMPILE) -c -o $@ $<
+
+.F90.obj:
+	$(AM_V_PPFC)$(PPFCCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.F90.lo:
+	$(AM_V_PPFC)$(LTPPFCCOMPILE) -c -o $@ $<
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -1163,9 +1207,6 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES
 
 .PRECIOUS: Makefile
 
-@FORTRAN_TRUE@		src/szd_float.c src/szd_double.c src/szd_int8.c src/szd_int16.c src/szd_int32.c src/szd_int64.c src/sz.c\
-@FORTRAN_TRUE@		src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c src/szd_double_pwr.c\
-@FORTRAN_TRUE@		src/sz_interface.F90 src/rw_interface.F90
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

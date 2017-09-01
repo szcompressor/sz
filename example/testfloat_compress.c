@@ -42,19 +42,19 @@ int main(int argc, char * argv[])
     
     if(argc < 3)
     {
-	printf("Test case: testfloat_compress [config_file] [srcFilePath] [dimension sizes...]\n");
-	printf("Example: testfloat_compress sz.config testfloat_8_8_128.dat 8 8 128\n");
-	exit(0);
+		printf("Test case: testfloat_compress [config_file] [srcFilePath] [dimension sizes...]\n");
+		printf("Example: testfloat_compress sz.config testfloat_8_8_128.dat 8 8 128\n");
+		exit(0);
     }
    
     cfgFile=argv[1];
     sprintf(oriFilePath, "%s", argv[2]);
     if(argc>=4)
-	r1 = atoi(argv[3]); //8
+		r1 = atoi(argv[3]); //8
     if(argc>=5)
-	r2 = atoi(argv[4]); //8
+		r2 = atoi(argv[4]); //8
     if(argc>=6)
-	r3 = atoi(argv[5]); //128
+		r3 = atoi(argv[5]); //128
     if(argc>=7)
         r4 = atoi(argv[6]);
     if(argc>=8)
@@ -63,15 +63,15 @@ int main(int argc, char * argv[])
     printf("cfgFile=%s\n", cfgFile); 
     int status = SZ_Init(cfgFile);
     if(status == SZ_NSCS)
-	exit(0);
+		exit(0);
     sprintf(outputFilePath, "%s.sz", oriFilePath);
    
     size_t nbEle;
     float *data = readFloatData(oriFilePath, &nbEle, &status);
     if(status != SZ_SCES)
     {
-	printf("Error: data file %s cannot be read!\n", oriFilePath);
-	exit(0);
+		printf("Error: data file %s cannot be read!\n", oriFilePath);
+		exit(0);
     }
     //float *revValue = (float *)malloc(sizeof(float));
     //*revValue = 1.0E36;
