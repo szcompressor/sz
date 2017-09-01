@@ -32,14 +32,14 @@ void sz_finalize_c_()
 }
 
 //compress with config (without args in function)
-void sz_compress_d1_float_(float* data, unsigned char *bytes, size_t *outSize, int *r1)	
+void sz_compress_d1_float_(float* data, unsigned char *bytes, size_t *outSize, size_t *r1)	
 {
 	unsigned char *tmp_bytes = SZ_compress(SZ_FLOAT, data, outSize, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);	
 	free(tmp_bytes);
 }
 
-void sz_compress_d1_float_rev_(float* data, float *reservedValue, unsigned char *bytes, size_t *outSize, int *r1)	
+void sz_compress_d1_float_rev_(float* data, float *reservedValue, unsigned char *bytes, size_t *outSize, size_t *r1)	
 {
 	unsigned char *tmp_bytes = SZ_compress_rev(SZ_FLOAT, data, reservedValue, outSize, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);	
@@ -158,7 +158,7 @@ void sz_compress_d4_double_rev_(double* data, double *reservedValue, unsigned ch
 	free(tmp_bytes);
 }
 
-void sz_compress_d5_double_(double* data, unsigned char *bytes, int *outSize, size_t *r1, size_t *r2, size_t *r3, size_t *r4, size_t *r5)
+void sz_compress_d5_double_(double* data, unsigned char *bytes, size_t *outSize, size_t *r1, size_t *r2, size_t *r3, size_t *r4, size_t *r5)
 {
 	unsigned char *tmp_bytes = SZ_compress(SZ_DOUBLE, data, outSize, *r5, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
@@ -176,70 +176,70 @@ void sz_compress_d5_double_rev_(double* data, double *reservedValue, unsigned ch
 
 void sz_compress_d1_float_args_(float* data, unsigned char *bytes, size_t *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, size_t *r1)
 {
-	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, 0, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0.1, 1, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 void sz_compress_d2_float_args_(float* data, unsigned char *bytes, size_t *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, size_t *r1, size_t *r2)
 {
-	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0.1, 1, 0, 0, 0, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 void sz_compress_d3_float_args_(float* data, unsigned char *bytes, size_t *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, size_t *r1, size_t *r2, size_t *r3)
 {
-	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0.1, 1, 0, 0, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 void sz_compress_d4_float_args_(float* data, unsigned char *bytes, size_t *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, size_t *r1, size_t *r2, size_t *r3, size_t *r4)
 {
-	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0.1, 1, 0, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 void sz_compress_d5_float_args_(float* data, unsigned char *bytes, size_t *outSize, int *errBoundMode, float *absErrBound, float *relBoundRatio, size_t *r1, size_t *r2, size_t *r3, size_t *r4, size_t *r5)
 {
-	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, *r5, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_FLOAT, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0.1, 1, *r5, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 void sz_compress_d1_double_args_(double* data, unsigned char *bytes, size_t *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, size_t *r1)
 {
-	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, 0, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0.1, 1, 0, 0, 0, 0, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 void sz_compress_d2_double_args_(double* data, unsigned char *bytes, size_t *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, size_t *r1, size_t *r2)
 {
-	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, 0, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0.1, 1, 0, 0, 0, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 void sz_compress_d3_double_args_(double* data, unsigned char *bytes, size_t *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, size_t *r1, size_t *r2, size_t *r3)
 {
-	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, 0, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0.1, 1, 0, 0, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 void sz_compress_d4_double_args_(double* data, unsigned char *bytes, size_t *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, size_t *r1, size_t *r2, size_t *r3, size_t *r4)
 {
-	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0.1, 1, 0, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
 
 void sz_compress_d5_double_args_(double* data, unsigned char *bytes, size_t *outSize, int *errBoundMode, double *absErrBound, double *relBoundRatio, size_t *r1, size_t *r2, size_t *r3, size_t *r4, size_t *r5)
 {
-	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, *r5, *r4, *r3, *r2, *r1);
+	unsigned char *tmp_bytes = SZ_compress_args(SZ_DOUBLE, data, outSize, *errBoundMode, *absErrBound, *relBoundRatio, 0.1, 1, *r5, *r4, *r3, *r2, *r1);
 	memcpy(bytes, tmp_bytes, *outSize);
 	free(tmp_bytes);
 }
@@ -326,7 +326,7 @@ void sz_decompress_d1_float_(unsigned char *bytes, size_t *byteLength, float *da
 
 void sz_decompress_d2_float_(unsigned char *bytes, size_t *byteLength, float *data, size_t *r1, size_t *r2)
 {
-	int r;
+	size_t r;
 	float *tmp_data = SZ_decompress(SZ_FLOAT, bytes, *byteLength, 0, 0, 0, *r2, *r1);
 	r=(*r1)*(*r2);
 	memcpy(data, tmp_data, r*sizeof(float));
@@ -335,7 +335,7 @@ void sz_decompress_d2_float_(unsigned char *bytes, size_t *byteLength, float *da
 
 void sz_decompress_d3_float_(unsigned char *bytes, size_t *byteLength, float *data, size_t *r1, size_t *r2, size_t *r3)
 {
-	int r;
+	size_t r;
 	float *tmp_data = SZ_decompress(SZ_FLOAT, bytes, *byteLength, 0, 0, *r3, *r2, *r1);
 	r=(*r1)*(*r2)*(*r3);
 	memcpy(data, tmp_data, r*sizeof(float));
@@ -344,7 +344,7 @@ void sz_decompress_d3_float_(unsigned char *bytes, size_t *byteLength, float *da
 
 void sz_decompress_d4_float_(unsigned char *bytes, size_t *byteLength, float *data, size_t *r1, size_t *r2, size_t *r3, size_t *r4)
 {
-	int r;
+	size_t r;
 	float *tmp_data = SZ_decompress(SZ_FLOAT, bytes, *byteLength, 0, *r4, *r3, *r2, *r1);
 	r=(*r1)*(*r2)*(*r3)*(*r4);
 	memcpy(data, tmp_data, r*sizeof(float));
@@ -353,7 +353,7 @@ void sz_decompress_d4_float_(unsigned char *bytes, size_t *byteLength, float *da
 
 void sz_decompress_d5_float_(unsigned char *bytes, size_t *byteLength, float *data, size_t *r1, size_t *r2, size_t *r3, size_t *r4, size_t *r5)
 {
-	int r;
+	size_t r;
 	float *tmp_data = SZ_decompress(SZ_FLOAT, bytes, *byteLength, *r5, *r4, *r3, *r2, *r1);
 	r=(*r1)*(*r2)*(*r3)*(*r4)*(*r5);
 	memcpy(data, tmp_data, r*sizeof(float));
@@ -369,7 +369,7 @@ void sz_decompress_d1_double_(unsigned char *bytes, size_t *byteLength, double *
 
 void sz_decompress_d2_double_(unsigned char *bytes, size_t *byteLength, double *data, size_t *r1, size_t *r2)
 {
-	int r;
+	size_t r;
 	double *tmp_data = SZ_decompress(SZ_DOUBLE, bytes, *byteLength, 0, 0, 0, *r2, *r1);
 	r=(*r1)*(*r2);
 	memcpy(data, tmp_data, r*sizeof(double));
@@ -378,7 +378,7 @@ void sz_decompress_d2_double_(unsigned char *bytes, size_t *byteLength, double *
 
 void sz_decompress_d3_double_(unsigned char *bytes, size_t *byteLength, double *data, size_t *r1, size_t *r2, size_t *r3)
 {
-	int r;
+	size_t r;
 	double *tmp_data = SZ_decompress(SZ_DOUBLE, bytes, *byteLength, 0, 0, *r3, *r2, *r1);
 	r=(*r1)*(*r2)*(*r3);
 	memcpy(data, tmp_data, r*sizeof(double));
@@ -387,7 +387,7 @@ void sz_decompress_d3_double_(unsigned char *bytes, size_t *byteLength, double *
 
 void sz_decompress_d4_double_(unsigned char *bytes, size_t *byteLength, double *data, size_t *r1, size_t *r2, size_t *r3, size_t *r4)
 {
-	int r;
+	size_t r;
 	double *tmp_data = SZ_decompress(SZ_DOUBLE, bytes, *byteLength, 0, *r4, *r3, *r2, *r1);
 	r=(*r1)*(*r2)*(*r3)*(*r4);
 	memcpy(data, tmp_data, r*sizeof(double));
@@ -396,7 +396,7 @@ void sz_decompress_d4_double_(unsigned char *bytes, size_t *byteLength, double *
 
 void sz_decompress_d5_double_(unsigned char *bytes, size_t *byteLength, double *data, size_t *r1, size_t *r2, size_t *r3, size_t *r4, size_t *r5)
 {
-	int r;
+	size_t r;
 	double *tmp_data = SZ_decompress(SZ_DOUBLE, bytes, *byteLength, *r5, *r4, *r3, *r2, *r1);
 	r=(*r1)*(*r2)*(*r3)*(*r4)*(*r5);
 	memcpy(data, tmp_data, r*sizeof(double));
@@ -485,7 +485,7 @@ void sz_batchaddvar_d4_double_(char* varName, int *len, double* data, int *errBo
     s2[*len]='\0';		
 	SZ_batchAddVar(s2, SZ_DOUBLE, data, *errBoundMode, *absErrBound, *relBoundRatio, 0, *r4, *r3, *r2, *r1);
 }
-void sz_batchaddvar_d5_double_(char* varName, int *len, double* data, int *errBoundMode, double *absErrBound, double *relBoundRatio, int *r1, int *r2, int *r3, int *r4, int *r5)
+void sz_batchaddvar_d5_double_(char* varName, int *len, double* data, int *errBoundMode, double *absErrBound, double *relBoundRatio, size_t *r1, size_t *r2, size_t *r3, size_t *r4, size_t *r5)
 {
 	int i;
     char s2[*len+1];
@@ -534,7 +534,7 @@ void compute_total_batch_size_c_(size_t *totalSize)
 void sz_getvardata_float_(char* varName, int *len, float* data)
 {
 	int i;
-	int r1, r2, r3, r4, r5;
+	size_t r1, r2, r3, r4, r5;
     char s2[*len+1];
     for(i=0;i<*len;i++)
         s2[i]=varName[i];
@@ -548,7 +548,7 @@ void sz_getvardata_float_(char* varName, int *len, float* data)
 void sz_getvardata_double_(char* varName, int *len, double* data)
 {
 	int i;
-	int r1, r2, r3, r4, r5;
+	size_t r1, r2, r3, r4, r5;
     char s2[*len+1];
     for(i=0;i<*len;i++)
         s2[i]=varName[i];
