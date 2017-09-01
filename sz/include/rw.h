@@ -69,13 +69,13 @@ void writeULongData_inBytes(unsigned long *states, size_t stateLength, char *tgt
 
 unsigned short* readShortData(char *srcFilePath, size_t *dataLength, int *status);
 
-void checkfilesizec_(char *srcFilePath, size_t *len, int *filesize);
-void readbytefile_(char *srcFilePath, size_t *len, unsigned char *bytes, int *byteLength);
-void readdoublefile_(char *srcFilePath, size_t *len, double *data, int *nbEle);
-void readfloatfile_(char *srcFilePath, size_t *len, float *data, int *nbEle);
-void writebytefile_(unsigned char *bytes, int *byteLength, char *tgtFilePath, size_t *len);
-void writedoublefile_(double *data, size_t *nbEle, char *tgtFilePath, size_t *len);
-void writefloatfile_(float *data, size_t *nbEle, char *tgtFilePath, size_t *len);
+void checkfilesizec_(char *srcFilePath, int *len, size_t *filesize);
+void readbytefile_(char *srcFilePath, int *len, unsigned char *bytes, size_t *byteLength);
+void readdoublefile_(char *srcFilePath, int *len, double *data, size_t *nbEle);
+void readfloatfile_(char *srcFilePath, int *len, float *data, size_t *nbEle);
+void writebytefile_(unsigned char *bytes, size_t *byteLength, char *tgtFilePath, int *len);
+void writedoublefile_(double *data, size_t *nbEle, char *tgtFilePath, int *len);
+void writefloatfile_(float *data, size_t *nbEle, char *tgtFilePath, int *len);
 
 #ifdef __cplusplus
 }
