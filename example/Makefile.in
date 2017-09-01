@@ -99,7 +99,7 @@ host_triplet = @host@
 @FORTRAN_FALSE@	testfloat_CompDecomp_subblock$(EXEEXT) \
 @FORTRAN_FALSE@	testdouble_CompDecomp_subblock$(EXEEXT)
 @FORTRAN_TRUE@bin_PROGRAMS = testint_compress$(EXEEXT) \
-@FORTRAN_TRUE@	testint_decopmress$(EXEEXT) \
+@FORTRAN_TRUE@	testint_decompress$(EXEEXT) \
 @FORTRAN_TRUE@	testfloat_compress$(EXEEXT) \
 @FORTRAN_TRUE@	testfloat_decompress$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_compress$(EXEEXT) \
@@ -198,9 +198,6 @@ am_testint_decompress_OBJECTS = testint_decompress.$(OBJEXT)
 testint_decompress_OBJECTS = $(am_testint_decompress_OBJECTS)
 testint_decompress_DEPENDENCIES = ../sz/.libs/libsz.a \
 	../zlib/.libs/libzlib.a
-testint_decopmress_SOURCES = testint_decopmress.c
-testint_decopmress_OBJECTS = testint_decopmress.$(OBJEXT)
-testint_decopmress_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -259,8 +256,7 @@ SOURCES = $(sz_SOURCES) $(testdouble_CompDecomp_subblock_SOURCES) \
 	$(testfloat_CompDecomp_subblock_SOURCES) \
 	$(testfloat_batch_compress_SOURCES) \
 	$(testfloat_compress_SOURCES) $(testfloat_decompress_SOURCES) \
-	$(testint_compress_SOURCES) $(testint_decompress_SOURCES) \
-	testint_decopmress.c
+	$(testint_compress_SOURCES) $(testint_decompress_SOURCES)
 DIST_SOURCES = $(sz_SOURCES) $(testdouble_CompDecomp_subblock_SOURCES) \
 	$(testdouble_batch_compress_SOURCES) \
 	$(am__testdouble_batch_f_SOURCES_DIST) \
@@ -271,8 +267,7 @@ DIST_SOURCES = $(sz_SOURCES) $(testdouble_CompDecomp_subblock_SOURCES) \
 	$(testfloat_CompDecomp_subblock_SOURCES) \
 	$(testfloat_batch_compress_SOURCES) \
 	$(testfloat_compress_SOURCES) $(testfloat_decompress_SOURCES) \
-	$(testint_compress_SOURCES) $(testint_decompress_SOURCES) \
-	testint_decopmress.c
+	$(testint_compress_SOURCES) $(testint_decompress_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -588,10 +583,6 @@ testint_decompress$(EXEEXT): $(testint_decompress_OBJECTS) $(testint_decompress_
 	@rm -f testint_decompress$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(testint_decompress_OBJECTS) $(testint_decompress_LDADD) $(LIBS)
 
-testint_decopmress$(EXEEXT): $(testint_decopmress_OBJECTS) $(testint_decopmress_DEPENDENCIES) $(EXTRA_testint_decopmress_DEPENDENCIES) 
-	@rm -f testint_decopmress$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(testint_decopmress_OBJECTS) $(testint_decopmress_LDADD) $(LIBS)
-
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -609,7 +600,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testfloat_decompress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testint_compress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testint_decompress.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testint_decopmress.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
