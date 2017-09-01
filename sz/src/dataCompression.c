@@ -16,6 +16,85 @@
 #include "DynamicIntArray.h"
 #include "TightDataPointStorageD.h"
 #include "CompressElement.h"
+#include "dataCompression.h"
+
+int computeByteSizePerIntValue(long valueRangeSize)
+{
+	if(valueRangeSize<=256)
+		return 1;
+	else if(valueRangeSize<=65536)
+		return 2;
+	else if(valueRangeSize<=4294967296) //2^32
+		return 4;
+	else
+		return 8;
+}
+
+long computeRangeSize_int(void* oriData, int dataType, size_t size, long* valueRangeSize)
+{
+	size_t i = 0;
+	long max, min;
+
+	if(dataType==SZ_UINT8)
+	{
+		unsigned char* data = (unsigned char*)oriData;
+		unsigned char data_; 
+		min = data[0], max = min;
+		computeMinMax(data);
+	}
+	else if(dataType == SZ_INT8)
+	{
+		char* data = (char*)oriData;
+		char data_;
+		min = data[0], max = min;
+		computeMinMax(data);
+	}
+	else if(dataType == SZ_UINT16)
+	{
+		unsigned short* data = (unsigned short*)oriData;
+		unsigned short data_; 
+		min = data[0], max = min;
+		computeMinMax(data);
+	}
+	else if(dataType == SZ_INT16)
+	{ 
+		short* data = (short*)oriData;
+		short data_; 
+		min = data[0], max = min;
+		computeMinMax(data);
+	}
+	else if(dataType == SZ_UINT32)
+	{
+		unsigned int* data = (unsigned int*)oriData;
+		int data_; 
+		min = data[0], max = min;
+		computeMinMax(data);
+	}
+	else if(dataType == SZ_INT32)
+	{
+		int* data = (int*)oriData;
+		unsigned int data_; 
+		min = data[0], max = min;
+		computeMinMax(data);
+	}
+	else if(dataType == SZ_UINT64)
+	{
+		unsigned long* data = (unsigned long*)oriData;
+		unsigned long data_; 
+		min = data[0], max = min;
+		computeMinMax(data);
+	}
+	else if(dataType == SZ_INT64)
+	{
+		long* data = (long *)oriData;
+		long data_; 
+		min = data[0], max = min;
+		computeMinMax(data);
+	}
+
+	*valueRangeSize = max - min;
+	return min;	
+}
 
 float computeRangeSize_float(float* oriData, size_t size, float* valueRangeSize, float* medianValue)
 {
@@ -193,6 +272,29 @@ double getRealPrecision_float(float valueRangeSize, int errBoundMode, double abs
 	return precision;
 }
 
+double getRealPrecision_int(long valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status)
+{
+	int state = SZ_SCES;
+	double precision = 0;
+	if(errBoundMode==ABS||errBoundMode==ABS_OR_PW_REL||errBoundMode==ABS_AND_PW_REL)
+		precision = absErrBound; 
+	else if(errBoundMode==REL||errBoundMode==REL_OR_PW_REL||errBoundMode==REL_AND_PW_REL)
+		precision = relBoundRatio*valueRangeSize;
+	else if(errBoundMode==ABS_AND_REL)
+		precision = min_f(absErrBound, relBoundRatio*valueRangeSize);
+	else if(errBoundMode==ABS_OR_REL)
+		precision = max_f(absErrBound, relBoundRatio*valueRangeSize);
+	else if(errBoundMode==PW_REL)
+		precision = -1;
+	else
+	{
+		printf("Error: error-bound-mode is incorrect!\n");
+		state = SZ_BERR;
+	}
+	*status = state;
+	return precision;
+}
+
 void symTransform_8bytes(unsigned char data[8])
 {
 	unsigned char tmp = data[0];
@@ -219,7 +321,7 @@ inline void symTransform_2bytes(unsigned char data[2])
 	data[1] = tmp;
 }
 
-void symTransform_4bytes(unsigned char data[4])
+inline void symTransform_4bytes(unsigned char data[4])
 {
 	unsigned char tmp = data[0];
 	data[0] = data[3];
@@ -228,6 +330,66 @@ void symTransform_4bytes(unsigned char data[4])
 	tmp = data[1];
 	data[1] = data[2];
 	data[2] = tmp;
+}
+
+inline void compressInt8Value(int8_t tgtValue, int8_t minValue, int byteSize, unsigned char* bytes)
+{
+	uint8_t data = tgtValue - minValue;
+	memcpy(bytes, &data, byteSize); //byteSize==1
+}
+
+inline void compressInt16Value(int16_t tgtValue, int16_t minValue, int byteSize, unsigned char* bytes)
+{
+	uint16_t data = tgtValue - minValue;
+	unsigned char tmpBytes[2];
+	int16ToBytes_bigEndian(tmpBytes, data);
+	memcpy(bytes, tmpBytes + 2 - byteSize, byteSize);
+}
+
+inline void compressInt32Value(int32_t tgtValue, int32_t minValue, int byteSize, unsigned char* bytes)
+{
+	uint32_t data = tgtValue - minValue;
+	unsigned char tmpBytes[4];
+	int32ToBytes_bigEndian(tmpBytes, data);
+	memcpy(bytes, tmpBytes + 4 - byteSize, byteSize);
+}
+
+inline void compressInt64Value(int64_t tgtValue, int64_t minValue, int byteSize, unsigned char* bytes)
+{
+	uint64_t data = tgtValue - minValue;
+	unsigned char tmpBytes[8];
+	int64ToBytes_bigEndian(tmpBytes, data);
+	memcpy(bytes, tmpBytes + 8 - byteSize, byteSize);
+}
+
+inline void compressUInt8Value(uint8_t tgtValue, uint8_t minValue, int byteSize, unsigned char* bytes)
+{
+	uint8_t data = tgtValue - minValue;
+	memcpy(bytes, &data, byteSize); //byteSize==1
+}
+
+inline void compressUInt16Value(uint16_t tgtValue, uint16_t minValue, int byteSize, unsigned char* bytes)
+{
+	uint16_t data = tgtValue - minValue;
+	unsigned char tmpBytes[2];
+	int16ToBytes_bigEndian(tmpBytes, data);
+	memcpy(bytes, tmpBytes + 2 - byteSize, byteSize);
+}
+
+inline void compressUInt32Value(uint32_t tgtValue, uint32_t minValue, int byteSize, unsigned char* bytes)
+{
+	uint32_t data = tgtValue - minValue;
+	unsigned char tmpBytes[4];
+	int32ToBytes_bigEndian(tmpBytes, data);
+	memcpy(bytes, tmpBytes + 4 - byteSize, byteSize);
+}
+
+inline void compressUInt64Value(uint64_t tgtValue, uint64_t minValue, int byteSize, unsigned char* bytes)
+{
+	uint64_t data = tgtValue - minValue;
+	unsigned char tmpBytes[8];
+	int64ToBytes_bigEndian(tmpBytes, data);
+	memcpy(bytes, tmpBytes + 8 - byteSize, byteSize);
 }
 
 void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, 
@@ -389,4 +551,28 @@ int getPredictionCoefficients(int layers, int dimension, int **coeff_array, int 
 	}
 	*status = SZ_SCES;
 	return size;
+}
+
+int computeBlockEdgeSize_2D(int segmentSize)
+{
+	int i = 1;
+	for(i=1; i<segmentSize;i++)
+	{
+		if(i*i>segmentSize)
+			break;
+	}
+	return i;
+	//return (int)(sqrt(segmentSize)+1);
+}
+
+int computeBlockEdgeSize_3D(int segmentSize)
+{
+	int i = 1;
+	for(i=1; i<segmentSize;i++)
+	{
+		if(i*i*i>segmentSize)
+			break;
+	}
+	return i;	
+	//return (int)(pow(segmentSize, 1.0/3)+1);
 }

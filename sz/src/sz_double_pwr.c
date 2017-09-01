@@ -1,6 +1,6 @@
 /**
  *  @file sz_double_pwr.c
- *  @author Sheng Di and Dingwen Tao
+ *  @author Sheng Di
  *  @date Aug, 2016
  *  @brief SZ_Init, Compression and Decompression functions
  * This file contains the compression/decompression functions related to point-wise relative errors
@@ -659,7 +659,7 @@ size_t dataLength, size_t *outSize, double min, double max)
 		if(type[i]==0) sum++;
 	printf("opt_quantizations=%d, exactDataNum=%d, sum=%d\n",quantization_intervals, exactDataNum, sum);
 */
-//	writeShortData(type, dataLength, "compressStateBytes.sb");
+//	writeUShortData(type, dataLength, "compressStateBytes.sb");
 //	unsigned short type_[dataLength];
 //	SZ_Reset();
 //	decode_withTree(tdps->typeArray, tdps->typeArray_size, type_);	

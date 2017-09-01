@@ -14,7 +14,6 @@
 extern "C" {
 #endif
 
-#include <stdio.h> 
 //Note: when changing the following settings, intvCapacity in sz.h should be changed as well.
 //#define allNodes 131072
 //#define stateNum 65536

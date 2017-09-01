@@ -17,7 +17,20 @@ extern "C" {
 #include "sz.h"
 #include <stdio.h>
 
+#define computeMinMax(data) \
+        for(i=1;i<size;i++)\
+        {\
+                data_ = data[i];\
+                if(min>data_)\
+                        min = data_;\
+                else if(max<data_)\
+                        max = data_;\
+        }\
+
+
 //dataCompression.c
+int computeByteSizePerIntValue(long valueRangeSize);
+long computeRangeSize_int(void* oriData, int dataType, size_t size, long* valueRangeSize);
 double computeRangeSize_double(double* oriData, size_t size, double* valueRangeSize, double* medianValue);
 float computeRangeSize_float(float* oriData, size_t size, float* valueRangeSize, float* medianValue);
 float computeRangeSize_double_subblock(double* oriData, double* valueRangeSize, double* medianValue,
@@ -34,9 +47,21 @@ float min_f(float a, float b);
 float max_f(float a, float b);
 double getRealPrecision_double(double valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status);
 double getRealPrecision_float(float valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status);
+double getRealPrecision_int(long valueRangeSize, int errBoundMode, double absErrBound, double relBoundRatio, int *status);
 void symTransform_8bytes(unsigned char data[8]);
 void symTransform_2bytes(unsigned char data[2]);
 void symTransform_4bytes(unsigned char data[4]);
+
+void compressInt8Value(int8_t tgtValue, int8_t minValue, int byteSize, unsigned char* bytes);
+void compressInt16Value(int16_t tgtValue, int16_t minValue, int byteSize, unsigned char* bytes);
+void compressInt32Value(int32_t tgtValue, int32_t minValue, int byteSize, unsigned char* bytes);
+void compressInt64Value(int64_t tgtValue, int64_t minValue, int byteSize, unsigned char* bytes);
+
+void compressUInt8Value(uint8_t tgtValue, uint8_t minValue, int byteSize, unsigned char* bytes);
+void compressUInt16Value(uint16_t tgtValue, uint16_t minValue, int byteSize, unsigned char* bytes);
+void compressUInt32Value(uint32_t tgtValue, uint32_t minValue, int byteSize, unsigned char* bytes);
+void compressUInt64Value(uint64_t tgtValue, uint64_t minValue, int byteSize, unsigned char* bytes);
+
 void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, 
 		int reqLength, int reqBytesLength, int resiBitsLength);
 void compressSingleDoubleValue(DoubleValueCompressElement *vce, double tgtValue, double precision, double medianValue, 

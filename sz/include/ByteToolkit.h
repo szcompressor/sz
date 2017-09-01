@@ -17,8 +17,15 @@ extern "C" {
 #include <stdio.h>
 
 //ByteToolkit.c
+short bytesToInt16_bigEndian(unsigned char* bytes);
+int bytesToInt32_bigEndian(unsigned char* bytes);
+long bytesToInt64_bigEndian(unsigned char* b);
 int bytesToInt_bigEndian(unsigned char* bytes);
 void intToBytes_bigEndian(unsigned char *b, unsigned int num);
+void int64ToBytes_bigEndian(unsigned char *b, uint64_t num);
+void int32ToBytes_bigEndian(unsigned char *b, uint32_t num);
+void int16ToBytes_bigEndian(unsigned char *b, uint16_t num);
+
 long bytesToLong_bigEndian(unsigned char* b);
 void longToBytes_bigEndian(unsigned char *b, unsigned long num);
 long doubleToOSEndianLong(double value);
@@ -43,8 +50,16 @@ int getMaskRightCode(int m);
 int getLeftMovingCode(int kMod8);
 int getRightMovingSteps(int kMod8, int resiBitLength);
 int getRightMovingCode(int kMod8, int resiBitLength);
-unsigned short* convertByteDataToShortArray(unsigned char* bytes, size_t byteLength);
-void convertShortArrayToBytes(unsigned short* states, size_t stateLength, unsigned char* bytes);
+short* convertByteDataToShortArray(unsigned char* bytes, size_t byteLength);
+unsigned short* convertByteDataToUShortArray(unsigned char* bytes, size_t byteLength);
+
+void convertShortArrayToBytes(short* states, size_t stateLength, unsigned char* bytes);
+void convertUShortArrayToBytes(unsigned short* states, size_t stateLength, unsigned char* bytes);
+void convertIntArrayToBytes(int* states, size_t stateLength, unsigned char* bytes);
+void convertUIntArrayToBytes(unsigned int* states, size_t stateLength, unsigned char* bytes);
+void convertLongArrayToBytes(long* states, size_t stateLength, unsigned char* bytes);
+void convertULongArrayToBytes(unsigned long* states, size_t stateLength, unsigned char* bytes);
+
 size_t bytesToSize(unsigned char* bytes);
 void sizeToBytes(unsigned char* outBytes, size_t size);
 

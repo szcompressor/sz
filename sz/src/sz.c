@@ -138,7 +138,8 @@ int SZ_Init_Params(sz_params *params)
     // [ENV]
     if(params->dataEndianType >= 0) dataEndianType    = params->dataEndianType;
     //if(params->sysEndianType >= 0)    sysEndianType    = params->sysEndianType;
-    if(params->sol_ID >= 0)                sol_ID                    = params->sol_ID;
+    if(params->sol_ID >= 0)  
+		sol_ID = params->sol_ID;
 
     // [PARAMETER]
     if(sol_ID==SZ) {
@@ -295,6 +296,30 @@ double relBoundRatio, double pwrBoundRatio, int pwrType, size_t r5, size_t r4, s
 		
 		return newByteData;
 	}
+	else if(dataType==SZ_INT64)
+	{
+		unsigned char *newByteData;
+		SZ_compress_args_int64(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		return newByteData;
+	}		
+	else if(dataType==SZ_INT32) //int type
+	{
+		unsigned char *newByteData;
+		SZ_compress_args_int32(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		return newByteData;
+	}
+	else if(dataType==SZ_INT16)
+	{
+		unsigned char *newByteData;
+		SZ_compress_args_int16(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		return newByteData;		
+	}
+	else if(dataType==SZ_INT8)
+	{
+		unsigned char *newByteData;
+		SZ_compress_args_int8(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		return newByteData;
+	}	
 	else
 	{
 		printf("Error: dataType can only be SZ_FLOAT or SZ_DOUBLE.\n");
@@ -411,18 +436,58 @@ void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_
 	{
 		float *newFloatData;
 		SZ_decompress_args_float(&newFloatData, r5, r4, r3, r2, r1, bytes, byteLength);
-		return newFloatData;
+		return newFloatData;	
 	}
 	else if(dataType == SZ_DOUBLE)
 	{
 		double *newDoubleData;
 		SZ_decompress_args_double(&newDoubleData, r5, r4, r3, r2, r1, bytes, byteLength);
-		return newDoubleData;
+		return newDoubleData;	
 	}
-	else
+	else if(dataType == SZ_INT8)
+	{
+		int8_t *newInt8Data;
+		SZ_decompress_args_int8(&newInt8Data, r5, r4, r3, r2, r1, bytes, byteLength);
+		return newInt8Data;
+	}
+	else if(dataType == SZ_INT16)
+	{
+		int16_t *newInt16Data;
+		SZ_decompress_args_int16(&newInt16Data, r5, r4, r3, r2, r1, bytes, byteLength);
+		return newInt16Data;
+	}
+	else if(dataType == SZ_INT32)
+	{
+		int32_t *newInt32Data;
+		SZ_decompress_args_int32(&newInt32Data, r5, r4, r3, r2, r1, bytes, byteLength);
+		return newInt32Data;
+	}
+	else if(dataType == SZ_INT64)
+	{
+		int64_t *newInt64Data;
+		SZ_decompress_args_int64(&newInt64Data, r5, r4, r3, r2, r1, bytes, byteLength);
+		return newInt64Data;
+	}
+	else if(dataType == SZ_UINT8)
+	{
+		return NULL;
+	}
+	else if(dataType == SZ_UINT16)
+	{
+		return NULL;
+	}
+	else if(dataType == SZ_UINT32)
+	{
+		return NULL;
+	}
+	else if(dataType == SZ_UINT64)
+	{
+		return NULL;
+	}
+	else 
 	{
 		printf("Error: data type cannot be the types other than SZ_FLOAT or SZ_DOUBLE\n");
-		return NULL;		
+		return NULL;	
 	}
 }
 
@@ -435,6 +500,7 @@ size_t SZ_decompress_args(int dataType, unsigned char *bytes, size_t byteLength,
 {
 	//size_t i;
 	size_t nbEle = computeDataLength(r5,r4,r3,r2,r1);
+	
 	if(dataType == SZ_FLOAT)
 	{
 		float* data = (float *)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
@@ -442,21 +508,77 @@ size_t SZ_decompress_args(int dataType, unsigned char *bytes, size_t byteLength,
 		memcpy(data_array, data, nbEle*sizeof(float));
 		//for(i=0;i<nbEle;i++)
 		//	data_array[i] = data[i];	
-		free(data); //this free operation seems to not work with BlueG/Q system.
+		free(data); //this free operation seems to not work with BlueG/Q system.	
 	}
-	else if(dataType == SZ_DOUBLE)
+	else if (dataType == SZ_DOUBLE)
 	{
 		double* data = (double *)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
 		double* data_array = (double *)decompressed_array;
 		memcpy(data_array, data, nbEle*sizeof(double));
 		//for(i=0;i<nbEle;i++)
 		//	data_array[i] = data[i];
-		free(data); //this free operation seems to not work with BlueG/Q system.
+		free(data); //this free operation seems to not work with BlueG/Q system.	
+	}
+	else if(dataType == SZ_INT8)
+	{
+		int8_t* data = (int8_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		int8_t* data_array = (int8_t *)decompressed_array;
+		memcpy(data_array, data, nbEle*sizeof(int8_t));
+		free(data);
+	}
+	else if(dataType == SZ_INT16)
+	{
+		int16_t* data = (int16_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		int16_t* data_array = (int16_t *)decompressed_array;
+		memcpy(data_array, data, nbEle*sizeof(int16_t));
+		free(data);	
+	}
+	else if(dataType == SZ_INT32)
+	{
+		int32_t* data = (int32_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		int32_t* data_array = (int32_t *)decompressed_array;
+		memcpy(data_array, data, nbEle*sizeof(int32_t));
+		free(data);	
+	}
+	else if(dataType == SZ_INT64)
+	{
+		int64_t* data = (int64_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		int64_t* data_array = (int64_t *)decompressed_array;
+		memcpy(data_array, data, nbEle*sizeof(int64_t));
+		free(data);		
+	}
+	else if(dataType == SZ_UINT8)
+	{
+		uint8_t* data = (uint8_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		uint8_t* data_array = (uint8_t *)decompressed_array;
+		memcpy(data_array, data, nbEle*sizeof(uint8_t));
+		free(data);
+	}
+	else if(dataType == SZ_UINT16)
+	{
+		uint16_t* data = (uint16_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		uint16_t* data_array = (uint16_t *)decompressed_array;
+		memcpy(data_array, data, nbEle*sizeof(uint16_t));
+		free(data);		
+	}
+	else if(dataType == SZ_UINT32)
+	{
+		uint32_t* data = (uint32_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		uint32_t* data_array = (uint32_t *)decompressed_array;
+		memcpy(data_array, data, nbEle*sizeof(uint32_t));
+		free(data);		
+	}
+	else if(dataType == SZ_UINT64)
+	{
+		uint64_t* data = (uint64_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		uint64_t* data_array = (uint64_t *)decompressed_array;
+		memcpy(data_array, data, nbEle*sizeof(uint64_t));
+		free(data);			
 	}
 	else
-	{
+	{ 
 		printf("Error: data type cannot be the types other than SZ_FLOAT or SZ_DOUBLE\n");
-		return SZ_NSCS; //indicating error				
+		return SZ_NSCS; //indicating error		
 	}
 
 	return nbEle;
@@ -631,7 +753,7 @@ unsigned char* SZ_batch_compress(size_t *outSize)
 	
 	if(szMode!=SZ_BEST_SPEED)
 	{
-		tmpGzipSize = zlib_compress5(tmpFinalCompressedBytes, dba->size, &tmpCompressedBytes2, gzipMode);
+		tmpGzipSize = zlib_compress(tmpFinalCompressedBytes, dba->size, &tmpCompressedBytes2, gzipMode);
 		free(tmpFinalCompressedBytes);		
 	}
 	else

@@ -1,4 +1,4 @@
---------SZ (version 1.4.10): Error-bounded Lossy Compressor for HPC Data--------
+--------SZ (version 1.4.11): Error-bounded Lossy Compressor for HPC Data--------
  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
        See COPYRIGHT in top-level directory.
 
@@ -124,4 +124,5 @@ SZ 1.4.9-beta	Support point-wise relative error bound setting, and optional Fort
 SZ 1.4.9.1-beta Fix the bug in the fortran interface about SZ_batch_compression
 SZ 1.4.9.2-beta Update the user guide by describing how to optimize the compression quality on demand.
 SZ 1.4.9.3-beta Fix the sementation fault bug happening when the data size is super small for 2D array and 3D array. (Specifically, when the data size is very small while the error bound is set to very small too, the Huffman tree overhead will be relatively huge such that the compressed size may exceed the original data size, leading to segmentation fault when further compressing it by the last lossless compression step. Solution: In this case, the data will be compressed by Zlib for simplicity, with no compression errors).
-SZ 1.4.10-beta (1) Support direct sub-block data compression; (2) Support compression of large data file directly (i.e., the number of data points could be up to as large as LONG size, unlike the previous version that can only compress 2^{32} data points each time); (3) separate the internel functions from the sz.h;  
+SZ 1.4.10-beta (1) Support direct sub-block data compression; (2) Support compression of large data file directly (i.e., the number of data points could be up to as large as LONG size, unlike the previous version that can only compress 2^{32} data points each time); (3) separate the internel functions from the sz.h; 
+SZ 1.4.11-beta (1) Support HDF5. (2) Support integer data compression 

@@ -138,7 +138,7 @@ int SZ_ReadConf() {
 		iniparser_freedict(ini);
 		return SZ_NSCS;
 	}
-
+	
 	conf_params->sol_ID = sol_ID;
 
 	if(sol_ID==SZ)
@@ -278,7 +278,7 @@ int SZ_ReadConf() {
 		conf_params->segment_size = segment_size;
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:pwr_type", NULL);
-
+		
 		if(strcmp(modeBuf, "MIN")==0)
 			pwr_type = SZ_PWR_MIN_TYPE;
 		else if(strcmp(modeBuf, "AVG")==0)
@@ -299,7 +299,6 @@ int SZ_ReadConf() {
 //	versionNumber[0] = SZ_VER_MAJOR; //0
 //	versionNumber[1] = SZ_VER_MINOR; //5
 //	versionNumber[2] = SZ_VER_BUILD; //15
-    
     //initialization for Huffman encoding
     if(pool==NULL)
     {
@@ -309,7 +308,6 @@ int SZ_ReadConf() {
 		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
 		qq = qqq - 1;		
 	}
-
 	//printf("dataEndianType=%d\n", dataEndianType);    
     iniparser_freedict(ini);
     return SZ_SCES;

@@ -14,8 +14,6 @@
 extern "C" {
 #endif
 
-#include <stdio.h> 
-
 typedef struct TightDataPointStorageD
 {
 	size_t dataSeriesLength;
@@ -55,23 +53,6 @@ typedef struct TightDataPointStorageD
 
 void new_TightDataPointStorageD_Empty(TightDataPointStorageD **self);
 int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **self, unsigned char* flatBytes, size_t flatBytesLength);
-void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps);
-void decompressDataSeries_double_1D_pwr(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps);
-
-double* extractRealPrecision_2D_double(size_t R1, size_t R2, int blockSize, TightDataPointStorageD* tdps);
-void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps);
-void decompressDataSeries_double_2D_pwr(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps);
-
-double* extractRealPrecision_3D_double(size_t R1, size_t R2, size_t R3, int blockSize, TightDataPointStorageD* tdps);
-void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps);
-void decompressDataSeries_double_3D_pwr(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps);
-
-void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageD* tdps);
-
-void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps, int errBoundMode);
-void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps, int errBoundMode);
-void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps, int errBoundMode);
-void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageD* tdps, int errBoundMode);
 
 void new_TightDataPointStorageD(TightDataPointStorageD **self, 
 		size_t dataSeriesLength, size_t exactDataNum, 

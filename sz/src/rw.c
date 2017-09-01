@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include "rw.h"
 #include "sz.h"
 
@@ -179,6 +180,223 @@ double *readDoubleData(char *srcFilePath, size_t *nbEle, int *status)
 	}
 }
 
+int16_t *readInt16Data(char *srcFilePath, size_t *nbEle, int *status)
+{
+	int state = SZ_SCES;
+	if(dataEndianType==sysEndianType)
+	{
+		int16_t *daBuf = readInt16Data_systemEndian(srcFilePath, nbEle, &state);
+		*status = state;
+		return daBuf;
+	}
+	else
+	{
+		size_t i,j;
+
+		size_t byteLength;
+		unsigned char* bytes = readByteData(srcFilePath, &byteLength, &state);
+		if(state == SZ_FERR)
+		{
+			*status = SZ_FERR;
+			return NULL;
+		}
+		int16_t *daBuf = (int16_t *)malloc(byteLength);
+		*nbEle = byteLength/2;
+
+		lint16 buf;
+		for(i = 0;i<*nbEle;i++)
+		{
+			j = i << 1;//*2
+			memcpy(buf.byte, bytes+j, 2);
+			symTransform_2bytes(buf.byte);
+			daBuf[i] = buf.svalue;
+		}
+		free(bytes);
+		return daBuf;
+	}
+}
+
+uint16_t *readUInt16Data(char *srcFilePath, size_t *nbEle, int *status)
+{
+	int state = SZ_SCES;
+	if(dataEndianType==sysEndianType)
+	{
+		uint16_t *daBuf = readUInt16Data_systemEndian(srcFilePath, nbEle, &state);
+		*status = state;
+		return daBuf;
+	}
+	else
+	{
+		size_t i,j;
+
+		size_t byteLength;
+		unsigned char* bytes = readByteData(srcFilePath, &byteLength, &state);
+		if(state == SZ_FERR)
+		{
+			*status = SZ_FERR;
+			return NULL;
+		}
+		uint16_t *daBuf = (uint16_t *)malloc(byteLength);
+		*nbEle = byteLength/2;
+
+		lint16 buf;
+		for(i = 0;i<*nbEle;i++)
+		{
+			j = i << 1;//*2
+			memcpy(buf.byte, bytes+j, 2);
+			symTransform_2bytes(buf.byte);
+			daBuf[i] = buf.usvalue;
+		}
+		free(bytes);
+		return daBuf;
+	}
+}
+
+int32_t *readInt32Data(char *srcFilePath, size_t *nbEle, int *status)
+{
+	int state = SZ_SCES;
+	if(dataEndianType==sysEndianType)
+	{
+		int32_t *daBuf = readInt32Data_systemEndian(srcFilePath, nbEle, &state);
+		*status = state;
+		return daBuf;
+	}
+	else
+	{
+		size_t i,j;
+
+		size_t byteLength;
+		unsigned char* bytes = readByteData(srcFilePath, &byteLength, &state);
+		if(state == SZ_FERR)
+		{
+			*status = SZ_FERR;
+			return NULL;
+		}
+		int32_t *daBuf = (int32_t *)malloc(byteLength);
+		*nbEle = byteLength/4;
+
+		lint32 buf;
+		for(i = 0;i<*nbEle;i++)
+		{
+			j = i*4;
+			memcpy(buf.byte, bytes+j, 4);
+			symTransform_4bytes(buf.byte);
+			daBuf[i] = buf.ivalue;
+		}
+		free(bytes);
+		return daBuf;
+	}
+}
+
+uint32_t *readUInt32Data(char *srcFilePath, size_t *nbEle, int *status)
+{
+	int state = SZ_SCES;
+	if(dataEndianType==sysEndianType)
+	{
+		uint32_t *daBuf = readUInt32Data_systemEndian(srcFilePath, nbEle, &state);
+		*status = state;
+		return daBuf;
+	}
+	else
+	{
+		size_t i,j;
+
+		size_t byteLength;
+		unsigned char* bytes = readByteData(srcFilePath, &byteLength, &state);
+		if(state == SZ_FERR)
+		{
+			*status = SZ_FERR;
+			return NULL;
+		}
+		uint32_t *daBuf = (uint32_t *)malloc(byteLength);
+		*nbEle = byteLength/4;
+
+		lint32 buf;
+		for(i = 0;i<*nbEle;i++)
+		{
+			j = i << 2; //*4
+			memcpy(buf.byte, bytes+j, 4);
+			symTransform_4bytes(buf.byte);
+			daBuf[i] = buf.uivalue;
+		}
+		free(bytes);
+		return daBuf;
+	}
+}
+
+int64_t *readInt64Data(char *srcFilePath, size_t *nbEle, int *status)
+{
+	int state = SZ_SCES;
+	if(dataEndianType==sysEndianType)
+	{
+		int64_t *daBuf = readInt64Data_systemEndian(srcFilePath, nbEle, &state);
+		*status = state;
+		return daBuf;
+	}
+	else
+	{
+		size_t i,j;
+
+		size_t byteLength;
+		unsigned char* bytes = readByteData(srcFilePath, &byteLength, &state);
+		if(state == SZ_FERR)
+		{
+			*status = SZ_FERR;
+			return NULL;
+		}
+		int64_t *daBuf = (int64_t *)malloc(byteLength);
+		*nbEle = byteLength/8;
+
+		lint64 buf;
+		for(i = 0;i<*nbEle;i++)
+		{
+			j = i << 3; //*8
+			memcpy(buf.byte, bytes+j, 8);
+			symTransform_8bytes(buf.byte);
+			daBuf[i] = buf.lvalue;
+		}
+		free(bytes);
+		return daBuf;
+	}
+}
+
+uint64_t *readUInt64Data(char *srcFilePath, size_t *nbEle, int *status)
+{
+	int state = SZ_SCES;
+	if(dataEndianType==sysEndianType)
+	{
+		uint64_t *daBuf = readUInt64Data_systemEndian(srcFilePath, nbEle, &state);
+		*status = state;
+		return daBuf;
+	}
+	else
+	{
+		size_t i,j;
+
+		size_t byteLength;
+		unsigned char* bytes = readByteData(srcFilePath, &byteLength, &state);
+		if(state == SZ_FERR)
+		{
+			*status = SZ_FERR;
+			return NULL;
+		}
+		uint64_t *daBuf = (uint64_t *)malloc(byteLength);
+		*nbEle = byteLength/8;
+
+		lint64 buf;
+		for(i = 0;i<*nbEle;i++)
+		{
+			j = i << 3; //*8
+			memcpy(buf.byte, bytes+j, 8);
+			symTransform_8bytes(buf.byte);
+			daBuf[i] = buf.ulvalue;
+		}
+		free(bytes);
+		return daBuf;
+	}
+}
+
+
 float *readFloatData(char *srcFilePath, size_t *nbEle, int *status)
 {
 	int state = SZ_SCES;
@@ -243,6 +461,222 @@ double *readDoubleData_systemEndian(char *srcFilePath, size_t *nbEle, int *statu
     fclose(pFile);
     *status = SZ_SCES;
     return daBuf;
+}
+
+int16_t *readInt16Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status)
+{
+	size_t inSize;
+	FILE *pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 1\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fseek(pFile, 0, SEEK_END);
+	inSize = ftell(pFile);
+	*nbEle = inSize/2; 
+	fclose(pFile);
+
+	if(inSize<=0)
+	{
+		printf("Error: input file is wrong!\n");
+		*status = SZ_FERR;
+	}
+
+	int16_t *daBuf = (int16_t *)malloc(inSize);
+
+	pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 2\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fread(daBuf, 2, *nbEle, pFile);
+	fclose(pFile);
+	*status = SZ_SCES;
+	return daBuf;	
+}
+
+uint16_t *readUInt16Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status)
+{
+	size_t inSize;
+	FILE *pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 1\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fseek(pFile, 0, SEEK_END);
+	inSize = ftell(pFile);
+	*nbEle = inSize/2; 
+	fclose(pFile);
+
+	if(inSize<=0)
+	{
+		printf("Error: input file is wrong!\n");
+		*status = SZ_FERR;
+	}
+
+	uint16_t *daBuf = (uint16_t *)malloc(inSize);
+
+	pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 2\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fread(daBuf, 2, *nbEle, pFile);
+	fclose(pFile);
+	*status = SZ_SCES;
+	return daBuf;	
+}
+
+int32_t *readInt32Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status)
+{
+	size_t inSize;
+	FILE *pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 1\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fseek(pFile, 0, SEEK_END);
+	inSize = ftell(pFile);
+	*nbEle = inSize/4; 
+	fclose(pFile);
+
+	if(inSize<=0)
+	{
+		printf("Error: input file is wrong!\n");
+		*status = SZ_FERR;
+	}
+
+	int32_t *daBuf = (int32_t *)malloc(inSize);
+
+	pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 2\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fread(daBuf, 4, *nbEle, pFile);
+	fclose(pFile);
+	*status = SZ_SCES;
+	return daBuf;	
+}
+
+uint32_t *readUInt32Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status)
+{
+	size_t inSize;
+	FILE *pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 1\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fseek(pFile, 0, SEEK_END);
+	inSize = ftell(pFile);
+	*nbEle = inSize/4; 
+	fclose(pFile);
+
+	if(inSize<=0)
+	{
+		printf("Error: input file is wrong!\n");
+		*status = SZ_FERR;
+	}
+
+	uint32_t *daBuf = (uint32_t *)malloc(inSize);
+
+	pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 2\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fread(daBuf, 4, *nbEle, pFile);
+	fclose(pFile);
+	*status = SZ_SCES;
+	return daBuf;	
+}
+
+int64_t *readInt64Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status)
+{
+	size_t inSize;
+	FILE *pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 1\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fseek(pFile, 0, SEEK_END);
+	inSize = ftell(pFile);
+	*nbEle = inSize/8; 
+	fclose(pFile);
+
+	if(inSize<=0)
+	{
+		printf("Error: input file is wrong!\n");
+		*status = SZ_FERR;
+	}
+
+	int64_t *daBuf = (int64_t *)malloc(inSize);
+
+	pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 2\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fread(daBuf, 8, *nbEle, pFile);
+	fclose(pFile);
+	*status = SZ_SCES;
+	return daBuf;
+}
+
+uint64_t *readUInt64Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status)
+{
+	size_t inSize;
+	FILE *pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 1\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fseek(pFile, 0, SEEK_END);
+	inSize = ftell(pFile);
+	*nbEle = inSize/8; 
+	fclose(pFile);
+
+	if(inSize<=0)
+	{
+		printf("Error: input file is wrong!\n");
+		*status = SZ_FERR;
+	}
+
+	uint64_t *daBuf = (uint64_t *)malloc(inSize);
+
+	pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 2\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fread(daBuf, 8, *nbEle, pFile);
+	fclose(pFile);
+	*status = SZ_SCES;
+	return daBuf;
 }
 
 float *readFloatData_systemEndian(char *srcFilePath, size_t *nbEle, int *status)
@@ -411,12 +845,67 @@ void writeDoubleData_inBytes(double *data, size_t nbEle, char* tgtFilePath, int 
 	*status = state;
 }
 
-void writeShortData(unsigned short *states, size_t stateLength, char *tgtFilePath, int *status)
+void writeShortData_inBytes(short *states, size_t stateLength, char *tgtFilePath, int *status)
 {
 	int state = SZ_SCES;
 	size_t byteLength = stateLength*2;
 	unsigned char* bytes = (unsigned char*)malloc(byteLength*sizeof(char));
 	convertShortArrayToBytes(states, stateLength, bytes);
+	writeByteData(bytes, byteLength, tgtFilePath, &state);
+	free(bytes);
+	*status = state;
+}
+
+void writeUShortData_inBytes(unsigned short *states, size_t stateLength, char *tgtFilePath, int *status)
+{
+	int state = SZ_SCES;
+	size_t byteLength = stateLength*2;
+	unsigned char* bytes = (unsigned char*)malloc(byteLength*sizeof(char));
+	convertUShortArrayToBytes(states, stateLength, bytes);
+	writeByteData(bytes, byteLength, tgtFilePath, &state);
+	free(bytes);
+	*status = state;
+}
+
+void writeIntData_inBytes(int *states, size_t stateLength, char *tgtFilePath, int *status)
+{
+	int state = SZ_SCES;
+	size_t byteLength = stateLength*4;
+	unsigned char* bytes = (unsigned char*)malloc(byteLength*sizeof(char));
+	convertIntArrayToBytes(states, stateLength, bytes);
+	writeByteData(bytes, byteLength, tgtFilePath, &state);
+	free(bytes);
+	*status = state;
+}
+
+void writeUIntData_inBytes(unsigned int *states, size_t stateLength, char *tgtFilePath, int *status)
+{
+	int state = SZ_SCES;
+	size_t byteLength = stateLength*4;
+	unsigned char* bytes = (unsigned char*)malloc(byteLength*sizeof(char));
+	convertUIntArrayToBytes(states, stateLength, bytes);
+	writeByteData(bytes, byteLength, tgtFilePath, &state);
+	free(bytes);
+	*status = state;
+}
+
+void writeLongData_inBytes(long *states, size_t stateLength, char *tgtFilePath, int *status)
+{
+	int state = SZ_SCES;
+	size_t byteLength = stateLength*8;
+	unsigned char* bytes = (unsigned char*)malloc(byteLength*sizeof(char));
+	convertLongArrayToBytes(states, stateLength, bytes);
+	writeByteData(bytes, byteLength, tgtFilePath, &state);
+	free(bytes);
+	*status = state;
+}
+
+void writeULongData_inBytes(unsigned long *states, size_t stateLength, char *tgtFilePath, int *status)
+{
+	int state = SZ_SCES;
+	size_t byteLength = stateLength*8;
+	unsigned char* bytes = (unsigned char*)malloc(byteLength*sizeof(char));
+	convertULongArrayToBytes(states, stateLength, bytes);
 	writeByteData(bytes, byteLength, tgtFilePath, &state);
 	free(bytes);
 	*status = state;
@@ -428,7 +917,7 @@ unsigned short* readShortData(char *srcFilePath, size_t *dataLength, int *status
 	int state = SZ_SCES;
 	unsigned char * bytes = readByteData(srcFilePath, &byteLength, &state);
 	*dataLength = byteLength/2;
-	unsigned short* states = convertByteDataToShortArray(bytes, byteLength);
+	unsigned short* states = convertByteDataToUShortArray(bytes, byteLength);
 	free(bytes);
 	*status = state;
 	return states;

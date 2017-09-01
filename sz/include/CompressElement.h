@@ -45,6 +45,8 @@ typedef struct LossyCompressionElement
 
 void listAdd_double(double last3CmprsData[3], double value);
 void listAdd_float(float last3CmprsData[3], float value);
+void listAdd_int(long last3CmprsData[3], long value);
+
 int validPrediction_double(double minErr, double precision);
 int validPrediction_float(float minErr, float precision);
 void new_LossyCompressionElement(LossyCompressionElement *lce, int leadingNum, unsigned char* intMidBytes, 

@@ -18,8 +18,25 @@
 #include "DynamicByteArray.h"
 #include "DynamicIntArray.h"
 #include "TightDataPointStorageD.h"
+#include "sz_double.h"
+#include "sz_double_pwr.h"
+#include "szd_double.h"
+#include "szd_double_pwr.h"
 #include "zlib.h"
 #include "rw.h"
+
+void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue)
+{
+	short reqExpo = getPrecisionReqLength_double(realPrecision);
+	*reqLength = 12+radExpo - reqExpo; //radExpo-reqExpo == reqMantiLength
+	if(*reqLength<12)
+		*reqLength = 12;
+	if(*reqLength>64)
+	{
+		*reqLength = 64;
+		*medianValue = 0;
+	}
+}
 
 unsigned int optimize_intervals_double_1D(double *oriData, size_t dataLength, double realPrecision)
 {	
@@ -1531,7 +1548,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		}
 		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
 		{
-			*outSize = (int)zlib_compress5(tmpByteData, tmpOutSize, newByteData, gzipMode);
+			*outSize = zlib_compress(tmpByteData, tmpOutSize, newByteData, gzipMode);
 			free(tmpByteData);
 		}
 		else
@@ -1542,102 +1559,6 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	}
 	SZ_ReleaseHuffman();
 	return status;
-}
-
-int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, unsigned char* cmpBytes, size_t cmpSize)
-{
-	int status = SZ_SCES;
-	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
-	
-	//unsigned char* tmpBytes;
-	size_t targetUncompressSize = dataLength <<3; //i.e., *8
-	//tmpSize must be "much" smaller than dataLength
-	size_t i, tmpSize = 12+SZ_SIZE_TYPE;
-	unsigned char* szTmpBytes;
-	if(cmpSize!=12+SZ_SIZE_TYPE)
-	{
-		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
-		if(isZlib)
-			szMode = SZ_BEST_COMPRESSION;
-		else
-			szMode = SZ_BEST_SPEED;		
-		if(szMode==SZ_BEST_SPEED)
-		{
-			tmpSize = cmpSize;
-			szTmpBytes = cmpBytes;	
-		}	
-		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
-		{
-			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
-				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 			
-			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+SZ_SIZE_TYPE);			
-			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
-			//memcpy(szTmpBytes, tmpBytes, tmpSize);
-			//free(tmpBytes); //release useless memory		
-		}
-		else
-		{
-			printf("Wrong value of szMode in the double compressed bytes.\n");
-			status = SZ_MERR;
-			return status;
-		}	
-	}
-	else
-		szTmpBytes = cmpBytes;
-	//TODO: convert szTmpBytes to double array.
-	TightDataPointStorageD* tdps;
-	int errBoundMode = new_TightDataPointStorageD_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
-
-	int dim = computeDimension(r5,r4,r3,r2,r1);
-	int doubleSize = sizeof(double);
-	if(tdps->isLossless)
-	{
-		*newData = (double*)malloc(doubleSize*dataLength);
-		if(sysEndianType==BIG_ENDIAN_SYSTEM)
-		{
-			memcpy(*newData, szTmpBytes+4+SZ_SIZE_TYPE, dataLength*doubleSize);
-		}
-		else
-		{
-			unsigned char* p = szTmpBytes+4+SZ_SIZE_TYPE;
-			for(i=0;i<dataLength;i++,p+=doubleSize)
-				(*newData)[i] = bytesToDouble(p);
-		}		
-	}
-	else if (dim == 1)
-		getSnapshotData_double_1D(newData,r1,tdps, errBoundMode);
-	else
-	if (dim == 2)
-		getSnapshotData_double_2D(newData,r2,r1,tdps, errBoundMode);
-	else
-	if (dim == 3)
-		getSnapshotData_double_3D(newData,r3,r2,r1,tdps, errBoundMode);
-	else
-	if (dim == 4)
-		getSnapshotData_double_4D(newData,r4,r3,r2,r1,tdps, errBoundMode);
-	else
-	{
-		printf("Error: currently support only at most 4 dimensions!\n");
-		status = SZ_DERR;
-	}
-	free_TightDataPointStorageD(tdps);
-	if(szMode!=SZ_BEST_SPEED && cmpSize!=12+SZ_SIZE_TYPE)
-		free(szTmpBytes);	
-	SZ_ReleaseHuffman();	
-	return status;
-}
-
-void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue)
-{
-	short reqExpo = getPrecisionReqLength_double(realPrecision);
-	*reqLength = 12+radExpo - reqExpo; //radExpo-reqExpo == reqMantiLength
-	if(*reqLength<12)
-		*reqLength = 12;
-	if(*reqLength>64)
-	{
-		*reqLength = 64;
-		*medianValue = 0;
-	}
 }
 
 //TODO
@@ -1732,7 +1653,7 @@ size_t r1, size_t s1, size_t e1)
 		unsigned char *tmpCompBytes;
 		size_t tmpOutSize;
 		convertTDPStoFlatBytes_double(tdps, &tmpCompBytes, &tmpOutSize);
-		*outSize = (int)zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
+		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
 		free(tmpCompBytes);
 	}
 	else
@@ -1760,7 +1681,7 @@ size_t r2, size_t r1, size_t s2, size_t s1, size_t e2, size_t e1)
 		unsigned char *tmpCompBytes;
 		size_t tmpOutSize;
 		convertTDPStoFlatBytes_double(tdps, &tmpCompBytes, &tmpOutSize);
-		*outSize = (int)zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
+		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
 		free(tmpCompBytes);
 	}
 	else
@@ -1788,7 +1709,7 @@ size_t r3, size_t r2, size_t r1, size_t s3, size_t s2, size_t s1, size_t e3, siz
 		unsigned char *tmpCompBytes;
 		size_t tmpOutSize;
 		convertTDPStoFlatBytes_double(tdps, &tmpCompBytes, &tmpOutSize);
-		*outSize = (int)zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
+		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
 		free(tmpCompBytes);
 	}
 	else
@@ -1816,7 +1737,7 @@ size_t r4, size_t r3, size_t r2, size_t r1, size_t s4, size_t s3, size_t s2, siz
 		unsigned char *tmpCompBytes;
 		size_t tmpOutSize;
 		convertTDPStoFlatBytes_double(tdps, &tmpCompBytes, &tmpOutSize);
-		*outSize = (int)zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
+		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
 		free(tmpCompBytes);
 	}
 	else

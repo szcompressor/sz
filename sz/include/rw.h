@@ -11,6 +11,7 @@
 #define _IO_H
 
 #include <stdio.h>
+#include <stdint.h>
 
 #ifdef _WIN32
 #define PATH_SEPARATOR ';'
@@ -35,18 +36,38 @@ void free3DArray_double(double*** data, size_t p, size_t m);
 size_t checkFileSize(char *srcFilePath, int *status);
 unsigned char *readByteData(char *srcFilePath, size_t *byteLength, int *status);
 double *readDoubleData_systemEndian(char *srcFilePath, size_t *nbEle, int *status);
+int16_t *readInt16Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status);
+uint16_t *readUInt16Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status);
+int32_t *readInt32Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status);
+uint32_t *readUInt32Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status);
+int64_t *readInt64Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status);
+uint64_t *readUInt64Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status);
 float *readFloatData_systemEndian(char *srcFilePath, size_t *nbEle, int *status);
 double *readDoubleData(char *srcFilePath, size_t *nbEle, int *status);
+
+int16_t *readInt16Data(char *srcFilePath, size_t *nbEle, int *status);
+uint16_t *readUInt16Data(char *srcFilePath, size_t *nbEle, int *status);
+int32_t *readInt32Data(char *srcFilePath, size_t *nbEle, int *status);
+uint32_t *readUInt32Data(char *srcFilePath, size_t *nbEle, int *status);
+int64_t *readInt64Data(char *srcFilePath, size_t *nbEle, int *status);
+uint64_t *readUInt64Data(char *srcFilePath, size_t *nbEle, int *status);
 float *readFloatData(char *srcFilePath, size_t *nbEle, int *status);
+
 void writeByteData(unsigned char *bytes, size_t outSize, char *tgtFilePath, int *status);
 void writeDoubleData(double *data, size_t nbEle, char *tgtFilePath, int *status);
 void writeFloatData(float *data, size_t nbEle, char *tgtFilePath, int *status);
 void writeData(void *data, int dataType, size_t nbEle, char *tgtFilePath, int *status);
+
 void writeFloatData_inBytes(float *data, size_t nbEle, char* tgtFilePath, int *status);
 void writeDoubleData_inBytes(double *data, size_t nbEle, char* tgtFilePath, int *status);
-void writeShortData(unsigned short *states, size_t stateLength, char *tgtFilePath, int *status);
-unsigned short* readShortData(char *srcFilePath, size_t *dataLength, int *status);
+void writeShortData_inBytes(short *states, size_t stateLength, char *tgtFilePath, int *status);
+void writeUShortData_inBytes(unsigned short *states, size_t stateLength, char *tgtFilePath, int *status);
+void writeIntData_inBytes(int *states, size_t stateLength, char *tgtFilePath, int *status);
+void writeUIntData_inBytes(unsigned int *states, size_t stateLength, char *tgtFilePath, int *status);
+void writeLongData_inBytes(long *states, size_t stateLength, char *tgtFilePath, int *status);
+void writeULongData_inBytes(unsigned long *states, size_t stateLength, char *tgtFilePath, int *status);
 
+unsigned short* readShortData(char *srcFilePath, size_t *dataLength, int *status);
 
 void checkfilesizec_(char *srcFilePath, size_t *len, int *filesize);
 void readbytefile_(char *srcFilePath, size_t *len, unsigned char *bytes, int *byteLength);

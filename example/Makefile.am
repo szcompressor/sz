@@ -2,10 +2,14 @@ AUTOMAKE_OPTIONS=foreign
 AM_CFLAGS = -I../sz/include -I../zlib
 AM_FCFLAGS = -I../sz/include -I../sz -I../zlib
 if FORTRAN
-bin_PROGRAMS=testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz testdouble_batch_f testdouble_compress_f testdouble_decompress_f testfloat_CompDecomp_subblock testdouble_CompDecomp_subblock
+bin_PROGRAMS=testint_compress testint_decopmress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz testdouble_batch_f testdouble_compress_f testdouble_decompress_f testfloat_CompDecomp_subblock testdouble_CompDecomp_subblock
 else
-bin_PROGRAMS=testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz testfloat_CompDecomp_subblock testdouble_CompDecomp_subblock
+bin_PROGRAMS=testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz testfloat_CompDecomp_subblock testdouble_CompDecomp_subblock
 endif
+testint_compress_SOURCES=testint_compress.c
+testint_compress_LDADD=../sz/.libs/libsz.a ../zlib/.libs/libzlib.a -lm
+testint_decompress_SOURCES=testint_decompress.c
+testint_decompress_LDADD=../sz/.libs/libsz.a ../zlib/.libs/libzlib.a -lm
 testfloat_compress_SOURCES=testfloat_compress.c
 testfloat_compress_LDADD=../sz/.libs/libsz.a ../zlib/.libs/libzlib.a -lm
 testfloat_decompress_SOURCES=testfloat_decompress.c

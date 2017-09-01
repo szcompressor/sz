@@ -8,8 +8,86 @@
  */
  
 #include <stdlib.h>
-#include "sz.h" 
+#include "sz.h" 	
 	
+short bytesToInt16_bigEndian(unsigned char* bytes)
+{
+	int temp = 0;
+	short res = 0;
+	
+	temp = bytes[0] & 0xff;
+	res |= temp;	
+
+	res <<= 8;
+	temp = bytes[1] & 0xff;
+	res |= temp;
+	
+	return res;
+}	
+	
+int bytesToInt32_bigEndian(unsigned char* bytes)
+{
+	int temp = 0;
+	int res = 0;
+	
+	res <<= 8;
+	temp = bytes[0] & 0xff;
+	res |= temp;	
+
+	res <<= 8;
+	temp = bytes[1] & 0xff;
+	res |= temp;
+
+	res <<= 8;
+	temp = bytes[2] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = bytes[3] & 0xff;
+	res |= temp;
+	
+	return res;
+}
+
+long bytesToInt64_bigEndian(unsigned char* b) {
+	long temp = 0;
+	long res = 0;
+
+	res <<= 8;
+	temp = b[0] & 0xff;
+	res |= temp;
+
+	res <<= 8;
+	temp = b[1] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[2] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[3] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[4] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[5] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[6] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[7] & 0xff;
+	res |= temp;						
+	
+	return res;
+}
+
 int bytesToInt_bigEndian(unsigned char* bytes)
 {
 	int temp = 0;
@@ -48,6 +126,32 @@ void intToBytes_bigEndian(unsigned char *b, unsigned int num)
 	//note: num >> xxx already considered endian_type...
 //if(dataEndianType==LITTLE_ENDIAN_DATA)
 //		symTransform_4bytes(*b); //change to BIG_ENDIAN_DATA
+}
+
+void int64ToBytes_bigEndian(unsigned char *b, uint64_t num)
+{
+	b[0] = (unsigned char)(num>>56);
+	b[1] = (unsigned char)(num>>48);
+	b[2] = (unsigned char)(num>>40);
+	b[3] = (unsigned char)(num>>32);
+	b[4] = (unsigned char)(num>>24);
+	b[5] = (unsigned char)(num>>16);
+	b[6] = (unsigned char)(num>>8);
+	b[7] = (unsigned char)(num);
+}
+
+void int32ToBytes_bigEndian(unsigned char *b, uint32_t num)
+{
+	b[0] = (unsigned char)(num >> 24);	
+	b[1] = (unsigned char)(num >> 16);	
+	b[2] = (unsigned char)(num >> 8);	
+	b[3] = (unsigned char)(num);		
+}
+
+void int16ToBytes_bigEndian(unsigned char *b, uint16_t num)
+{
+	b[0] = (unsigned char)(num >> 8);	
+	b[1] = (unsigned char)(num);
 }
 
 /**
@@ -219,7 +323,7 @@ unsigned char getLeadingNumbers_Long(long v1, long v2)
  * */
 short bytesToShort(unsigned char* bytes)
 {
-	lshort buf;
+	lint16 buf;
 	memcpy(buf.byte, bytes, 2);
 	
 	return buf.svalue;
@@ -383,31 +487,246 @@ int getRightMovingCode(int kMod8, int resiBitLength)
 	}
 }
 
-unsigned short* convertByteDataToShortArray(unsigned char* bytes, size_t byteLength)
+short* convertByteDataToShortArray(unsigned char* bytes, size_t byteLength)
 {
-	lshort ls;
+	lint16 ls;
 	size_t i, stateLength = byteLength/2;
-	unsigned short* states = (unsigned short*)malloc(stateLength*sizeof(short));
-	for(i=0;i<stateLength;i++)
+	short* states = (short*)malloc(stateLength*sizeof(short));
+	if(sysEndianType==dataEndianType)
+	{	
+		for(i=0;i<stateLength;i++)
+		{
+			ls.byte[0] = bytes[i*2];
+			ls.byte[1] = bytes[i*2+1];
+			states[i] = ls.svalue;
+		}
+	}
+	else
 	{
-		ls.byte[0] = bytes[i*2];
-		ls.byte[1] = bytes[i*2+1];
-		states[i] = ls.svalue;
+		for(i=0;i<stateLength;i++)
+		{
+			ls.byte[0] = bytes[i*2+1];
+			ls.byte[1] = bytes[i*2];
+			states[i] = ls.svalue;
+		}		
 	}
 	return states;
 } 
 
-void convertShortArrayToBytes(unsigned short* states, size_t stateLength, unsigned char* bytes)
+unsigned short* convertByteDataToUShortArray(unsigned char* bytes, size_t byteLength)
 {
-	lshort ls;
-	size_t i, byteLength = byteLength*2;
-	for(i=0;i<stateLength;i++)
+	lint16 ls;
+	size_t i, stateLength = byteLength/2;
+	unsigned short* states = (unsigned short*)malloc(stateLength*sizeof(unsigned short));
+	if(sysEndianType==dataEndianType)
+	{	
+		for(i=0;i<stateLength;i++)
+		{
+			ls.byte[0] = bytes[i*2];
+			ls.byte[1] = bytes[i*2+1];
+			states[i] = ls.usvalue;
+		}
+	}
+	else
 	{
-		ls.svalue = states[i];
-		bytes[i*2] = ls.byte[0];
-		bytes[i*2+1] = ls.byte[1];
+		for(i=0;i<stateLength;i++)
+		{
+			ls.byte[0] = bytes[i*2+1];
+			ls.byte[1] = bytes[i*2];
+			states[i] = ls.usvalue;
+		}		
+	}
+	return states;
+} 
+
+void convertShortArrayToBytes(short* states, size_t stateLength, unsigned char* bytes)
+{
+	lint16 ls;
+	size_t i, byteLength = stateLength*2;
+	if(sysEndianType==dataEndianType)
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			ls.svalue = states[i];
+			bytes[i*2] = ls.byte[0];
+			bytes[i*2+1] = ls.byte[1];
+		}		
+	}
+	else
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			ls.svalue = states[i];
+			bytes[i*2] = ls.byte[1];
+			bytes[i*2+1] = ls.byte[0];
+		}			
 	}
 }
+
+void convertUShortArrayToBytes(unsigned short* states, size_t stateLength, unsigned char* bytes)
+{
+	lint16 ls;
+	size_t i, byteLength = stateLength*2;
+	if(sysEndianType==dataEndianType)
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			ls.usvalue = states[i];
+			bytes[i*2] = ls.byte[0];
+			bytes[i*2+1] = ls.byte[1];
+		}		
+	}
+	else
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			ls.usvalue = states[i];
+			bytes[i*2] = ls.byte[1];
+			bytes[i*2+1] = ls.byte[0];
+		}			
+	}
+}
+
+void convertIntArrayToBytes(int* states, size_t stateLength, unsigned char* bytes)
+{
+	lint32 ls;
+	size_t index = 0;
+	size_t i, byteLength = stateLength << 2;
+	if(sysEndianType==dataEndianType)
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			index = i << 2; //==i*4
+			ls.ivalue = states[i];
+			bytes[index] = ls.byte[0];
+			bytes[index+1] = ls.byte[1];
+			bytes[index+2] = ls.byte[2];
+			bytes[index+3] = ls.byte[3];
+		}		
+	}
+	else
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			index = i << 2; //==i*4
+			ls.ivalue = states[i];
+			bytes[index] = ls.byte[3];
+			bytes[index+1] = ls.byte[2];
+			bytes[index+2] = ls.byte[1];
+			bytes[index+3] = ls.byte[0];
+		}			
+	}
+}
+
+void convertUIntArrayToBytes(unsigned int* states, size_t stateLength, unsigned char* bytes)
+{
+	lint32 ls;
+	size_t index = 0;
+	size_t i, byteLength = stateLength << 2;
+	if(sysEndianType==dataEndianType)
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			index = i << 2; //==i*4
+			ls.uivalue = states[i];
+			bytes[index] = ls.byte[0];
+			bytes[index+1] = ls.byte[1];
+			bytes[index+2] = ls.byte[2];
+			bytes[index+3] = ls.byte[3];
+		}		
+	}
+	else
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			index = i << 2; //==i*4
+			ls.uivalue = states[i];
+			bytes[index] = ls.byte[3];
+			bytes[index+1] = ls.byte[2];
+			bytes[index+2] = ls.byte[1];
+			bytes[index+3] = ls.byte[0];
+		}			
+	}
+}
+
+void convertLongArrayToBytes(long* states, size_t stateLength, unsigned char* bytes)
+{
+	lint64 ls;
+	size_t index = 0;
+	size_t i, byteLength = stateLength << 3;
+	if(sysEndianType==dataEndianType)
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			index = i << 3; //==i*8
+			ls.lvalue = states[i];
+			bytes[index] = ls.byte[0];
+			bytes[index+1] = ls.byte[1];
+			bytes[index+2] = ls.byte[2];
+			bytes[index+3] = ls.byte[3];
+			bytes[index+4] = ls.byte[4];
+			bytes[index+5] = ls.byte[5];
+			bytes[index+6] = ls.byte[6];
+			bytes[index+7] = ls.byte[7];	
+		}		
+	}
+	else
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			index = i << 3; //==i*8
+			ls.lvalue = states[i];
+			bytes[index] = ls.byte[7];
+			bytes[index+1] = ls.byte[6];
+			bytes[index+2] = ls.byte[5];
+			bytes[index+3] = ls.byte[4];
+			bytes[index+4] = ls.byte[3];
+			bytes[index+5] = ls.byte[2];
+			bytes[index+6] = ls.byte[1];
+			bytes[index+7] = ls.byte[0];	
+		}			
+	}
+}
+
+void convertULongArrayToBytes(unsigned long* states, size_t stateLength, unsigned char* bytes)
+{
+	lint64 ls;
+	size_t index = 0;
+	size_t i, byteLength = stateLength << 3;
+	if(sysEndianType==dataEndianType)
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			index = i << 3; //==i*8
+			ls.ulvalue = states[i];
+			bytes[index] = ls.byte[0];
+			bytes[index+1] = ls.byte[1];
+			bytes[index+2] = ls.byte[2];
+			bytes[index+3] = ls.byte[3];
+			bytes[index+4] = ls.byte[4];
+			bytes[index+5] = ls.byte[5];
+			bytes[index+6] = ls.byte[6];
+			bytes[index+7] = ls.byte[7];			
+		}		
+	}
+	else
+	{
+		for(i=0;i<stateLength;i++)
+		{
+			index = i << 3; //==i*8
+			ls.ulvalue = states[i];
+			bytes[index] = ls.byte[7];
+			bytes[index+1] = ls.byte[6];
+			bytes[index+2] = ls.byte[5];
+			bytes[index+3] = ls.byte[4];
+			bytes[index+4] = ls.byte[3];
+			bytes[index+5] = ls.byte[2];
+			bytes[index+6] = ls.byte[1];
+			bytes[index+7] = ls.byte[0];	
+		}			
+	}
+}
+
 
 size_t bytesToSize(unsigned char* bytes)
 {

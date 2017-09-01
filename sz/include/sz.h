@@ -11,6 +11,7 @@
 #define _SZ_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/time.h>      /* For gettimeofday(), in microseconds */
 #include <time.h>          /* For time(), in seconds */
 #include "iniparser.h"
@@ -21,13 +22,26 @@
 #include "Huffman.h"
 #include "TightDataPointStorageD.h"
 #include "TightDataPointStorageF.h"
+#include "TightDataPointStorageI.h"
 #include "conf.h"
 #include "dataCompression.h"
 #include "ByteToolkit.h"
 #include "TypeManager.h"
 #include "szf.h"
+#include "sz_int8.h"
+#include "sz_int16.h"
+#include "sz_int32.h"
+#include "sz_int64.h"
 #include "sz_float.h"
 #include "sz_double.h"
+#include "szd_int8.h"
+#include "szd_int16.h"
+#include "szd_int32.h"
+#include "szd_int64.h"
+#include "szd_float.h"
+#include "szd_double.h"
+#include "sz_float_pwr.h"
+#include "sz_double_pwr.h"
 #include "callZlib.h"
 #include "rw.h"
 
@@ -41,10 +55,19 @@
 extern "C" {
 #endif
 
+//typedef char int8_t;
+//typedef unsigned char uint8_t;
+//typedef short int16_t;
+//typedef unsigned short uint16_t;
+//typedef int int32_t;
+//typedef unsigned int uint32_t;
+//typedef long int64_t;
+//typedef unsigned long uint64_t;
+
 #define SZ_VERNUM 0x0140
 #define SZ_VER_MAJOR 1
 #define SZ_VER_MINOR 4
-#define SZ_VER_BUILD 10
+#define SZ_VER_BUILD 11
 #define SZ_VER_REVISION 0
 
 #define HZ 102
@@ -64,6 +87,14 @@ extern "C" {
 
 #define SZ_FLOAT 0
 #define SZ_DOUBLE 1
+#define SZ_UINT8 2
+#define SZ_INT8 3
+#define SZ_UINT16 4
+#define SZ_INT16 5
+#define SZ_UINT32 6
+#define SZ_INT32 7
+#define SZ_UINT64 8
+#define SZ_INT64 9
 
 #define LITTLE_ENDIAN_DATA 0
 #define BIG_ENDIAN_DATA 1 //big_endian (ppc, max, etc.) ; little_endian (x86, x64, etc.)
@@ -153,11 +184,26 @@ extern int SZ_SIZE_TYPE; //4 or 8: sizeof(size_t)
 //typedef unsigned long unsigned long;
 //typedef unsigned int uint;
 
-typedef union lshort
+typedef union lint16
 {
-	unsigned short svalue;
+	unsigned short usvalue;
+	short svalue;
 	unsigned char byte[2];
-} lshort;
+} lint16;
+
+typedef union lint32
+{
+	int ivalue;
+	unsigned int uivalue;
+	unsigned char byte[4];
+} lint32;
+
+typedef union lint64
+{
+	long lvalue;
+	unsigned long ulvalue;
+	unsigned char byte[8];
+} lint64;
 
 typedef union ldouble
 {

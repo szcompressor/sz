@@ -24,15 +24,22 @@
 /*zlib_compress() is only valid for median-size data compression. */
 unsigned long zlib_compress(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level)
 {
-	unsigned long outSize;
-	unsigned long* outSize_ = (unsigned long*)malloc(sizeof(unsigned long));
-	*outSize_ = 0;
-	*outSize_ = dataLength;
-	*compressBytes = (unsigned char*)malloc(sizeof(unsigned char)*dataLength);
-	int err = compress2(*compressBytes, outSize_, data, dataLength, level);
-	printf("err=%d\n", err);
-	outSize = *outSize_;
-	free(outSize_);
+	unsigned long outSize = dataLength;
+	
+	z_stream stream = {0};
+
+    stream.next_in = data;
+    stream.avail_in = dataLength;
+#ifdef MAXSEG_64K
+    /* Check for source > 64K on 16-bit machine: */
+    if ((uLong)stream.avail_in != dataLength) return Z_BUF_ERROR;
+#endif
+
+    uLong estCmpLen = deflateBound(&stream, dataLength);	
+	
+	*compressBytes = (unsigned char*)malloc(sizeof(unsigned char)*estCmpLen);
+	int err = compress2(*compressBytes, &outSize, data, dataLength, level);
+	//printf("err=%d\n", err);
 	return outSize;
 }
 
@@ -83,7 +90,6 @@ unsigned long zlib_compress2(unsigned char* data, unsigned long dataLength, unsi
     outSize = stream.total_out;
     return outSize;
 }
-
 
 unsigned long zlib_compress3(unsigned char* data, unsigned long dataLength, unsigned char* compressBytes, int level)
 {
