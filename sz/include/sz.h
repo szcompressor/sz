@@ -27,7 +27,6 @@
 #include "dataCompression.h"
 #include "ByteToolkit.h"
 #include "TypeManager.h"
-#include "szf.h"
 #include "sz_int8.h"
 #include "sz_int16.h"
 #include "sz_int32.h"

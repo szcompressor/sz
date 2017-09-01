@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sz.h"
-
+#include "szf.h"
 
 //special notice: all the function names in this file must be lower-cases!!
 void sz_init_c_(char *configFile,int *len,int *ierr)
