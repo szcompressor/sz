@@ -276,7 +276,7 @@ done:
 
 static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned int cd_values[], size_t nbytes, size_t* buf_size, void** buf)
 {
-	H5Z_SZ_Init_Default();
+	//H5Z_SZ_Init_Default();
 	
 	size_t r1 = 0, r2 = 0, r3 = 0, r4 = 0, r5 = 0;
 	int dimSize = 0, dataType = 0;
