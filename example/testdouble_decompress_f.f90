@@ -5,10 +5,11 @@ program p
         character(len=32) :: arg
         integer(kind=1), dimension(:), allocatable :: bytes
         real(kind=8), dimension(:,:,:), allocatable :: grid
-        integer(kind=4) :: gridsize1,gridsize2,gridsize3
+        integer(kind=C_SIZE_T) :: gridsize1,gridsize2,gridsize3
         real(kind=8) :: res=0
         integer :: i,j,k
-        integer(kind=4) :: ierr, outSize !the size of the compressed stream
+        integer(kind=4) :: ierr; 
+        integer(kind=C_SIZE_T) outSize !the size of the compressed stream
         gridsize1 = 10 
         gridsize2 = 10 
         gridsize3 = 10 
