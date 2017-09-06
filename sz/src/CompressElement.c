@@ -31,7 +31,7 @@ inline void listAdd_float(float last3CmprsData[3], float value)
 	last3CmprsData[0] = value;
 }
 
-inline void listAdd_int(long last3CmprsData[3], long value)
+inline void listAdd_int(int64_t last3CmprsData[3], int64_t value)
 {
 	last3CmprsData[2] = last3CmprsData[1];
 	last3CmprsData[1] = last3CmprsData[0];

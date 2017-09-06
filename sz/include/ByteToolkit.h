@@ -57,8 +57,8 @@ void convertShortArrayToBytes(short* states, size_t stateLength, unsigned char* 
 void convertUShortArrayToBytes(unsigned short* states, size_t stateLength, unsigned char* bytes);
 void convertIntArrayToBytes(int* states, size_t stateLength, unsigned char* bytes);
 void convertUIntArrayToBytes(unsigned int* states, size_t stateLength, unsigned char* bytes);
-void convertLongArrayToBytes(long* states, size_t stateLength, unsigned char* bytes);
-void convertULongArrayToBytes(unsigned long* states, size_t stateLength, unsigned char* bytes);
+void convertLongArrayToBytes(int64_t* states, size_t stateLength, unsigned char* bytes);
+void convertULongArrayToBytes(uint64_t* states, size_t stateLength, unsigned char* bytes);
 
 size_t bytesToSize(unsigned char* bytes);
 void sizeToBytes(unsigned char* outBytes, size_t size);

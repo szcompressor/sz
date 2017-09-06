@@ -649,7 +649,7 @@ void convertUIntArrayToBytes(unsigned int* states, size_t stateLength, unsigned 
 	}
 }
 
-void convertLongArrayToBytes(long* states, size_t stateLength, unsigned char* bytes)
+void convertLongArrayToBytes(int64_t* states, size_t stateLength, unsigned char* bytes)
 {
 	lint64 ls;
 	size_t index = 0;
@@ -688,7 +688,7 @@ void convertLongArrayToBytes(long* states, size_t stateLength, unsigned char* by
 	}
 }
 
-void convertULongArrayToBytes(unsigned long* states, size_t stateLength, unsigned char* bytes)
+void convertULongArrayToBytes(uint64_t* states, size_t stateLength, unsigned char* bytes)
 {
 	lint64 ls;
 	size_t index = 0;

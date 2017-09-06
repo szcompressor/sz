@@ -180,6 +180,15 @@ double *readDoubleData(char *srcFilePath, size_t *nbEle, int *status)
 	}
 }
 
+
+int8_t *readInt8Data(char *srcFilePath, size_t *nbEle, int *status)
+{
+	int state = SZ_SCES;
+	char *daBuf = readInt8Data_systemEndian(srcFilePath, nbEle, &state);
+	*status = state;
+	return daBuf;
+}
+
 int16_t *readInt16Data(char *srcFilePath, size_t *nbEle, int *status)
 {
 	int state = SZ_SCES;
@@ -462,6 +471,44 @@ double *readDoubleData_systemEndian(char *srcFilePath, size_t *nbEle, int *statu
     *status = SZ_SCES;
     return daBuf;
 }
+
+
+int8_t *readInt8Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status)
+{
+	size_t inSize;
+	FILE *pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 1\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fseek(pFile, 0, SEEK_END);
+	inSize = ftell(pFile);
+	*nbEle = inSize;
+	fclose(pFile);
+
+	if(inSize<=0)
+	{
+		printf("Error: input file is wrong!\n");
+		*status = SZ_FERR;
+	}
+
+	int8_t *daBuf = (int8_t *)malloc(inSize);
+
+	pFile = fopen(srcFilePath, "rb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 2\n");
+		*status = SZ_FERR;
+		return NULL;
+	}
+	fread(daBuf, 1, *nbEle, pFile);
+	fclose(pFile);
+	*status = SZ_SCES;
+	return daBuf;
+}
+
 
 int16_t *readInt16Data_systemEndian(char *srcFilePath, size_t *nbEle, int *status)
 {

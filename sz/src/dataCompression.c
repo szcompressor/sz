@@ -30,7 +30,7 @@ int computeByteSizePerIntValue(long valueRangeSize)
 		return 8;
 }
 
-long computeRangeSize_int(void* oriData, int dataType, size_t size, long* valueRangeSize)
+long computeRangeSize_int(void* oriData, int dataType, size_t size, int64_t* valueRangeSize)
 {
 	size_t i = 0;
 	long max, min;

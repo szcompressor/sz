@@ -30,7 +30,7 @@ extern "C" {
 
 //dataCompression.c
 int computeByteSizePerIntValue(long valueRangeSize);
-long computeRangeSize_int(void* oriData, int dataType, size_t size, long* valueRangeSize);
+long computeRangeSize_int(void* oriData, int dataType, size_t size, int64_t* valueRangeSize);
 double computeRangeSize_double(double* oriData, size_t size, double* valueRangeSize, double* medianValue);
 float computeRangeSize_float(float* oriData, size_t size, float* valueRangeSize, float* medianValue);
 float computeRangeSize_double_subblock(double* oriData, double* valueRangeSize, double* medianValue,
