@@ -36,7 +36,7 @@ unsigned int optimize_intervals_int64_1D(int64_t *oriData, size_t dataLength, do
 			pred_value = 2*oriData[i-1] - oriData[i-2];
 			//pred_value = oriData[i-1];
 			pred_err = labs(pred_value - oriData[i]);
-			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
+			radiusIndex = (uint64_t)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
 				radiusIndex = maxRangeRadius - 1;			
 			intervals[radiusIndex]++;
@@ -82,7 +82,7 @@ unsigned int optimize_intervals_int64_2D(int64_t *oriData, size_t r1, size_t r2,
 				index = i*r2+j;
 				pred_value = oriData[index-1] + oriData[index-r2] - oriData[index-r2-1];
 				pred_err = labs(pred_value - oriData[index]);
-				radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
+				radiusIndex = (uint64_t)((pred_err/realPrecision+1)/2);
 				if(radiusIndex>=maxRangeRadius)
 					radiusIndex = maxRangeRadius - 1;
 				intervals[radiusIndex]++;
@@ -190,7 +190,7 @@ unsigned int optimize_intervals_int64_4D(int64_t *oriData, size_t r1, size_t r2,
 						pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r34]
 								- oriData[index-1-r34] - oriData[index-r4-1] - oriData[index-r4-r34] + oriData[index-r4-r34-1];
 						pred_err = labs(pred_value - oriData[index]);
-						radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
+						radiusIndex = (uint64_t)((pred_err/realPrecision+1)/2);
 						if(radiusIndex>=maxRangeRadius)
 							radiusIndex = maxRangeRadius - 1;
 						intervals[radiusIndex]++;
@@ -221,7 +221,7 @@ unsigned int optimize_intervals_int64_4D(int64_t *oriData, size_t r1, size_t r2,
 	return powerOf2;
 }
 
-TightDataPointStorageI* SZ_compress_int64_1D_MDQ(int64_t *oriData, size_t dataLength, double realPrecision, long valueRangeSize, long minValue)
+TightDataPointStorageI* SZ_compress_int64_1D_MDQ(int64_t *oriData, size_t dataLength, double realPrecision, int64_t valueRangeSize, int64_t minValue)
 {
 	unsigned char bytes[8] = {0,0,0,0,0,0,0,0};
 	int byteSize = computeByteSizePerIntValue(valueRangeSize);
@@ -363,7 +363,7 @@ unsigned char** newByteData, size_t *outSize)
 }
 
 void SZ_compress_args_int64_NoCkRngeNoGzip_1D(unsigned char** newByteData, int64_t *oriData, 
-size_t dataLength, double realPrecision, size_t *outSize, long valueRangeSize, int64_t minValue)
+size_t dataLength, double realPrecision, size_t *outSize, int64_t valueRangeSize, int64_t minValue)
 {
 	SZ_Reset();	
 	
@@ -375,7 +375,7 @@ size_t dataLength, double realPrecision, size_t *outSize, long valueRangeSize, i
 	free_TightDataPointStorageI(tdps);
 }
 
-TightDataPointStorageI* SZ_compress_int64_2D_MDQ(int64_t *oriData, size_t r1, size_t r2, double realPrecision, long valueRangeSize, long minValue)
+TightDataPointStorageI* SZ_compress_int64_2D_MDQ(int64_t *oriData, size_t r1, size_t r2, double realPrecision, int64_t valueRangeSize, int64_t minValue)
 {
 	unsigned char bytes[8] = {0,0,0,0,0,0,0,0};
 	int byteSize = computeByteSizePerIntValue(valueRangeSize);
@@ -538,7 +538,7 @@ TightDataPointStorageI* SZ_compress_int64_2D_MDQ(int64_t *oriData, size_t r1, si
  * 		 @r2 is low dimension 
  * */
 void SZ_compress_args_int64_NoCkRngeNoGzip_2D(unsigned char** newByteData, int64_t *oriData, size_t r1, size_t r2, double realPrecision, size_t *outSize, 
-long valueRangeSize, int64_t minValue)
+int64_t valueRangeSize, int64_t minValue)
 {
 	SZ_Reset();	
 
@@ -553,7 +553,7 @@ long valueRangeSize, int64_t minValue)
 	free_TightDataPointStorageI(tdps);	
 }
 
-TightDataPointStorageI* SZ_compress_int64_3D_MDQ(int64_t *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, long valueRangeSize, long minValue)
+TightDataPointStorageI* SZ_compress_int64_3D_MDQ(int64_t *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, int64_t valueRangeSize, int64_t minValue)
 {
 	unsigned char bytes[8] = {0,0,0,0,0,0,0,0};
 	int byteSize = computeByteSizePerIntValue(valueRangeSize);
@@ -819,7 +819,7 @@ TightDataPointStorageI* SZ_compress_int64_3D_MDQ(int64_t *oriData, size_t r1, si
 
 
 void SZ_compress_args_int64_NoCkRngeNoGzip_3D(unsigned char** newByteData, int64_t *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t *outSize, 
-long valueRangeSize, long minValue)
+int64_t valueRangeSize, int64_t minValue)
 {
 	SZ_Reset();	
 	
@@ -835,7 +835,7 @@ long valueRangeSize, long minValue)
 }
 
 
-TightDataPointStorageI* SZ_compress_int64_4D_MDQ(int64_t *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision, long valueRangeSize, long minValue)
+TightDataPointStorageI* SZ_compress_int64_4D_MDQ(int64_t *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision, int64_t valueRangeSize, int64_t minValue)
 {
 	unsigned char bytes[8] = {0,0,0,0,0,0,0,0};
 	int byteSize = computeByteSizePerIntValue(valueRangeSize);
@@ -1128,7 +1128,7 @@ TightDataPointStorageI* SZ_compress_int64_4D_MDQ(int64_t *oriData, size_t r1, si
 }
 
 void SZ_compress_args_int64_NoCkRngeNoGzip_4D(unsigned char** newByteData, int64_t *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision, 
-size_t *outSize, long valueRangeSize, long minValue)
+size_t *outSize, int64_t valueRangeSize, int64_t minValue)
 {
 	SZ_Reset();
 
@@ -1170,7 +1170,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
-	long valueRangeSize = 0;
+	int64_t valueRangeSize = 0;
 	
 	int64_t minValue = computeRangeSize_int(oriData, SZ_INT64, dataLength, &valueRangeSize);
 	double realPrecision = getRealPrecision_int(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
@@ -1216,7 +1216,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 	}
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
-	long valueRangeSize = 0;
+	int64_t valueRangeSize = 0;
 
 	int64_t minValue = (int64_t)computeRangeSize_int(oriData, SZ_INT64, dataLength, &valueRangeSize);
 	double realPrecision = 0; 

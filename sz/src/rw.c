@@ -889,7 +889,7 @@ void writeUIntData_inBytes(unsigned int *states, size_t stateLength, char *tgtFi
 	*status = state;
 }
 
-void writeLongData_inBytes(long *states, size_t stateLength, char *tgtFilePath, int *status)
+void writeLongData_inBytes(int64_t *states, size_t stateLength, char *tgtFilePath, int *status)
 {
 	int state = SZ_SCES;
 	size_t byteLength = stateLength*8;
@@ -900,7 +900,7 @@ void writeLongData_inBytes(long *states, size_t stateLength, char *tgtFilePath, 
 	*status = state;
 }
 
-void writeULongData_inBytes(unsigned long *states, size_t stateLength, char *tgtFilePath, int *status)
+void writeULongData_inBytes(uint64_t *states, size_t stateLength, char *tgtFilePath, int *status)
 {
 	int state = SZ_SCES;
 	size_t byteLength = stateLength*8;

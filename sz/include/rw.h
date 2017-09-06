@@ -64,8 +64,8 @@ void writeShortData_inBytes(short *states, size_t stateLength, char *tgtFilePath
 void writeUShortData_inBytes(unsigned short *states, size_t stateLength, char *tgtFilePath, int *status);
 void writeIntData_inBytes(int *states, size_t stateLength, char *tgtFilePath, int *status);
 void writeUIntData_inBytes(unsigned int *states, size_t stateLength, char *tgtFilePath, int *status);
-void writeLongData_inBytes(long *states, size_t stateLength, char *tgtFilePath, int *status);
-void writeULongData_inBytes(unsigned long *states, size_t stateLength, char *tgtFilePath, int *status);
+void writeLongData_inBytes(int64_t *states, size_t stateLength, char *tgtFilePath, int *status);
+void writeULongData_inBytes(uint64_t *states, size_t stateLength, char *tgtFilePath, int *status);
 
 unsigned short* readShortData(char *srcFilePath, size_t *dataLength, int *status);
 
