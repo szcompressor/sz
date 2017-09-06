@@ -35,7 +35,7 @@ unsigned int optimize_intervals_int32_1D(int32_t *oriData, size_t dataLength, do
 		{
 			pred_value = 2*oriData[i-1] - oriData[i-2];
 			//pred_value = oriData[i-1];
-			pred_err = fabs(pred_value - oriData[i]);
+			pred_err = labs(pred_value - oriData[i]);
 			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
 				radiusIndex = maxRangeRadius - 1;			
@@ -81,7 +81,7 @@ unsigned int optimize_intervals_int32_2D(int32_t *oriData, size_t r1, size_t r2,
 			{
 				index = i*r2+j;
 				pred_value = oriData[index-1] + oriData[index-r2] - oriData[index-r2-1];
-				pred_err = fabs(pred_value - oriData[index]);
+				pred_err = labs(pred_value - oriData[index]);
 				radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 				if(radiusIndex>=maxRangeRadius)
 					radiusIndex = maxRangeRadius - 1;
@@ -131,7 +131,7 @@ unsigned int optimize_intervals_int32_3D(int32_t *oriData, size_t r1, size_t r2,
 					index = i*r23+j*r3+k;
 					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23] 
 					- oriData[index-1-r23] - oriData[index-r3-1] - oriData[index-r3-r23] + oriData[index-r3-r23-1];
-					pred_err = fabs(pred_value - oriData[index]);
+					pred_err = labs(pred_value - oriData[index]);
 					radiusIndex = (pred_err/realPrecision+1)/2;
 					if(radiusIndex>=maxRangeRadius)
 					{
@@ -189,7 +189,7 @@ unsigned int optimize_intervals_int32_4D(int32_t *oriData, size_t r1, size_t r2,
 						index = i*r234+j*r34+k*r4+l;
 						pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r34]
 								- oriData[index-1-r34] - oriData[index-r4-1] - oriData[index-r4-r34] + oriData[index-r4-r34-1];
-						pred_err = fabs(pred_value - oriData[index]);
+						pred_err = labs(pred_value - oriData[index]);
 						radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 						if(radiusIndex>=maxRangeRadius)
 							radiusIndex = maxRangeRadius - 1;
@@ -268,7 +268,7 @@ TightDataPointStorageI* SZ_compress_int32_1D_MDQ(int32_t *oriData, size_t dataLe
 		curData = spaceFillingValue[i];
 		pred = 2*last3CmprsData[0] - last3CmprsData[1];
 		//pred = last3CmprsData[0];
-		predAbsErr = fabs(curData - pred);	
+		predAbsErr = labs(curData - pred);	
 		if(predAbsErr<=checkRadius)
 		{
 			state = (predAbsErr/realPrecision+1)/2;
@@ -417,7 +417,7 @@ TightDataPointStorageI* SZ_compress_int32_2D_MDQ(int32_t *oriData, size_t r1, si
 	pred1D = P1[0];
 	diff = spaceFillingValue[1] - pred1D;
 
-	itvNum =  fabs(diff)/realPrecision + 1;
+	itvNum =  labs(diff)/realPrecision + 1;
 
 	if (itvNum < intvCapacity)
 	{
@@ -439,7 +439,7 @@ TightDataPointStorageI* SZ_compress_int32_2D_MDQ(int32_t *oriData, size_t r1, si
 		pred1D = 2*P1[j-1] - P1[j-2];
 		diff = spaceFillingValue[j] - pred1D;
 
-		itvNum = fabs(diff)/realPrecision + 1;
+		itvNum = labs(diff)/realPrecision + 1;
 
 		if (itvNum < intvCapacity)
 		{
@@ -465,7 +465,7 @@ TightDataPointStorageI* SZ_compress_int32_2D_MDQ(int32_t *oriData, size_t r1, si
 		pred1D = P1[0];
 		diff = spaceFillingValue[index] - pred1D;
 
-		itvNum = fabs(diff)/realPrecision + 1;
+		itvNum = labs(diff)/realPrecision + 1;
 
 		if (itvNum < intvCapacity)
 		{
@@ -489,7 +489,7 @@ TightDataPointStorageI* SZ_compress_int32_2D_MDQ(int32_t *oriData, size_t r1, si
 
 			diff = spaceFillingValue[index] - pred2D;
 
-			itvNum = fabs(diff)/realPrecision + 1;
+			itvNum = labs(diff)/realPrecision + 1;
 
 			if (itvNum < intvCapacity)
 			{
@@ -593,7 +593,7 @@ TightDataPointStorageI* SZ_compress_int32_3D_MDQ(int32_t *oriData, size_t r1, si
 	pred1D = P1[0];
 	diff = spaceFillingValue[1] - pred1D;
 
-	itvNum = fabs(diff)/realPrecision + 1;
+	itvNum = labs(diff)/realPrecision + 1;
 
 	if (itvNum < intvCapacity)
 	{
@@ -615,7 +615,7 @@ TightDataPointStorageI* SZ_compress_int32_3D_MDQ(int32_t *oriData, size_t r1, si
 		pred1D = 2*P1[j-1] - P1[j-2];
 		diff = spaceFillingValue[j] - pred1D;
 
-		itvNum = fabs(diff)/realPrecision + 1;
+		itvNum = labs(diff)/realPrecision + 1;
 
 		if (itvNum < intvCapacity)
 		{
@@ -641,7 +641,7 @@ TightDataPointStorageI* SZ_compress_int32_3D_MDQ(int32_t *oriData, size_t r1, si
 		pred1D = P1[index-r3];
 		diff = spaceFillingValue[index] - pred1D;
 
-		itvNum = fabs(diff)/realPrecision + 1;
+		itvNum = labs(diff)/realPrecision + 1;
 
 		if (itvNum < intvCapacity)
 		{
@@ -665,7 +665,7 @@ TightDataPointStorageI* SZ_compress_int32_3D_MDQ(int32_t *oriData, size_t r1, si
 
 			diff = spaceFillingValue[index] - pred2D;
 
-			itvNum = fabs(diff)/realPrecision + 1;
+			itvNum = labs(diff)/realPrecision + 1;
 
 			if (itvNum < intvCapacity)
 			{
@@ -693,7 +693,7 @@ TightDataPointStorageI* SZ_compress_int32_3D_MDQ(int32_t *oriData, size_t r1, si
 		pred1D = P1[0];
 		diff = spaceFillingValue[index] - pred1D;
 
-		itvNum = fabs(diff)/realPrecision + 1;
+		itvNum = labs(diff)/realPrecision + 1;
 
 		if (itvNum < intvCapacity)
 		{
@@ -718,7 +718,7 @@ TightDataPointStorageI* SZ_compress_int32_3D_MDQ(int32_t *oriData, size_t r1, si
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 			diff = spaceFillingValue[index] - pred2D;
 
-			itvNum = fabs(diff)/realPrecision + 1;
+			itvNum = labs(diff)/realPrecision + 1;
 
 			if (itvNum < intvCapacity)
 			{
@@ -747,7 +747,7 @@ TightDataPointStorageI* SZ_compress_int32_3D_MDQ(int32_t *oriData, size_t r1, si
 			pred2D = P0[index2D-r3] + P1[index2D] - P1[index2D-r3];
 			diff = spaceFillingValue[index] - pred2D;
 
-			itvNum = fabs(diff)/realPrecision + 1;
+			itvNum = labs(diff)/realPrecision + 1;
 
 			if (itvNum < intvCapacity)
 			{
@@ -774,7 +774,7 @@ TightDataPointStorageI* SZ_compress_int32_3D_MDQ(int32_t *oriData, size_t r1, si
 				pred3D = P0[index2D-1] + P0[index2D-r3]+ P1[index2D] - P0[index2D-r3-1] - P1[index2D-r3] - P1[index2D-1] + P1[index2D-r3-1];
 				diff = spaceFillingValue[index] - pred3D;
 
-				itvNum = fabs(diff)/realPrecision + 1;
+				itvNum = labs(diff)/realPrecision + 1;
 
 				if (itvNum < intvCapacity)
 				{
@@ -889,7 +889,7 @@ TightDataPointStorageI* SZ_compress_int32_4D_MDQ(int32_t *oriData, size_t r1, si
 		pred1D = P1[index2D-1];
 		diff = curValue - pred1D;
 
-		itvNum = fabs(diff)/realPrecision + 1;
+		itvNum = labs(diff)/realPrecision + 1;
 
 		if (itvNum < intvCapacity)
 		{
@@ -915,7 +915,7 @@ TightDataPointStorageI* SZ_compress_int32_4D_MDQ(int32_t *oriData, size_t r1, si
 			pred1D = 2*P1[index2D-1] - P1[index2D-2];
 			diff = spaceFillingValue[index] - pred1D;
 
-			itvNum = fabs(diff)/realPrecision + 1;
+			itvNum = labs(diff)/realPrecision + 1;
 
 			if (itvNum < intvCapacity)
 			{
@@ -943,7 +943,7 @@ TightDataPointStorageI* SZ_compress_int32_4D_MDQ(int32_t *oriData, size_t r1, si
 			pred1D = P1[index2D-r4];
 			diff = spaceFillingValue[index] - pred1D;
 
-			itvNum = fabs(diff)/realPrecision + 1;
+			itvNum = labs(diff)/realPrecision + 1;
 
 			if (itvNum < intvCapacity)
 			{
@@ -970,7 +970,7 @@ TightDataPointStorageI* SZ_compress_int32_4D_MDQ(int32_t *oriData, size_t r1, si
 
 				diff = spaceFillingValue[index] - pred2D;
 
-				itvNum = fabs(diff)/realPrecision + 1;
+				itvNum = labs(diff)/realPrecision + 1;
 
 				if (itvNum < intvCapacity)
 				{
@@ -1001,7 +1001,7 @@ TightDataPointStorageI* SZ_compress_int32_4D_MDQ(int32_t *oriData, size_t r1, si
 			pred1D = P1[index2D];
 			diff = spaceFillingValue[index] - pred1D;
 
-			itvNum = fabs(diff)/realPrecision + 1;
+			itvNum = labs(diff)/realPrecision + 1;
 
 			if (itvNum < intvCapacity)
 			{
@@ -1027,7 +1027,7 @@ TightDataPointStorageI* SZ_compress_int32_4D_MDQ(int32_t *oriData, size_t r1, si
 				pred2D = P0[index2D-1] + P1[index2D] - P1[index2D-1];
 				diff = spaceFillingValue[index] - pred2D;
 
-				itvNum = fabs(diff)/realPrecision + 1;
+				itvNum = labs(diff)/realPrecision + 1;
 
 				if (itvNum < intvCapacity)
 				{
@@ -1055,7 +1055,7 @@ TightDataPointStorageI* SZ_compress_int32_4D_MDQ(int32_t *oriData, size_t r1, si
 				pred2D = P0[index2D-r4] + P1[index2D] - P1[index2D-r4];
 				diff = spaceFillingValue[index] - pred2D;
 
-				itvNum = fabs(diff)/realPrecision + 1;
+				itvNum = labs(diff)/realPrecision + 1;
 
 				if (itvNum < intvCapacity)
 				{
@@ -1082,7 +1082,7 @@ TightDataPointStorageI* SZ_compress_int32_4D_MDQ(int32_t *oriData, size_t r1, si
 					diff = spaceFillingValue[index] - pred3D;
 
 
-					itvNum = fabs(diff)/realPrecision + 1;
+					itvNum = labs(diff)/realPrecision + 1;
 
 					if (itvNum < intvCapacity)
 					{
