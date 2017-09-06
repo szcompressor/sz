@@ -184,7 +184,7 @@ double *readDoubleData(char *srcFilePath, size_t *nbEle, int *status)
 int8_t *readInt8Data(char *srcFilePath, size_t *nbEle, int *status)
 {
 	int state = SZ_SCES;
-	char *daBuf = readInt8Data_systemEndian(srcFilePath, nbEle, &state);
+	int8_t *daBuf = readInt8Data_systemEndian(srcFilePath, nbEle, &state);
 	*status = state;
 	return daBuf;
 }
