@@ -13,7 +13,7 @@ MPIRUN 		= mpirun
 # Compiling using shared library
 #SZFLAG 	= -I$(SZPATH)/include -L$(SZPATH)/lib -lsz
 # Compiling using static library
-SZFLAG 	= -I$(SZPATH)/include $(SZPATH)/lib/libsz.a $(SZPATH)/lib/libzlib.a -lm
+SZFLAG 	= -I$(SZPATH)/include $(SZPATH)/lib/libSZ.a $(SZPATH)/lib/libzlib.a -lm
 
 ##   TARGETS
 all: 		testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress
