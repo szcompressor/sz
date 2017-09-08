@@ -9,9 +9,9 @@ CC              = gcc
 
 ##   FLAGS
 # Compiling using shared library
-#SZFLAG         = -I$(SZPATH)/include -L$(SZPATH)/lib -lsz
+#SZFLAG         = -I$(SZPATH)/include -L$(SZPATH)/lib -lSZ
 # Compiling using static library
-SZFLAG		= -I$(SZPATH)/include $(SZPATH)/lib/libsz.a $(SZPATH)/lib/libzlib.a -lm
+SZFLAG		= -I$(SZPATH)/include $(SZPATH)/lib/libSZ.a $(SZPATH)/lib/libzlib.a -lm
 CUnit_FLAG 	= -I$(CUnit_HOME)/include $(CUnit_HOME)/lib/libcunit.a
 
 cunit_patch	= CUnit_Array.o
