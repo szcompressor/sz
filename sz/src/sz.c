@@ -45,7 +45,7 @@ double relBoundRatio;
 double psnr;
 double pw_relBoundRatio;
 int segment_size;
-int pwr_type = SZ_PWR_AVG_TYPE;
+int pwr_type = SZ_PWR_MIN_TYPE;
 
 int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 
@@ -111,12 +111,11 @@ int SZ_Init_Params(sz_params *params)
 	SZ_SIZE_TYPE = sizeof(size_t);
 
     // set default values
-    if(params->max_quant_intervals) 
+    if(params->max_quant_intervals > 0) 
 		maxRangeRadius = params->max_quant_intervals/2;
 	else
-	{
 		params->max_quant_intervals = maxRangeRadius*2;
-	}
+
 	stateNum = maxRangeRadius*2;
 	allNodes = maxRangeRadius*4;
 	intvCapacity = maxRangeRadius*2;
@@ -177,15 +176,20 @@ int SZ_Init_Params(sz_params *params)
 		}
 		else
 			optQuantMode = 1;
+	
 		if(params->layers >= 0)
 			layers = params->layers;
 		if(params->sampleDistance >= 0)
 			sampleDistance = params->sampleDistance;
 		if(params->predThreshold > 0)
 			predThreshold = params->predThreshold;
+		if(params->psnr > 0)
+			psnr = params->psnr;
+		if(params->pw_relBoundRatio > 0)
+			pw_relBoundRatio = params->pw_relBoundRatio;
 		if(params->segment_size > 0)
 			segment_size = params->segment_size;
-		if(params->pwr_type > 0)
+		if(params->pwr_type >= 0)
 			pwr_type = params->pwr_type;
     }
 
