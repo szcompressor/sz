@@ -53,9 +53,10 @@ void usage()
 	printf("	-a : print compression results such as distortions\n");
 	printf("* examples: \n");
 	printf("	sz -z -f -c sz.config -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128\n");
-	printf("	sz -x -f -i testdata/x86/testfloat_8_8_128.dat.sz -3 8 8 128\n");
+	printf("	sz -x -f -s testdata/x86/testfloat_8_8_128.dat.sz -3 8 8 128\n");
+	printf("	sz -x -f -s testdata/x86/testfloat_8_8_128.dat.sz -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128 -a\n");	
 	printf("	sz -z -d -c sz.config -i testdata/x86/testdouble_8_8_128.dat -3 8 8 128\n");
-	printf("	sz -x -d -i testdata/x86/testdouble_8_8_128.dat.sz -3 8 8 128\n");
+	printf("	sz -x -d -s testdata/x86/testdouble_8_8_128.dat.sz -3 8 8 128\n");
 	exit(0);
 }
 
@@ -70,15 +71,15 @@ int main(int argc, char* argv[])
 	char* cmpPath = NULL;
 	char* conPath = NULL;
 	
-	int r5 = 0;
-	int r4 = 0;
-	int r3 = 0;
-	int r2 = 0; 
-	int r1 = 0;
+	size_t r5 = 0;
+	size_t r4 = 0;
+	size_t r3 = 0;
+	size_t r2 = 0; 
+	size_t r1 = 0;
 	
-	int i = 0;
+	size_t i = 0;
 	int status;
-	int nbEle;
+	size_t nbEle;
 	if(argc==1)
 		usage();
 	
@@ -125,26 +126,26 @@ int main(int argc, char* argv[])
 			conPath = argv[i];
 			break;
 		case '1': 
-			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1)
+			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1)
 				usage();
 
 			break;
 		case '2':
-			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 || 
-				++i == argc || sscanf(argv[i], "%d", &r2) != 1)
+			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r2) != 1)
 				usage();
 			break;
 		case '3':
-			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 ||
-				++i == argc || sscanf(argv[i], "%d", &r2) != 1 ||
-				++i == argc || sscanf(argv[i], "%d", &r3) != 1)
+			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r2) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r3) != 1)
 				usage();		
 			break;
 		case '4':
-			if (++i == argc || sscanf(argv[i], "%d", &r1) != 1 ||
-				++i == argc || sscanf(argv[i], "%d", &r2) != 1 ||
-				++i == argc || sscanf(argv[i], "%d", &r3) != 1 ||
-				++i == argc || sscanf(argv[i], "%d", &r4) != 1)
+			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r2) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r3) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r4) != 1)
 				usage();		
 			break;
 		default: 
@@ -172,7 +173,7 @@ int main(int argc, char* argv[])
 			exit(0); 
 		}
 
-		int outSize;
+		size_t outSize;
 		char outputFilePath[256];		
 		SZ_Init(conPath);
 		if(dataType == 0) //single precision
@@ -219,7 +220,7 @@ int main(int argc, char* argv[])
 	}
 	else //decompression
 	{
-		int byteLength;
+		size_t byteLength;
 		char outputFilePath[256];
 		
 		if(r2==0)
@@ -265,7 +266,7 @@ int main(int argc, char* argv[])
 					exit(0);
 				}
 				//compute the distortion / compression errors...
-				int totalNbEle;
+				size_t totalNbEle;
 				float *ori_data = readFloatData(inPath, &totalNbEle, &status);
 				if(status!=SZ_SCES)
 				{
@@ -273,12 +274,12 @@ int main(int argc, char* argv[])
 					exit(0);
 				}
 
-				int i = 0;
+				size_t i = 0;
 				float Max = 0, Min = 0, diffMax = 0;
 				Max = ori_data[0];
 				Min = ori_data[0];
 				diffMax = fabs(data[0] - ori_data[0]);
-				int k = 0;
+				size_t k = 0;
 				double sum1 = 0, sum2 = 0;
 				for (i = 0; i < nbEle; i++)
 				{
@@ -363,7 +364,7 @@ int main(int argc, char* argv[])
 				}
 
 				//compute the distortion / compression errors...
-				int totalNbEle;
+				size_t totalNbEle;
 				double *ori_data = readDoubleData(inPath, &totalNbEle, &status);
 				if(status!=SZ_SCES)
 				{
@@ -371,14 +372,14 @@ int main(int argc, char* argv[])
 					exit(0);
 				}
 
-				int i = 0;
+				size_t i = 0;
 				double Max = 0, Min = 0, diffMax = 0;
 				Max = ori_data[0];
 				Min = ori_data[0];
 				diffMax = data[0]>ori_data[0]?data[0]-ori_data[0]:ori_data[0]-data[0];
 			
 				//diffMax = fabs(data[0] - ori_data[0]);
-				int k = 0;
+				size_t k = 0;
 				double sum1 = 0, sum2 = 0;
 							
 				for (i = 0; i < nbEle; i++)

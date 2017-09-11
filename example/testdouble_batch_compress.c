@@ -37,7 +37,7 @@ void cost_end()
 
 int main(int argc, char * argv[])
 {
-    int r5=0,r4=0,r3=0,r2=0,r1=0;
+    size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     char outDir[640], oriFilePath[640], outputFilePath[640];
     char *cfgFile;
     
@@ -66,7 +66,8 @@ int main(int argc, char * argv[])
     
     sprintf(outputFilePath, "%s.bsz", oriFilePath);
    
-    int nbEle, status;
+    size_t nbEle; 
+    int status;
     double *data = readDoubleData(oriFilePath, &nbEle, &status);
   
     double *data2 = readDoubleData(oriFilePath, &nbEle, &status);
@@ -74,7 +75,7 @@ int main(int argc, char * argv[])
     SZ_batchAddVar("data", SZ_DOUBLE, data, ABS, 0.000001, 0.000001, r5,r4,r3,r2,r1);
     SZ_batchAddVar("data2", SZ_DOUBLE, data2, ABS, 0.000001, 0.000001, r5,r4,r3,r2,r1);
 
-    int outSize; 
+    size_t outSize; 
     cost_start();
     unsigned char *bytes = SZ_batch_compress(&outSize);
     cost_end(); 
@@ -82,15 +83,15 @@ int main(int argc, char * argv[])
     writeByteData(bytes, outSize, outputFilePath, &status);
    
     //decompression
-    int compressedLength = outSize;
+    size_t compressedLength = outSize;
     SZ_batch_decompress(bytes, compressedLength, &status);
 
     //write the decompressed data to disk 
-    int dataLength, varIndex = 0;
+    size_t dataLength, varIndex = 0;
     SZ_Variable* p = sz_varset->header->next;
     while(p!=NULL)
     {
-        sprintf(outputFilePath, "%s-batch%d.out", oriFilePath, varIndex++);
+        sprintf(outputFilePath, "%s-batch%zu.out", oriFilePath, varIndex++);
         dataLength = computeDataLength(p->r5, p->r4, p->r3, p->r2, p->r1);
 	writeDoubleData(p->data, dataLength, outputFilePath, &status);
         p = p->next;

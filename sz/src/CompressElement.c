@@ -31,6 +31,13 @@ inline void listAdd_float(float last3CmprsData[3], float value)
 	last3CmprsData[0] = value;
 }
 
+inline void listAdd_int(int64_t last3CmprsData[3], int64_t value)
+{
+	last3CmprsData[2] = last3CmprsData[1];
+	last3CmprsData[1] = last3CmprsData[0];
+	last3CmprsData[0] = value;
+}
+
 /**
  * Determine whether the prediction value minErr is valid.
  * 
@@ -64,7 +71,7 @@ int intMidBytes_Length, int resiMidBitsLength, int resiBits)
 void updateLossyCompElement_Double(unsigned char* curBytes, unsigned char* preBytes, 
 		int reqBytesLength, int resiBitsLength,  LossyCompressionElement *lce)
 {
-	int i, resiIndex, intMidBytes_Length = 0;
+	int resiIndex, intMidBytes_Length = 0;
 	int leadingNum = compIdenticalLeadingBytesCount_double(preBytes, curBytes); //in fact, float is enough for both single-precision and double-precisiond ata.
 	int fromByteIndex = leadingNum;
 	int toByteIndex = reqBytesLength; //later on: should use "< toByteIndex" to tarverse....
@@ -89,7 +96,7 @@ void updateLossyCompElement_Double(unsigned char* curBytes, unsigned char* preBy
 void updateLossyCompElement_Float(unsigned char* curBytes, unsigned char* preBytes, 
 		int reqBytesLength, int resiBitsLength,  LossyCompressionElement *lce)
 {
-	int i, resiIndex, intMidBytes_Length = 0;
+	int resiIndex, intMidBytes_Length = 0;
 	int leadingNum = compIdenticalLeadingBytesCount_float(preBytes, curBytes); //in fact, float is enough for both single-precision and double-precisiond ata.
 	int fromByteIndex = leadingNum;
 	int toByteIndex = reqBytesLength; //later on: should use "< toByteIndex" to tarverse....

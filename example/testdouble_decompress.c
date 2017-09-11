@@ -37,8 +37,8 @@ void cost_end()
 
 int main(int argc, char * argv[])
 {
-    int r5=0,r4=0,r3=0,r2=0,r1=0;
-    int nbEle, totalNbEle;
+    size_t r5=0,r4=0,r3=0,r2=0,r1=0;
+    size_t nbEle, totalNbEle;
     char zipFilePath[640], outputFilePath[640];
     char *cfgFile;
     if(argc < 2)
@@ -73,7 +73,8 @@ int main(int argc, char * argv[])
  
     sprintf(outputFilePath, "%s.out", zipFilePath);
     
-    int byteLength, status;
+    size_t byteLength;
+    int status;
     unsigned char *bytes = readByteData(zipFilePath, &byteLength, &status);
     if(status!=SZ_SCES)
     {
@@ -113,7 +114,7 @@ int main(int argc, char * argv[])
         exit(0);
     }
 
-    int i;
+    size_t i;
     double Max, Min, diffMax, err, maxpw_relerr = 0, relerr;
     Max = ori_data[0];
     Min = ori_data[0];
@@ -123,7 +124,7 @@ int main(int argc, char * argv[])
     {
     	if (Max < ori_data[i]) Max = ori_data[i];
     	if (Min > ori_data[i]) Min = ori_data[i];
-	err = fabs(data[i] - ori_data[i]);
+		err = fabs(data[i] - ori_data[i]);
     	if (diffMax < err)
     		diffMax = err;
         if(ori_data[i]!=0)

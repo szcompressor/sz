@@ -6,11 +6,12 @@ program p
         real(kind=8), dimension(:,:,:), allocatable :: grid
         real(kind=8), dimension(:,:,:), allocatable :: grid1
         integer(kind=4) :: gridsize1,gridsize2,gridsize3
-        integer(kind=4) :: g1, g2, g3, g4, g5
+        integer(kind=C_SIZE_T) :: g1, g2, g3, g4, g5
         real(kind=8) :: res=0
-        integer :: i,j,k
+        integer(kind=C_SIZE_T) :: i,j,k
         integer(kind=4) :: dim_
-        integer(kind=4) :: ierr, outSize !the size of the compressed stream
+        integer(kind=4) :: ierr; 
+        integer(kind=C_SIZE_T) outSize !the size of the compressed stream
         INTEGER(kind=1), DIMENSION(:), allocatable :: Bytes
         INTEGER(kind=4) :: sz_mode = 0
         gridsize1 = 10 

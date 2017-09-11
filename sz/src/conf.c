@@ -7,6 +7,7 @@
  *      See COPYRIGHT in top-level directory.
  */
 
+#include <math.h>
 #include "string.h"
 #include "sz.h"
 #include "iniparser.h"
@@ -61,6 +62,14 @@ void clearHuffmanMem()
     qend = 1;	
 } 
  
+double computeABSErrBoundFromPSNR(double psnr, double threshold, double value_range)
+{
+	double v1 = psnr + 10 * log10(1-2.0/3.0*threshold);
+	double v2 = v1/(-20);
+	double v3 = pow(10, v2);
+	return value_range * v3;
+} 
+ 
 /*-------------------------------------------------------------------------*/
 /**
  * 
@@ -104,6 +113,8 @@ int SZ_ReadConf() {
 		return SZ_NSCS;
 	}
 
+	//printf("dataEndianType=%d\n", dataEndianType);
+
 	conf_params->dataEndianType = dataEndianType;
 
 	char *y = (char*)&x;
@@ -127,7 +138,7 @@ int SZ_ReadConf() {
 		iniparser_freedict(ini);
 		return SZ_NSCS;
 	}
-
+	
 	conf_params->sol_ID = sol_ID;
 
 	if(sol_ID==SZ)
@@ -237,6 +248,16 @@ int SZ_ReadConf() {
 			errorBoundMode=ABS_OR_REL;
 		else if(strcmp(errBoundMode, "PW_REL")==0||strcmp(errBoundMode, "pw_rel")==0)
 			errorBoundMode=PW_REL;
+		else if(strcmp(errBoundMode, "PSNR")==0||strcmp(errBoundMode, "psnr")==0)
+			errorBoundMode=PSNR;
+		else if(strcmp(errBoundMode, "ABS_AND_PW_REL")==0||strcmp(errBoundMode, "abs_and_pw_rel")==0)
+			errorBoundMode=ABS_AND_PW_REL;
+		else if(strcmp(errBoundMode, "ABS_OR_PW_REL")==0||strcmp(errBoundMode, "abs_or_pw_rel")==0)
+			errorBoundMode=ABS_OR_PW_REL;
+		else if(strcmp(errBoundMode, "REL_AND_PW_REL")==0||strcmp(errBoundMode, "rel_and_pw_rel")==0)
+			errorBoundMode=REL_AND_PW_REL;
+		else if(strcmp(errBoundMode, "REL_OR_PW_REL")==0||strcmp(errBoundMode, "rel_or_pw_rel")==0)
+			errorBoundMode=REL_OR_PW_REL;
 		else
 		{
 			printf("[SZ] Error: Wrong error bound mode (please check sz.config file)\n");
@@ -249,16 +270,35 @@ int SZ_ReadConf() {
 		conf_params->absErrBound = absErrBound;
 		relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:relBoundRatio", 0);
 		conf_params->relBoundRatio = relBoundRatio;
+		psnr = (double)iniparser_getdouble(ini, "PARAMETER:psnr", 0);
+		conf_params->psnr = psnr;
 		pw_relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:pw_relBoundRatio", 0);
 		conf_params->pw_relBoundRatio = pw_relBoundRatio;
 		segment_size = (int)iniparser_getint(ini, "PARAMETER:segment_size", 0);
 		conf_params->segment_size = segment_size;
+		
+		modeBuf = iniparser_getstring(ini, "PARAMETER:pwr_type", NULL);
+		
+		if(strcmp(modeBuf, "MIN")==0)
+			pwr_type = SZ_PWR_MIN_TYPE;
+		else if(strcmp(modeBuf, "AVG")==0)
+			pwr_type = SZ_PWR_AVG_TYPE;
+		else if(strcmp(modeBuf, "MAX")==0)
+			pwr_type = SZ_PWR_MAX_TYPE;
+		else if(modeBuf!=NULL)
+		{
+			printf("[SZ] Error: Wrong pwr_type setting (please check sz.config file).\n");
+			iniparser_freedict(ini);
+			return SZ_NSCS;	
+		}
+		else //by default
+			pwr_type = SZ_PWR_AVG_TYPE;
+		conf_params->pwr_type = pwr_type;
 	}
 	
 //	versionNumber[0] = SZ_VER_MAJOR; //0
 //	versionNumber[1] = SZ_VER_MINOR; //5
 //	versionNumber[2] = SZ_VER_BUILD; //15
-    
     //initialization for Huffman encoding
     if(pool==NULL)
     {
@@ -268,7 +308,7 @@ int SZ_ReadConf() {
 		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
 		qq = qqq - 1;		
 	}
-    
+	//printf("dataEndianType=%d\n", dataEndianType);    
     iniparser_freedict(ini);
     return SZ_SCES;
 }

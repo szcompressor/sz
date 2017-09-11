@@ -1,8 +1,8 @@
 /**
- *  @file TightPointDataStorageF.c
- *  @author Sheng Di and Dingwen Tao
+ *  @file szd_float_pwr.c
+ *  @author Sheng Di
  *  @date Aug, 2016
- *  @brief The functions used to construct the tightPointDataStorage element for storing compressed bytes.
+ *  @brief 
  *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
  */
@@ -15,12 +15,12 @@
 #include "Huffman.h"
 //#include "rw.h"
 
-void decompressDataSeries_float_1D_pwr(float** data, int dataSeriesLength, TightDataPointStorageF* tdps) 
+void decompressDataSeries_float_1D_pwr(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	unsigned char tmpPrecBytes[4] = {0}; //used when needing to convert bytes to float values
 	unsigned char* bp = tdps->pwrErrBoundBytes;
-	int i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 								// in resiMidBits, p is to track the
 								// byte_index of resiMidBits, l is for
 								// leadNum
@@ -39,14 +39,14 @@ void decompressDataSeries_float_1D_pwr(float** data, int dataSeriesLength, Tight
 	decode_withTree(tdps->typeArray, dataSeriesLength, type);
 
 	//sdi:Debug
-	//writeShortData(type, dataSeriesLength, "decompressStateBytes.sb");
+	//writeUShortData(type, dataSeriesLength, "decompressStateBytes.sb");
 
 	unsigned char preBytes[4];
 	unsigned char curBytes[4];
 	
 	memset(preBytes, 0, 4);
 
-	int curByteIndex = 0;
+	size_t curByteIndex = 0;
 	int reqLength, reqBytesLength, resiBitsLength, resiBits, reqExpo, reqMantLength; 
 	unsigned char leadingNum;	
 	float medianValue, exactData, predValue, realPrecision;
@@ -133,9 +133,9 @@ void decompressDataSeries_float_1D_pwr(float** data, int dataSeriesLength, Tight
 	return;
 }
 
-float* extractRealPrecision_2D_float(int R1, int R2, int blockSize, TightDataPointStorageF* tdps)
+float* extractRealPrecision_2D_float(size_t R1, size_t R2, int blockSize, TightDataPointStorageF* tdps)
 {
-	int i,j,k=0, I;
+	size_t i,j,k=0, I;
 	unsigned char* bytes = tdps->pwrErrBoundBytes;
 	unsigned char tmpBytes[4] = {0};
 	float* result = (float*)malloc(sizeof(float)*R1*R2);
@@ -152,16 +152,16 @@ float* extractRealPrecision_2D_float(int R1, int R2, int blockSize, TightDataPoi
 	return result;
 }
 
-void decompressDataSeries_float_2D_pwr(float** data, int r1, int r2, TightDataPointStorageF* tdps) 
+void decompressDataSeries_float_2D_pwr(float** data, size_t r1, size_t r2, TightDataPointStorageF* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	//printf("tdps->intervals=%d, intvRadius=%d\n", tdps->intervals, intvRadius);
 	
-	int i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
-	int dataSeriesLength = r1*r2;
+	size_t dataSeriesLength = r1*r2;
 	//	printf ("%d %d\n", r1, r2);
 
 	unsigned char* leadNum;
@@ -182,17 +182,17 @@ void decompressDataSeries_float_2D_pwr(float** data, int r1, int r2, TightDataPo
 
 	memset(preBytes, 0, 4);
 
-	int curByteIndex = 0;
+	size_t curByteIndex = 0;
 	int reqLength, reqBytesLength, resiBitsLength, resiBits, reqExpo, reqMantLength; 
 	unsigned char leadingNum;	
 	float medianValue, exactData, predValue, realPrecision;
 	int type_;	
 	float pred1D, pred2D;
-	int ii, jj, II = 0, JJ = 0, updateReqLength = 1;
+	size_t ii, jj, II = 0, JJ = 0, updateReqLength = 1;
 
 	int blockSize = computeBlockEdgeSize_2D(tdps->segment_size);
-	int R1 = 1+(r1-1)/blockSize;
-	int R2 = 1+(r2-1)/blockSize;		
+	size_t R1 = 1+(r1-1)/blockSize;
+	size_t R2 = 1+(r2-1)/blockSize;		
 	float* pwrErrBound = extractRealPrecision_2D_float(R1, R2, blockSize, tdps);
 
 	realPrecision = pwrErrBound[0];	
@@ -364,7 +364,7 @@ void decompressDataSeries_float_2D_pwr(float** data, int r1, int r2, TightDataPo
 		}
 	}
 
-	int index;
+	size_t index;
 	/* Process Row-1 --> Row-r1-1 */
 	for (ii = 1; ii < r1; ii++)
 	{
@@ -512,10 +512,10 @@ void decompressDataSeries_float_2D_pwr(float** data, int r1, int r2, TightDataPo
 	return;
 }
 
-float* extractRealPrecision_3D_float(int R1, int R2, int R3, int blockSize, TightDataPointStorageF* tdps)
+float* extractRealPrecision_3D_float(size_t R1, size_t R2, size_t R3, int blockSize, TightDataPointStorageF* tdps)
 {
-	int i,j,k=0, IR, JR, p = 0;
-	int R23 = R2*R3;
+	size_t i,j,k=0, IR, JR, p = 0;
+	size_t R23 = R2*R3;
 	unsigned char* bytes = tdps->pwrErrBoundBytes;
 	unsigned char tmpBytes[4] = {0};
 	float* result = (float*)malloc(sizeof(float)*R1*R2*R3);
@@ -536,15 +536,15 @@ float* extractRealPrecision_3D_float(int R1, int R2, int R3, int blockSize, Tigh
 	return result;
 }
 
-void decompressDataSeries_float_3D_pwr(float** data, int r1, int r2, int r3, TightDataPointStorageF* tdps) 
+void decompressDataSeries_float_3D_pwr(float** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageF* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
-	int i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
-	int dataSeriesLength = r1*r2*r3;
-	int r23 = r2*r3;
+	size_t dataSeriesLength = r1*r2*r3;
+	size_t r23 = r2*r3;
 //	printf ("%d %d %d\n", r1, r2, r3);
 	unsigned char* leadNum;
 
@@ -562,19 +562,19 @@ void decompressDataSeries_float_3D_pwr(float** data, int r1, int r2, int r3, Tig
 	unsigned char curBytes[4];
 
 	memset(preBytes, 0, 4);
-	int curByteIndex = 0;
+	size_t curByteIndex = 0;
 	int reqLength, reqBytesLength, resiBitsLength, resiBits, reqExpo, reqMantLength; 
 	unsigned char leadingNum;
 	float medianValue, exactData, predValue, realPrecision;
 	int type_;
 	float pred1D, pred2D, pred3D;
-	int ii, jj, kk, II = 0, JJ = 0, KK = 0, updateReqLength = 1;
+	size_t ii, jj, kk, II = 0, JJ = 0, KK = 0, updateReqLength = 1;
 
 	int blockSize = computeBlockEdgeSize_3D(tdps->segment_size);
-	int R1 = 1+(r1-1)/blockSize;
-	int R2 = 1+(r2-1)/blockSize;		
-	int R3 = 1+(r3-1)/blockSize;
-	int R23 = R2*R3;
+	size_t R1 = 1+(r1-1)/blockSize;
+	size_t R2 = 1+(r2-1)/blockSize;		
+	size_t R3 = 1+(r3-1)/blockSize;
+	size_t R23 = R2*R3;
 	float* pwrErrBound = extractRealPrecision_3D_float(R1, R2, R3, blockSize, tdps);
 
 	realPrecision = pwrErrBound[0];	
@@ -744,7 +744,7 @@ void decompressDataSeries_float_3D_pwr(float** data, int r1, int r2, int r3, Tig
 			memcpy(preBytes,curBytes,4);
 		}
 	}
-	int index;
+	size_t index;
 	/* Process Row-1 --> Row-r2-1 */
 	for (ii = 1; ii < r2; ii++)
 	{
