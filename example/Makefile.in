@@ -97,7 +97,8 @@ host_triplet = @host@
 @FORTRAN_FALSE@	testfloat_batch_compress$(EXEEXT) \
 @FORTRAN_FALSE@	testdouble_batch_compress$(EXEEXT) sz$(EXEEXT) \
 @FORTRAN_FALSE@	testfloat_CompDecomp_subblock$(EXEEXT) \
-@FORTRAN_FALSE@	testdouble_CompDecomp_subblock$(EXEEXT)
+@FORTRAN_FALSE@	testdouble_CompDecomp_subblock$(EXEEXT) \
+@FORTRAN_FALSE@	$(am__EXEEXT_1)
 @FORTRAN_TRUE@bin_PROGRAMS = testint_compress$(EXEEXT) \
 @FORTRAN_TRUE@	testint_decompress$(EXEEXT) \
 @FORTRAN_TRUE@	testfloat_compress$(EXEEXT) \
@@ -110,7 +111,9 @@ host_triplet = @host@
 @FORTRAN_TRUE@	testdouble_compress_f$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_decompress_f$(EXEEXT) \
 @FORTRAN_TRUE@	testfloat_CompDecomp_subblock$(EXEEXT) \
-@FORTRAN_TRUE@	testdouble_CompDecomp_subblock$(EXEEXT)
+@FORTRAN_TRUE@	testdouble_CompDecomp_subblock$(EXEEXT) \
+@FORTRAN_TRUE@	$(am__EXEEXT_1)
+@GSL_TRUE@am__append_1 = sz_gsl
 subdir = example
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -121,6 +124,7 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+@GSL_TRUE@am__EXEEXT_1 = sz_gsl$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_sz_OBJECTS = sz.$(OBJEXT)
@@ -130,6 +134,11 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am__sz_gsl_SOURCES_DIST = sz_gsl.c
+@GSL_TRUE@am_sz_gsl_OBJECTS = sz_gsl.$(OBJEXT)
+sz_gsl_OBJECTS = $(am_sz_gsl_OBJECTS)
+@GSL_TRUE@sz_gsl_DEPENDENCIES = ../sz/.libs/libSZ.a \
+@GSL_TRUE@	../zlib/.libs/libzlib.a
 am_testdouble_CompDecomp_subblock_OBJECTS =  \
 	testdouble_CompDecomp_subblock.$(OBJEXT)
 testdouble_CompDecomp_subblock_OBJECTS =  \
@@ -247,7 +256,8 @@ AM_V_FCLD = $(am__v_FCLD_@AM_V@)
 am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
 am__v_FCLD_0 = @echo "  FCLD    " $@;
 am__v_FCLD_1 = 
-SOURCES = $(sz_SOURCES) $(testdouble_CompDecomp_subblock_SOURCES) \
+SOURCES = $(sz_SOURCES) $(sz_gsl_SOURCES) \
+	$(testdouble_CompDecomp_subblock_SOURCES) \
 	$(testdouble_batch_compress_SOURCES) \
 	$(testdouble_batch_f_SOURCES) $(testdouble_compress_SOURCES) \
 	$(testdouble_compress_f_SOURCES) \
@@ -257,7 +267,8 @@ SOURCES = $(sz_SOURCES) $(testdouble_CompDecomp_subblock_SOURCES) \
 	$(testfloat_batch_compress_SOURCES) \
 	$(testfloat_compress_SOURCES) $(testfloat_decompress_SOURCES) \
 	$(testint_compress_SOURCES) $(testint_decompress_SOURCES)
-DIST_SOURCES = $(sz_SOURCES) $(testdouble_CompDecomp_subblock_SOURCES) \
+DIST_SOURCES = $(sz_SOURCES) $(am__sz_gsl_SOURCES_DIST) \
+	$(testdouble_CompDecomp_subblock_SOURCES) \
 	$(testdouble_batch_compress_SOURCES) \
 	$(am__testdouble_batch_f_SOURCES_DIST) \
 	$(testdouble_compress_SOURCES) \
@@ -322,6 +333,12 @@ FC = @FC@
 FCFLAGS = @FCFLAGS@
 FGREP = @FGREP@
 GREP = @GREP@
+GSL_CFLAGS = @GSL_CFLAGS@
+GSL_CONFIG = @GSL_CONFIG@
+GSL_HDR = @GSL_HDR@
+GSL_LIB = @GSL_LIB@
+GSL_LIBS = @GSL_LIBS@
+GSL_STATIC = @GSL_STATIC@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -444,6 +461,8 @@ testdouble_CompDecomp_subblock_SOURCES = testdouble_CompDecomp_subblock.c
 testdouble_CompDecomp_subblock_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 sz_SOURCES = sz.c
 sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@GSL_TRUE@sz_gsl_SOURCES = sz_gsl.c
+@GSL_TRUE@sz_gsl_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a @GSL_HDR@ @GSL_LIB@ @GSL_STATIC@ -lm
 all: all-am
 
 .SUFFIXES:
@@ -531,6 +550,10 @@ sz$(EXEEXT): $(sz_OBJECTS) $(sz_DEPENDENCIES) $(EXTRA_sz_DEPENDENCIES)
 	@rm -f sz$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(sz_OBJECTS) $(sz_LDADD) $(LIBS)
 
+sz_gsl$(EXEEXT): $(sz_gsl_OBJECTS) $(sz_gsl_DEPENDENCIES) $(EXTRA_sz_gsl_DEPENDENCIES) 
+	@rm -f sz_gsl$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(sz_gsl_OBJECTS) $(sz_gsl_LDADD) $(LIBS)
+
 testdouble_CompDecomp_subblock$(EXEEXT): $(testdouble_CompDecomp_subblock_OBJECTS) $(testdouble_CompDecomp_subblock_DEPENDENCIES) $(EXTRA_testdouble_CompDecomp_subblock_DEPENDENCIES) 
 	@rm -f testdouble_CompDecomp_subblock$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(testdouble_CompDecomp_subblock_OBJECTS) $(testdouble_CompDecomp_subblock_LDADD) $(LIBS)
@@ -590,6 +613,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz_gsl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_CompDecomp_subblock.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_batch_compress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_compress.Po@am__quote@
