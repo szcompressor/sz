@@ -72,7 +72,7 @@ unsigned int optimize_intervals_int16_2D(int16_t *oriData, size_t r1, size_t r2,
 	int64_t pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = r1*r2/sampleDistance;
+	size_t totalSampleSize = (r1-1)*(r2-1)/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
 		for(j=1;j<r2;j++)
@@ -90,7 +90,7 @@ unsigned int optimize_intervals_int16_2D(int16_t *oriData, size_t r1, size_t r2,
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = (int)(totalSampleSize*predThreshold);
+	size_t targetCount = totalSampleSize*predThreshold;
 	int sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -175,7 +175,7 @@ unsigned int optimize_intervals_int16_4D(int16_t *oriData, size_t r1, size_t r2,
 	int64_t pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = r1*r2*r3*r4/sampleDistance;
+	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)*(r4-1)/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
 		for(j=1;j<r2;j++)

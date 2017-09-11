@@ -280,7 +280,7 @@ unsigned int optimize_intervals_double_2D_pwr(double *oriData, size_t r1, size_t
 	double pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	size_t totalSampleSize = r1*r2/sampleDistance;
+	size_t totalSampleSize = (r1-1)*(r2-1)/sampleDistance;
 	size_t ir2;
 	for(i=1;i<r1;i++)
 	{
@@ -443,7 +443,7 @@ unsigned int optimize_intervals_double_3D_pwr(double *oriData, size_t r1, size_t
 	double pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	size_t totalSampleSize = r1*r2*r3/sampleDistance;
+	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)/sampleDistance;
 	for(i=1;i<r1;i++)
 	{
 		ir = i*r23;
