@@ -140,7 +140,8 @@ fi
 AC_SUBST(GSL_CFLAGS)
 
 # Check GSL library
-if GSL
+
+if test "$ok" = "yes"; then
 AC_ARG_WITH([gsl-prefix], [AS_HELP_STRING([--with-gsl-prefix=DIR], 
             [installation prefix for gsl])], 
             [with_gsl_include_path=$with_gsl_prefix/include; 

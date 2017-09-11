@@ -16054,6 +16054,8 @@ fi
 
 # Check GSL library
 
+if test "$ok" = "yes"; then
+
 # Check whether --with-gsl-prefix was given.
 if test "${with_gsl_prefix+set}" = set; then :
   withval=$with_gsl_prefix; with_gsl_include_path=$with_gsl_prefix/include;
@@ -16213,7 +16215,7 @@ fi
 
 
 
-
+fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 ac_fn_c_check_type "$LINENO" "size_t" "ac_cv_type_size_t" "$ac_includes_default"
