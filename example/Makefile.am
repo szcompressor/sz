@@ -44,5 +44,5 @@ sz_SOURCES=sz.c
 sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 if GSL
 sz_gsl_SOURCES=sz_gsl.c
-sz_gsl_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+sz_gsl_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a @GSL_HDR@ @GSL_LIB@ @GSL_STATIC@ -lm
 endif
