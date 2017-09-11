@@ -8,9 +8,9 @@ else
 bin_PROGRAMS=testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz testfloat_CompDecomp_subblock testdouble_CompDecomp_subblock
 endif
 
-if GSL
-bin_PROGRAMS += sz_gsl
-endif
+#if GSL
+#bin_PROGRAMS += sz_gsl
+#endif
 	
 testint_compress_SOURCES=testint_compress.c
 testint_compress_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
@@ -40,9 +40,10 @@ testfloat_CompDecomp_subblock_SOURCES=testfloat_CompDecomp_subblock.c
 testfloat_CompDecomp_subblock_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 testdouble_CompDecomp_subblock_SOURCES=testdouble_CompDecomp_subblock.c
 testdouble_CompDecomp_subblock_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
-sz_SOURCES=sz.c
-sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 if GSL
-sz_gsl_SOURCES=sz_gsl.c
-sz_gsl_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB)
+sz_SOURCES=sz.c
+sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB) -lm
+else
+sz_SOURCES=sz_gsl.c
+sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 endif
