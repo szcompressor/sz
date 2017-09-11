@@ -140,6 +140,7 @@ fi
 AC_SUBST(GSL_CFLAGS)
 
 # Check GSL library
+if GSL
 AC_ARG_WITH([gsl-prefix], [AS_HELP_STRING([--with-gsl-prefix=DIR], 
             [installation prefix for gsl])], 
             [with_gsl_include_path=$with_gsl_prefix/include; 
@@ -178,7 +179,7 @@ fi
 AC_SUBST(GSL_HDR)
 AC_SUBST(GSL_LIB)
 AC_SUBST(GSL_STATIC)
-
+fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
