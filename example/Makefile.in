@@ -137,8 +137,11 @@ am__v_lt_1 =
 am__sz_gsl_SOURCES_DIST = sz_gsl.c
 @GSL_TRUE@am_sz_gsl_OBJECTS = sz_gsl.$(OBJEXT)
 sz_gsl_OBJECTS = $(am_sz_gsl_OBJECTS)
+am__DEPENDENCIES_1 =
 @GSL_TRUE@sz_gsl_DEPENDENCIES = ../sz/.libs/libSZ.a \
-@GSL_TRUE@	../zlib/.libs/libzlib.a
+@GSL_TRUE@	../zlib/.libs/libzlib.a $(am__DEPENDENCIES_1) \
+@GSL_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+@GSL_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_testdouble_CompDecomp_subblock_OBJECTS =  \
 	testdouble_CompDecomp_subblock.$(OBJEXT)
 testdouble_CompDecomp_subblock_OBJECTS =  \
@@ -431,8 +434,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
-AM_CFLAGS = -I../sz/include -I../zlib -I/soft/gsl/gsl-1.16/include
-AM_FCFLAGS = -I../sz/include -I../sz -I../zlib -I/soft/gsl/gsl-1.16/include
+AM_CFLAGS = -I../sz/include -I../zlib
+AM_FCFLAGS = -I../sz/include -I../sz -I../zlib
 testint_compress_SOURCES = testint_compress.c
 testint_compress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 testint_decompress_SOURCES = testint_decompress.c
@@ -462,7 +465,7 @@ testdouble_CompDecomp_subblock_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib
 sz_SOURCES = sz.c
 sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 @GSL_TRUE@sz_gsl_SOURCES = sz_gsl.c
-@GSL_TRUE@sz_gsl_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a @GSL_HDR@ @GSL_LIB@ @GSL_STATIC@ -lm
+@GSL_TRUE@sz_gsl_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_CFLAGS) $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB) $(GSL_STATIC)
 all: all-am
 
 .SUFFIXES:
