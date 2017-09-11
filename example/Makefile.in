@@ -123,16 +123,16 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__sz_SOURCES_DIST = sz_gsl.c sz.c
-@GSL_FALSE@am_sz_OBJECTS = sz_gsl.$(OBJEXT)
-@GSL_TRUE@am_sz_OBJECTS = sz.$(OBJEXT)
+am__sz_SOURCES_DIST = sz.c sz_gsl.c
+@GSL_FALSE@am_sz_OBJECTS = sz.$(OBJEXT)
+@GSL_TRUE@am_sz_OBJECTS = sz_gsl.$(OBJEXT)
 sz_OBJECTS = $(am_sz_OBJECTS)
 am__DEPENDENCIES_1 =
 @GSL_FALSE@sz_DEPENDENCIES = ../sz/.libs/libSZ.a \
-@GSL_FALSE@	../zlib/.libs/libzlib.a $(am__DEPENDENCIES_1) \
-@GSL_FALSE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@GSL_FALSE@	../zlib/.libs/libzlib.a
 @GSL_TRUE@sz_DEPENDENCIES = ../sz/.libs/libSZ.a \
-@GSL_TRUE@	../zlib/.libs/libzlib.a
+@GSL_TRUE@	../zlib/.libs/libzlib.a $(am__DEPENDENCIES_1) \
+@GSL_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -460,10 +460,10 @@ testfloat_CompDecomp_subblock_SOURCES = testfloat_CompDecomp_subblock.c
 testfloat_CompDecomp_subblock_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 testdouble_CompDecomp_subblock_SOURCES = testdouble_CompDecomp_subblock.c
 testdouble_CompDecomp_subblock_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
-@GSL_FALSE@sz_SOURCES = sz_gsl.c
-@GSL_TRUE@sz_SOURCES = sz.c
-@GSL_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB)
-@GSL_TRUE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@GSL_FALSE@sz_SOURCES = sz.c
+@GSL_TRUE@sz_SOURCES = sz_gsl.c
+@GSL_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@GSL_TRUE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB) -lm
 all: all-am
 
 .SUFFIXES:

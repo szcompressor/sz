@@ -41,9 +41,9 @@ testfloat_CompDecomp_subblock_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a 
 testdouble_CompDecomp_subblock_SOURCES=testdouble_CompDecomp_subblock.c
 testdouble_CompDecomp_subblock_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 if GSL
-sz_SOURCES=sz.c
+sz_SOURCES=sz_gsl.c
 sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB) -lm
 else
-sz_SOURCES=sz_gsl.c
+sz_SOURCES=sz.c
 sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 endif
