@@ -44,6 +44,7 @@ void usage()
 	printf("* output type of decompressed file: \n");
 	printf("	-b (by default) : decompressed file stored in binary format\n");
 	printf("	-t : decompreadded file stored in text format\n");
+	printf("	-T : pre-processing with Tucker Tensor Decomposition\n");
 	printf("* dimensions: \n");
 	printf("	-1 <nx> : dimension for 1D data such as data[nx]\n");
 	printf("	-2 <nx> <ny> : dimensions for 2D data such as data[ny][nx]\n");
@@ -67,6 +68,7 @@ int main(int argc, char* argv[])
 	int printCmpResults = 0;
 	int isCompression = 0; //1 : compression ; 0: decompression
 	int dataType = 0; //0: single precision ; 1: double precision
+	int tucker = 0; //0: without tucker tensor decomposition preprocessing; 1: with tucker tensor decomposition
 	char* inPath = NULL;
 	char* cmpPath = NULL;
 	char* conPath = NULL;
@@ -125,6 +127,9 @@ int main(int argc, char* argv[])
 				usage();
 			conPath = argv[i];
 			break;
+		case 'T':
+			tucker = 1;
+			break;
 		case '1': 
 			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1)
 				usage();
@@ -178,6 +183,12 @@ int main(int argc, char* argv[])
 		SZ_Init(conPath);
 		if(dataType == 0) //single precision
 		{
+			if(tucker)
+			{
+				printf("Error: Single-precision Tucker tensor decomposition is not supported by TuckerMPI yet. \n");
+				printf("Solution: change the data format to be double-precision and then do the tensor decomposition.\n");
+				exit(0);
+			}
 			float *data = readFloatData(inPath, &nbEle, &status);
 			cost_start();	
 			unsigned char *bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
@@ -191,27 +202,81 @@ int main(int argc, char* argv[])
 				printf("Error: data file %s cannot be written!\n", outputFilePath);
 				exit(0);
 			}
+			printf("compression time = %f\n", totalCost);
+			printf("compressed data file: %s\n", outputFilePath);			
 		}
 		else //dataType == 1: double precision
 		{
-			double *data = readDoubleData(inPath, &nbEle, &status);	
-			cost_start();
-			unsigned char *bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
-			cost_end();
-			sprintf(outputFilePath, "%s.sz", inPath);
-			writeByteData(bytes, outSize, outputFilePath, &status);		
-			free(data);
-			free(bytes);
-			if(status != SZ_SCES)
+			if(tucker)
 			{
-				printf("Error: data file %s cannot be written!\n", outputFilePath);
-				exit(0);
-			}			
+				const char* s = getenv("TUCKERMPI_PATH");
+				if(s==NULL)
+				{
+					printf("Error: the environment variable TUCKERMPI_PATH == NULL. \n");
+					printf("Solution: Install TuckerMPI and set environment variable TUCKERMPI_HOME to the building path (e.g., TuckerMPI-gitlab/build)\n"); 
+					exit(0);
+				}	
+				
+				//TODO: constructing the parameter-raw.txt	
+				char *str[8] = {
+					"Automatic rank determination = true", 
+					"Perform STHOSVD = true", 
+					"Write STHOSVD result = true", 
+					"Print options = true", 
+					NULL, 
+					"Scaling type = StandardCentering", 
+					"Scale mode = 2", 
+					NULL};
+							
+				char dimStr[256];
+				if(r2==0)
+					sprintf(dimStr, "Global dims = %zu", r1);
+				else if(r3==0)
+					sprintf(dimStr, "Global dims = %zu %zu", r2, r1);
+				else if(r4==0)
+					sprintf(dimStr, "Global dims = %zu %zu %zu", r3, r2, r1);
+				else if(r5==0)
+					sprintf(dimStr, "Global dims = %zu %zu %zu %zu", r4, r3, r2, r1);
+				else
+					sprintf(dimStr, "Global dims = %zu %zu %zu %zu %zu", r5, r4, r3, r2, r1);
+				
+				str[4] = dimStr;
+				
+				char thrStr[100]; 
+				sprintf(thrStr, "SV Threshold = %f", absErrBound);
+				str[7] = thrStr;
+
+				writeStrings(8, str, "parameter-raw.txt", &status);	
+
+				//TODO: constructing the raw.txt (containing the path of the binary data file
+				char* dataPathStr[1];
+				dataPathStr[0] = inPath;
+				writeStrings(1, dataPathStr, "raw.txt", &status);
+				
+				printf("calling TuckerMPI interface to do the Tucker Tensor Decomposition....\n");
+				
+				system("mkdir -p ./compressed");
+				system("${TUCKERMPI_PATH}/serial/drivers/bin/Tucker_sthosvd --parameter-file parameter-raw.txt");
+			}
+			else
+			{
+				double *data = readDoubleData(inPath, &nbEle, &status);	
+				cost_start();
+				unsigned char *bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
+				cost_end();
+				sprintf(outputFilePath, "%s.sz", inPath);
+				writeByteData(bytes, outSize, outputFilePath, &status);		
+				free(data);
+				free(bytes);
+				if(status != SZ_SCES)
+				{
+					printf("Error: data file %s cannot be written!\n", outputFilePath);
+					exit(0);
+				}		
+				printf("compression time = %f\n", totalCost);
+				printf("compressed data file: %s\n", outputFilePath);
+			}	
 		}
-
-		printf("compression time = %f\n", totalCost);
-		printf("compressed data file: %s\n", outputFilePath);
-
 
 		if (printCmpResults == 1)
 		{
@@ -220,6 +285,15 @@ int main(int argc, char* argv[])
 	}
 	else //decompression
 	{
+		if(printCmpResults)
+		{
+			if(inPath==NULL)
+			{
+				printf("Error: Since you add -a option (analysis), please specify the original data path by -i <path>.\n");
+				exit(0);
+			}
+		}		
+		
 		size_t byteLength;
 		char outputFilePath[256];
 		
@@ -236,6 +310,13 @@ int main(int argc, char* argv[])
 
 		if(dataType == 0)
 		{
+			if(tucker)
+			{
+				printf("Error: Single-precision Tucker tensor decomposition is not supported by TuckerMPI yet. \n");
+				printf("Solution: change the data format to be double-precision and then do the tensor decomposition.\n");
+				exit(0);
+			}			
+			
 			unsigned char *bytes = readByteData(cmpPath, &byteLength, &status);
 			if(status!=SZ_SCES)
 			{
@@ -260,11 +341,6 @@ int main(int argc, char* argv[])
 			
 			if(printCmpResults)
 			{
-				if(inPath==NULL)
-				{
-					printf("Error: Since you add -a option (analysis), please specify the original data path by -i <path>.\n");
-					exit(0);
-				}
 				//compute the distortion / compression errors...
 				size_t totalNbEle;
 				float *ori_data = readFloatData(inPath, &totalNbEle, &status);
@@ -330,30 +406,97 @@ int main(int argc, char* argv[])
 				printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
 				printf ("acEff=%f\n", acEff);	
 			}
-			free(data);				
+			free(data);	
+			
+			printf("decompression time = %f seconds.\n", totalCost);
+			printf("decompressed data file: %s\n", outputFilePath);							
 		}
-		else
+		else //double-data
 		{
-			unsigned char *bytes = readByteData(cmpPath, &byteLength, &status);
-			if(status!=SZ_SCES)
+			double *data;
+			if(tucker)
 			{
-				printf("Error: %s cannot be read!\n", cmpPath);
-				exit(0);
+				const char* s = getenv("TUCKERMPI_PATH");
+				if(s==NULL)
+				{
+					printf("Error: the environment variable TUCKERMPI_PATH == NULL. \n");
+					printf("Solution: Install TuckerMPI and set environment variable TUCKERMPI_HOME to the building path (e.g., TuckerMPI-gitlab/build)\n"); 
+					exit(0);
+				}	
+				
+				//TODO: constructing the parameter-raw.txt	
+				char *str[4] = {
+					"Print options = true", 
+					NULL, 
+					NULL, 
+					"STHOSVD directory = ./compressed"};
+				char dimStr1[256];
+				if(r2==0)
+					sprintf(dimStr1, "Beginning subscripts = 0");
+				else if(r3==0)
+					sprintf(dimStr1, "Beginning subscripts = 0 0");
+				else if(r4==0)
+					sprintf(dimStr1, "Beginning subscripts = 0 0 0");
+				else if(r5==0)
+					sprintf(dimStr1, "Beginning subscripts = 0 0 0 0");
+				else
+					sprintf(dimStr1, "Beginning subscripts = 0 0 0 0 0");
+				
+				str[1] = dimStr1;
+						
+				char dimStr2[256];
+				if(r2==0)
+					sprintf(dimStr2, "Ending subscripts = %zu", r1-1);
+				else if(r3==0)
+					sprintf(dimStr2, "Ending subscripts = %zu %zu", r2-1, r1-1);
+				else if(r4==0)
+					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu", r3-1, r2-1, r1-1);
+				else if(r5==0)
+					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu %zu", r4-1, r3-1, r2-1, r1-1);
+				else
+					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu %zu %zu", r5-1, r4-1, r3-1, r2-1, r1-1);
+				
+				str[2] = dimStr2;
+
+				writeStrings(4, str, "parameter-rec.txt", &status);		
+
+				//TODO: constructing the raw.txt (containing the path of the binary data file				
+				strcpy(outputFilePath, "tucker-decompress.out");
+				char* dataPathStr[1];
+				dataPathStr[0] = outputFilePath;
+				writeStrings(1, dataPathStr, "rec.txt", &status);
+				
+				printf("calling TuckerMPI interface to do the Tucker Tensor Decomposition....\n");
+				
+				system("${TUCKERMPI_PATH}/serial/drivers/bin/Tucker_reconstruct --parameter-file parameter-rec.txt");
 			}
-			cost_start();
-			double *data = SZ_decompress(SZ_DOUBLE, bytes, byteLength, r5, r4, r3, r2, r1);			
-			cost_end();
-			free(bytes);
-			sprintf(outputFilePath, "%s.out", cmpPath);
-			if(binaryOutput==1)		
-				writeDoubleData_inBytes(data, nbEle, outputFilePath, &status);
-			else //txt output
-				writeDoubleData(data, nbEle, outputFilePath, &status);			
-			if(status!=SZ_SCES)
+			else
 			{
-				printf("Error: %s cannot be written!\n", outputFilePath);
-				exit(0);
+				unsigned char *bytes = readByteData(cmpPath, &byteLength, &status);
+				if(status!=SZ_SCES)
+				{
+					printf("Error: %s cannot be read!\n", cmpPath);
+					exit(0);
+				}
+				cost_start();
+				data = SZ_decompress(SZ_DOUBLE, bytes, byteLength, r5, r4, r3, r2, r1);			
+				cost_end();
+				free(bytes);
+				sprintf(outputFilePath, "%s.out", cmpPath);
+				if(binaryOutput==1)		
+				  writeDoubleData_inBytes(data, nbEle, outputFilePath, &status);
+				else //txt output
+				  writeDoubleData(data, nbEle, outputFilePath, &status);			
+				if(status!=SZ_SCES)
+				{
+					printf("Error: %s cannot be written!\n", outputFilePath);
+					exit(0);
+				}
+						
+				printf("decompression time = %f seconds.\n", totalCost);
+				printf("decompressed data file: %s\n", outputFilePath);										
 			}
+			
 			
 			if(printCmpResults)
 			{
@@ -362,9 +505,12 @@ int main(int argc, char* argv[])
 					printf("Error: Since you add -a option (analysis), please specify the original data path by -i <path>.\n");
 					exit(0);
 				}
+				size_t totalNbEle;
+
+				if(tucker)
+					data = readDoubleData("tucker-decompress.out", &totalNbEle, &status);
 
 				//compute the distortion / compression errors...
-				size_t totalNbEle;
 				double *ori_data = readDoubleData(inPath, &totalNbEle, &status);
 				if(status!=SZ_SCES)
 				{
@@ -377,11 +523,11 @@ int main(int argc, char* argv[])
 				Max = ori_data[0];
 				Min = ori_data[0];
 				diffMax = data[0]>ori_data[0]?data[0]-ori_data[0]:ori_data[0]-data[0];
-			
+
 				//diffMax = fabs(data[0] - ori_data[0]);
 				size_t k = 0;
 				double sum1 = 0, sum2 = 0;
-							
+
 				for (i = 0; i < nbEle; i++)
 				{
 					sum1 += ori_data[i];
@@ -392,23 +538,23 @@ int main(int argc, char* argv[])
 
 				double sum3 = 0, sum4 = 0;
 				double sum = 0, prodSum = 0, relerr = 0;
-				
+
 				double maxpw_relerr = 0; 
 				for (i = 0; i < nbEle; i++)
 				{
 					if (Max < ori_data[i]) Max = ori_data[i];
 					if (Min > ori_data[i]) Min = ori_data[i];
-					
+
 					float err = fabs(data[i] - ori_data[i]);
 					if(ori_data[i]!=0)
 					{
 						relerr = err/ori_data[i];
 						if(maxpw_relerr<relerr)
-							maxpw_relerr = relerr;
+						  maxpw_relerr = relerr;
 					}
 
 					if (diffMax < err)
-						diffMax = err;
+					  diffMax = err;
 					prodSum += (ori_data[i]-mean1)*(data[i]-mean2);
 					sum3 += (ori_data[i] - mean1)*(ori_data[i]-mean1);
 					sum4 += (data[i] - mean2)*(data[i]-mean2);
@@ -430,10 +576,8 @@ int main(int argc, char* argv[])
 				printf ("Max pw relative error = %f\n", maxpw_relerr);
 				printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
 				printf ("acEff=%f\n", acEff);
-			}
-			free(data);			
-		}
-		printf("decompression time = %f seconds.\n", totalCost);
-		printf("decompressed data file: %s\n", outputFilePath);		
+			}			
+			free(data);								
+		}	
 	}
 }
