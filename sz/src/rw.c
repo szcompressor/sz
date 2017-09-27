@@ -969,3 +969,25 @@ unsigned short* readShortData(char *srcFilePath, size_t *dataLength, int *status
 	*status = state;
 	return states;
 }
+
+void writeStrings(int nbStr, char *str[], char *tgtFilePath, int *status)
+{
+	size_t i = 0;
+	char s[256];
+	FILE *pFile = fopen(tgtFilePath, "wb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 3\n");
+		*status = SZ_FERR;
+		return;
+	}
+
+	for(i = 0;i<nbStr;i++)
+	{
+		sprintf(s,"%s\n",str[i]);
+		fputs(s, pFile);
+	}
+
+	fclose(pFile);
+	*status = SZ_SCES;
+}
