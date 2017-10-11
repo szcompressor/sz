@@ -1491,7 +1491,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		realPrecision = conf_params->absErrBound = computeABSErrBoundFromPSNR(psnr, (double)predThreshold, valueRangeSize);
 	}
 	else
-		realPrecision = getRealPrecision_float(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
+		realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
 		
 	if(valueRangeSize <= realPrecision)
 	{
@@ -1573,7 +1573,7 @@ size_t *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
 	double min = computeRangeSize_double_subblock(oriData, &valueRangeSize, &medianValue, r5, r4, r3, r2, r1, s5, s4, s3, s2, s1, e5, e4, e3, e2, e1);
 	double max = min+valueRangeSize;
 
-	double realPrecision = getRealPrecision_float(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
+	double realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
 
 	if(valueRangeSize <= realPrecision)
 	{
