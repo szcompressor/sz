@@ -412,7 +412,23 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 			}
 /*			if(type[i]==0)
 				printf("err:type[%d]=0\n", i);*/
-			listAdd_float(last3CmprsData, pred);					
+				
+			//double-check the prediction error in case of machine-epsilon impact	
+			if(fabs(curData-pred)>realPrecision)
+			{	
+				type[i] = 0;
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+				
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,4);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);		
+				
+				listAdd_float(last3CmprsData, vce->data);		
+			}
+			else
+				listAdd_float(last3CmprsData, pred);
+						
 			continue;
 		}
 		
@@ -583,9 +599,12 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	P1[0] = vce->data;
 
+	float curData;
+
 	/* Process Row-0 data 1*/
 	pred1D = P1[0];
-	diff = spaceFillingValue[1] - pred1D;
+	curData = spaceFillingValue[1];
+	diff = curData - pred1D;
 
 	itvNum =  fabs(diff)/realPrecision + 1;
 
@@ -594,13 +613,27 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 		if (diff < 0) itvNum = -itvNum;
 		type[1] = (int) (itvNum/2) + intvRadius;
 		P1[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+
+		//ganrantee comporession error against the case of machine-epsilon
+		if(fabs(spaceFillingValue[1]-P1[1])>realPrecision)
+		{	
+			type[1] = 0;
+			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+			
+			compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+			memcpy(preDataBytes,vce->curBytes,4);
+			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+			
+			P1[1] = vce->data;	
+		}
 	}
 	else
 	{
 		type[1] = 0;
 
 		addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-		compressSingleFloatValue(vce, spaceFillingValue[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+		compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 		memcpy(preDataBytes,vce->curBytes,4);
 		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -611,7 +644,8 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 	for (j = 2; j < r2; j++)
 	{
 		pred1D = 2*P1[j-1] - P1[j-2];
-		diff = spaceFillingValue[j] - pred1D;
+		curData = spaceFillingValue[j];
+		diff = curData - pred1D;
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
@@ -620,13 +654,27 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 			if (diff < 0) itvNum = -itvNum;
 			type[j] = (int) (itvNum/2) + intvRadius;
 			P1[j] = pred1D + 2 * (type[j] - intvRadius) * realPrecision;
+		
+			//ganrantee comporession error against the case of machine-epsilon
+			if(fabs(curData-P1[j])>realPrecision)
+			{	
+				type[j] = 0;
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+				
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,4);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+				
+				P1[j] = vce->data;	
+			}
 		}
 		else
 		{
 			type[j] = 0;
 
 			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-			compressSingleFloatValue(vce, spaceFillingValue[j], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+			compressSingleFloatValue(vce,curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -641,7 +689,8 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 		/* Process row-i data 0 */
 		index = i*r2;
 		pred1D = P1[0];
-		diff = spaceFillingValue[index] - pred1D;
+		curData = spaceFillingValue[index];
+		diff = curData - pred1D;
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
@@ -650,13 +699,27 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 			if (diff < 0) itvNum = -itvNum;
 			type[index] = (int) (itvNum/2) + intvRadius;
 			P0[0] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+
+			//ganrantee comporession error against the case of machine-epsilon
+			if(fabs(curData-P0[0])>realPrecision)
+			{	
+				type[index] = 0;
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+				
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,4);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+				
+				P0[0] = vce->data;	
+			}
 		}
 		else
 		{
 			type[index] = 0;
 
 			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-			compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+			compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -669,7 +732,8 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 			index = i*r2+j;
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 
-			diff = spaceFillingValue[index] - pred2D;
+			curData = spaceFillingValue[index];
+			diff = curData - pred2D;
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
@@ -678,13 +742,27 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 				if (diff < 0) itvNum = -itvNum;
 				type[index] = (int) (itvNum/2) + intvRadius;
 				P0[j] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+			
+				//ganrantee comporession error against the case of machine-epsilon
+				if(fabs(curData-P0[j])>realPrecision)
+				{	
+					type[index] = 0;
+					addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+					
+					compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+					updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+					memcpy(preDataBytes,vce->curBytes,4);
+					addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+					
+					P0[j] = vce->data;	
+				}			
 			}
 			else
 			{
 				type[index] = 0;
 
 				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -813,9 +891,12 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	P1[0] = vce->data;
 
+	float curData;
+
 	/* Process Row-0 data 1*/
 	pred1D = P1[0];
-	diff = spaceFillingValue[1] - pred1D;
+	curData = spaceFillingValue[1];
+	diff = curData - pred1D;
 
 	itvNum = fabs(diff)/realPrecision + 1;
 
@@ -824,13 +905,27 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 		if (diff < 0) itvNum = -itvNum;
 		type[1] = (int) (itvNum/2) + intvRadius;
 		P1[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+		
+		//ganrantee comporession error against the case of machine-epsilon
+		if(fabs(curData-P1[1])>realPrecision)
+		{	
+			type[1] = 0;
+			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+			
+			compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+			memcpy(preDataBytes,vce->curBytes,4);
+			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+			
+			P1[1] = vce->data;	
+		}		
 	}
 	else
 	{
 		type[1] = 0;
 
 		addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-		compressSingleFloatValue(vce, spaceFillingValue[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+		compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 		memcpy(preDataBytes,vce->curBytes,4);
 		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -841,7 +936,8 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 	for (j = 2; j < r3; j++)
 	{
 		pred1D = 2*P1[j-1] - P1[j-2];
-		diff = spaceFillingValue[j] - pred1D;
+		curData = spaceFillingValue[j];
+		diff = curData - pred1D;
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
@@ -850,13 +946,27 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 			if (diff < 0) itvNum = -itvNum;
 			type[j] = (int) (itvNum/2) + intvRadius;
 			P1[j] = pred1D + 2 * (type[j] - intvRadius) * realPrecision;
+			
+			//ganrantee comporession error against the case of machine-epsilon
+			if(fabs(curData-P1[j])>realPrecision)
+			{	
+				type[j] = 0;
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+				
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,4);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+				
+				P1[j] = vce->data;	
+			}			
 		}
 		else
 		{
 			type[j] = 0;
 
 			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-			compressSingleFloatValue(vce, spaceFillingValue[j], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+			compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -871,7 +981,8 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 		/* Process row-i data 0 */
 		index = i*r3;	
 		pred1D = P1[index-r3];
-		diff = spaceFillingValue[index] - pred1D;
+		curData = spaceFillingValue[index];
+		diff = curData - pred1D;
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
@@ -880,13 +991,27 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 			if (diff < 0) itvNum = -itvNum;
 			type[index] = (int) (itvNum/2) + intvRadius;
 			P1[index] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			
+			//ganrantee comporession error against the case of machine-epsilon
+			if(fabs(curData-P1[index])>realPrecision)
+			{	
+				type[index] = 0;
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+				
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,4);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+				
+				P1[index] = vce->data;	
+			}			
 		}
 		else
 		{
 			type[index] = 0;
 
 			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-			compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+			compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -899,7 +1024,8 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 			index = i*r3+j;
 			pred2D = P1[index-1] + P1[index-r3] - P1[index-r3-1];
 
-			diff = spaceFillingValue[index] - pred2D;
+			curData = spaceFillingValue[index];
+			diff = curData - pred2D;
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
@@ -908,13 +1034,27 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 				if (diff < 0) itvNum = -itvNum;
 				type[index] = (int) (itvNum/2) + intvRadius;
 				P1[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				
+				//ganrantee comporession error against the case of machine-epsilon
+				if(fabs(curData-P1[index])>realPrecision)
+				{	
+					type[index] = 0;
+					addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+					
+					compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+					updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+					memcpy(preDataBytes,vce->curBytes,4);
+					addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+					
+					P1[index] = vce->data;	
+				}				
 			}
 			else
 			{
 				type[index] = 0;
 
 				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -931,7 +1071,8 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 		/* Process Row-0 data 0*/
 		index = k*r23;
 		pred1D = P1[0];
-		diff = spaceFillingValue[index] - pred1D;
+		curData = spaceFillingValue[index];
+		diff = curData - pred1D;
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
@@ -940,13 +1081,27 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 			if (diff < 0) itvNum = -itvNum;
 			type[index] = (int) (itvNum/2) + intvRadius;
 			P0[0] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			
+			//ganrantee comporession error against the case of machine-epsilon
+			if(fabs(curData-P0[0])>realPrecision)
+			{	
+				type[index] = 0;
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+				
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,4);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+				
+				P0[0] = vce->data;	
+			}			
 		}
 		else
 		{
 			type[index] = 0;
 
 			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-			compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+			compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -960,6 +1115,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 			//index = k*r2*r3+j;
 			index ++;
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
+			curData = spaceFillingValue[index];
 			diff = spaceFillingValue[index] - pred2D;
 
 			itvNum = fabs(diff)/realPrecision + 1;
@@ -969,15 +1125,26 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 				if (diff < 0) itvNum = -itvNum;
 				type[index] = (int) (itvNum/2) + intvRadius;
 				P0[j] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
-/*				if(type[index]==0)
-					printf("err:type[%d]=0, index4\n", index);					*/
+				//ganrantee comporession error against the case of machine-epsilon
+				if(fabs(curData-P0[j])>realPrecision)
+				{	
+					type[index] = 0;
+					addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+					
+					compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+					updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+					memcpy(preDataBytes,vce->curBytes,4);
+					addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+					
+					P0[j] = vce->data;	
+				}
 			}
 			else
 			{
 				type[index] = 0;
 
 				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -993,6 +1160,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 			index = k*r23 + i*r3;
 			index2D = i*r3;		
 			pred2D = P0[index2D-r3] + P1[index2D] - P1[index2D-r3];
+			curData = spaceFillingValue[index];
 			diff = spaceFillingValue[index] - pred2D;
 
 			itvNum = fabs(diff)/realPrecision + 1;
@@ -1002,13 +1170,26 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 				if (diff < 0) itvNum = -itvNum;
 				type[index] = (int) (itvNum/2) + intvRadius;
 				P0[index2D] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				//ganrantee comporession error against the case of machine-epsilon
+				if(fabs(curData-P0[index2D])>realPrecision)
+				{	
+					type[index] = 0;
+					addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+					
+					compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+					updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+					memcpy(preDataBytes,vce->curBytes,4);
+					addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+					
+					P0[index2D] = vce->data;	
+				}				
 			}
 			else
 			{
 				type[index] = 0;
 
 				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -1024,7 +1205,8 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 				index ++;
 				index2D = i*r3 + j;
 				pred3D = P0[index2D-1] + P0[index2D-r3]+ P1[index2D] - P0[index2D-r3-1] - P1[index2D-r3] - P1[index2D-1] + P1[index2D-r3-1];
-				diff = spaceFillingValue[index] - pred3D;
+				curData = spaceFillingValue[index];
+				diff = curData - pred3D;
 
 				itvNum = fabs(diff)/realPrecision + 1;
 
@@ -1033,13 +1215,27 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 					if (diff < 0) itvNum = -itvNum;
 					type[index] = (int) (itvNum/2) + intvRadius;
 					P0[index2D] = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
+					
+					//ganrantee comporession error against the case of machine-epsilon
+					if(fabs(curData-P0[index2D])>realPrecision)
+					{	
+						type[index] = 0;
+						addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+						
+						compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+						updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+						memcpy(preDataBytes,vce->curBytes,4);
+						addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);	
+						
+						P0[index2D] = vce->data;	
+					}					
 				}
 				else
 				{
 					type[index] = 0;
 
 					addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-					compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+					compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 					updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 					memcpy(preDataBytes,vce->curBytes,4);
 					addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
