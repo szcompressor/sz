@@ -33,8 +33,8 @@ unsigned int optimize_intervals_int64_1D(int64_t *oriData, size_t dataLength, do
 	{
 		if(i%sampleDistance==0)
 		{
-			pred_value = 2*oriData[i-1] - oriData[i-2];
-			//pred_value = oriData[i-1];
+			//pred_value = 2*oriData[i-1] - oriData[i-2];
+			pred_value = oriData[i-1];
 			pred_err = llabs(pred_value - oriData[i]);
 			radiusIndex = (uint64_t)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
@@ -267,8 +267,8 @@ TightDataPointStorageI* SZ_compress_int64_1D_MDQ(int64_t *oriData, size_t dataLe
 //		if(i==2869438)
 //			printf("i=%d\n", i);
 		curData = spaceFillingValue[i];
-		pred = 2*last3CmprsData[0] - last3CmprsData[1];
-		//pred = last3CmprsData[0];
+		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
+		pred = last3CmprsData[0];
 		predAbsErr = llabs(curData - pred);	
 		if(predAbsErr<=checkRadius)
 		{

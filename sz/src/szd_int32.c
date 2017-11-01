@@ -149,8 +149,8 @@ void decompressDataSeries_int32_1D(int32_t** data, size_t dataSeriesLength, Tigh
 			(*data)[i] = exactData + minValue;
 			break;
 		default:
-			predValue = 2 * (*data)[i-1] - (*data)[i-2];
-			//predValue = (*data)[i-1];
+			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
+			predValue = (*data)[i-1];
 			(*data)[i] = predValue + (type_-intvRadius)*interval;
 			break;
 		}

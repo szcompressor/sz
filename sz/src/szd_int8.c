@@ -150,8 +150,8 @@ void decompressDataSeries_int8_1D(int8_t** data, size_t dataSeriesLength, TightD
 			(*data)[i] = exactData + minValue;
 			break;
 		default:
-			predValue = 2 * (*data)[i-1] - (*data)[i-2];
-			//predValue = (*data)[i-1];
+			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
+			predValue = (*data)[i-1];
 			tmp = predValue + (type_-intvRadius)*interval;
 			if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 				(*data)[i] = tmp;

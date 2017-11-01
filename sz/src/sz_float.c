@@ -36,8 +36,8 @@ unsigned int optimize_intervals_float_1D(float *oriData, size_t dataLength, doub
 	{
 		if(i%sampleDistance==0)
 		{
-			pred_value = 2*oriData[i-1] - oriData[i-2];
-			//pred_value = oriData[i-1];
+			//pred_value = 2*oriData[i-1] - oriData[i-2];
+			pred_value = oriData[i-1];
 			pred_err = fabs(pred_value - oriData[i]);
 			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
@@ -394,8 +394,8 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 //		if(i==2869438)
 //			printf("i=%d\n", i);
 		curData = spaceFillingValue[i];
-		pred = 2*last3CmprsData[0] - last3CmprsData[1];
-		//pred = last3CmprsData[0];
+		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
+		pred = last3CmprsData[0];
 		predAbsErr = fabs(curData - pred);	
 		if(predAbsErr<=checkRadius)
 		{
@@ -428,7 +428,7 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 			}
 			else
 				listAdd_float(last3CmprsData, pred);
-						
+				
 			continue;
 		}
 		
