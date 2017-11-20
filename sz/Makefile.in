@@ -141,11 +141,13 @@ am__libSZ_la_SOURCES_DIST = src/ByteToolkit.c src/dataCompression.c \
 	src/dictionary.c src/DynamicFloatArray.c src/VarSet.c \
 	src/callZlib.c src/Huffman.c src/sz_float.c src/sz_double.c \
 	src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c \
-	src/szd_float.c src/szd_double.c src/szd_int8.c \
-	src/szd_int16.c src/szd_int32.c src/szd_int64.c src/sz.c \
-	src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c \
-	src/szd_double_pwr.c src/szf.c src/rwf.c src/sz_interface.F90 \
-	src/rw_interface.F90
+	src/sz_uint8.c src/sz_uint16.c src/sz_uint32.c src/sz_uint64.c \
+	src/szd_uint8.c src/szd_uint16.c src/szd_uint32.c \
+	src/szd_uint64.c src/szd_float.c src/szd_double.c \
+	src/szd_int8.c src/szd_int16.c src/szd_int32.c src/szd_int64.c \
+	src/sz.c src/sz_float_pwr.c src/sz_double_pwr.c \
+	src/szd_float_pwr.c src/szd_double_pwr.c src/szf.c src/rwf.c \
+	src/sz_interface.F90 src/rw_interface.F90
 am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@am_libSZ_la_OBJECTS = src/libSZ_la-ByteToolkit.lo \
 @FORTRAN_FALSE@	src/libSZ_la-dataCompression.lo \
@@ -170,6 +172,14 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@	src/libSZ_la-sz_int16.lo \
 @FORTRAN_FALSE@	src/libSZ_la-sz_int32.lo \
 @FORTRAN_FALSE@	src/libSZ_la-sz_int64.lo \
+@FORTRAN_FALSE@	src/libSZ_la-sz_uint8.lo \
+@FORTRAN_FALSE@	src/libSZ_la-sz_uint16.lo \
+@FORTRAN_FALSE@	src/libSZ_la-sz_uint32.lo \
+@FORTRAN_FALSE@	src/libSZ_la-sz_uint64.lo \
+@FORTRAN_FALSE@	src/libSZ_la-szd_uint8.lo \
+@FORTRAN_FALSE@	src/libSZ_la-szd_uint16.lo \
+@FORTRAN_FALSE@	src/libSZ_la-szd_uint32.lo \
+@FORTRAN_FALSE@	src/libSZ_la-szd_uint64.lo \
 @FORTRAN_FALSE@	src/libSZ_la-szd_float.lo \
 @FORTRAN_FALSE@	src/libSZ_la-szd_double.lo \
 @FORTRAN_FALSE@	src/libSZ_la-szd_int8.lo \
@@ -201,6 +211,14 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_TRUE@	src/libSZ_la-sz_int8.lo src/libSZ_la-sz_int16.lo \
 @FORTRAN_TRUE@	src/libSZ_la-sz_int32.lo \
 @FORTRAN_TRUE@	src/libSZ_la-sz_int64.lo \
+@FORTRAN_TRUE@	src/libSZ_la-sz_uint8.lo \
+@FORTRAN_TRUE@	src/libSZ_la-sz_uint16.lo \
+@FORTRAN_TRUE@	src/libSZ_la-sz_uint32.lo \
+@FORTRAN_TRUE@	src/libSZ_la-sz_uint64.lo \
+@FORTRAN_TRUE@	src/libSZ_la-szd_uint8.lo \
+@FORTRAN_TRUE@	src/libSZ_la-szd_uint16.lo \
+@FORTRAN_TRUE@	src/libSZ_la-szd_uint32.lo \
+@FORTRAN_TRUE@	src/libSZ_la-szd_uint64.lo \
 @FORTRAN_TRUE@	src/libSZ_la-szd_float.lo \
 @FORTRAN_TRUE@	src/libSZ_la-szd_double.lo \
 @FORTRAN_TRUE@	src/libSZ_la-szd_int8.lo \
@@ -287,6 +305,9 @@ am__include_HEADERS_DIST = include/CompressElement.h \
 	include/TypeManager.h include/sz_int8.h include/sz_int16.h \
 	include/sz_int32.h include/sz_int64.h include/szd_int8.h \
 	include/szd_int16.h include/szd_int32.h include/szd_int64.h \
+	include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h \
+	include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h \
+	include/szd_uint32.h include/szd_uint64.h \
 	include/sz_float_pwr.h include/sz_double_pwr.h \
 	include/szd_float.h include/szd_double.h \
 	include/szd_float_pwr.h include/szd_double_pwr.h \
@@ -446,6 +467,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h\
 @FORTRAN_FALSE@		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\
 @FORTRAN_FALSE@		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
+@FORTRAN_FALSE@		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
 @FORTRAN_FALSE@		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
 @FORTRAN_FALSE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h
 
@@ -453,6 +475,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h include/szf.h\
 @FORTRAN_TRUE@		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\
 @FORTRAN_TRUE@		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
+@FORTRAN_TRUE@		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
 @FORTRAN_TRUE@		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
 @FORTRAN_TRUE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h sz.mod rw.mod
 
@@ -470,6 +493,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@		src/conf.c src/DynamicDoubleArray.c src/TypeManager.c \
 @FORTRAN_FALSE@		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/callZlib.c src/Huffman.c \
 @FORTRAN_FALSE@		src/sz_float.c src/sz_double.c src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c\
+@FORTRAN_FALSE@		src/sz_uint8.c src/sz_uint16.c src/sz_uint32.c src/sz_uint64.c src/szd_uint8.c src/szd_uint16.c src/szd_uint32.c src/szd_uint64.c\
 @FORTRAN_FALSE@		src/szd_float.c src/szd_double.c src/szd_int8.c src/szd_int16.c src/szd_int32.c src/szd_int64.c src/sz.c\
 @FORTRAN_FALSE@		src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c src/szd_double_pwr.c
 
@@ -478,7 +502,8 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@		src/TightDataPointStorageI.c src/TightDataPointStorageD.c src/TightDataPointStorageF.c \
 @FORTRAN_TRUE@		src/conf.c src/DynamicDoubleArray.c src/rwf.c src/TypeManager.c \
 @FORTRAN_TRUE@		src/dictionary.c src/DynamicFloatArray.c src/VarSet.c src/callZlib.c src/Huffman.c \
-@FORTRAN_TRUE@		src/sz_float.c src/sz_double.c src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c \
+@FORTRAN_TRUE@		src/sz_float.c src/sz_double.c src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c\
+@FORTRAN_TRUE@		src/sz_uint8.c src/sz_uint16.c src/sz_uint32.c src/sz_uint64.c src/szd_uint8.c src/szd_uint16.c src/szd_uint32.c src/szd_uint64.c\
 @FORTRAN_TRUE@		src/szd_float.c src/szd_double.c src/szd_int8.c src/szd_int16.c src/szd_int32.c src/szd_int64.c src/sz.c\
 @FORTRAN_TRUE@		src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c src/szd_double_pwr.c\
 @FORTRAN_TRUE@		src/sz_interface.F90 src/rw_interface.F90
@@ -606,6 +631,22 @@ src/libSZ_la-sz_int32.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-sz_int64.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-sz_uint8.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-sz_uint16.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-sz_uint32.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-sz_uint64.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-szd_uint8.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-szd_uint16.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-szd_uint32.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-szd_uint64.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-szd_float.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-szd_double.lo: src/$(am__dirstamp) \
@@ -671,6 +712,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_int32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_int64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_int8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_uint16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_uint32.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_uint64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_uint8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_double.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_double_pwr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_float.Plo@am__quote@
@@ -679,6 +724,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_int32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_int64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_int8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_uint16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_uint32.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_uint64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_uint8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szf.Plo@am__quote@
 
 .F90.o:
@@ -881,6 +930,62 @@ src/libSZ_la-sz_int64.lo: src/sz_int64.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/sz_int64.c' object='src/libSZ_la-sz_int64.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-sz_int64.lo `test -f 'src/sz_int64.c' || echo '$(srcdir)/'`src/sz_int64.c
+
+src/libSZ_la-sz_uint8.lo: src/sz_uint8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-sz_uint8.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-sz_uint8.Tpo -c -o src/libSZ_la-sz_uint8.lo `test -f 'src/sz_uint8.c' || echo '$(srcdir)/'`src/sz_uint8.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-sz_uint8.Tpo src/$(DEPDIR)/libSZ_la-sz_uint8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/sz_uint8.c' object='src/libSZ_la-sz_uint8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-sz_uint8.lo `test -f 'src/sz_uint8.c' || echo '$(srcdir)/'`src/sz_uint8.c
+
+src/libSZ_la-sz_uint16.lo: src/sz_uint16.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-sz_uint16.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-sz_uint16.Tpo -c -o src/libSZ_la-sz_uint16.lo `test -f 'src/sz_uint16.c' || echo '$(srcdir)/'`src/sz_uint16.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-sz_uint16.Tpo src/$(DEPDIR)/libSZ_la-sz_uint16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/sz_uint16.c' object='src/libSZ_la-sz_uint16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-sz_uint16.lo `test -f 'src/sz_uint16.c' || echo '$(srcdir)/'`src/sz_uint16.c
+
+src/libSZ_la-sz_uint32.lo: src/sz_uint32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-sz_uint32.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-sz_uint32.Tpo -c -o src/libSZ_la-sz_uint32.lo `test -f 'src/sz_uint32.c' || echo '$(srcdir)/'`src/sz_uint32.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-sz_uint32.Tpo src/$(DEPDIR)/libSZ_la-sz_uint32.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/sz_uint32.c' object='src/libSZ_la-sz_uint32.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-sz_uint32.lo `test -f 'src/sz_uint32.c' || echo '$(srcdir)/'`src/sz_uint32.c
+
+src/libSZ_la-sz_uint64.lo: src/sz_uint64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-sz_uint64.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-sz_uint64.Tpo -c -o src/libSZ_la-sz_uint64.lo `test -f 'src/sz_uint64.c' || echo '$(srcdir)/'`src/sz_uint64.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-sz_uint64.Tpo src/$(DEPDIR)/libSZ_la-sz_uint64.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/sz_uint64.c' object='src/libSZ_la-sz_uint64.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-sz_uint64.lo `test -f 'src/sz_uint64.c' || echo '$(srcdir)/'`src/sz_uint64.c
+
+src/libSZ_la-szd_uint8.lo: src/szd_uint8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-szd_uint8.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-szd_uint8.Tpo -c -o src/libSZ_la-szd_uint8.lo `test -f 'src/szd_uint8.c' || echo '$(srcdir)/'`src/szd_uint8.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-szd_uint8.Tpo src/$(DEPDIR)/libSZ_la-szd_uint8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/szd_uint8.c' object='src/libSZ_la-szd_uint8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-szd_uint8.lo `test -f 'src/szd_uint8.c' || echo '$(srcdir)/'`src/szd_uint8.c
+
+src/libSZ_la-szd_uint16.lo: src/szd_uint16.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-szd_uint16.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-szd_uint16.Tpo -c -o src/libSZ_la-szd_uint16.lo `test -f 'src/szd_uint16.c' || echo '$(srcdir)/'`src/szd_uint16.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-szd_uint16.Tpo src/$(DEPDIR)/libSZ_la-szd_uint16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/szd_uint16.c' object='src/libSZ_la-szd_uint16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-szd_uint16.lo `test -f 'src/szd_uint16.c' || echo '$(srcdir)/'`src/szd_uint16.c
+
+src/libSZ_la-szd_uint32.lo: src/szd_uint32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-szd_uint32.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-szd_uint32.Tpo -c -o src/libSZ_la-szd_uint32.lo `test -f 'src/szd_uint32.c' || echo '$(srcdir)/'`src/szd_uint32.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-szd_uint32.Tpo src/$(DEPDIR)/libSZ_la-szd_uint32.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/szd_uint32.c' object='src/libSZ_la-szd_uint32.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-szd_uint32.lo `test -f 'src/szd_uint32.c' || echo '$(srcdir)/'`src/szd_uint32.c
+
+src/libSZ_la-szd_uint64.lo: src/szd_uint64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-szd_uint64.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-szd_uint64.Tpo -c -o src/libSZ_la-szd_uint64.lo `test -f 'src/szd_uint64.c' || echo '$(srcdir)/'`src/szd_uint64.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-szd_uint64.Tpo src/$(DEPDIR)/libSZ_la-szd_uint64.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/szd_uint64.c' object='src/libSZ_la-szd_uint64.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-szd_uint64.lo `test -f 'src/szd_uint64.c' || echo '$(srcdir)/'`src/szd_uint64.c
 
 src/libSZ_la-szd_float.lo: src/szd_float.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-szd_float.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-szd_float.Tpo -c -o src/libSZ_la-szd_float.lo `test -f 'src/szd_float.c' || echo '$(srcdir)/'`src/szd_float.c

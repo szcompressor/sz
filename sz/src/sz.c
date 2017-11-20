@@ -323,10 +323,34 @@ double relBoundRatio, double pwrBoundRatio, int pwrType, size_t r5, size_t r4, s
 		unsigned char *newByteData;
 		SZ_compress_args_int8(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
 		return newByteData;
-	}	
+	}
+	else if(dataType==SZ_UINT64)
+	{
+		unsigned char *newByteData;
+		SZ_compress_args_uint64(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		return newByteData;
+	}		
+	else if(dataType==SZ_UINT32) //int type
+	{
+		unsigned char *newByteData;
+		SZ_compress_args_uint32(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		return newByteData;
+	}
+	else if(dataType==SZ_UINT16)
+	{
+		unsigned char *newByteData;
+		SZ_compress_args_uint16(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		return newByteData;		
+	}
+	else if(dataType==SZ_UINT8)
+	{
+		unsigned char *newByteData;
+		SZ_compress_args_uint8(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		return newByteData;
+	} 	
 	else
 	{
-		printf("Error: dataType can only be SZ_FLOAT or SZ_DOUBLE.\n");
+		printf("Error: dataType can only be SZ_FLOAT, SZ_DOUBLE, SZ_INT8/16/32/64 or SZ_UINT8/16/32/64.\n");
 		return NULL;
 	}
 }
@@ -474,19 +498,27 @@ void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_
 	}
 	else if(dataType == SZ_UINT8)
 	{
-		return NULL;
+		uint8_t *newUInt8Data;
+		SZ_decompress_args_uint8(&newUInt8Data, r5, r4, r3, r2, r1, bytes, byteLength);
+		return newUInt8Data;
 	}
 	else if(dataType == SZ_UINT16)
 	{
-		return NULL;
+		uint16_t *newUInt16Data;
+		SZ_decompress_args_uint16(&newUInt16Data, r5, r4, r3, r2, r1, bytes, byteLength);
+		return newUInt16Data;
 	}
 	else if(dataType == SZ_UINT32)
 	{
-		return NULL;
+		uint32_t *newUInt32Data;
+		SZ_decompress_args_uint32(&newUInt32Data, r5, r4, r3, r2, r1, bytes, byteLength);
+		return newUInt32Data;
 	}
 	else if(dataType == SZ_UINT64)
 	{
-		return NULL;
+		uint64_t *newUInt64Data;
+		SZ_decompress_args_uint64(&newUInt64Data, r5, r4, r3, r2, r1, bytes, byteLength);
+		return newUInt64Data;
 	}
 	else 
 	{

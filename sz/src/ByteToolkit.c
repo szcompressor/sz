@@ -9,6 +9,84 @@
  
 #include <stdlib.h>
 #include "sz.h" 	
+
+unsigned short bytesToUInt16_bigEndian(unsigned char* bytes)
+{
+	int temp = 0;
+	unsigned short res = 0;
+	
+	temp = bytes[0] & 0xff;
+	res |= temp;	
+
+	res <<= 8;
+	temp = bytes[1] & 0xff;
+	res |= temp;
+	
+	return res;
+}	
+	
+unsigned int bytesToUInt32_bigEndian(unsigned char* bytes)
+{
+	unsigned int temp = 0;
+	unsigned int res = 0;
+	
+	res <<= 8;
+	temp = bytes[0] & 0xff;
+	res |= temp;	
+
+	res <<= 8;
+	temp = bytes[1] & 0xff;
+	res |= temp;
+
+	res <<= 8;
+	temp = bytes[2] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = bytes[3] & 0xff;
+	res |= temp;
+	
+	return res;
+}
+
+unsigned long bytesToUInt64_bigEndian(unsigned char* b) {
+	unsigned long temp = 0;
+	unsigned long res = 0;
+
+	res <<= 8;
+	temp = b[0] & 0xff;
+	res |= temp;
+
+	res <<= 8;
+	temp = b[1] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[2] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[3] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[4] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[5] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[6] & 0xff;
+	res |= temp;
+	
+	res <<= 8;
+	temp = b[7] & 0xff;
+	res |= temp;						
+	
+	return res;
+}
 	
 short bytesToInt16_bigEndian(unsigned char* bytes)
 {

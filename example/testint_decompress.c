@@ -397,7 +397,7 @@ void assessDeCompressionData(int dataType, char* zipFilePath, void* decompressed
     int64_t Max = 0, Min = 0, diffMax = 0;
     Max = ori_data[0];
     Min = ori_data[0];
-    diffMax = llabs(data[0] - ori_data[0]);
+    diffMax = fabs(data[0] - ori_data[0]);
     size_t k = 0;
     double sum1 = 0, sum2 = 0;
     for (i = 0; i < nbEle; i++)
@@ -417,7 +417,7 @@ void assessDeCompressionData(int dataType, char* zipFilePath, void* decompressed
         if (Max < ori_data[i]) Max = ori_data[i];
         if (Min > ori_data[i]) Min = ori_data[i];
         
-        float err = llabs(data[i] - ori_data[i]);
+        float err = fabs(data[i] - ori_data[i]);
         //printf("%d: %f, ori=%d, dec=%d\n", i, err, ori_data[i], data[i]);
 		if(ori_data[i]!=0)
 		{
@@ -447,8 +447,8 @@ void assessDeCompressionData(int dataType, char* zipFilePath, void* decompressed
     double psnr = 20*log10(range)-10*log10(mse);
     double nrmse = sqrt(mse)/range;
 
-    printf ("Min=%lld, Max=%lld, range=%lf\n", Min, Max, range);
-    printf ("Max absolute error = %lld\n", diffMax);
+    printf ("Min=%d, Max=%d, range=%f\n", Min, Max, range);
+    printf ("Max absolute error = %d\n", diffMax);
     printf ("Max relative error = %f\n", ((float)diffMax)/(Max-Min));
     printf ("Max pw relative error = %f\n", maxpw_relerr);
     printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);

@@ -17,11 +17,18 @@ extern "C" {
 #include <stdio.h>
 
 //ByteToolkit.c
+
+unsigned short bytesToUInt16_bigEndian(unsigned char* bytes);
+unsigned int bytesToUInt32_bigEndian(unsigned char* bytes);
+unsigned long bytesToUInt64_bigEndian(unsigned char* b);
+
 short bytesToInt16_bigEndian(unsigned char* bytes);
 int bytesToInt32_bigEndian(unsigned char* bytes);
 long bytesToInt64_bigEndian(unsigned char* b);
 int bytesToInt_bigEndian(unsigned char* bytes);
+
 void intToBytes_bigEndian(unsigned char *b, unsigned int num);
+
 void int64ToBytes_bigEndian(unsigned char *b, uint64_t num);
 void int32ToBytes_bigEndian(unsigned char *b, uint32_t num);
 void int16ToBytes_bigEndian(unsigned char *b, uint16_t num);

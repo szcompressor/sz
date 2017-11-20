@@ -257,7 +257,7 @@ TightDataPointStorageI* SZ_compress_int64_1D_MDQ(int64_t *oriData, size_t dataLe
 	
 	int state;
 	double checkRadius = (intvCapacity-1)*realPrecision;
-	int curData;
+	int64_t curData;
 	int64_t pred;
 	int64_t predAbsErr;
 	double interval = 2*realPrecision;
