@@ -388,8 +388,8 @@ TightDataPointStorageI* SZ_compress_uint32_2D_MDQ(uint32_t *oriData, size_t r1, 
 	else
 		quantization_intervals = intvCapacity;
 	size_t i,j; 
-	uint32_t pred1D, pred2D, curValue;
-	uint32_t diff = 0.0;
+	int64_t pred1D, pred2D, curValue;
+	int64_t diff = 0.0;
 	double itvNum = 0;
 	uint32_t *P0, *P1;
 		
@@ -566,8 +566,8 @@ TightDataPointStorageI* SZ_compress_uint32_3D_MDQ(uint32_t *oriData, size_t r1, 
 	else
 		quantization_intervals = intvCapacity;
 	size_t i,j,k; 
-	uint32_t pred1D, pred2D, pred3D, curValue;
-	uint32_t diff = 0.0;
+	int64_t pred1D, pred2D, pred3D, curValue;
+	int64_t diff = 0.0;
 	double itvNum = 0;
 	uint32_t *P0, *P1;
 		
@@ -848,8 +848,8 @@ TightDataPointStorageI* SZ_compress_uint32_4D_MDQ(uint32_t *oriData, size_t r1, 
 	else
 		quantization_intervals = intvCapacity;
 	size_t i,j,k; 
-	uint32_t pred1D, pred2D, pred3D, curValue;
-	uint32_t diff = 0.0;
+	int64_t pred1D, pred2D, pred3D, curValue;
+	int64_t diff = 0.0;
 	double itvNum = 0;
 	uint32_t *P0, *P1;
 		
