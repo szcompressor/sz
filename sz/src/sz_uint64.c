@@ -35,7 +35,7 @@ unsigned int optimize_intervals_uint64_1D(uint64_t *oriData, size_t dataLength, 
 		{
 			//pred_value = 2*oriData[i-1] - oriData[i-2];
 			pred_value = oriData[i-1];
-			pred_err = llabs(pred_value - oriData[i]);
+			pred_err = llabs(pred_value - (int64_t)(oriData[i]));
 			radiusIndex = (uint64_t)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=maxRangeRadius)
 				radiusIndex = maxRangeRadius - 1;			
@@ -81,7 +81,7 @@ unsigned int optimize_intervals_uint64_2D(uint64_t *oriData, size_t r1, size_t r
 			{
 				index = i*r2+j;
 				pred_value = oriData[index-1] + oriData[index-r2] - oriData[index-r2-1];
-				pred_err = llabs(pred_value - oriData[index]);
+				pred_err = llabs(pred_value - (int64_t)(oriData[index]));
 				radiusIndex = (uint64_t)((pred_err/realPrecision+1)/2);
 				if(radiusIndex>=maxRangeRadius)
 					radiusIndex = maxRangeRadius - 1;
@@ -131,7 +131,7 @@ unsigned int optimize_intervals_uint64_3D(uint64_t *oriData, size_t r1, size_t r
 					index = i*r23+j*r3+k;
 					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23] 
 					- oriData[index-1-r23] - oriData[index-r3-1] - oriData[index-r3-r23] + oriData[index-r3-r23-1];
-					pred_err = llabs(pred_value - oriData[index]);
+					pred_err = llabs(pred_value - (int64_t)(oriData[index]));
 					radiusIndex = (pred_err/realPrecision+1)/2;
 					if(radiusIndex>=maxRangeRadius)
 					{
@@ -189,7 +189,7 @@ unsigned int optimize_intervals_uint64_4D(uint64_t *oriData, size_t r1, size_t r
 						index = i*r234+j*r34+k*r4+l;
 						pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r34]
 								- oriData[index-1-r34] - oriData[index-r4-1] - oriData[index-r4-r34] + oriData[index-r4-r34-1];
-						pred_err = llabs(pred_value - oriData[index]);
+						pred_err = llabs(pred_value - (int64_t)(oriData[index]));
 						radiusIndex = (uint64_t)((pred_err/realPrecision+1)/2);
 						if(radiusIndex>=maxRangeRadius)
 							radiusIndex = maxRangeRadius - 1;
@@ -415,7 +415,7 @@ TightDataPointStorageI* SZ_compress_uint64_2D_MDQ(uint64_t *oriData, size_t r1, 
 
 	/* Process Row-0 data 1*/
 	pred1D = P1[0];
-	diff = spaceFillingValue[1] - pred1D;
+	diff = (int64_t)(spaceFillingValue[1]) - (int64_t)(pred1D);
 
 	itvNum =  llabs(diff)/realPrecision + 1;
 
@@ -437,7 +437,7 @@ TightDataPointStorageI* SZ_compress_uint64_2D_MDQ(uint64_t *oriData, size_t r1, 
 	for (j = 2; j < r2; j++)
 	{
 		pred1D = 2*P1[j-1] - P1[j-2];
-		diff = spaceFillingValue[j] - pred1D;
+		diff = (int64_t)(spaceFillingValue[j]) - (int64_t)(pred1D);
 
 		itvNum = llabs(diff)/realPrecision + 1;
 
@@ -463,7 +463,7 @@ TightDataPointStorageI* SZ_compress_uint64_2D_MDQ(uint64_t *oriData, size_t r1, 
 		/* Process row-i data 0 */
 		index = i*r2;
 		pred1D = P1[0];
-		diff = spaceFillingValue[index] - pred1D;
+		diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred1D);
 
 		itvNum = llabs(diff)/realPrecision + 1;
 
@@ -487,7 +487,7 @@ TightDataPointStorageI* SZ_compress_uint64_2D_MDQ(uint64_t *oriData, size_t r1, 
 			index = i*r2+j;
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 
-			diff = spaceFillingValue[index] - pred2D;
+			diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred2D);
 
 			itvNum = llabs(diff)/realPrecision + 1;
 
@@ -591,7 +591,7 @@ TightDataPointStorageI* SZ_compress_uint64_3D_MDQ(uint64_t *oriData, size_t r1, 
 
 	/* Process Row-0 data 1*/
 	pred1D = P1[0];
-	diff = spaceFillingValue[1] - pred1D;
+	diff = (int64_t)(spaceFillingValue[1]) - (int64_t)(pred1D);
 
 	itvNum = llabs(diff)/realPrecision + 1;
 
@@ -613,7 +613,7 @@ TightDataPointStorageI* SZ_compress_uint64_3D_MDQ(uint64_t *oriData, size_t r1, 
 	for (j = 2; j < r3; j++)
 	{
 		pred1D = 2*P1[j-1] - P1[j-2];
-		diff = spaceFillingValue[j] - pred1D;
+		diff = (int64_t)(spaceFillingValue[j]) - (int64_t)(pred1D);
 
 		itvNum = llabs(diff)/realPrecision + 1;
 
@@ -639,7 +639,7 @@ TightDataPointStorageI* SZ_compress_uint64_3D_MDQ(uint64_t *oriData, size_t r1, 
 		/* Process row-i data 0 */
 		index = i*r3;	
 		pred1D = P1[index-r3];
-		diff = spaceFillingValue[index] - pred1D;
+		diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred1D);
 
 		itvNum = llabs(diff)/realPrecision + 1;
 
@@ -663,7 +663,7 @@ TightDataPointStorageI* SZ_compress_uint64_3D_MDQ(uint64_t *oriData, size_t r1, 
 			index = i*r3+j;
 			pred2D = P1[index-1] + P1[index-r3] - P1[index-r3-1];
 
-			diff = spaceFillingValue[index] - pred2D;
+			diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred2D);
 
 			itvNum = llabs(diff)/realPrecision + 1;
 
@@ -691,7 +691,7 @@ TightDataPointStorageI* SZ_compress_uint64_3D_MDQ(uint64_t *oriData, size_t r1, 
 		/* Process Row-0 data 0*/
 		index = k*r23;
 		pred1D = P1[0];
-		diff = spaceFillingValue[index] - pred1D;
+		diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred1D);
 
 		itvNum = llabs(diff)/realPrecision + 1;
 
@@ -716,7 +716,7 @@ TightDataPointStorageI* SZ_compress_uint64_3D_MDQ(uint64_t *oriData, size_t r1, 
 			//index = k*r2*r3+j;
 			index ++;
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
-			diff = spaceFillingValue[index] - pred2D;
+			diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred2D);
 
 			itvNum = llabs(diff)/realPrecision + 1;
 
@@ -745,7 +745,7 @@ TightDataPointStorageI* SZ_compress_uint64_3D_MDQ(uint64_t *oriData, size_t r1, 
 			index = k*r23 + i*r3;
 			index2D = i*r3;		
 			pred2D = P0[index2D-r3] + P1[index2D] - P1[index2D-r3];
-			diff = spaceFillingValue[index] - pred2D;
+			diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred2D);
 
 			itvNum = llabs(diff)/realPrecision + 1;
 
@@ -772,7 +772,7 @@ TightDataPointStorageI* SZ_compress_uint64_3D_MDQ(uint64_t *oriData, size_t r1, 
 				index ++;
 				index2D = i*r3 + j;
 				pred3D = P0[index2D-1] + P0[index2D-r3]+ P1[index2D] - P0[index2D-r3-1] - P1[index2D-r3] - P1[index2D-1] + P1[index2D-r3-1];
-				diff = spaceFillingValue[index] - pred3D;
+				diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred3D);
 
 				itvNum = llabs(diff)/realPrecision + 1;
 
@@ -887,7 +887,7 @@ TightDataPointStorageI* SZ_compress_uint64_4D_MDQ(uint64_t *oriData, size_t r1, 
 		index2D = 1;
 
 		pred1D = P1[index2D-1];
-		diff = curValue - pred1D;
+		diff = (int64_t)(curValue) - (int64_t)(pred1D);
 
 		itvNum = llabs(diff)/realPrecision + 1;
 
@@ -913,7 +913,7 @@ TightDataPointStorageI* SZ_compress_uint64_4D_MDQ(uint64_t *oriData, size_t r1, 
 			index2D = j;
 
 			pred1D = 2*P1[index2D-1] - P1[index2D-2];
-			diff = spaceFillingValue[index] - pred1D;
+			diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred1D);
 
 			itvNum = llabs(diff)/realPrecision + 1;
 
@@ -941,7 +941,7 @@ TightDataPointStorageI* SZ_compress_uint64_4D_MDQ(uint64_t *oriData, size_t r1, 
 			index2D = i*r4;
 
 			pred1D = P1[index2D-r4];
-			diff = spaceFillingValue[index] - pred1D;
+			diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred1D);
 
 			itvNum = llabs(diff)/realPrecision + 1;
 
@@ -968,7 +968,7 @@ TightDataPointStorageI* SZ_compress_uint64_4D_MDQ(uint64_t *oriData, size_t r1, 
 
 				pred2D = P1[index2D-1] + P1[index2D-r4] - P1[index2D-r4-1];
 
-				diff = spaceFillingValue[index] - pred2D;
+				diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred2D);
 
 				itvNum = llabs(diff)/realPrecision + 1;
 
@@ -999,7 +999,7 @@ TightDataPointStorageI* SZ_compress_uint64_4D_MDQ(uint64_t *oriData, size_t r1, 
 			index2D = 0;
 
 			pred1D = P1[index2D];
-			diff = spaceFillingValue[index] - pred1D;
+			diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred1D);
 
 			itvNum = llabs(diff)/realPrecision + 1;
 
@@ -1025,7 +1025,7 @@ TightDataPointStorageI* SZ_compress_uint64_4D_MDQ(uint64_t *oriData, size_t r1, 
 				index2D = j;
 
 				pred2D = P0[index2D-1] + P1[index2D] - P1[index2D-1];
-				diff = spaceFillingValue[index] - pred2D;
+				diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred2D);
 
 				itvNum = llabs(diff)/realPrecision + 1;
 
@@ -1053,7 +1053,7 @@ TightDataPointStorageI* SZ_compress_uint64_4D_MDQ(uint64_t *oriData, size_t r1, 
 				index2D = i*r4;
 
 				pred2D = P0[index2D-r4] + P1[index2D] - P1[index2D-r4];
-				diff = spaceFillingValue[index] - pred2D;
+				diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred2D);
 
 				itvNum = llabs(diff)/realPrecision + 1;
 
@@ -1079,7 +1079,7 @@ TightDataPointStorageI* SZ_compress_uint64_4D_MDQ(uint64_t *oriData, size_t r1, 
 					index2D = i*r4+j;
 
 					pred3D = P0[index2D-1] + P0[index2D-r4]+ P1[index2D] - P0[index2D-r4-1] - P1[index2D-r4] - P1[index2D-1] + P1[index2D-r4-1];
-					diff = spaceFillingValue[index] - pred3D;
+					diff = (int64_t)(spaceFillingValue[index]) - (int64_t)(pred3D);
 
 
 					itvNum = llabs(diff)/realPrecision + 1;
