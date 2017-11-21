@@ -257,8 +257,8 @@ TightDataPointStorageI* SZ_compress_uint64_1D_MDQ(uint64_t *oriData, size_t data
 	
 	int state;
 	double checkRadius = (intvCapacity-1)*realPrecision;
-	uint64_t curData;
-	uint64_t pred, predAbsErr;
+	int64_t curData;
+	int64_t pred, predAbsErr;
 	double interval = 2*realPrecision;
 	
 	for(i=2;i<dataLength;i++)
@@ -388,8 +388,8 @@ TightDataPointStorageI* SZ_compress_uint64_2D_MDQ(uint64_t *oriData, size_t r1, 
 	else
 		quantization_intervals = intvCapacity;
 	size_t i,j; 
-	uint64_t pred1D, pred2D, curValue;
-	uint64_t diff = 0.0;
+	int64_t pred1D, pred2D, curValue;
+	int64_t diff = 0.0;
 	double itvNum = 0;
 	uint64_t *P0, *P1;
 		
@@ -566,8 +566,8 @@ TightDataPointStorageI* SZ_compress_uint64_3D_MDQ(uint64_t *oriData, size_t r1, 
 	else
 		quantization_intervals = intvCapacity;
 	size_t i,j,k; 
-	uint64_t pred1D, pred2D, pred3D, curValue;
-	uint64_t diff = 0.0;
+	int64_t pred1D, pred2D, pred3D, curValue;
+	int64_t diff = 0.0;
 	double itvNum = 0;
 	uint64_t *P0, *P1;
 		
@@ -848,8 +848,8 @@ TightDataPointStorageI* SZ_compress_uint64_4D_MDQ(uint64_t *oriData, size_t r1, 
 	else
 		quantization_intervals = intvCapacity;
 	size_t i,j,k; 
-	uint64_t pred1D, pred2D, pred3D, curValue;
-	uint64_t diff = 0.0;
+	int64_t pred1D, pred2D, pred3D, curValue;
+	int64_t diff = 0.0;
 	double itvNum = 0;
 	uint64_t *P0, *P1;
 		
