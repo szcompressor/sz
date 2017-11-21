@@ -97,7 +97,7 @@ int main(int argc, char * argv[])
     unsigned char *bytes;
 	if(dataType==SZ_INT8)
 	{
-		int8_t *data = readByteData(oriFilePath, &nbEle, &status);
+		int8_t *data = (int8_t *) readByteData(oriFilePath, &nbEle, &status);
 		if(status != SZ_SCES)
 		{
 			printf("Error: data file %s cannot be read!\n", oriFilePath);

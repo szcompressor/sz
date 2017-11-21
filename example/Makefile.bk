@@ -2,21 +2,27 @@
 ##   Makefile to test SZ library.
 
 ##   PLEASE SET THIS VARIABLE BEFORE COMPILING
-SZPATH		= /home/sdi/Install/sz-1.4.11-beta-install
+#SZPATH		= /home/sdi/Install/sz-1.4.11-beta-install
+SZPATH	= ..
+GSLPATH = /usr/local/Cellar/gsl/2.4
 ##   COMPILERS
 CC		= gcc
 FT		= gfortran
 MPICC 		= mpicc
 MPIRUN 		= mpirun
+HDF5CC		= h5cc
 
 ##   FLAGS
 # Compiling using shared library
 #SZFLAG 	= -I$(SZPATH)/include -L$(SZPATH)/lib -lSZ
 # Compiling using static library
 SZFLAG 	= -I$(SZPATH)/include $(SZPATH)/lib/libSZ.a $(SZPATH)/lib/libzlib.a -lm
+GSLFLAG = -I$(GSLPATH)/include $(GSLPATH)/lib/libgsl.a
+NETCDFFLAG = -I$(NETCDFPATH)/include -lnetcdf
+
 
 ##   TARGETS
-all: 		testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress
+all: 		testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz
 #all: 		testdouble_compress_f testdouble_decompress_f testdouble_batch_compress_f
 
 testint_compress:	testint_compress.c
@@ -52,6 +58,9 @@ testfloat_batch_compress:      testfloat_batch_compress.c
 testdouble_batch_compress:      testdouble_batch_compress.c
 	$(CC)  -g -O3 -o testdouble_batch_compress testdouble_batch_compress.c $(SZFLAG)
 
+sz:		sz.c
+	$(HDF5CC)  -g -O3 -o sz	sz.c $(GSLFLAG) $(NETCDFFLAG) $(SZFLAG)
+
 clean:
-	rm -f test*_compress test*_decompress test*_compress_f test*_decompress_f testfloat_batch_compress testdouble_batch_compress_f
+	rm -f test*_compress test*_decompress test*_compress_f test*_decompress_f testfloat_batch_compress testdouble_batch_compress_f sz
 
