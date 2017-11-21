@@ -3,107 +3,11 @@
 #include <math.h>
 #include "sz.h"
 #include "rw.h"
-#include "hdf5.h"
-#include "netcdf.h"
 
 struct timeval startTime;
 struct timeval endTime;  /* Start and end times */
 struct timeval costStart; /*only used for recording the cost*/
 double totalCost = 0;
-
-int hdf5Reader(void *data, char *filename, char *dataset, int dataType)
-{
-	hid_t       file_id, dataset_id;  /* identifiers */
-	herr_t      status;
-
-	file_id = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT); 
-    dataset_id = H5Dopen2(file_id, dataset, H5P_DEFAULT);
-
-	if (dataType == 0)
-	   status = H5Dread(dataset_id, H5T_IEEE_F32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, (float*)data);
-	else
-	   status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, (double*)data);
-
-	if (status < 0)
-	{
-		printf("Error: %s%s file cannot be read!\n", filename, dataset);
-		exit(0);
-	}
-
-	/* Print first 10 data */
-	int i;
-	if (dataType == 0)
-	{
-		for (i = 0; i < 10; i++)
-		  printf ("%f\n", ((float*)data)[i]);
-	}
-	else
-	{
-		for (i = 0; i < 10; i++)
-		  printf ("%lf\n", ((double*)data)[i]);
-	}
-
-    /* Close HDF5 dataset and file. */
-	status = H5Dclose(dataset_id);
-	status = H5Fclose(file_id);
-
-	return 0;
-}
-
-int netcdfReader(void *data, char *filename, char *dataset, int dataType)
-{
-	int ncid, varid, retval;
-	
-	/* Open the file. NC_NOWRITE tells netCDF we want read-only access to the file.*/
-	if ((retval = nc_open(filename, NC_NOWRITE, &ncid)))
-	{
-		printf("Error: %s file cannot be open!\n", filename);
-		exit(0);
-	}
-
-	/* Get the varid of the data variable, based on its name. */
-	if ((retval = nc_inq_varid(ncid, dataset, &varid)))
-	{
-		printf("Error: %s dataset cannot be open!\n", dataset);
-		exit(0);
-	}
-
-	/* Read the data. */
-	if (dataType == 0)
-	{
-		if ((retval = nc_get_var_float(ncid, varid, (float*)data)))
-		{
-			printf("Error: %s dataset cannot be read!\n", dataset);
-			exit(0);
-		}
-	}
-	else
-	{
-		if ((retval = nc_get_var_double(ncid, varid, (double*)data)))
-		{
-			printf("Error: %s dataset cannot be read!\n", dataset);
-			exit(0);
-		}
-	}
-
-	/* Print first 10 data */
-	int i;
-	if (dataType == 0)
-	{
-		for (i = 0; i < 10; i++)
-		  printf ("%f\n", ((float*)data)[i]);
-	}
-	else
-	{
-		for (i = 0; i < 10; i++)
-		  printf ("%lf\n", ((double*)data)[i]);
-	}
-
-	/* Close the file, freeing all resources. */
-	retval = nc_close(ncid);
-
-	return 0;
-}
 
 
 void cost_start()
@@ -120,6 +24,7 @@ void cost_end()
 	elapsed = ((costEnd.tv_sec*1000000+costEnd.tv_usec)-(costStart.tv_sec*1000000+costStart.tv_usec))/1000000.0;
 	totalCost += elapsed;
 }
+
 
 void usage()
 {
@@ -167,10 +72,7 @@ int main(int argc, char* argv[])
 	char* inPath = NULL;
 	char* cmpPath = NULL;
 	char* conPath = NULL;
-	int hdf5 = 0;
-	int netcdf = 0;
-	char *dataset = NULL;
-
+	
 	size_t r5 = 0;
 	size_t r4 = 0;
 	size_t r3 = 0;
@@ -231,6 +133,7 @@ int main(int argc, char* argv[])
 		case '1': 
 			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1)
 				usage();
+
 			break;
 		case '2':
 			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
@@ -250,18 +153,6 @@ int main(int argc, char* argv[])
 				++i == argc || sscanf(argv[i], "%zu", &r4) != 1)
 				usage();		
 			break;
-		case 'h':
-			if (++i == argc)
-			  usage();
-			hdf5 = 1;
-			dataset = argv[i];
-			break;
-		case 'n':
-			if (++i == argc)
-			  usage();
-			netcdf = 1;
-			dataset = argv[i];
-			break;
 		default: 
 			usage();
 			break;
@@ -277,17 +168,6 @@ int main(int argc, char* argv[])
 		printf("-4 <nx> <ny> <nz> <np>: dimensions for 4D data such as data[np][nz][ny][nx] \n");
 		exit(0);
 	}
-
-	if(r2==0)
-	  nbEle = r1;
-	else if(r3==0)
-	  nbEle = r1*r2;
-	else if(r4==0)
-	  nbEle = r1*r2*r3;
-	else if(r5==0)
-	  nbEle = r1*r2*r3*r4;
-	else
-	  nbEle = r1*r2*r3*r4*r5;
 
 	if(isCompression == 1)
 	{
@@ -309,22 +189,7 @@ int main(int argc, char* argv[])
 				printf("Solution: change the data format to be double-precision and then do the tensor decomposition.\n");
 				exit(0);
 			}
-
-			float *data;
-			if (hdf5 == 1)
-			{
-				data = (float*)malloc(nbEle*sizeof(float));
-				hdf5Reader((void*)data, inPath, dataset, dataType);
-			}
-			else 
-			  if (netcdf == 1)
-			  {
-				  data = (float*)malloc(nbEle*sizeof(float));
-				  netcdfReader((void*)data, inPath, dataset, dataType);
-			  }
-			  else
-				data = readFloatData(inPath, &nbEle, &status);
-
+			float *data = readFloatData(inPath, &nbEle, &status);
 			cost_start();	
 			unsigned char *bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
 			cost_end();
@@ -351,7 +216,7 @@ int main(int argc, char* argv[])
 					printf("Solution: Install TuckerMPI and set environment variable TUCKERMPI_HOME to the building path (e.g., TuckerMPI-gitlab/build)\n"); 
 					exit(0);
 				}	
-
+				
 				//TODO: constructing the parameter-raw.txt	
 				char *str[8] = {
 					"Automatic rank determination = true", 
@@ -362,21 +227,21 @@ int main(int argc, char* argv[])
 					"Scaling type = StandardCentering", 
 					"Scale mode = 2", 
 					NULL};
-
+							
 				char dimStr[256];
 				if(r2==0)
-				  sprintf(dimStr, "Global dims = %zu", r1);
+					sprintf(dimStr, "Global dims = %zu", r1);
 				else if(r3==0)
-				  sprintf(dimStr, "Global dims = %zu %zu", r2, r1);
+					sprintf(dimStr, "Global dims = %zu %zu", r2, r1);
 				else if(r4==0)
-				  sprintf(dimStr, "Global dims = %zu %zu %zu", r3, r2, r1);
+					sprintf(dimStr, "Global dims = %zu %zu %zu", r3, r2, r1);
 				else if(r5==0)
-				  sprintf(dimStr, "Global dims = %zu %zu %zu %zu", r4, r3, r2, r1);
+					sprintf(dimStr, "Global dims = %zu %zu %zu %zu", r4, r3, r2, r1);
 				else
-				  sprintf(dimStr, "Global dims = %zu %zu %zu %zu %zu", r5, r4, r3, r2, r1);
-
+					sprintf(dimStr, "Global dims = %zu %zu %zu %zu %zu", r5, r4, r3, r2, r1);
+				
 				str[4] = dimStr;
-
+				
 				char thrStr[100]; 
 				sprintf(thrStr, "SV Threshold = %f", absErrBound);
 				str[7] = thrStr;
@@ -387,29 +252,15 @@ int main(int argc, char* argv[])
 				char* dataPathStr[1];
 				dataPathStr[0] = inPath;
 				writeStrings(1, dataPathStr, "raw.txt", &status);
-
+				
 				printf("calling TuckerMPI interface to do the Tucker Tensor Decomposition....\n");
-
+				
 				system("mkdir -p ./compressed");
 				system("${TUCKERMPI_PATH}/serial/drivers/bin/Tucker_sthosvd --parameter-file parameter-raw.txt");
 			}
 			else
 			{
-				double *data;
-				if (hdf5 == 1)
-				{
-					data = (double*)malloc(nbEle*sizeof(double));
-					hdf5Reader((void*)data, inPath, dataset, dataType);
-				}
-				else 
-				  if (netcdf == 1)
-				  {
-					  data = (double*)malloc(nbEle*sizeof(double));
-					  netcdfReader((void*)data, inPath, dataset, dataType);
-				  }
-				  else
-					data = readDoubleData(inPath, &nbEle, &status);	
-
+				double *data = readDoubleData(inPath, &nbEle, &status);	
 				cost_start();
 				unsigned char *bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
 				cost_end();
@@ -442,9 +293,20 @@ int main(int argc, char* argv[])
 				exit(0);
 			}
 		}		
-
+		
 		size_t byteLength;
 		char outputFilePath[256];
+		
+		if(r2==0)
+			nbEle = r1;
+		else if(r3==0)
+			nbEle = r1*r2;
+		else if(r4==0)
+			nbEle = r1*r2*r3;
+		else if(r5==0)
+			nbEle = r1*r2*r3*r4;
+		else
+			nbEle = r1*r2*r3*r4*r5;
 
 		if(dataType == 0)
 		{
@@ -454,7 +316,7 @@ int main(int argc, char* argv[])
 				printf("Solution: change the data format to be double-precision and then do the tensor decomposition.\n");
 				exit(0);
 			}			
-
+			
 			unsigned char *bytes = readByteData(cmpPath, &byteLength, &status);
 			if(status!=SZ_SCES)
 			{
@@ -467,16 +329,16 @@ int main(int argc, char* argv[])
 			free(bytes);
 			sprintf(outputFilePath, "%s.out", cmpPath);	
 			if(binaryOutput==1)		
-			  writeFloatData_inBytes(data, nbEle, outputFilePath, &status);
+				writeFloatData_inBytes(data, nbEle, outputFilePath, &status);
 			else //txt output
-			  writeFloatData(data, nbEle, outputFilePath, &status);
+				writeFloatData(data, nbEle, outputFilePath, &status);
 
 			if(status!=SZ_SCES)
 			{
 				printf("Error: %s cannot be written!\n", outputFilePath);
 				exit(0);
 			}
-
+			
 			if(printCmpResults)
 			{
 				//compute the distortion / compression errors...
@@ -511,17 +373,17 @@ int main(int argc, char* argv[])
 				{
 					if (Max < ori_data[i]) Max = ori_data[i];
 					if (Min > ori_data[i]) Min = ori_data[i];
-
+					
 					float err = fabs(data[i] - ori_data[i]);
 					if(ori_data[i]!=0)
 					{
 						relerr = err/ori_data[i];
 						if(maxpw_relerr<relerr)
-						  maxpw_relerr = relerr;
+							maxpw_relerr = relerr;
 					}
 
 					if (diffMax < err)
-					  diffMax = err;
+						diffMax = err;
 					prodSum += (ori_data[i]-mean1)*(data[i]-mean2);
 					sum3 += (ori_data[i] - mean1)*(ori_data[i]-mean1);
 					sum4 += (data[i] - mean2)*(data[i]-mean2);
@@ -545,7 +407,7 @@ int main(int argc, char* argv[])
 				printf ("acEff=%f\n", acEff);	
 			}
 			free(data);	
-
+			
 			printf("decompression time = %f seconds.\n", totalCost);
 			printf("decompressed data file: %s\n", outputFilePath);							
 		}
@@ -561,7 +423,7 @@ int main(int argc, char* argv[])
 					printf("Solution: Install TuckerMPI and set environment variable TUCKERMPI_HOME to the building path (e.g., TuckerMPI-gitlab/build)\n"); 
 					exit(0);
 				}	
-
+				
 				//TODO: constructing the parameter-raw.txt	
 				char *str[4] = {
 					"Print options = true", 
@@ -570,30 +432,30 @@ int main(int argc, char* argv[])
 					"STHOSVD directory = ./compressed"};
 				char dimStr1[256];
 				if(r2==0)
-				  sprintf(dimStr1, "Beginning subscripts = 0");
+					sprintf(dimStr1, "Beginning subscripts = 0");
 				else if(r3==0)
-				  sprintf(dimStr1, "Beginning subscripts = 0 0");
+					sprintf(dimStr1, "Beginning subscripts = 0 0");
 				else if(r4==0)
-				  sprintf(dimStr1, "Beginning subscripts = 0 0 0");
+					sprintf(dimStr1, "Beginning subscripts = 0 0 0");
 				else if(r5==0)
-				  sprintf(dimStr1, "Beginning subscripts = 0 0 0 0");
+					sprintf(dimStr1, "Beginning subscripts = 0 0 0 0");
 				else
-				  sprintf(dimStr1, "Beginning subscripts = 0 0 0 0 0");
-
+					sprintf(dimStr1, "Beginning subscripts = 0 0 0 0 0");
+				
 				str[1] = dimStr1;
-
+						
 				char dimStr2[256];
 				if(r2==0)
-				  sprintf(dimStr2, "Ending subscripts = %zu", r1-1);
+					sprintf(dimStr2, "Ending subscripts = %zu", r1-1);
 				else if(r3==0)
-				  sprintf(dimStr2, "Ending subscripts = %zu %zu", r2-1, r1-1);
+					sprintf(dimStr2, "Ending subscripts = %zu %zu", r2-1, r1-1);
 				else if(r4==0)
-				  sprintf(dimStr2, "Ending subscripts = %zu %zu %zu", r3-1, r2-1, r1-1);
+					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu", r3-1, r2-1, r1-1);
 				else if(r5==0)
-				  sprintf(dimStr2, "Ending subscripts = %zu %zu %zu %zu", r4-1, r3-1, r2-1, r1-1);
+					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu %zu", r4-1, r3-1, r2-1, r1-1);
 				else
-				  sprintf(dimStr2, "Ending subscripts = %zu %zu %zu %zu %zu", r5-1, r4-1, r3-1, r2-1, r1-1);
-
+					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu %zu %zu", r5-1, r4-1, r3-1, r2-1, r1-1);
+				
 				str[2] = dimStr2;
 
 				writeStrings(4, str, "parameter-rec.txt", &status);		
@@ -603,9 +465,9 @@ int main(int argc, char* argv[])
 				char* dataPathStr[1];
 				dataPathStr[0] = outputFilePath;
 				writeStrings(1, dataPathStr, "rec.txt", &status);
-
+				
 				printf("calling TuckerMPI interface to do the Tucker Tensor Decomposition....\n");
-
+				
 				system("${TUCKERMPI_PATH}/serial/drivers/bin/Tucker_reconstruct --parameter-file parameter-rec.txt");
 			}
 			else
@@ -630,12 +492,12 @@ int main(int argc, char* argv[])
 					printf("Error: %s cannot be written!\n", outputFilePath);
 					exit(0);
 				}
-
+						
 				printf("decompression time = %f seconds.\n", totalCost);
 				printf("decompressed data file: %s\n", outputFilePath);										
 			}
-
-
+			
+			
 			if(printCmpResults)
 			{
 				if(inPath==NULL)
@@ -646,7 +508,7 @@ int main(int argc, char* argv[])
 				size_t totalNbEle;
 
 				if(tucker)
-				  data = readDoubleData("tucker-decompress.out", &totalNbEle, &status);
+					data = readDoubleData("tucker-decompress.out", &totalNbEle, &status);
 
 				//compute the distortion / compression errors...
 				double *ori_data = readDoubleData(inPath, &totalNbEle, &status);
