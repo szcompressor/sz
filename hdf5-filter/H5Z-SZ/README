@@ -13,7 +13,7 @@ Step 3: You can go to example/ directory to test whether the installation of SZ 
 
 Step 4: Download the H5Z_SZ_filter (In fact, H5Z_SZ_filter has been integrated in SZ package: see the hdf5_filter directory) 
 
-Step 5: Open Makefile and modify the SZ path and HDF5 path based on your local setting:
+Step 5: Go to hdf5-filter/H5Z-SZ directory and open Makefile and modify the SZ path and HDF5 path based on your local setting:
 SZPATH          = [SZ_INSTALL_PATH], e.g, /home/sdi/Install/sz-1.4.10-beta-install
 HDF5PATH        = [HDF5_INSTALL_PATH], e.g., /home/sdi/Install/hdf5-1.10.1-install
 
