@@ -84,7 +84,6 @@ int main(int argc, char * argv[])
 	if((dorder = H5Tget_order(dtype)) < 0)
 		printf("Error: H5Tget_order<0\n");
 
-	printf("H5Tget_order=%d\n", dorder);
 	switch (type_class)
 	{
 	case H5T_FLOAT:

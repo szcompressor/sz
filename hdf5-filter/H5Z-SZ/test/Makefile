@@ -5,7 +5,7 @@
 ##   PLEASE SET THESE VARIABLES BEFORE COMPILING
 ##=======================================================================
 
-SZPATH		= /home/sdi/Install/sz-1.4.11-beta-install
+SZPATH		= /home/sdi/Install/sz-1.4.11-hacc-install
 HDF5PATH	= /home/sdi/Install/hdf5-1.10.1-install
 
 ##   COMPILERS
