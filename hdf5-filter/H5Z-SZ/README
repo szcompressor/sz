@@ -44,7 +44,7 @@ Step 1: Put the sz.config configuration in the current directory. (Please see RE
 
 Step 2 (Compression): h5repack.sh [input_hdf5_file] [compressed_hdf5_file] or h5repack -f UD=32017,0 [input_hdf5_file] [compressed_hdf5_file] 
 
-Step 3 (Decompression): Read the compressed HDF5 file: h5dump [compressed_hdf5_file] > data.txt
+Step 3 (Decompression): Read the compressed HDF5 file: h5repack -f NONE [compressed_hdf5_file] [decompressed_hdf5_file]
  
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
