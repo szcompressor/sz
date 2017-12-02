@@ -33,6 +33,7 @@ void usage()
 	printf("* operation type:\n");
 	printf("	-z: compression\n");
 	printf("	-x: decompression\n");
+	printf("	-p: print meta data (configuration info)\n");
 	printf("* data type:\n");
 	printf("	-f: single precision (float type)\n");
 	printf("	-d: double precision (double type)\n");
@@ -66,7 +67,8 @@ int main(int argc, char* argv[])
 {
 	int binaryOutput = 1;
 	int printCmpResults = 0;
-	int isCompression = 0; //1 : compression ; 0: decompression
+	int isCompression = -1000; //1 : compression ; 0: decompression
+	int printMeta = 0;
 	int dataType = 0; //0: single precision ; 1: double precision
 	int tucker = 0; //0: without tucker tensor decomposition preprocessing; 1: with tucker tensor decomposition
 	char* inPath = NULL;
@@ -106,6 +108,9 @@ int main(int argc, char* argv[])
 		case 'x': 
 			isCompression = 0;
 			break;
+		case 'p':
+			printMeta = 1; //print metadata
+			break;			
 		case 'f': 
 			dataType = 0;
 			break;
@@ -159,16 +164,36 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if ((r1==0) && (r2==0) && (r3==0) && (r4==0) && (r5==0))
+	if(inPath==NULL & cmpPath == NULL)
 	{
-		printf ("Error: please specify dimensions.\n");
-		printf("-1 <nx> : dimension for 1D data such as data[nx]\n");
-		printf("-2 <nx> <ny> : dimensions for 2D data such as data[ny][nx]\n");
-		printf("-3 <nx> <ny> <nz> : dimensions for 3D data such as data[nz][ny][nx] \n");
-		printf("-4 <nx> <ny> <nz> <np>: dimensions for 4D data such as data[np][nz][ny][nx] \n");
+		printf("Error: you need to specify either a raw binary data file or a compressed data file as input\n");
+		usage();
 		exit(0);
 	}
 
+	if(printMeta == 0)
+	{
+		if ((r1==0) && (r2==0) && (r3==0) && (r4==0) && (r5==0))
+		{
+			printf ("Error: please specify dimensions.\n");
+			printf("-1 <nx> : dimension for 1D data such as data[nx]\n");
+			printf("-2 <nx> <ny> : dimensions for 2D data such as data[ny][nx]\n");
+			printf("-3 <nx> <ny> <nz> : dimensions for 3D data such as data[nz][ny][nx] \n");
+			printf("-4 <nx> <ny> <nz> <np>: dimensions for 4D data such as data[np][nz][ny][nx] \n");
+			exit(0);
+		}		
+	}
+	else
+	{
+		if(cmpPath == NULL && isCompression != 1) //if no compression file is provided and this is not a compression operation
+		{
+			printf("Error: -p can only be used when providing a compressed data file or in the compression step\n");
+			printf("Solution: use -s to specify a compressed data file or use -c and -i to generate a compressed file\n");
+			usage();
+			exit(0);
+		}
+	}
+	unsigned char *bytes = NULL; //the binary data read from "compressed data file"
 	if(isCompression == 1)
 	{
 		if(conPath==NULL)
@@ -191,12 +216,11 @@ int main(int argc, char* argv[])
 			}
 			float *data = readFloatData(inPath, &nbEle, &status);
 			cost_start();	
-			unsigned char *bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
+			bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
 			cost_end();
 			sprintf(outputFilePath, "%s.sz", inPath);
 			writeByteData(bytes, outSize, outputFilePath, &status);		
 			free(data);
-			free(bytes);
 			if(status != SZ_SCES)
 			{
 				printf("Error: data file %s cannot be written!\n", outputFilePath);
@@ -262,12 +286,11 @@ int main(int argc, char* argv[])
 			{
 				double *data = readDoubleData(inPath, &nbEle, &status);	
 				cost_start();
-				unsigned char *bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
+				bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
 				cost_end();
 				sprintf(outputFilePath, "%s.sz", inPath);
 				writeByteData(bytes, outSize, outputFilePath, &status);		
 				free(data);
-				free(bytes);
 				if(status != SZ_SCES)
 				{
 					printf("Error: data file %s cannot be written!\n", outputFilePath);
@@ -283,7 +306,7 @@ int main(int argc, char* argv[])
 			printf ("Error: -a can be only used in decompression.\n");
 		}
 	}
-	else //decompression
+	else if(isCompression == 0) //decompression
 	{
 		if(printCmpResults)
 		{
@@ -317,7 +340,7 @@ int main(int argc, char* argv[])
 				exit(0);
 			}			
 			
-			unsigned char *bytes = readByteData(cmpPath, &byteLength, &status);
+			bytes = readByteData(cmpPath, &byteLength, &status);
 			if(status!=SZ_SCES)
 			{
 				printf("Error: %s cannot be read!\n", cmpPath);
@@ -326,7 +349,6 @@ int main(int argc, char* argv[])
 			cost_start();
 			float *data = SZ_decompress(SZ_FLOAT, bytes, byteLength, r5, r4, r3, r2, r1);			
 			cost_end();
-			free(bytes);
 			sprintf(outputFilePath, "%s.out", cmpPath);	
 			if(binaryOutput==1)		
 				writeFloatData_inBytes(data, nbEle, outputFilePath, &status);
@@ -472,7 +494,7 @@ int main(int argc, char* argv[])
 			}
 			else
 			{
-				unsigned char *bytes = readByteData(cmpPath, &byteLength, &status);
+				bytes = readByteData(cmpPath, &byteLength, &status);
 				if(status!=SZ_SCES)
 				{
 					printf("Error: %s cannot be read!\n", cmpPath);
@@ -481,7 +503,6 @@ int main(int argc, char* argv[])
 				cost_start();
 				data = SZ_decompress(SZ_DOUBLE, bytes, byteLength, r5, r4, r3, r2, r1);			
 				cost_end();
-				free(bytes);
 				sprintf(outputFilePath, "%s.out", cmpPath);
 				if(binaryOutput==1)		
 				  writeDoubleData_inBytes(data, nbEle, outputFilePath, &status);
@@ -580,4 +601,26 @@ int main(int argc, char* argv[])
 			free(data);								
 		}	
 	}
+	
+	if(printMeta==1) //==-1 for printing metadata
+	{
+		size_t byteLength; 
+		int status;
+		if(bytes==NULL)
+			bytes = readByteData(cmpPath, &byteLength, &status);
+		sz_metadata* metadata = SZ_getMetadata(bytes);
+		if(metadata->versionNumber[0]==0 || metadata->conf_params->max_quant_intervals<0)
+		{
+			printf("Error: the compressed data file is likely wrong.\n");
+			usage();
+			free(metadata->conf_params);
+			free(metadata);
+			exit(0);
+		}
+		SZ_printMetadata(metadata);
+		free(metadata->conf_params);
+		free(metadata);
+	}
+	
+	free(bytes);
 }

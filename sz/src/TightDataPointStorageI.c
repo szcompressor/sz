@@ -128,6 +128,12 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 	SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
 	int errorBoundMode = ABS;
 	
+	sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
+	if(conf_params!=NULL)
+		free(conf_params);
+	conf_params = params;
+	index += MetaDataByteLength;	
+	
 	(*this)->exactByteSize = flatBytes[index++]; //1
 	
 	unsigned char dsLengthBytes[8];
@@ -142,7 +148,7 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 	else if(same==1)
 	{
 		(*this)->allSameData = 1;
-		size_t exactDataBytesLength = flatBytesLength - 3 - SZ_SIZE_TYPE -1;
+		size_t exactDataBytesLength = flatBytesLength - 3 - 1 - MetaDataByteLength - SZ_SIZE_TYPE;
 		if(exactDataBytesLength>0)
 			(*this)->exactDataBytes = (unsigned char*)malloc(sizeof(unsigned char)*exactDataBytesLength);
 		else
@@ -273,7 +279,11 @@ void convertTDPStoBytes_int(TightDataPointStorageI* tdps, unsigned char* bytes, 
 	
 	for(i = 0;i<3;i++)//3 bytes
 		bytes[k++] = versionNumber[i];
-	bytes[k++] = sameByte;	//1	byte	
+	bytes[k++] = sameByte;	//1	byte
+	
+	convertSZParamsToBytes(conf_params, &(bytes[k]));
+	k = k + MetaDataByteLength;	
+		
 	bytes[k++] = tdps->exactByteSize; //1 byte
 
 	sizeToBytes(byteBuffer, tdps->dataSeriesLength);
@@ -339,12 +349,16 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 	
 	if(tdps->allSameData==1)
 	{
-		size_t totalByteLength = 3 + 1 + SZ_SIZE_TYPE + tdps->exactDataBytes_size;
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + tdps->exactDataBytes_size;
 		*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
 
 		for (i = 0; i < 3; i++)//3
 			(*bytes)[k++] = versionNumber[i];
 		(*bytes)[k++] = sameByte;//1
+		
+		convertSZParamsToBytes(conf_params, &((*bytes)[k]));
+		k = k + MetaDataByteLength;			
+		
 		for (i = 0; i < SZ_SIZE_TYPE; i++)
 			(*bytes)[k++] = dsLengthBytes[i];
 		
@@ -361,7 +375,7 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 			exit(0);
 		}
 
-		size_t totalByteLength = 3 + 1 + 1 + SZ_SIZE_TYPE + 4 + 4 + 8 + 8
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + 1 + SZ_SIZE_TYPE + 4 + 4 + 8 + 8
 				+ SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE
 				+ tdps->typeArray_size + tdps->exactDataBytes_size;
 
@@ -392,12 +406,16 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 		
 	if(tdps->allSameData==1)
 	{
-		size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + tdps->exactDataBytes_size;
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + tdps->exactDataBytes_size;
 		//*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
 
 		for (i = 0; i < 3; i++)//3
 			bytes[k++] = versionNumber[i];
 		bytes[k++] = sameByte;//1
+		
+		convertSZParamsToBytes(conf_params, &(bytes[k]));
+		k = k + MetaDataByteLength;	
+				
 		for (i = 0; i < SZ_SIZE_TYPE; i++)//ST
 			bytes[k++] = dsLengthBytes[i];		
 		for (i = 0; i < tdps->exactDataBytes_size; i++)
@@ -413,7 +431,7 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 			exit(0);
 		}
 
-		size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + 1 + 4 + 4 + 8 + 8
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + 1 + 4 + 4 + 8 + 8
 				+ SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE  
 				+ tdps->typeArray_size + tdps->exactDataBytes_size;
 

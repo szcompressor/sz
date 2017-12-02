@@ -9,6 +9,7 @@
  
 #include <stdlib.h>
 #include "sz.h" 	
+#include "zlib.h"
 
 unsigned short bytesToUInt16_bigEndian(unsigned char* bytes)
 {
@@ -824,3 +825,168 @@ void sizeToBytes(unsigned char* outBytes, size_t size)
 		longToBytes_bigEndian(outBytes, size);//8
 }
 
+void convertSZParamsToBytes(sz_params* params, unsigned char* result)
+{
+	//unsigned char* result = (unsigned char*)malloc(16);
+	unsigned char buf;
+	//flag1: optQuantMode(1bit), dataEndianType(1bit), sysEndianType(1bit), szMode (1bit), gzipMode (2bits), pwrType (2bits)
+	buf = optQuantMode;
+	buf = (buf << 1) | params->dataEndianType;
+	buf = (buf << 1) | params->sysEndianType;
+	buf = (buf << 1) | params->szMode;
+	
+	int tmp = 0;
+	switch(params->gzipMode)
+	{
+	case Z_BEST_SPEED:
+		tmp = 0;
+		break;
+	case Z_DEFAULT_STRATEGY:
+		tmp = 1;
+		break;
+	case Z_BEST_COMPRESSION:
+		tmp = 2;
+		break;
+	}
+	buf = (buf << 2) | tmp;
+	buf = (buf << 2) |  params->pwr_type;
+	result[0] = buf;
+	
+    //sampleDistance; //2 bytes
+    int16ToBytes_bigEndian(&result[1], params->sampleDistance);
+    
+    //predThreshold;  // 2 bytes
+    short tmp2 = params->predThreshold * 10000;
+    int16ToBytes_bigEndian(&result[3], tmp2);
+     
+    //errorBoundMode; //4bits(0.5 byte)
+    result[5] = params->errorBoundMode;
+    
+    //data type (float, double, int8, int16, ....) //10 choices, so 4 bits
+    result[5] = (result[5] << 4) | (params->dataType & 0x17);
+     
+    //result[5]: abs_err_bound or psnr //4 bytes
+    //result[9]: rel_bound_ratio or pwr_err_bound//4 bytes 
+    switch(params->errorBoundMode)
+    {
+	case ABS:
+		floatToBytes(&result[6], (float)(params->absErrBound)); //big_endian
+		memset(&result[10], 0, 4);
+		break;
+	case REL:
+		memset(&result[6], 0, 4);
+		floatToBytes(&result[10], (float)(params->relBoundRatio)); //big_endian
+		break;
+	case ABS_AND_REL:
+	case ABS_OR_REL:
+		floatToBytes(&result[6], (float)(params->absErrBound));
+		floatToBytes(&result[10], (float)(params->relBoundRatio)); //big_endian
+		break;
+	case PSNR:
+		floatToBytes(&result[6], (float)(params->psnr));
+		memset(&result[9], 0, 4);
+		break;
+	case ABS_AND_PW_REL:
+	case ABS_OR_PW_REL:
+		floatToBytes(&result[6], (float)(params->absErrBound));
+		floatToBytes(&result[10], (float)(params->pw_relBoundRatio)); //big_endian	
+		break;
+	case REL_AND_PW_REL:
+	case REL_OR_PW_REL:
+		floatToBytes(&result[6], (float)(params->relBoundRatio));
+		floatToBytes(&result[10], (float)(params->pw_relBoundRatio)); //big_endian	
+		break;
+	case PW_REL:
+		memset(&result[6], 0, 4);
+		floatToBytes(&result[10], (float)(params->pw_relBoundRatio)); //big_endian
+		break;		
+	}
+   
+    //segment_size  // 2 bytes
+    int16ToBytes_bigEndian(&result[14], (short)(params->segment_size));
+    
+    if(optQuantMode==1)
+		int32ToBytes_bigEndian(&result[16], params->max_quant_intervals);
+	else
+		int32ToBytes_bigEndian(&result[16], params->quantization_intervals);
+}
+
+sz_params* convertBytesToSZParams(unsigned char* bytes)
+{
+	sz_params* params = (sz_params*)malloc(sizeof(struct sz_params));
+	unsigned char flag1 = bytes[0];
+	optQuantMode = flag1 >> 7;
+	params->dataEndianType = (flag1 & 0x7f) >> 7;
+	params->sysEndianType = (flag1 & 0x3f) >> 7;
+	params->szMode = (flag1 & 0x1f) >> 7;
+	
+	int tmp = (flag1 & 0x0f) >> 6;
+	switch(tmp)
+	{
+	case 0:
+		params->gzipMode = Z_BEST_SPEED;
+		break;
+	case 1:
+		params->gzipMode = Z_DEFAULT_STRATEGY;
+		break;
+	case 2:
+		params->gzipMode = Z_BEST_COMPRESSION;
+		break;
+	}
+	
+	params->pwr_type = (flag1 & 0x03) >> 6;
+
+	params->sampleDistance = bytesToInt16_bigEndian(&bytes[1]);
+	
+	params->predThreshold = 1.0*bytesToInt16_bigEndian(&bytes[3])/10000.0;
+
+    
+    params->dataType = bytes[5] & 0x07;
+
+	params->errorBoundMode = (bytes[5] & 0xf0) >> 4;
+
+    switch(params->errorBoundMode)
+    {
+	case ABS:
+		params->absErrBound = bytesToFloat(&bytes[6]);
+		break;
+	case REL:
+		params->relBoundRatio = bytesToFloat(&bytes[10]);
+		break;
+	case ABS_AND_REL:
+	case ABS_OR_REL:
+		params->absErrBound = bytesToFloat(&bytes[6]);
+		params->relBoundRatio = bytesToFloat(&bytes[10]);
+		break;
+	case PSNR:
+		params->psnr = bytesToFloat(&bytes[6]);
+		break;
+	case ABS_AND_PW_REL:
+	case ABS_OR_PW_REL:
+		params->absErrBound = bytesToFloat(&bytes[6]);
+		params->pw_relBoundRatio = bytesToFloat(&bytes[10]);	
+		break;
+	case REL_AND_PW_REL:
+	case REL_OR_PW_REL:
+		params->relBoundRatio = bytesToFloat(&bytes[6]);
+		params->pw_relBoundRatio = bytesToFloat(&bytes[10]);	
+		break;
+	case PW_REL:
+		params->pw_relBoundRatio = bytesToFloat(&bytes[10]);		
+	}
+	
+    //segment_size  // 2 bytes
+    params->segment_size = bytesToInt16_bigEndian(&bytes[14]);	
+    
+    if(optQuantMode==1)
+    {
+		params->max_quant_intervals = bytesToInt32_bigEndian(&bytes[16]);
+		params->quantization_intervals = 0;
+	}
+	else
+	{
+		params->max_quant_intervals = 0;
+		params->quantization_intervals = bytesToInt32_bigEndian(&bytes[16]);  
+	}
+	return params;
+}

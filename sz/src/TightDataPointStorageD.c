@@ -79,6 +79,11 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 		pwrErrBoundBytesL = 4;
 	}
 	
+	sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
+	if(conf_params!=NULL)
+		free(conf_params);
+	conf_params = params;
+	index += MetaDataByteLength;
 
 	unsigned char dsLengthBytes[8];
 	for (i = 0; i < SZ_SIZE_TYPE; i++)
@@ -95,7 +100,7 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 	else if(same==1)
 	{
 		(*this)->allSameData = 1;
-		size_t exactMidBytesLength = flatBytesLength - 3 - SZ_SIZE_TYPE -1;
+		size_t exactMidBytesLength = flatBytesLength - 3 - 1 - MetaDataByteLength -SZ_SIZE_TYPE;
 		if(exactMidBytesLength>0)
 			(*this)->exactMidBytes = (unsigned char*)malloc(sizeof(unsigned char)*exactMidBytesLength);
 		else
@@ -211,7 +216,7 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 
 	if ((*this)->rtypeArray != NULL) 
 	{
-		(*this)->residualMidBits_size = flatBytesLength - 3 - 1 - SZ_SIZE_TYPE - 4 - radExpoL - segmentL - pwrErrBoundBytesL - 4 - 8 - 1 - 8 
+		(*this)->residualMidBits_size = flatBytesLength - 3 - 1 - MetaDataByteLength - SZ_SIZE_TYPE - 4 - radExpoL - segmentL - pwrErrBoundBytesL - 4 - 8 - 1 - 8 
 				- SZ_SIZE_TYPE - SZ_SIZE_TYPE - SZ_SIZE_TYPE - SZ_SIZE_TYPE - 8 - (*this)->rtypeArray_size 
 				- (*this)->typeArray_size - (*this)->leadNumArray_size
 				- (*this)->exactMidBytes_size - pwrErrBoundBytes_size;
@@ -220,7 +225,7 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 	}
 	else
 	{
-		(*this)->residualMidBits_size = flatBytesLength - 3 - 1 - SZ_SIZE_TYPE - 4 - radExpoL - segmentL - pwrErrBoundBytesL - 4 - 8 - 1 - 8
+		(*this)->residualMidBits_size = flatBytesLength - 3 - 1 - MetaDataByteLength - SZ_SIZE_TYPE - 4 - radExpoL - segmentL - pwrErrBoundBytesL - 4 - 8 - 1 - 8
 				- SZ_SIZE_TYPE - SZ_SIZE_TYPE - SZ_SIZE_TYPE - (*this)->typeArray_size
 				- (*this)->leadNumArray_size - (*this)->exactMidBytes_size - pwrErrBoundBytes_size;
 	}	
@@ -333,6 +338,9 @@ void convertTDPStoBytes_double(TightDataPointStorageD* tdps, unsigned char* byte
 		bytes[k++] = versionNumber[i];
 	bytes[k++] = sameByte;	//1	byte	
 	
+	convertSZParamsToBytes(conf_params, &(bytes[k]));
+	k = k + MetaDataByteLength;
+	
 	for(i = 0;i<SZ_SIZE_TYPE;i++)//ST: 4 or 8 bytes
 		bytes[k++] = dsLengthBytes[i];	
 	intToBytes_bigEndian(max_quant_intervals_Bytes, conf_params->max_quant_intervals);
@@ -420,7 +428,10 @@ void convertTDPStoBytes_double_reserve(TightDataPointStorageD* tdps, unsigned ch
 	
 	for(i = 0;i<3;i++)//3
 		bytes[k++] = versionNumber[i];		
-	bytes[k++] = sameByte;						//1
+	bytes[k++] = sameByte;			//1
+
+	convertSZParamsToBytes(conf_params, &(bytes[k]));
+	k = k + MetaDataByteLength;
 	
 	for(i = 0;i<SZ_SIZE_TYPE;i++)//ST
 		bytes[k++] = dsLengthBytes[i];		
@@ -523,6 +534,10 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 		for (i = 0; i < 3; i++)//3
 			(*bytes)[k++] = versionNumber[i];
 		(*bytes)[k++] = sameByte;
+
+		convertSZParamsToBytes(conf_params, &((*bytes)[k]));
+		k = k + MetaDataByteLength;
+
 		for (i = 0; i < SZ_SIZE_TYPE; i++)
 			(*bytes)[k++] = dsLengthBytes[i];
 		
@@ -542,7 +557,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 			pwrBoundArrayL = 4;
 		}
 
-		size_t totalByteLength = 3 + 1 + SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 
 				+ SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE 
 				+ tdps->typeArray_size + tdps->leadNumArray_size
 				+ tdps->exactMidBytes_size + residualMidBitsLength + tdps->pwrErrBoundBytes_size;
@@ -564,7 +579,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 			pwrBoundArrayL = 4;
 		}
 
-		size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 
 				+ SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE + 8 + tdps->rtypeArray_size
 				+ tdps->typeArray_size + tdps->leadNumArray_size 
 				+ tdps->exactMidBytes_size + residualMidBitsLength + tdps->pwrErrBoundBytes_size;
@@ -604,11 +619,15 @@ void convertTDPStoFlatBytes_double_args(TightDataPointStorageD *tdps, unsigned c
 
 	if(tdps->allSameData==1)
 	{
-		size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + tdps->exactMidBytes_size;
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + tdps->exactMidBytes_size;
 	
 		for (i = 0; i < 3; i++)//3
 			bytes[k++] = versionNumber[i];
 		bytes[k++] = sameByte;
+		
+		convertSZParamsToBytes(conf_params, &(bytes[k]));
+		k = k + MetaDataByteLength;
+				
 		for (i = 0; i < SZ_SIZE_TYPE; i++)
 			bytes[k++] = dsLengthBytes[i];		
 		for (i = 0; i < tdps->exactMidBytes_size; i++)
@@ -627,7 +646,7 @@ void convertTDPStoFlatBytes_double_args(TightDataPointStorageD *tdps, unsigned c
 			pwrBoundArrayL = 4;
 		}
 
-		size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE+ 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 
 				+ SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE 
 				+ tdps->typeArray_size + tdps->leadNumArray_size
 				+ tdps->exactMidBytes_size + residualMidBitsLength + tdps->pwrErrBoundBytes_size;
@@ -647,7 +666,7 @@ void convertTDPStoFlatBytes_double_args(TightDataPointStorageD *tdps, unsigned c
 			pwrBoundArrayL = 4;
 		}
 
-		size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrBoundArrayL + 4 + 8 + 1 + 8 
 				+ SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE + 8 + tdps->rtypeArray_size
 				+ tdps->typeArray_size + tdps->leadNumArray_size 
 				+ tdps->exactMidBytes_size + residualMidBitsLength + tdps->pwrErrBoundBytes_size;

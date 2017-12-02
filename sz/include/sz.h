@@ -136,6 +136,8 @@ extern "C" {
 #define SZ_MAINTAIN_VAR_DATA 0
 #define SZ_DESTROY_WHOLE_VARSET 1
 	
+#define MetaDataByteLength 20	
+	
 //Note: the following setting should be consistent with stateNum in Huffman.h
 //#define intvCapacity 65536
 //#define intvRadius 32768
@@ -229,18 +231,19 @@ typedef union lfloat
 /* array meta data and compression parameters for SZ_Init_Params() */
 typedef struct sz_params
 {
+	int dataType;
 	unsigned int max_quant_intervals;
 	unsigned int quantization_intervals;
-    int dataEndianType;
-    int sysEndianType; //sysEndianType is actually set automatically.
-    int sol_ID;
-    int layers;
-    int sampleDistance;
-    float predThreshold;    
-    int offset;
-    int szMode;
-    int gzipMode;
-    int  errorBoundMode;
+    int dataEndianType; //*
+    int sysEndianType; //*sysEndianType is actually set automatically.
+    int sol_ID;//x
+    int layers;//x
+    int sampleDistance; //2 bytes
+    float predThreshold;  // 2 bytes
+    int offset;//x
+    int szMode; //*
+    int gzipMode; //*
+    int  errorBoundMode; //4bits (0.5byte)
     double absErrBound;
     double relBoundRatio;
     double psnr;
@@ -248,6 +251,16 @@ typedef struct sz_params
     int segment_size;
     int pwr_type;
 } sz_params;
+
+typedef struct sz_metadata
+{
+	int versionNumber[3]; //only used for checking the version by calling SZ_GetMetaData()
+	int isConstant; //only used for checking if the data are constant values by calling SZ_GetMetaData()
+	int isLossless; //only used for checking if the data compression was lossless, used only by calling SZ_GetMetaData()
+	int sizeType; //only used for checking whether the size type is "int" or "long" in the compression, used only by calling SZ_GetMetaData()
+	size_t dataSeriesLength;
+	struct sz_params* conf_params;
+} sz_metadata;
 
 extern sz_params *conf_params;
 
@@ -298,6 +311,10 @@ unsigned char *SZ_compress_rev(int dataType, void *data, void *reservedValue, si
 void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 size_t SZ_decompress_args(int dataType, unsigned char *bytes, size_t byteLength, void* decompressed_array, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
+sz_metadata* SZ_getMetadata(unsigned char* bytes);
+void SZ_printMetadata(sz_metadata* metadata);
+
+
 void filloutDimArray(size_t* dim, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
 size_t compute_total_batch_size();
@@ -309,6 +326,9 @@ unsigned char* SZ_batch_compress(size_t *outSize);
 SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, size_t length, int *status);
 
 void SZ_Finalize();
+
+void convertSZParamsToBytes(sz_params* params, unsigned char* result);
+sz_params* convertBytesToSZParams(unsigned char* bytes);
 
 #ifdef __cplusplus
 }

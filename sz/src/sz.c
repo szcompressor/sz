@@ -283,6 +283,7 @@ unsigned char* SZ_compress_args(int dataType, void *data, size_t *outSize, int e
 double relBoundRatio, double pwrBoundRatio, int pwrType, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
 	//TODO
+	conf_params->dataType = dataType;
 	if(dataType==SZ_FLOAT)
 	{
 		unsigned char *newByteData = NULL;
@@ -370,6 +371,7 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1,
 size_t s5, size_t s4, size_t s3, size_t s2, size_t s1,
 size_t e5, size_t e4, size_t e3, size_t e2, size_t e1)
 {
+	conf_params->dataType = dataType;
 	if(dataType==SZ_FLOAT)
 	{
 		SZ_compress_args_float_subblock(compressed_bytes, (float *)data, 
@@ -432,6 +434,7 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 int SZ_compress_rev_args2(int dataType, void *data, void *reservedValue, unsigned char* compressed_bytes, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
+	conf_params->dataType = dataType;
 	unsigned char* bytes = SZ_compress_rev_args(dataType, data, reservedValue, outSize, errBoundMode, absErrBound, relBoundRatio, r5, r4, r3, r2, r1);
 	memcpy(compressed_bytes, bytes, *outSize);
 	free(bytes); //free(bytes) is removed , because of dump error at MIRA system (PPC architecture), fixed?
@@ -618,6 +621,190 @@ size_t SZ_decompress_args(int dataType, unsigned char *bytes, size_t byteLength,
 	}
 
 	return nbEle;
+}
+
+sz_metadata* SZ_getMetadata(unsigned char* bytes)
+{
+	int index = 0, i, isConstant, isLossless, sizeType;
+	size_t dataSeriesLength = 0;
+	int versions[3] = {0,0,0};
+	for (i = 0; i < 3; i++)
+		versions[i] = bytes[index++]; //3
+	unsigned char sameRByte = bytes[index++]; //1
+	isConstant = sameRByte & 0x01;
+	//szMode = (sameRByte & 0x06)>>1;
+	isLossless = (sameRByte & 0x10)>>4;
+	SZ_SIZE_TYPE = sizeType = ((sameRByte & 0x40)>>6)==1?8:4;
+	
+	sz_params* params = convertBytesToSZParams(&(bytes[index]));
+	if(conf_params!=NULL)
+		free(conf_params);
+	conf_params = params;	
+	index += MetaDataByteLength;
+	
+	if(params->dataType!=SZ_FLOAT && params->dataType!= SZ_DOUBLE) //if this type is an Int type
+		index++; //jump to the dataLength info byte address
+	dataSeriesLength = bytesToSize(&(bytes[index]));// 4 or 8	
+	
+	sz_metadata* metadata = (sz_metadata*)malloc(sizeof(struct sz_metadata));
+	
+	metadata->versionNumber[0] = versions[0];
+	metadata->versionNumber[1] = versions[1];
+	metadata->versionNumber[2] = versions[2];
+	metadata->isConstant = isConstant;
+	metadata->isLossless = isLossless;
+	metadata->sizeType = sizeType;
+	metadata->dataSeriesLength = dataSeriesLength;
+	
+	metadata->conf_params = conf_params;
+	
+	return metadata;
+}
+
+void SZ_printMetadata(sz_metadata* metadata)
+{
+	printf("=================SZ Compression Meta Data=================\n");
+	printf("Version:                        \t %d.%d.%d\n", metadata->versionNumber[0], metadata->versionNumber[1], metadata->versionNumber[2]);
+	printf("Constant data?:                 \t %s\n", metadata->isConstant==1?"YES":"NO");
+	printf("Lossless?:                      \t %s\n", metadata->isLossless==1?"YES":"NO");
+	printf("Size type (size of # elements): \t %d bytes\n", metadata->sizeType); 
+	printf("Num of elements:                \t %zu\n", metadata->dataSeriesLength);
+		
+	sz_params* params = metadata->conf_params;
+	
+	switch(params->dataType)
+	{
+	case SZ_FLOAT:
+		printf("Data type:                      \t FLOAT\n");
+		break;
+	case SZ_DOUBLE:
+		printf("Data type:                      \t DOUBLE\n");
+		break;
+	case SZ_INT8:
+		printf("Data type:                      \t INT8\n");
+		break;	
+	case SZ_INT16:
+		printf("Data type:                      \t INT16\n");
+		break;
+	case SZ_INT32:
+		printf("Data type:                      \t INT32\n");
+		break;	
+	case SZ_INT64:
+		printf("Data type:                      \t INT64\n");
+		break;	
+	case SZ_UINT8:
+		printf("Data type:                      \t UINT8\n");
+		break;	
+	case SZ_UINT16:
+		printf("Data type:                      \t UINT16\n");
+		break;
+	case SZ_UINT32:
+		printf("Data type:                      \t UINT32\n");
+		break;	
+	case SZ_UINT64:
+		printf("Data type:                      \t UINT64\n");
+		break;				
+	}
+	
+	if(optQuantMode==1)
+	{
+		printf("quantization_intervals:         \t 0\n");
+		printf("max_quant_intervals:            \t %d\n", params->max_quant_intervals);
+	}
+	else
+	{
+		printf("quantization_intervals:         \t %d\n", params->quantization_intervals);
+		printf("max_quant_intervals:            \t - %d\n");		
+	}
+	
+	printf("dataEndianType (prior raw data):\t %s\n", params->dataEndianType==1?"BIG_ENDIAN":"LITTLE_ENDIAN");
+	printf("sysEndianType (at compression): \t %s\n", params->sysEndianType==1?"BIG_ENDIAN":"LITTLE_ENDIAN");
+	printf("sampleDistance:                 \t %d\n", params->sampleDistance);
+	printf("predThreshold:                  \t %f\n", params->predThreshold);
+	switch(params->szMode)
+	{
+	case SZ_BEST_SPEED:
+		printf("szMode:                         \t SZ_BEST_SPEED (without Gzip)\n");
+		break;
+	case SZ_BEST_COMPRESSION:
+		printf("szMode:                         \t SZ_BEST_COMPRESSION (with Gzip)\n");
+		break;
+	}
+	switch(params->gzipMode)
+	{
+	case Z_BEST_SPEED:
+		printf("gzipMode:                       \t Z_BEST_SPEED\n");
+		break;
+	case Z_DEFAULT_COMPRESSION:
+		printf("gzipMode:                       \t Z_BEST_SPEED\n");
+		break;	
+	case Z_BEST_COMPRESSION:
+		printf("gzipMode:                       \t Z_BEST_COMPRESSION\n");
+		break;
+	}
+	
+	switch(params->errorBoundMode)
+	{
+	case ABS:
+		printf("errBoundMode:                   \t ABS\n");
+		printf("absErrBound:                    \t %f\n", params->absErrBound);
+		break;
+	case REL:
+		printf("errBoundMode:                   \t REL (based on value_range extent)\n");
+		printf("relBoundRatio:                  \t %f\n", params->relBoundRatio);
+		break;
+	case ABS_AND_REL:
+		printf("errBoundMode:                   \t ABS_AND_REL\n");
+		printf("absErrBound:                    \t %f\n", params->absErrBound);
+		printf("relBoundRatio:                  \t %f\n", params->relBoundRatio);
+		break;
+	case ABS_OR_REL:
+		printf("errBoundMode:                   \t ABS_OR_REL\n");
+		printf("absErrBound:                    \t %f\n", params->absErrBound);
+		printf("relBoundRatio:                  \t %f\n", params->relBoundRatio);
+		break;
+	case PSNR:
+		printf("errBoundMode:                   \t PSNR\n");
+		printf("psnr:                           \t %f\n", params->psnr);
+		break;
+	case PW_REL:
+		printf("errBoundMode:                   \t PW_REL\n");
+		break;
+	case ABS_AND_PW_REL:
+		printf("errBoundMode:                   \t ABS_AND_PW_REL\n");
+		printf("absErrBound:                    \t %f\n", params->absErrBound);
+		break;
+	case ABS_OR_PW_REL:
+		printf("errBoundMode:                   \t ABS_OR_PW_REL\n");
+		printf("absErrBound:                    \t %f\n", params->absErrBound);
+		break;
+	case REL_AND_PW_REL:
+		printf("errBoundMode:                   \t REL_AND_PW_REL\n");
+		printf("range_relBoundRatio:            \t %f\n", params->relBoundRatio);
+		break;
+	case REL_OR_PW_REL:
+		printf("errBoundMode:                   \t REL_OR_PW_REL\n");
+		printf("range_relBoundRatio:            \t %f\n", params->relBoundRatio);
+		break;
+	}
+	
+	if(params->errorBoundMode>=PW_REL && params->errorBoundMode<=REL_OR_PW_REL)
+	{
+		printf("pw_relBoundRatio:               \t %f\n", params->pw_relBoundRatio);
+		printf("segment_size:                   \t %d\n", params->segment_size);
+		switch(params->pwr_type)
+		{
+		case SZ_PWR_MIN_TYPE:
+			printf("pwrType:                    \t SZ_PWR_MIN_TYPE\n");
+			break;
+		case SZ_PWR_AVG_TYPE:
+			printf("pwrType:                    \t SZ_PWR_AVG_TYPE\n");
+			break;
+		case SZ_PWR_MAX_TYPE:
+			printf("pwrType:                    \t SZ_PWR_MAX_TYPE\n");
+			break;
+		}
+	}
 }
 
 /*-----------------------------------batch data compression--------------------------------------*/
