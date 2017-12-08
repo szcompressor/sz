@@ -167,6 +167,8 @@ int main(int argc, char * argv[])
     double range = Max - Min;
     double psnr = 20*log10(range)-10*log10(mse);
     double nrmse = sqrt(mse)/range;
+     
+    double compressionRatio = 1.0*nbEle*sizeof(float)/byteLength;
 
     printf ("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, range);
     printf ("Max absolute error = %.10f\n", diffMax);
@@ -174,7 +176,7 @@ int main(int argc, char * argv[])
     printf ("Max pw relative error = %f\n", maxpw_relerr);
     printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
     printf ("acEff=%f\n", acEff);
-
+    printf ("compressionRatio = %f\n", compressionRatio);
     free(data);
     free(ori_data);
     return 0;
