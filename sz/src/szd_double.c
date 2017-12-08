@@ -1623,7 +1623,10 @@ void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightData
 			if(errBoundMode < PW_REL)
 				decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
 			else 
-				decompressDataSeries_double_1D_pwr(data, dataSeriesLength, tdps);
+			{
+				//decompressDataSeries_double_1D_pwr(data, dataSeriesLength, tdps);
+				decompressDataSeries_double_1D_pwrgroup(data, dataSeriesLength, tdps);
+			}
 			return;
 		} else {
 			*data = (double*)malloc(sizeof(double)*dataSeriesLength);

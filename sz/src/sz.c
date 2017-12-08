@@ -898,7 +898,7 @@ unsigned char* SZ_batch_compress(size_t *outSize)
 			size_t outSize;
 			SZ_compress_args_float_wRngeNoGzip(&newByteData, (float *)p->data, 
 			p->r5, p->r4, p->r3, p->r2, p->r1, 
-			&(p->compressedSize), p->errBoundMode, p->absErrBound, p->relBoundRatio);
+			&(p->compressedSize), p->errBoundMode, p->absErrBound, p->relBoundRatio, p->pwRelBoundRatio);
 			
 			p->compressedBytes = newByteData;
 		}
@@ -908,7 +908,7 @@ unsigned char* SZ_batch_compress(size_t *outSize)
 			size_t outSize;
 			SZ_compress_args_double_wRngeNoGzip(&newByteData, (double *)p->data, 
 			p->r5, p->r4, p->r3, p->r2, p->r1, 
-			&(p->compressedSize), p->errBoundMode, p->absErrBound, p->relBoundRatio);
+			&(p->compressedSize), p->errBoundMode, p->absErrBound, p->relBoundRatio, p->pwRelBoundRatio);
 			
 			p->compressedBytes = newByteData;
 		}
@@ -1334,4 +1334,6 @@ void SZ_Finalize()
 {
 	//if(sz_varset!=NULL)
 	//	free_VarSet();
+	
+	SZ_ReleaseHuffman();
 }

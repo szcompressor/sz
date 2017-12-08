@@ -1621,7 +1621,10 @@ void getSnapshotData_float_1D(float** data, size_t dataSeriesLength, TightDataPo
 			if(errBoundMode < PW_REL)
 				decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
 			else 
-				decompressDataSeries_float_1D_pwr(data, dataSeriesLength, tdps);
+			{
+				//decompressDataSeries_float_1D_pwr(data, dataSeriesLength, tdps);
+				decompressDataSeries_float_1D_pwrgroup(data, dataSeriesLength, tdps);
+			}
 			return;
 		} else {
 			*data = (float*)malloc(sizeof(float)*dataSeriesLength);

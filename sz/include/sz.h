@@ -74,8 +74,8 @@ extern "C" {
 #define SZ_VERNUM 0x0140
 #define SZ_VER_MAJOR 1
 #define SZ_VER_MINOR 4
-#define SZ_VER_BUILD 11
-#define SZ_VER_REVISION 1
+#define SZ_VER_BUILD 12
+#define SZ_VER_REVISION 0
 
 #define HZ 102
 #define SZ 101
@@ -135,6 +135,8 @@ extern "C" {
 
 #define SZ_MAINTAIN_VAR_DATA 0
 #define SZ_DESTROY_WHOLE_VARSET 1
+
+#define GROUP_COUNT 16 //2^{16}=65536
 	
 #define MetaDataByteLength 20	
 	

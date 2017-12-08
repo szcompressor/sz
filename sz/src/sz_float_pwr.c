@@ -58,6 +58,8 @@ void compute_segment_precisions_float_1D(float *oriData, size_t dataLength, floa
 			//put the two bytes in pwrErrBoundBytes
 			pwrErrBoundBytes[k++] = realPrecBytes[0];
 			pwrErrBoundBytes[k++] = realPrecBytes[1];
+			
+			realPrecision = fabs(pw_relBoundRatio*curValue);
 		}
 		
 		if(curValue!=0)
@@ -1461,4 +1463,314 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 	free(lce);
 	free_TightDataPointStorageF(tdps);
 	free(exactMidByteArray);
+}
+
+void createRangeGroups_float(float** posGroups, float** negGroups, int** posFlags, int** negFlags)
+{
+	size_t size = GROUP_COUNT*sizeof(float);
+	size_t size2 = GROUP_COUNT*sizeof(int);
+	*posGroups = (float*)malloc(size);
+	*negGroups = (float*)malloc(size);
+	*posFlags = (int*)malloc(size2);
+	*negFlags = (int*)malloc(size2);
+	memset(*posGroups, 0, size);
+	memset(*negGroups, 0, size);
+	memset(*posFlags, 0, size2);
+	memset(*negFlags, 0, size2);
+}
+
+void compressGroupIDArray_float(char* groupID, TightDataPointStorageF* tdps)
+{
+	SZ_Reset(); //reset the huffman tree
+	size_t dataLength = tdps->dataSeriesLength;
+	int* standGroupID = (int*)malloc(dataLength*sizeof(int));
+
+	size_t i;
+	standGroupID[0] = groupID[0]+GROUP_COUNT; //plus an offset such that it would not be a negative number.
+	char lastGroupIDValue = groupID[0], curGroupIDValue;
+	int offset = 2*(GROUP_COUNT + 2);
+	for(i=1; i<dataLength;i++)
+	{
+		curGroupIDValue = groupID[i];
+		standGroupID[i] = (curGroupIDValue - lastGroupIDValue) + offset; 
+		lastGroupIDValue = curGroupIDValue;
+	}
+	
+	unsigned char* out = (unsigned char*)malloc(sizeof(unsigned char)*dataLength);
+	size_t outSize;
+	
+	encode_withTree(standGroupID, dataLength, &out, &outSize);
+	//encode2_withTree(standGroupID, dataLength, &out, &outSize);
+	
+	//outSize = zlib_compress5(standGroupID, dataLength, &out, 9);
+	
+	tdps->pwrErrBoundBytes = out; //groupIDArray
+	tdps->pwrErrBoundBytes_size = outSize;
+	
+	free(standGroupID);
+}
+
+TightDataPointStorageF* SZ_compress_float_1D_MDQ_pwrGroup(float* oriData, size_t dataLength, int errBoundMode, 
+double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSize, float medianValue_f)
+{
+	size_t i;
+	float *posGroups, *negGroups, *groups;
+	float pos_01_group = 0, neg_01_group = 0; //[0,1] and [-1,0]
+	int *posFlags, *negFlags, *flags;
+	int pos_01_flag = 0, neg_01_flag = 0;
+	createRangeGroups_float(&posGroups, &negGroups, &posFlags, &negFlags);
+	size_t nbBins = (size_t)(1/pwrErrRatio);
+	if(nbBins%2==1)
+		nbBins++;
+	intvRadius = nbBins;
+
+	int reqLength, status;
+	float medianValue = medianValue_f;
+	float realPrecision = (float)getRealPrecision_float(valueRangeSize, errBoundMode, absErrBound, relBoundRatio, &status);
+	if(realPrecision<0)
+		realPrecision = pwrErrRatio;
+	float realGroupPrecision; //precision (error) based on group ID
+	short reqExpo = getPrecisionReqLength_float(realPrecision);
+	short radExpo = getExponent_float(valueRangeSize/2);
+	short lastGroupNum, groupNum, decGroupNum, grpNum = 0;
+	
+	double* groupErrorBounds = generateGroupErrBounds(errBoundMode, realPrecision, pwrErrRatio);
+	intvRadius = generateGroupMaxIntervalCount(groupErrorBounds);
+	
+	computeReqLength_float(realPrecision, radExpo, &reqLength, &medianValue);
+
+	int* type = (int*) malloc(dataLength*sizeof(int));
+	char *groupID = (char*) malloc(dataLength*sizeof(char));
+	char *gp = groupID;
+		
+	float* spaceFillingValue = oriData; 
+	
+	DynamicByteArray *resiBitLengthArray;
+	new_DBA(&resiBitLengthArray, DynArrayInitLen);
+	
+	DynamicIntArray *exactLeadNumArray;
+	new_DIA(&exactLeadNumArray, DynArrayInitLen);
+	
+	DynamicByteArray *exactMidByteArray;
+	new_DBA(&exactMidByteArray, DynArrayInitLen);
+	
+	DynamicIntArray *resiBitArray;
+	new_DIA(&resiBitArray, DynArrayInitLen);
+	
+	unsigned char preDataBytes[4];
+	intToBytes_bigEndian(preDataBytes, 0);
+	
+	int reqBytesLength = reqLength/8;
+	int resiBitsLength = reqLength%8;
+
+	FloatValueCompressElement *vce = (FloatValueCompressElement*)malloc(sizeof(FloatValueCompressElement));
+	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
+			
+	int state;
+	float lcf, qcf;	
+	float curData, decValue;
+	float pred;
+	float predAbsErr;
+	double errBound, interval = 0;
+	
+	//add the first data	
+	type[0] = 0;
+	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+	memcpy(preDataBytes,vce->curBytes,4);
+	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+	groupNum = computeGroupNum_float(vce->data);
+
+	if(curData > 0 && groupNum >= 0)
+	{
+		groups = posGroups;
+		flags = posFlags;
+		grpNum = groupNum;
+	}
+	else if(curData < 0 && groupNum >= 0)
+	{
+		groups = negGroups;
+		flags = negFlags;
+		grpNum = groupNum;
+	}
+	else if(curData >= 0 && groupNum == -1)
+	{
+		groups = &pos_01_group;
+		flags = &pos_01_flag;
+		grpNum = 0;
+	}
+	else //curData < 0 && groupNum == -1
+	{
+		groups = &neg_01_group;
+		flags = &neg_01_flag;
+		grpNum = 0;
+	}
+
+	listAdd_float_group(groups, flags, groupNum, spaceFillingValue[0], vce->data, gp);
+	gp++;
+	
+	for(i=1;i<dataLength;i++)
+	{
+		curData = oriData[i];
+		//printf("i=%d, posGroups[3]=%f, negGroups[3]=%f\n", i, posGroups[3], negGroups[3]);
+		
+		groupNum = computeGroupNum_float(curData);
+		
+		if(curData > 0 && groupNum >= 0)
+		{
+			groups = posGroups;
+			flags = posFlags;
+			grpNum = groupNum;
+		}
+		else if(curData < 0 && groupNum >= 0)
+		{
+			groups = negGroups;
+			flags = negFlags;
+			grpNum = groupNum;
+		}
+		else if(curData >= 0 && groupNum == -1)
+		{
+			groups = &pos_01_group;
+			flags = &pos_01_flag;
+			grpNum = 0;
+		}
+		else //curData < 0 && groupNum == -1
+		{
+			groups = &neg_01_group;
+			flags = &neg_01_flag;
+			grpNum = 0;
+		}
+
+		if(groupNum>=GROUP_COUNT)
+		{
+			type[i] = 0;
+			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+
+			compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+			memcpy(preDataBytes,vce->curBytes,4);
+			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+			listAdd_float_group(groups, flags, lastGroupNum, curData, vce->data, gp);	//set the group number to be last one in order to get the groupID array as smooth as possible.		
+		}
+		else if(flags[grpNum]==0) //the dec value may not be in the same group
+		{	
+			type[i] = 0;
+			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+
+			compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+			memcpy(preDataBytes,vce->curBytes,4);
+			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+			//decGroupNum = computeGroupNum_float(vce->data);
+			
+			//if(decGroupNum < groupNum)
+			//	decValue = curData>0?pow(2, groupNum):-pow(2, groupNum);
+			//else if(decGroupNum > groupNum)
+			//	decValue = curData>0?pow(2, groupNum+1):-pow(2, groupNum+1);
+			//else
+			//	decValue = vce->data;
+			
+			decValue = vce->data;	
+			listAdd_float_group(groups, flags, groupNum, curData, decValue, gp);
+			lastGroupNum = curData>0?groupNum + 2: -(groupNum+2);
+		}
+		else //if flags[groupNum]==1, the dec value must be in the same group
+		{
+			pred = groups[grpNum];
+			predAbsErr = fabs(curData - pred);
+			realGroupPrecision = groupErrorBounds[grpNum]; //compute real error bound
+			interval = realGroupPrecision*2;
+			state = (predAbsErr/realGroupPrecision+1)/2;
+			if(curData>=pred)
+			{
+				type[i] = intvRadius+state;
+				decValue = pred + state*interval;
+			}
+			else //curData<pred
+			{
+				type[i] = intvRadius-state;
+				decValue = pred - state*interval;
+			}
+			//decGroupNum = computeGroupNum_float(pred);
+			
+			if((decValue>0&&curData<0)||(decValue<0&&curData>=0))
+				decValue = 0;
+			//else
+			//{
+			//	if(decGroupNum < groupNum)
+			//		decValue = curData>0?pow(2, groupNum):-pow(2, groupNum);
+			//	else if(decGroupNum > groupNum)
+			//		decValue = curData>0?pow(2, groupNum+1):-pow(2, groupNum+1);
+			//	else
+			//		decValue = pred;				
+			//}
+			
+			if(fabs(curData-decValue)>realGroupPrecision)
+			{	
+				type[i] = 0;
+				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
+
+				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,4);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+
+				decValue = vce->data;	
+			}
+			
+			listAdd_float_group(groups, flags, groupNum, curData, decValue, gp);			
+			lastGroupNum = curData>=0?groupNum + 2: -(groupNum+2);			
+		}
+		gp++;	
+
+	}
+	
+	int exactDataNum = exactLeadNumArray->size;
+	
+	TightDataPointStorageF* tdps;
+			
+	//combineTypeAndGroupIDArray(nbBins, dataLength, &type, groupID);
+
+	new_TightDataPointStorageF(&tdps, dataLength, exactDataNum, 
+			type, exactMidByteArray->array, exactMidByteArray->size,  
+			exactLeadNumArray->array,  
+			resiBitArray->array, resiBitArray->size, 
+			resiBitLengthArray->array, resiBitLengthArray->size, 
+			realPrecision, medianValue, (char)reqLength, nbBins, NULL, 0, radExpo);	
+	
+	compressGroupIDArray_float(groupID, tdps);
+	
+	free(posGroups);
+	free(negGroups);
+	free(posFlags);
+	free(negFlags);
+	free(groupID);
+	free(groupErrorBounds);
+	
+	free_DBA(resiBitLengthArray);
+	free_DIA(exactLeadNumArray);
+	free_DIA(resiBitArray);
+	free(type);	
+	free(vce);
+	free(lce);	
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);	
+	
+	return tdps;
+}
+
+void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwrgroup(unsigned char** newByteData, float *oriData,
+size_t dataLength, double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSize, float medianValue_f, size_t *outSize)
+{
+        SZ_Reset();
+        TightDataPointStorageF* tdps = SZ_compress_float_1D_MDQ_pwrGroup(oriData, dataLength, errorBoundMode, 
+        absErrBound, relBoundRatio, pwrErrRatio, 
+        valueRangeSize, medianValue_f);
+
+        convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
+
+        if(*outSize>dataLength*sizeof(float))
+                SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
+
+        free_TightDataPointStorageF(tdps);
 }

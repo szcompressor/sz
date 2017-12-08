@@ -1694,7 +1694,7 @@ void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriD
 
 int SZ_compress_args_float_wRngeNoGzip(unsigned char** newByteData, float *oriData, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
-int errBoundMode, double absErr_Bound, double relBoundRatio)
+int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio)
 {
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
@@ -1714,7 +1714,10 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 		if(r5==0&&r4==0&&r3==0&&r2==0)
 		{
 			if(errBoundMode>=PW_REL)
-				SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr(newByteData, oriData, realPrecision, r1, outSize, min, max);
+			{	
+				//SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr(newByteData, oriData, realPrecision, r1, outSize, min, max);
+				SZ_compress_args_float_NoCkRngeNoGzip_1D_pwrgroup(newByteData, oriData, r1, absErr_Bound, relBoundRatio, pwrErrRatio, valueRangeSize, medianValue, outSize);
+			}
 			else
 				SZ_compress_args_float_NoCkRngeNoGzip_1D(newByteData, oriData, r1, realPrecision, outSize, valueRangeSize, medianValue);
 		}
@@ -1788,7 +1791,11 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		if (r2==0)
 		{
 			if(errorBoundMode>=PW_REL)
-				SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr(&tmpByteData, oriData, realPrecision, r1, &tmpOutSize, min, max);
+			{
+				//SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr(&tmpByteData, oriData, realPrecision, r1, &tmpOutSize, min, max);
+				SZ_compress_args_float_NoCkRngeNoGzip_1D_pwrgroup(&tmpByteData, oriData, r1, absErr_Bound, relBoundRatio, pwRelBoundRatio, 
+				valueRangeSize, medianValue, &tmpOutSize);
+			}
 			else
 				SZ_compress_args_float_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 		}

@@ -30,6 +30,13 @@ size_t *outSize, double min, double max);
 void SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, double *oriData, double globalPrecision, 
 size_t r1, size_t r2, size_t r3, size_t *outSize, double min, double max);
 
+void createRangeGroups_double(double** posGroups, double** negGroups, int** posFlags, int** negFlags);
+void compressGroupIDArray_double(char* groupID, TightDataPointStorageD* tdps);
+TightDataPointStorageD* SZ_compress_double_1D_MDQ_pwrGroup(double* oriData, size_t dataLength, int errBoundMode, 
+double absErrBound, double relBoundRatio, double pwrErrRatio, double valueRangeSize, double medianValue_f);
+void SZ_compress_args_double_NoCkRngeNoGzip_1D_pwrgroup(unsigned char** newByteData, double *oriData,
+size_t dataLength, double absErrBound, double relBoundRatio, double pwrErrRatio, double valueRangeSize, double medianValue_f, size_t *outSize);
+
 #ifdef __cplusplus
 }
 #endif

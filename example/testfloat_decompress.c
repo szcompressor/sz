@@ -143,15 +143,14 @@ int main(int argc, char * argv[])
         float err = fabs(data[i] - ori_data[i]);
 	if(ori_data[i]!=0)
 	{
-		relerr = err/ori_data[i];
+		if(fabs(ori_data[i])>1)
+			relerr = err/ori_data[i];
+		else
+			relerr = err;
 		if(maxpw_relerr<relerr)
 			maxpw_relerr = relerr;
         }
-	/*if(relerr>0.001)
-	{
-		printf("%d %d: err=%.20G ori=%.20G dec=%.20G\n", k, i, err, ori_data[i], data[i]);
-		break;
-	}*/
+
 	if (diffMax < err)
 		diffMax = err;
         prodSum += (ori_data[i]-mean1)*(data[i]-mean2);
