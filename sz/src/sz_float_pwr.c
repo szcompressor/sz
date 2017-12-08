@@ -1580,6 +1580,8 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+	
+	curData = spaceFillingValue[0];
 	groupNum = computeGroupNum_float(vce->data);
 
 	if(curData > 0 && groupNum >= 0)

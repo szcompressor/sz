@@ -1570,6 +1570,8 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, double valueRangeS
 	updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,8);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+	
+	curData = spaceFillingValue[0];
 	groupNum = computeGroupNum_double(vce->data);
 	
 	if(curData > 0 && groupNum >= 0)
