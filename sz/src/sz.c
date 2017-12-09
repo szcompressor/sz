@@ -976,7 +976,7 @@ unsigned char* SZ_batch_compress(size_t *outSize)
 	
 	if(szMode!=SZ_BEST_SPEED)
 	{
-		tmpGzipSize = zlib_compress(tmpFinalCompressedBytes, dba->size, &tmpCompressedBytes2, gzipMode);
+		tmpGzipSize = zlib_compress5(tmpFinalCompressedBytes, dba->size, &tmpCompressedBytes2, gzipMode);
 		free(tmpFinalCompressedBytes);		
 	}
 	else

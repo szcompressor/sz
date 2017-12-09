@@ -23,9 +23,7 @@
 
 /*zlib_compress() is only valid for median-size data compression. */
 unsigned long zlib_compress(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level)
-{
-	unsigned long outSize = dataLength;
-	
+{	
 	z_stream stream = {0};
 
     stream.next_in = data;
@@ -36,10 +34,15 @@ unsigned long zlib_compress(unsigned char* data, unsigned long dataLength, unsig
 #endif
 
     uLong estCmpLen = deflateBound(&stream, dataLength);	
-	
+	unsigned long outSize = estCmpLen;
+    	
 	*compressBytes = (unsigned char*)malloc(sizeof(unsigned char)*estCmpLen);
 	int err = compress2(*compressBytes, &outSize, data, dataLength, level);
-	//printf("err=%d\n", err);
+	if(err!=Z_OK)
+	{
+		printf("Error: err_code=%d; the reason may be your data size is too large (>=2^32), which cannot be compressed by standalone zlib_compress. Sol: inflace_init, ....\n", err);
+		exit(0);
+	}
 	return outSize;
 }
 
@@ -134,26 +137,6 @@ unsigned long zlib_compress3(unsigned char* data, unsigned long dataLength, unsi
 
 unsigned long zlib_compress4(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level)
 {
-	int err = 0;
-	unsigned long outSize = 0;
-	
-	z_stream stream = {0};
- 
-    stream.next_in = data;
-    stream.avail_in = dataLength;
-
-    uLong estCmpLen = deflateBound(&stream, dataLength);
-	*compressBytes = (unsigned char*)malloc(sizeof(unsigned char)*estCmpLen);	
-	
-	err = compress(*compressBytes, &outSize, data, dataLength);
-	CHECK_ERR(err, "compress");
-	
-	
-	return outSize;
-}
-
-unsigned long zlib_compress5(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level)
-{
     z_stream c_stream = {0}; /* compression stream */
     int err = 0;
 
@@ -194,14 +177,75 @@ unsigned long zlib_compress5(unsigned char* data, unsigned long dataLength, unsi
     return c_stream.total_out;	
 }
 
+unsigned long zlib_compress5(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level)
+{
+	int ret, flush;
+	unsigned have;
+	z_stream strm;
+	unsigned char* in = data;
+
+	/* allocate deflate state */
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	ret = deflateInit(&strm, level);
+	if (ret != Z_OK)
+		return ret;
+
+	size_t o_size = 0, p_size = 0, av_in = 0;
+    uLong estCmpLen = deflateBound(&strm, dataLength);
+   	*compressBytes = (unsigned char*)malloc(sizeof(unsigned char)*estCmpLen);	
+	unsigned char* out = *compressBytes; 
+
+	/* compress until end of file */
+	do {		
+		p_size += SZ_ZLIB_BUFFER_SIZE;
+		if(p_size>=dataLength)
+		{
+			av_in = dataLength - (p_size - SZ_ZLIB_BUFFER_SIZE);
+			flush = Z_FINISH;
+		}
+		else
+		{
+			av_in = SZ_ZLIB_BUFFER_SIZE;
+			flush = Z_NO_FLUSH;
+		}
+		strm.avail_in = av_in;
+		strm.next_in = in;
+
+		/* run deflate() on input until output buffer not full, finish
+		   compression if all of source has been read in */
+		do {
+			strm.avail_out = SZ_ZLIB_BUFFER_SIZE;
+			strm.next_out = out;
+			ret = deflate(&strm, flush);    /* no bad return value */
+
+			have = SZ_ZLIB_BUFFER_SIZE - strm.avail_out;
+			out += have;
+		} while (strm.avail_out == 0);
+
+		in+=av_in;
+
+		/* done when last data in file processed */
+	} while (flush != Z_FINISH);
+
+	/* clean up and return */
+	(void)deflateEnd(&strm);	
+	
+	return strm.total_out;	
+}
+
 unsigned long zlib_uncompress(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize)
 {
-	unsigned long outSize;
-	unsigned long* outSize_ = (unsigned long*)malloc(sizeof(unsigned long));
-	*oriData = (unsigned char*)malloc(sizeof(unsigned char)*targetOriSize);
-	uncompress(*oriData, outSize_, compressBytes, cmpSize); 
-	outSize = *outSize_;
-	free(outSize_);
+	unsigned long outSize = targetOriSize;
+	*oriData = (unsigned char*)malloc(sizeof(unsigned char)*targetOriSize);	
+	int status = uncompress(*oriData, &outSize, compressBytes, cmpSize); 
+	if(status!=Z_OK)
+	{
+		printf("Error: Zlib decompression error; status=%d\n", status);
+		exit(0);
+	}
+	
 	return outSize;
 }
 
@@ -252,18 +296,136 @@ unsigned long zlib_uncompress2 (unsigned char* compressBytes, unsigned long cmpS
     return outSize;
 }
 
+unsigned long zlib_uncompress3(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize)
+{
+	int status;
+	z_stream z_strm; /* decompression stream */
+	
+	size_t nalloc = 65536*4;
+
+	*oriData = (unsigned char*)malloc(sizeof(unsigned char)*targetOriSize);		
+	memset(&z_strm, 0, sizeof(z_strm));
+
+
+    /*d_stream.zalloc = (alloc_func)0;
+    d_stream.zfree = (free_func)0;
+    d_stream.opaque = (voidpf)0;*/
+
+	z_strm.next_in  = compressBytes;
+	z_strm.avail_in = 0;
+	z_strm.next_out = *oriData;
+	z_strm.avail_out = targetOriSize;
+	
+	status = inflateInit(&z_strm);
+	CHECK_ERR(status, "inflateInit");
+	
+	do{
+		z_strm.avail_in = z_strm.avail_out = SZ_ZLIB_BUFFER_SIZE; /* force small buffers */		
+		/* Uncompress some data */
+		status = inflate(&z_strm, Z_SYNC_FLUSH);
+		
+		/* Check if we are done uncompressing data */
+		if (Z_STREAM_END==status)
+			break;  /*done*/				
+
+		if (Z_OK!=status) {
+			(void)inflateEnd(&z_strm);
+			printf("Error: inflate() failed\n");
+			exit(0);
+		}	
+		else
+		{
+			/* If we're not done and just ran out of buffer space, get more */
+			if(0 == z_strm.avail_out) {
+				void *new_outbuf;         /* Pointer to new output buffer */
+
+				/* Allocate a buffer twice as big */
+				nalloc *= 2;
+				if(NULL == (new_outbuf = realloc(*oriData, nalloc))) {
+					(void)inflateEnd(&z_strm);
+					printf("Error: memory allocation failed for deflate uncompression\n");
+					exit(0);
+				} /* end if */
+				*oriData = new_outbuf;
+
+				/* Update pointers to buffer for next set of uncompressed data */
+				z_strm.next_out = (*oriData) + z_strm.total_out;
+				z_strm.avail_out = (uInt)(nalloc - z_strm.total_out);
+			} /* end if */			
+		} /* end else*/
+	}while(status==Z_OK);
+
+	status = inflateEnd(&z_strm);
+	CHECK_ERR(status, "inflateEnd");
+
+	return z_strm.total_out;
+}
+
 unsigned long zlib_uncompress4(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize)
 {
-	int err;
-	unsigned long uncomprLen;
-	
-	*oriData = (unsigned char*)malloc(sizeof(unsigned char)*targetOriSize);	
-	
-	err = uncompress(*oriData, &uncomprLen, compressBytes, cmpSize);
-	CHECK_ERR(err, "uncompress");
-	
-	return uncomprLen;
+    int ret;
+    unsigned int have;
+    z_stream strm;
+    unsigned char *in = compressBytes;
+    unsigned char *out;
+
+	*oriData = (unsigned char*)malloc(sizeof(unsigned char)*targetOriSize);		
+	out = *oriData;
+
+    /* allocate inflate state */
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    strm.avail_in = 0;
+    strm.next_in = Z_NULL;
+    ret = inflateInit(&strm);
+    if (ret != Z_OK)
+        return ret;
+
+	size_t o_size = 0, p_size = 0, av_in = 0;
+    /* decompress until deflate stream ends or end of file */
+    do {
+		p_size += SZ_ZLIB_BUFFER_SIZE;
+		if(p_size>cmpSize)
+			av_in = cmpSize - (p_size - SZ_ZLIB_BUFFER_SIZE);
+		else
+			av_in = SZ_ZLIB_BUFFER_SIZE;
+		strm.avail_in = av_in;
+        
+        if (strm.avail_in == 0)
+            break;
+        strm.next_in = in;
+
+        /* run inflate() on input until output buffer not full */
+        do {
+            strm.avail_out = SZ_ZLIB_BUFFER_SIZE;
+            strm.next_out = out;
+            ret = inflate(&strm, Z_NO_FLUSH);
+            //assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+            switch (ret) {
+            case Z_NEED_DICT:
+                ret = Z_DATA_ERROR;     /* and fall through */
+            case Z_DATA_ERROR:
+            case Z_MEM_ERROR:
+                (void)inflateEnd(&strm);
+                return ret;
+            }
+            have = SZ_ZLIB_BUFFER_SIZE - strm.avail_out;
+            
+            out += have;
+
+        } while (strm.avail_out == 0);
+		
+		in+=av_in;
+        /* done when inflate() says it's done */
+    } while (ret != Z_STREAM_END);
+
+    /* clean up and return */
+    (void)inflateEnd(&strm);
+    
+    return strm.total_out;	
 }
+
 
 unsigned long zlib_uncompress5(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize)
 {
@@ -285,7 +447,8 @@ unsigned long zlib_uncompress5(unsigned char* compressBytes, unsigned long cmpSi
 
 	while (d_stream.total_out < targetOriSize && d_stream.total_in < cmpSize) {
 		d_stream.avail_in = d_stream.avail_out = SZ_ZLIB_BUFFER_SIZE; /* force small buffers */
-		err = inflate(&d_stream, Z_NO_FLUSH);
+		//err = inflate(&d_stream, Z_NO_FLUSH);
+		err = inflate(&d_stream, Z_SYNC_FLUSH);
 		if (err == Z_STREAM_END) break;
 		CHECK_ERR(err, "inflate");
 	}
@@ -295,4 +458,3 @@ unsigned long zlib_uncompress5(unsigned char* compressBytes, unsigned long cmpSi
 
 	return d_stream.total_out;
 }
-

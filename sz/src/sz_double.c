@@ -1555,7 +1555,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		}
 		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
 		{
-			*outSize = zlib_compress(tmpByteData, tmpOutSize, newByteData, gzipMode);
+			*outSize = zlib_compress5(tmpByteData, tmpOutSize, newByteData, gzipMode);
 			free(tmpByteData);
 		}
 		else

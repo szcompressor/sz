@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 //#define SZ_ZLIB_BUFFER_SIZE 1048576	
-#define SZ_ZLIB_BUFFER_SIZE 512
+#define SZ_ZLIB_BUFFER_SIZE 65536
 
 #include <stdio.h>
 
@@ -25,10 +25,12 @@ unsigned long zlib_compress2(unsigned char* data, unsigned long dataLength, unsi
 unsigned long zlib_compress3(unsigned char* data, unsigned long dataLength, unsigned char* compressBytes, int level);
 unsigned long zlib_compress4(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level);
 unsigned long zlib_compress5(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level);
+
 unsigned long zlib_uncompress4(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize);
 unsigned long zlib_uncompress5(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize);
 unsigned long zlib_uncompress(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize);
 unsigned long zlib_uncompress2(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize);
+unsigned long zlib_uncompress3(unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize);
 
 #ifdef __cplusplus
 }
