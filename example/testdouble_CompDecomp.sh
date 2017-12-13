@@ -35,8 +35,8 @@ if [[ $option == 1 ]]; then
 	fileList=`cd "$dataDir";ls *.${extension}`
 	for file in $fileList
 	do
-        	echo testfloat_CompDecomp sz.config zc.config "${compressor}($absErrBound)" "$file" $errBoundMode $absErrBound "$dataDir/$file" $dim1 $dim2 $dim3 $dim4
-        	./testfloat_CompDecomp sz.config zc.config "${compressor}($absErrBound)" "$file" $errBoundMode $absErrBound "$dataDir/$file" $dim1 $dim2 $dim3 $dim4
+        	echo testdouble_CompDecomp sz.config zc.config "${compressor}($absErrBound)" "$file" $errBoundMode $absErrBound "$dataDir/$file" $dim1 $dim2 $dim3 $dim4
+        	./testdouble_CompDecomp sz.config zc.config "${compressor}($absErrBound)" "$file" $errBoundMode $absErrBound "$dataDir/$file" $dim1 $dim2 $dim3 $dim4
 	done
 else
 	nbVars=`./queryVarList -n -i $varListFile`
@@ -44,8 +44,8 @@ else
 		varName=`./queryVarList -m -I $i -i $varListFile`
 		file=`./queryVarList -f -I $i -i $varListFile`
 		dims=`./queryVarList -d -I $i -i $varListFile`
-		echo ./testfloat_CompDecomp sz.config zc.config "${compressor}($absErrBound)" "$varName" $errBoundMode $absErrBound "$file" $dims
-		./testfloat_CompDecomp sz.config zc.config "${compressor}($absErrBound)" "$varName" $errBoundMode $absErrBound "$file" $dims
+		echo ./testdouble_CompDecomp sz.config zc.config "${compressor}($absErrBound)" "$varName" $errBoundMode $absErrBound "$file" $dims
+		./testdouble_CompDecomp sz.config zc.config "${compressor}($absErrBound)" "$varName" $errBoundMode $absErrBound "$file" $dims
 	done
 fi
 
