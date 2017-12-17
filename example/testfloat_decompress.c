@@ -23,6 +23,7 @@ double totalCost = 0;
 
 void cost_start()
 {
+	totalCost = 0;
         gettimeofday(&costStart, NULL);
 }
 

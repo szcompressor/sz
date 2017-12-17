@@ -21,6 +21,7 @@ double totalCost = 0;
 
 void cost_start()
 {
+	totalCost = 0;
         gettimeofday(&costStart, NULL);
 }
 
@@ -91,18 +92,6 @@ int main(int argc, char * argv[])
         exit(0);
     }
 
-   /* //check mem leakage of decompression
-    int i;
-    float *ddata;
-    for(i=0;i<30;i++)
-    {
-	printf("start %d\n",i);
-	ddata = SZ_decompress(SZ_FLOAT, bytes, outSize, r5, r4, r3, r2, r1);
-	free(ddata);
-	printf("end %d\n", i);
-	sleep(1);
-    }
-*/
     printf("done\n");
     free(bytes); 
     free(data);
