@@ -13,18 +13,18 @@ Step 3: You can go to example/ directory to test whether the installation of SZ 
 
 Step 4: Download the H5Z_SZ_filter (In fact, H5Z_SZ_filter has been integrated in SZ package: see the hdf5_filter directory) 
 
-Step 5: Go to hdf5-filter/H5Z-SZ directory and open Makefile and modify the SZ path and HDF5 path based on your local setting:
-SZPATH          = [SZ_INSTALL_PATH], e.g, /home/sdi/Install/sz-1.4.10-beta-install
-HDF5PATH        = [HDF5_INSTALL_PATH], e.g., /home/sdi/Install/hdf5-1.10.1-install
+Step 5: Open Makefile and modify the SZ path and HDF5 path based on your local setting:
+SZPATH          = /home/sdi/Install/sz-1.4.10-beta-install
+HDF5PATH        = /home/sdi/Install/hdf5-1.10.1-install
 
 Step 6: Execute "make;make install"
 
-Step 7: Set the environment variables LD_LIBRARY_PATH as follows:
-export LD_LIBRARY_PATH=[HDF5_INSTALL_PATH]/lib:[SZ_INSTALL_PATH]/lib:$LD_LIBRARY_PATH
-
-Step 8: Set HDF5_PLUGIN_PATH
+Step 7: Set HDF5_PLUGIN_PATH
 # e.g., 
-export HDF5_PLUGIN_PATH=[SZ_INSTALL_PATH]/lib
+export HDF5_PLUGIN_PATH=$SZPATH/lib
+
+Step 8: Set the environment variable LD_LIBRARY_PATH as follows: 
+export LD_LIBRARY_PATH=$HDF5_HOME/lib:$SZ_HOME/lib:$LD_LIBRARY_PATH
 
 Now, you have finished the installation of H5Z-SZ filter.
 
@@ -44,9 +44,14 @@ Step 1: Put the sz.config configuration in the current directory. (Please see RE
 
 Step 2 (Compression): h5repack.sh [input_hdf5_file] [compressed_hdf5_file] or h5repack -f UD=32017,0 [input_hdf5_file] [compressed_hdf5_file] 
 
-Step 3 (Decompression): Read the compressed HDF5 file: h5repack -f NONE [compressed_hdf5_file] [decompressed_hdf5_file]
+Step 3 (Decompression): Read the compressed HDF5 file: h5dump [compressed_hdf5_file] > data.txt
  
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+##Trouble shooting
+
+1. When using "make" command to compile test/, I ran into the following error: szToHDF5.c:15:20: fatal error: H5Z_SZ.h: No such file or directory
+Answer: You probably forgot to execute "make install" after you use "make" to compile the H5Z-SZ package. Run "make install" will solve the problem.
 
 Contact: 
 sdi1@anl.gov
