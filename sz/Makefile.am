@@ -37,7 +37,7 @@ include_HEADERS=include/CompressElement.h include/DynamicDoubleArray.h include/r
 		include/pastri.h
 
 lib_LTLIBRARIES=libSZ.la
-libSZ_la_CFLAGS=-g -I./include -I../zlib/
+libSZ_la_CFLAGS=-I./include -I../zlib/
 libSZ_la_LDFLAGS = -version-info  1:4:0
 libSZ_la_LIDADD=../zlib/.libs/libzlib.a
 libSZ_la_SOURCES=src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c src/iniparser.c\

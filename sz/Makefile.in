@@ -484,7 +484,7 @@ AUTOMAKE_OPTIONS = foreign
 
 @FORTRAN_FALSE@lib_LTLIBRARIES = libSZ.la
 @FORTRAN_TRUE@lib_LTLIBRARIES = libSZ.la
-@FORTRAN_FALSE@libSZ_la_CFLAGS = -g -I./include -I../zlib/
+@FORTRAN_FALSE@libSZ_la_CFLAGS = -I./include -I../zlib/
 @FORTRAN_TRUE@libSZ_la_CFLAGS = -I./include -I../zlib/
 @FORTRAN_FALSE@libSZ_la_LDFLAGS = -version-info  1:4:0
 @FORTRAN_TRUE@libSZ_la_LDFLAGS = -version-info  1:4:0
