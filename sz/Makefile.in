@@ -146,8 +146,8 @@ am__libSZ_la_SOURCES_DIST = src/ByteToolkit.c src/dataCompression.c \
 	src/szd_uint64.c src/szd_float.c src/szd_double.c \
 	src/szd_int8.c src/szd_int16.c src/szd_int32.c src/szd_int64.c \
 	src/sz.c src/sz_float_pwr.c src/sz_double_pwr.c \
-	src/szd_float_pwr.c src/szd_double_pwr.c src/szf.c src/rwf.c \
-	src/sz_interface.F90 src/rw_interface.F90
+	src/szd_float_pwr.c src/szd_double_pwr.c src/pastri.c \
+	src/szf.c src/rwf.c src/sz_interface.F90 src/rw_interface.F90
 am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@am_libSZ_la_OBJECTS = src/libSZ_la-ByteToolkit.lo \
 @FORTRAN_FALSE@	src/libSZ_la-dataCompression.lo \
@@ -189,7 +189,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@	src/libSZ_la-sz_float_pwr.lo \
 @FORTRAN_FALSE@	src/libSZ_la-sz_double_pwr.lo \
 @FORTRAN_FALSE@	src/libSZ_la-szd_float_pwr.lo \
-@FORTRAN_FALSE@	src/libSZ_la-szd_double_pwr.lo
+@FORTRAN_FALSE@	src/libSZ_la-szd_double_pwr.lo \
+@FORTRAN_FALSE@	src/libSZ_la-pastri.lo
 @FORTRAN_TRUE@am_libSZ_la_OBJECTS = src/libSZ_la-ByteToolkit.lo \
 @FORTRAN_TRUE@	src/libSZ_la-dataCompression.lo \
 @FORTRAN_TRUE@	src/libSZ_la-DynamicIntArray.lo \
@@ -314,7 +315,8 @@ am__include_HEADERS_DIST = include/CompressElement.h \
 	include/DynamicByteArray.h include/DynamicIntArray.h \
 	include/TightDataPointStorageI.h \
 	include/TightDataPointStorageD.h \
-	include/TightDataPointStorageF.h include/szf.h sz.mod rw.mod
+	include/TightDataPointStorageF.h include/pastri.h \
+	include/szf.h sz.mod rw.mod
 HEADERS = $(include_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
@@ -469,7 +471,8 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
 @FORTRAN_FALSE@		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
 @FORTRAN_FALSE@		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
-@FORTRAN_FALSE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h
+@FORTRAN_FALSE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
+@FORTRAN_FALSE@		include/pastri.h
 
 @FORTRAN_TRUE@include_HEADERS = include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
 @FORTRAN_TRUE@		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h include/szf.h\
@@ -495,7 +498,8 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@		src/sz_float.c src/sz_double.c src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c\
 @FORTRAN_FALSE@		src/sz_uint8.c src/sz_uint16.c src/sz_uint32.c src/sz_uint64.c src/szd_uint8.c src/szd_uint16.c src/szd_uint32.c src/szd_uint64.c\
 @FORTRAN_FALSE@		src/szd_float.c src/szd_double.c src/szd_int8.c src/szd_int16.c src/szd_int32.c src/szd_int64.c src/sz.c\
-@FORTRAN_FALSE@		src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c src/szd_double_pwr.c
+@FORTRAN_FALSE@		src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c src/szd_double_pwr.c\
+@FORTRAN_FALSE@		src/pastri.c
 
 @FORTRAN_TRUE@libSZ_la_SOURCES = src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c src/iniparser.c src/szf.c \
 @FORTRAN_TRUE@		src/CompressElement.c src/DynamicByteArray.c src/rw.c \
@@ -668,6 +672,8 @@ src/libSZ_la-szd_float_pwr.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-szd_double_pwr.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-pastri.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-szf.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-rwf.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/sz_interface.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
@@ -701,6 +707,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-dataCompression.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-dictionary.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-iniparser.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-pastri.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-rw.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-rwf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz.Plo@am__quote@
@@ -1063,6 +1070,13 @@ src/libSZ_la-szd_double_pwr.lo: src/szd_double_pwr.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/szd_double_pwr.c' object='src/libSZ_la-szd_double_pwr.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-szd_double_pwr.lo `test -f 'src/szd_double_pwr.c' || echo '$(srcdir)/'`src/szd_double_pwr.c
+
+src/libSZ_la-pastri.lo: src/pastri.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-pastri.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-pastri.Tpo -c -o src/libSZ_la-pastri.lo `test -f 'src/pastri.c' || echo '$(srcdir)/'`src/pastri.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-pastri.Tpo src/$(DEPDIR)/libSZ_la-pastri.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/pastri.c' object='src/libSZ_la-pastri.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-pastri.lo `test -f 'src/pastri.c' || echo '$(srcdir)/'`src/pastri.c
 
 src/libSZ_la-szf.lo: src/szf.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-szf.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-szf.Tpo -c -o src/libSZ_la-szf.lo `test -f 'src/szf.c' || echo '$(srcdir)/'`src/szf.c
