@@ -493,12 +493,15 @@ unsigned char** newByteData, size_t *outSize)
 	int floatSize=sizeof(float);	
 	size_t k = 0, i;
 	tdps->isLossless = 1;
-	size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + floatSize*dataLength;
+	size_t totalByteLength = 3 + MetaDataByteLength + SZ_SIZE_TYPE + 1 + floatSize*dataLength;
 	*newByteData = (unsigned char*)malloc(totalByteLength);
 	
 	unsigned char dsLengthBytes[8];
 	for (i = 0; i < 3; i++)//3
 		(*newByteData)[k++] = versionNumber[i];
+
+	convertSZParamsToBytes(conf_params, &((*newByteData)[k]));
+	k = k + MetaDataByteLength;		
 
 	if(SZ_SIZE_TYPE==4)//1
 		(*newByteData)[k++] = 16; //00010000
@@ -510,10 +513,10 @@ unsigned char** newByteData, size_t *outSize)
 		(*newByteData)[k++] = dsLengthBytes[i];
 		
 	if(sysEndianType==BIG_ENDIAN_SYSTEM)
-		memcpy((*newByteData)+4+SZ_SIZE_TYPE, oriData, dataLength*floatSize);
+		memcpy((*newByteData)+4+MetaDataByteLength+SZ_SIZE_TYPE, oriData, dataLength*floatSize);
 	else
 	{
-		unsigned char* p = (*newByteData)+4+SZ_SIZE_TYPE;
+		unsigned char* p = (*newByteData)+4+MetaDataByteLength+SZ_SIZE_TYPE;
 		for(i=0;i<dataLength;i++,p+=floatSize)
 			floatToBytes(p, oriData[i]);
 	}	
@@ -1688,7 +1691,7 @@ void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriD
 
 	//*newByteData = (unsigned char*)malloc(sizeof(unsigned char)*12); //for floating-point data (1+3+4+4)
 	//memcpy(*newByteData, tmpByteData, 12);
-	*outSize = 8+SZ_SIZE_TYPE; //8==3+1+4(float_size)
+	*outSize = tmpOutSize; //8+SZ_SIZE_TYPE; //8==3+1+4(float_size)
 	free_TightDataPointStorageF(tdps);	
 }
 
@@ -1847,8 +1850,9 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			printf("Error: Wrong setting of szMode in the float compression.\n");
 			status = SZ_MERR; //mode error			
 		}
+		
+		SZ_ReleaseHuffman();
 	}
-	SZ_ReleaseHuffman();
 	return status;
 }
 

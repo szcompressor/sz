@@ -378,13 +378,15 @@ unsigned char** newByteData, size_t *outSize)
 	int doubleSize = sizeof(double);
 	size_t k = 0, i;
 	tdps->isLossless = 1;
-	size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + doubleSize*dataLength;
+	size_t totalByteLength = 3 + MetaDataByteLength + SZ_SIZE_TYPE + 1 + doubleSize*dataLength;
 	*newByteData = (unsigned char*)malloc(totalByteLength);
 	
 	unsigned char dsLengthBytes[8];
 	for (i = 0; i < 3; i++)//3
 		(*newByteData)[k++] = versionNumber[i];
 
+	convertSZParamsToBytes(conf_params, &((*newByteData)[k]));
+	k = k + MetaDataByteLength;
 	
 	if(SZ_SIZE_TYPE==4)//1
 		(*newByteData)[k++] = 16; //00010000
@@ -396,10 +398,10 @@ unsigned char** newByteData, size_t *outSize)
 		(*newByteData)[k++] = dsLengthBytes[i];
 
 	if(sysEndianType==BIG_ENDIAN_SYSTEM)
-		memcpy((*newByteData)+4+SZ_SIZE_TYPE, oriData, dataLength*doubleSize);
+		memcpy((*newByteData)+4+MetaDataByteLength+SZ_SIZE_TYPE, oriData, dataLength*doubleSize);
 	else
 	{
-		unsigned char* p = (*newByteData)+4+SZ_SIZE_TYPE;
+		unsigned char* p = (*newByteData)+4+MetaDataByteLength+SZ_SIZE_TYPE;
 		for(i=0;i<dataLength;i++,p+=doubleSize)
 			doubleToBytes(p, oriData[i]);
 	}
@@ -1405,7 +1407,7 @@ void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *or
 
 	//*newByteData = (unsigned char*)malloc(sizeof(unsigned char)*16); //for floating-point data (1+3+4+4)
 	//memcpy(*newByteData, tmpByteData, 16);
-	*outSize = 12+SZ_SIZE_TYPE;//12==3+1+8(double_size)
+	*outSize = tmpOutSize;//12==3+1+8(double_size)+MetaDataByteLength
 	free_TightDataPointStorageD(tdps);	
 }
 
@@ -1563,8 +1565,10 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			printf("Error: Wrong setting of szMode in the double compression.\n");
 			status = SZ_MERR;	
 		}
+		
+		SZ_ReleaseHuffman();
 	}
-	SZ_ReleaseHuffman();
+
 	return status;
 }
 

@@ -300,14 +300,9 @@ int SZ_ReadConf() {
 //	versionNumber[1] = SZ_VER_MINOR; //5
 //	versionNumber[2] = SZ_VER_BUILD; //15
     //initialization for Huffman encoding
-    if(pool==NULL)
-    {
-		pool = (struct node_t*)malloc(allNodes*2*sizeof(struct node_t));
-		qqq = (node*)malloc(allNodes*2*sizeof(node));
-		code = (unsigned long**)malloc(stateNum*sizeof(unsigned long*));//TODO
-		cout = (unsigned char *)malloc(stateNum*sizeof(unsigned char));
-		qq = qqq - 1;		
-	}
+    
+    SZ_Reset();
+    
 	//printf("dataEndianType=%d\n", dataEndianType);    
     iniparser_freedict(ini);
     return SZ_SCES;

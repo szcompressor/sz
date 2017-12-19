@@ -332,12 +332,15 @@ unsigned char** newByteData, size_t *outSize)
 	int intSize=sizeof(uint8_t);	
 	size_t k = 0, i;
 	tdps->isLossless = 1;
-	size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + intSize*dataLength;
+	size_t totalByteLength = 3 + MetaDataByteLength + SZ_SIZE_TYPE + 1 + intSize*dataLength;
 	*newByteData = (unsigned char*)malloc(totalByteLength);
 	
 	unsigned char dsLengthBytes[8];
 	for (i = 0; i < 3; i++)//3
 		(*newByteData)[k++] = versionNumber[i];
+
+	convertSZParamsToBytes(conf_params, &((*newByteData)[k]));
+	k = k + MetaDataByteLength;	
 
 	if(SZ_SIZE_TYPE==4)//1
 		(*newByteData)[k++] = 16; //00010000
@@ -349,10 +352,10 @@ unsigned char** newByteData, size_t *outSize)
 		(*newByteData)[k++] = dsLengthBytes[i];
 		
 	if(sysEndianType==BIG_ENDIAN_SYSTEM)
-		memcpy((*newByteData)+4+SZ_SIZE_TYPE, oriData, dataLength*intSize);
+		memcpy((*newByteData)+4+MetaDataByteLength+SZ_SIZE_TYPE, oriData, dataLength*intSize);
 	else
 	{
-		unsigned char* p = (*newByteData)+4+SZ_SIZE_TYPE;
+		unsigned char* p = (*newByteData)+4+MetaDataByteLength+SZ_SIZE_TYPE;
 		for(i=0;i<dataLength;i++,p+=intSize)
 			*p = oriData[i];
 	}	
@@ -1265,17 +1268,20 @@ void SZ_compress_args_uint8_withinRange(unsigned char** newByteData, uint8_t *or
 	
 	tdps->allSameData = 1;
 	tdps->dataSeriesLength = dataLength;
+	tdps->exactDataBytes = (unsigned char*)malloc(sizeof(unsigned char));
 	tdps->isLossless = 0;
-	tdps->exactByteSize = 4;
+	//tdps->exactByteSize = 4;
 	tdps->exactDataNum = 1;
+	tdps->exactDataBytes_size = 1;
 	
 	uint8_t value = oriData[0];
-	intToBytes_bigEndian(tdps->exactDataBytes, value);
+	//intToBytes_bigEndian(tdps->exactDataBytes, value);
+	memcpy(tdps->exactDataBytes, &value, 1);
 	
 	size_t tmpOutSize;
 	convertTDPStoFlatBytes_int(tdps, newByteData, &tmpOutSize);
 
-	*outSize = 3+1+sizeof(uint8_t)+SZ_SIZE_TYPE; //8==3+1+4(uint8_size)
+	*outSize = tmpOutSize;//3+1+sizeof(uint8_t)+SZ_SIZE_TYPE; //8==3+1+4(uint8_size)
 	free_TightDataPointStorageI(tdps);	
 }
 
@@ -1394,7 +1400,8 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 			printf("Error: Wrong setting of szMode in the uint8_t compression.\n");
 			status = SZ_MERR; //mode error			
 		}
+		SZ_ReleaseHuffman();
 	}
-	SZ_ReleaseHuffman();
+	
 	return status;
 }

@@ -25,9 +25,9 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 	//unsigned char* tmpBytes;
 	size_t targetUncompressSize = dataLength <<3; //i.e., *8
 	//tmpSize must be "much" smaller than dataLength
-	size_t i, tmpSize = 12+SZ_SIZE_TYPE;
+	size_t i, tmpSize = 12+MetaDataByteLength+SZ_SIZE_TYPE;
 	unsigned char* szTmpBytes;
-	if(cmpSize!=12+SZ_SIZE_TYPE)
+	if(cmpSize!=12+4+MetaDataByteLength && cmpSize!=12+8+MetaDataByteLength)
 	{
 		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
 		if(isZlib)
@@ -43,7 +43,7 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 			
-			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+SZ_SIZE_TYPE);			
+			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+MetaDataByteLength+SZ_SIZE_TYPE);			
 			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 			//memcpy(szTmpBytes, tmpBytes, tmpSize);
 			//free(tmpBytes); //release useless memory		
@@ -68,11 +68,11 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 		*newData = (double*)malloc(doubleSize*dataLength);
 		if(sysEndianType==BIG_ENDIAN_SYSTEM)
 		{
-			memcpy(*newData, szTmpBytes+4+SZ_SIZE_TYPE, dataLength*doubleSize);
+			memcpy(*newData, szTmpBytes+4+MetaDataByteLength+SZ_SIZE_TYPE, dataLength*doubleSize);
 		}
 		else
 		{
-			unsigned char* p = szTmpBytes+4+SZ_SIZE_TYPE;
+			unsigned char* p = szTmpBytes+4+MetaDataByteLength+SZ_SIZE_TYPE;
 			for(i=0;i<dataLength;i++,p+=doubleSize)
 				(*newData)[i] = bytesToDouble(p);
 		}		
@@ -94,7 +94,7 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 		status = SZ_DERR;
 	}
 	free_TightDataPointStorageD(tdps);
-	if(szMode!=SZ_BEST_SPEED && cmpSize!=12+SZ_SIZE_TYPE)
+	if(szMode!=SZ_BEST_SPEED && cmpSize!=12+MetaDataByteLength+SZ_SIZE_TYPE)
 		free(szTmpBytes);	
 	SZ_ReleaseHuffman();	
 	return status;

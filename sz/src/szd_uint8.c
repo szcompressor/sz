@@ -29,10 +29,10 @@ int SZ_decompress_args_uint8(uint8_t** newData, size_t r5, size_t r4, size_t r3,
 	//unsigned char* tmpBytes;
 	size_t targetUncompressSize = dataLength <<2; //i.e., *4
 	//tmpSize must be "much" smaller than dataLength
-	size_t i, tmpSize = 3+1+sizeof(uint8_t)+SZ_SIZE_TYPE;
+	size_t i, tmpSize = 3+MetaDataByteLength+1+sizeof(uint8_t)+SZ_SIZE_TYPE;
 	unsigned char* szTmpBytes;	
 		
-	if(cmpSize!=tmpSize)
+	if(cmpSize!=4+1+4+MetaDataByteLength && cmpSize!=4+1+8+MetaDataByteLength)
 	{
 		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
 		if(isZlib)
@@ -48,7 +48,7 @@ int SZ_decompress_args_uint8(uint8_t** newData, size_t r5, size_t r4, size_t r3,
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
-			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+SZ_SIZE_TYPE);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
+			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+MetaDataByteLength+SZ_SIZE_TYPE);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
 			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 			//memcpy(szTmpBytes, tmpBytes, tmpSize);
 			//free(tmpBytes); //release useless memory		
@@ -73,11 +73,11 @@ int SZ_decompress_args_uint8(uint8_t** newData, size_t r5, size_t r4, size_t r3,
 		*newData = (uint8_t*)malloc(intSize*dataLength);
 		if(sysEndianType==BIG_ENDIAN_SYSTEM)
 		{
-			memcpy(*newData, szTmpBytes+4+SZ_SIZE_TYPE, dataLength*intSize);
+			memcpy(*newData, szTmpBytes+4+MetaDataByteLength+SZ_SIZE_TYPE, dataLength*intSize);
 		}
 		else
 		{
-			unsigned char* p = szTmpBytes+4+SZ_SIZE_TYPE;
+			unsigned char* p = szTmpBytes+4+MetaDataByteLength+SZ_SIZE_TYPE;
 			for(i=0;i<dataLength;i++,p+=intSize)
 				(*newData)[i] = *p;
 		}		
@@ -99,7 +99,7 @@ int SZ_decompress_args_uint8(uint8_t** newData, size_t r5, size_t r4, size_t r3,
 		status = SZ_DERR;
 	}
 	free_TightDataPointStorageI(tdps);
-	if(szMode!=SZ_BEST_SPEED && cmpSize!=1+4+sizeof(uint8_t)+SZ_SIZE_TYPE)
+	if(szMode!=SZ_BEST_SPEED && cmpSize!=4+sizeof(uint8_t)+SZ_SIZE_TYPE+MetaDataByteLength)
 		free(szTmpBytes);
 	SZ_ReleaseHuffman();	
 	return status;

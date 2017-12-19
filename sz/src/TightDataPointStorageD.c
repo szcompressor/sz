@@ -100,7 +100,7 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 	else if(same==1)
 	{
 		(*this)->allSameData = 1;
-		size_t exactMidBytesLength = flatBytesLength - 3 - 1 - MetaDataByteLength -SZ_SIZE_TYPE;
+		size_t exactMidBytesLength = sizeof(double);//flatBytesLength - 3 - 1 - MetaDataByteLength -SZ_SIZE_TYPE;
 		if(exactMidBytesLength>0)
 			(*this)->exactMidBytes = (unsigned char*)malloc(sizeof(unsigned char)*exactMidBytesLength);
 		else
@@ -528,7 +528,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 		
 	if(tdps->allSameData==1)
 	{
-		size_t totalByteLength = 3 + 1 + SZ_SIZE_TYPE + tdps->exactMidBytes_size;
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + tdps->exactMidBytes_size;
 		*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
 	
 		for (i = 0; i < 3; i++)//3

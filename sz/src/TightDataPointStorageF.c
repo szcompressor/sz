@@ -96,7 +96,7 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 	else if(same==1)
 	{
 		(*this)->allSameData = 1;
-		size_t exactMidBytesLength = flatBytesLength - 3 - 1 - MetaDataByteLength -SZ_SIZE_TYPE;
+		size_t exactMidBytesLength = sizeof(float); //flatBytesLength - 3 - 1 - MetaDataByteLength - SZ_SIZE_TYPE;
 		if(exactMidBytesLength>0)
 			(*this)->exactMidBytes = (unsigned char*)malloc(sizeof(unsigned char)*exactMidBytesLength);
 		else
