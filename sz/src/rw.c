@@ -991,3 +991,67 @@ void writeStrings(int nbStr, char *str[], char *tgtFilePath, int *status)
 	fclose(pFile);
 	*status = SZ_SCES;
 }
+
+/*
+//@deprecated
+//binToPFM_float is to convert the floating-point data to PFM supported by Jpeg XT
+//But wrong version!
+//In order to do the conversion, we need to use https://github.com/thorfdbg/difftest_ng according to Thomas Richter.
+
+
+void convertToPFM_float(float *data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, int endianType, char *tgtFilePath, int *status)
+{
+	size_t i, nbEle = computeDataLength(r5, r4, r3, r2, r1);
+	int dim = computeDimension(r5, r4, r3, r2, r1);
+	
+	FILE *pFile = fopen(tgtFilePath, "wb");
+	if (pFile == NULL)
+	{
+		printf("Failed to open input file. 3\n");
+		*status = SZ_NSCS;
+		return;
+	}	
+	fputs("PF\n", pFile);
+	char strBuf[256];
+	switch(dim)
+	{
+	case 1: 
+		sprintf(strBuf, "%zu\n", r1);
+		break;
+	case 2:
+		sprintf(strBuf, "%zu %zu\n", r1, r2);
+		break;
+	case 3:
+		sprintf(strBuf, "%zu %zu %zu\n", r1, r2, r3);
+		break;
+	case 4:
+		sprintf(strBuf, "%zu %zu %zu %zu\n", r1, r2, r3, r4);
+		break;
+	case 5:
+		sprintf(strBuf, "%zu %zu %zu %zu %zu\n", r1, r2, r3, r4, r5);
+		break;
+	}
+	fputs(strBuf, pFile);
+	if(endianType==LITTLE_ENDIAN)
+		fputs("-1.0\n", pFile);
+	else
+		fputs("1.0\n", pFile);
+
+	size_t byteLength = nbEle*sizeof(float);	
+	lfloat buf;	
+	unsigned char* bytes = (unsigned char*)malloc(byteLength);
+	for(i=0;i<nbEle;i++)
+	{
+		buf.value = data[i];
+		bytes[i*4+0] = buf.byte[0];
+		bytes[i*4+1] = buf.byte[1];
+		bytes[i*4+2] = buf.byte[2];
+		bytes[i*4+3] = buf.byte[3];
+	}
+	
+	fwrite(bytes, 1, byteLength, pFile); //write outSize bytes
+	fclose(pFile);
+	
+	free(bytes);
+	*status = SZ_SCES;
+}*/

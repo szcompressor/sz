@@ -337,15 +337,15 @@ unsigned char** newByteData, size_t *outSize)
 	
 	unsigned char dsLengthBytes[8];
 	for (i = 0; i < 3; i++)//3
-		(*newByteData)[k++] = versionNumber[i];
-
-	convertSZParamsToBytes(conf_params, &((*newByteData)[k]));
-	k = k + MetaDataByteLength;	
+		(*newByteData)[k++] = versionNumber[i];	
 
 	if(SZ_SIZE_TYPE==4)//1
 		(*newByteData)[k++] = 16; //00010000
 	else
 		(*newByteData)[k++] = 80;	//01010000: 01000000 indicates the SZ_SIZE_TYPE=8
+	
+	convertSZParamsToBytes(conf_params, &((*newByteData)[k]));
+	k = k + MetaDataByteLength;	
 	
 	sizeToBytes(dsLengthBytes,dataLength); //SZ_SIZE_TYPE: 4 or 8	
 	for (i = 0; i < SZ_SIZE_TYPE; i++)

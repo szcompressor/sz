@@ -70,6 +70,8 @@ void writeULongData_inBytes(uint64_t *states, size_t stateLength, char *tgtFileP
 
 void writeStrings(int nbStr, char *str[], char *tgtFilePath, int *status);
 
+//void convertToPFM_float(float *data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, int endianType, char *tgtFilePath, int *status);
+
 void checkfilesizec_(char *srcFilePath, int *len, size_t *filesize);
 void readbytefile_(char *srcFilePath, int *len, unsigned char *bytes, size_t *byteLength);
 void readdoublefile_(char *srcFilePath, int *len, double *data, size_t *nbEle);
