@@ -277,7 +277,7 @@ int SZ_ReadConf() {
 		segment_size = (int)iniparser_getint(ini, "PARAMETER:segment_size", 0);
 		conf_params->segment_size = segment_size;
 		
-		modeBuf = iniparser_getstring(ini, "PARAMETER:pwr_type", NULL);
+		modeBuf = iniparser_getstring(ini, "PARAMETER:pwr_type", "MIN");
 		
 		if(strcmp(modeBuf, "MIN")==0)
 			pwr_type = SZ_PWR_MIN_TYPE;
