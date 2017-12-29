@@ -180,6 +180,14 @@ int main(int argc, char* argv[])
 				++i == argc || sscanf(argv[i], "%zu", &r4) != 1)
 				usage();		
 			break;
+		case '5':
+			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r2) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r3) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r4) != 1 ||
+				++i == argc || sscanf(argv[i], "%zu", &r5) != 1)
+				usage();		
+			break;
 		case 'M':
 			if (++i == argc)
 				usage();
