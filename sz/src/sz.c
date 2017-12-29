@@ -102,7 +102,8 @@ void SZ_Reset()
 
 int SZ_Init_Params(sz_params *params)
 {
-	conf_params = params;
+	conf_params = (sz_params*)malloc(sizeof(sz_params));   
+	memcpy(conf_params, params, sizeof(sz_params));
     int x = 1;
     char *y = (char*)&x;
     int endianType = BIG_ENDIAN_SYSTEM;
@@ -1336,4 +1337,6 @@ void SZ_Finalize()
 	//	free_VarSet();
 	
 	SZ_ReleaseHuffman();
+	if(conf_params!=NULL)
+		free(conf_params);
 }
