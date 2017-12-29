@@ -694,7 +694,7 @@ int main(int argc, char* argv[])
 				printf ("acEff = %f\n", acEff);
 				printf ("compressionRatio = %f\n", compressionRatio);
 			}			
-			free(data);								
+			if (!tucker) free(data);								
 		}	
 	}
 	
