@@ -34,11 +34,23 @@ void usage()
 	printf("	-z: compression\n");
 	printf("	-x: decompression\n");
 	printf("	-p: print meta data (configuration info)\n");
+	printf("	-h: print the help information\n");
 	printf("* data type:\n");
 	printf("	-f: single precision (float type)\n");
 	printf("	-d: double precision (double type)\n");
 	printf("* configuration file: \n");
-	printf("	-c <configuration file> : configuration file sz.config\n");	
+	printf("	-c <configuration file> : configuration file sz.config\n");
+	printf("* error control: (the error control parameters here will overwrite the setting in sz.config)\n");
+	printf("	-M <error bound mode> : 10 options as follows. \n");
+	printf("		ABS (absolute error bound)\n");
+	printf("		REL (value range based error bound\n");
+	printf("		ABS_AND_REL (using min{ABS, REL})\n");
+	printf("		ABS_OR_REL (using max{ABS, REL})\n");
+	printf("		PSNR (peak signal-to-noise ratio)\n");
+	printf("		PW_REL (point-wise relative error bound)\n");
+	printf("	-A <absolute error bound>: specifying absolute error bound\n");
+	printf("	-R <value_range based relative error bound>: specifying relative error bound\n");
+	printf("	-P <point-wise relative error bound>: specifying point-wise relative error bound\n");
 	printf("* input data file:\n");
 	printf("	-i <original data file> : original data file\n");
 	printf("	-s <compressed data file> : compressed data file in decompression\n");
@@ -55,6 +67,7 @@ void usage()
 	printf("	-a : print compression results such as distortions\n");
 	printf("* examples: \n");
 	printf("	sz -z -f -c sz.config -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128\n");
+	printf("	sz -z -f -c sz.config -M ABS -A 1E-3 -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128\n");
 	printf("	sz -x -f -s testdata/x86/testfloat_8_8_128.dat.sz -3 8 8 128\n");
 	printf("	sz -x -f -s testdata/x86/testfloat_8_8_128.dat.sz -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128 -a\n");	
 	printf("	sz -z -d -c sz.config -i testdata/x86/testdouble_8_8_128.dat -3 8 8 128\n");
@@ -76,6 +89,12 @@ int main(int argc, char* argv[])
 	char* cmpPath = NULL;
 	char* conPath = NULL;
 	
+	char* errBoundMode = NULL;
+	char* absErrorBound = NULL;
+	char* relErrorBound = NULL;
+	char* pwrErrorBound = NULL;
+	char* psnr_ = NULL;
+	
 	size_t r5 = 0;
 	size_t r4 = 0;
 	size_t r3 = 0;
@@ -94,6 +113,9 @@ int main(int argc, char* argv[])
 			usage();
 		switch (argv[i][1])
 		{
+		case 'h':
+			usage();
+			exit(0);
 		case 'b': 
 			binaryOutput = 1;
 			break;
@@ -139,7 +161,6 @@ int main(int argc, char* argv[])
 		case '1': 
 			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1)
 				usage();
-
 			break;
 		case '2':
 			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
@@ -158,6 +179,31 @@ int main(int argc, char* argv[])
 				++i == argc || sscanf(argv[i], "%zu", &r3) != 1 ||
 				++i == argc || sscanf(argv[i], "%zu", &r4) != 1)
 				usage();		
+			break;
+		case 'M':
+			if (++i == argc)
+				usage();
+			errBoundMode = argv[i];
+			break;
+		case 'A':
+			if (++i == argc)
+				usage();
+			absErrorBound = argv[i];
+			break;
+		case 'R':
+			if (++i == argc)
+				usage();
+			relErrorBound = argv[i];
+			break;
+		case 'P':
+			if (++i == argc)
+				usage();
+			pwrErrorBound = argv[i];
+			break;
+		case 'S': 
+			if (++i == argc)
+				usage();
+			psnr_ = argv[i];
 			break;
 		default: 
 			usage();
@@ -194,6 +240,46 @@ int main(int argc, char* argv[])
 			exit(0);
 		}
 	}
+	
+	//Initialization (only for compression because decompression doesn't need the initialization)
+	if(isCompression == 1)
+		SZ_Init(conPath);
+	
+	if(errBoundMode != NULL)
+	{
+		if(strcmp(errBoundMode, "ABS")==0)
+			errorBoundMode = ABS;
+		else if(strcmp(errBoundMode, "REL")==0)
+			errorBoundMode = REL;
+		else if(strcmp(errBoundMode, "ABS_AND_REL")==0)
+			errorBoundMode = ABS_AND_REL;
+		else if(strcmp(errBoundMode, "ABS_OR_REL")==0)
+			errorBoundMode = ABS_OR_REL;
+		else if(strcmp(errBoundMode, "PSNR")==0)
+			errorBoundMode = PSNR;
+		else if(strcmp(errBoundMode, "PW_REL")==0)
+			errorBoundMode = PW_REL;
+		else
+		{
+			printf("Error: wrong error bound mode setting by using the option '-M'\n");
+			usage();
+			exit(0);
+		}
+		conf_params->errorBoundMode = errorBoundMode;
+	}
+	
+	if(absErrorBound != NULL)
+		conf_params->absErrBound = absErrBound = atof(absErrorBound);
+		
+	if(relErrorBound != NULL)
+		conf_params->relBoundRatio = relBoundRatio = atof(relErrorBound);
+	
+	if(pwrErrorBound != NULL)
+		conf_params->pw_relBoundRatio = pw_relBoundRatio = atof(pwrErrorBound);
+	
+	if(psnr_ != NULL)
+		conf_params->psnr = psnr = atof(psnr_);
+	
 	unsigned char *bytes = NULL; //the binary data read from "compressed data file"
 	if(isCompression == 1)
 	{
@@ -206,7 +292,6 @@ int main(int argc, char* argv[])
 
 		size_t outSize;
 		char outputFilePath[256];		
-		SZ_Init(conPath);
 		if(dataType == 0) //single precision
 		{
 			if(tucker)
@@ -609,7 +694,7 @@ int main(int argc, char* argv[])
 				printf ("acEff = %f\n", acEff);
 				printf ("compressionRatio = %f\n", compressionRatio);
 			}			
-			if (!tucker) free(data);								
+			free(data);								
 		}	
 	}
 	
