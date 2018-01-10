@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
 	if(isCompression == 1)
 		SZ_Init(conPath);
 	
-	if(errBoundMode != NULL)
+	if(isCompression == 1 && errBoundMode != NULL)
 	{
 		if(strcmp(errBoundMode, "ABS")==0)
 			errorBoundMode = ABS;
@@ -268,21 +268,20 @@ int main(int argc, char* argv[])
 		conf_params->errorBoundMode = errorBoundMode;
 	}
 	
-	if(absErrorBound != NULL)
-		conf_params->absErrBound = absErrBound = atof(absErrorBound);
-		
-	if(relErrorBound != NULL)
-		conf_params->relBoundRatio = relBoundRatio = atof(relErrorBound);
-	
-	if(pwrErrorBound != NULL)
-		conf_params->pw_relBoundRatio = pw_relBoundRatio = atof(pwrErrorBound);
-	
-	if(psnr_ != NULL)
-		conf_params->psnr = psnr = atof(psnr_);
-	
 	unsigned char *bytes = NULL; //the binary data read from "compressed data file"
 	if(isCompression == 1)
 	{
+		if(absErrorBound != NULL)
+			conf_params->absErrBound = absErrBound = atof(absErrorBound);
+		
+		if(relErrorBound != NULL)
+			conf_params->relBoundRatio = relBoundRatio = atof(relErrorBound);
+	
+		if(pwrErrorBound != NULL)
+			conf_params->pw_relBoundRatio = pw_relBoundRatio = atof(pwrErrorBound);
+	
+		if(psnr_ != NULL)
+			conf_params->psnr = psnr = atof(psnr_);
 		if(conPath==NULL)
 		{
 			printf("Error: compression requires configuration file sz.config\n");
