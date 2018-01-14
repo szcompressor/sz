@@ -1,8 +1,11 @@
 ##   COMPILERS
 CC	= gcc
 
-ADIOSINC	= -I/Users/Devin/Documents/adios-1.13.0/include -D_NOMPI
-ADIOSFLAGS  = -L/Users/Devin/Documents/adios-1.13.0/lib -ladios_nompi
+#Please change ADIOSDIR to your ADIOS installation path
+ADIOSDIR	= /Users/Devin/Documents/adios-1.13.0
+
+ADIOSINC	= -I$(ADIOSDIR)/include -D_NOMPI
+ADIOSFLAGS  = -L$(ADIOSDIR)/lib -ladios_nompi
 DYLIB_FLAGS	= -dynamiclib
 INC			= -I./include
 FLAGS		= -ladiosreader
