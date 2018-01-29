@@ -44,7 +44,7 @@ unsigned int optimize_intervals_uint64_1D(uint64_t *oriData, size_t dataLength, 
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -91,7 +91,7 @@ unsigned int optimize_intervals_uint64_2D(uint64_t *oriData, size_t r1, size_t r
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -145,7 +145,7 @@ unsigned int optimize_intervals_uint64_3D(uint64_t *oriData, size_t r1, size_t r
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -201,7 +201,7 @@ unsigned int optimize_intervals_uint64_4D(uint64_t *oriData, size_t r1, size_t r
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];

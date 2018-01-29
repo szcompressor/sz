@@ -60,7 +60,7 @@ unsigned int optimize_intervals_double_1D(double *oriData, size_t dataLength, do
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -107,7 +107,7 @@ unsigned int optimize_intervals_double_2D(double *oriData, size_t r1, size_t r2,
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -159,7 +159,7 @@ unsigned int optimize_intervals_double_3D(double *oriData, size_t r1, size_t r2,
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -215,7 +215,7 @@ unsigned int optimize_intervals_double_4D(double *oriData, size_t r1, size_t r2,
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -1790,7 +1790,7 @@ unsigned int optimize_intervals_double_1D_subblock(double *oriData, double realP
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -1839,7 +1839,7 @@ unsigned int optimize_intervals_double_2D_subblock(double *oriData, double realP
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -1895,7 +1895,7 @@ unsigned int optimize_intervals_double_3D_subblock(double *oriData, double realP
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -1958,7 +1958,7 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];

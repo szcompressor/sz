@@ -126,7 +126,7 @@ unsigned int optimize_intervals_double_1D_pwr(double *oriData, size_t dataLength
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -315,7 +315,7 @@ unsigned int optimize_intervals_double_2D_pwr(double *oriData, size_t r1, size_t
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
@@ -486,7 +486,7 @@ unsigned int optimize_intervals_double_3D_pwr(double *oriData, size_t r1, size_t
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
-	int sum = 0;
+	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
 		sum += intervals[i];
