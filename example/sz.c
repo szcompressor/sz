@@ -302,12 +302,6 @@ int main(int argc, char* argv[])
 	
 		if(psnr_ != NULL)
 			conf_params->psnr = psnr = atof(psnr_);
-		if(conPath==NULL)
-		{
-			printf("Error: compression requires configuration file sz.config\n");
-			printf("Please add -c sz.config in the command\n");
-			exit(0); 
-		}
 
 		size_t outSize;	
 		if(dataType == 0) //single precision
@@ -318,6 +312,7 @@ int main(int argc, char* argv[])
 				printf("Solution: change the data format to be double-precision and then do the tensor decomposition.\n");
 				exit(0);
 			}
+
 			float *data = readFloatData(inPath, &nbEle, &status);
 			cost_start();	
 			bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);

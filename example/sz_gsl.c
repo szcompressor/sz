@@ -31,8 +31,10 @@ void usage()
 	printf("Usage: sz <options>\n");
 	printf("Options:\n");
 	printf("* operation type:\n");
-	printf("	-z: compression\n");
-	printf("	-x: decompression\n");
+	printf("	-z <compressed file>: the compression operation with an optionally specified output file.\n");
+	printf("                          (the compressed file will be named as <input_file>.sz if not specified)\n");
+	printf("	-x <decompressed file>: the decompression operation with an optionally specified output file.\n");
+	printf("                      (the decompressed file will be named as <cmpred_file>.out if not specified)\n");
 	printf("	-p: print meta data (configuration info)\n");
 	printf("	-h: print the help information\n");
 	printf("* data type:\n");
@@ -90,6 +92,7 @@ int main(int argc, char* argv[])
 	char* inPath = NULL;
 	char* cmpPath = NULL;
 	char* conPath = NULL;
+	char* decPath = NULL;
 	
 	char* errBoundMode = NULL;
 	char* absErrorBound = NULL;
@@ -131,9 +134,25 @@ int main(int argc, char* argv[])
 			break;
 		case 'z':
 			isCompression = 1;
+			if (i+1 < argc)
+			{
+				cmpPath = argv[i+1];
+				if(cmpPath[0]!='-')
+					i++;
+				else
+					cmpPath = NULL;
+			}
 			break;
 		case 'x': 
 			isCompression = 0;
+			if (i+1 < argc)
+			{
+				decPath = argv[i+1];
+				if(decPath[0]!='-')
+					i++;
+				else
+					decPath = NULL;
+			}			
 			break;
 		case 'p':
 			printMeta = 1; //print metadata
@@ -252,7 +271,7 @@ int main(int argc, char* argv[])
 	if(isCompression == 1)
 		SZ_Init(conPath);
 	
-	if(errBoundMode != NULL)
+	if(isCompression == 1 && errBoundMode != NULL)
 	{
 		if(strcmp(errBoundMode, "ABS")==0)
 			errorBoundMode = ABS;
@@ -275,30 +294,23 @@ int main(int argc, char* argv[])
 		conf_params->errorBoundMode = errorBoundMode;
 	}
 	
-	if(absErrorBound != NULL)
-		conf_params->absErrBound = absErrBound = atof(absErrorBound);
-		
-	if(relErrorBound != NULL)
-		conf_params->relBoundRatio = relBoundRatio = atof(relErrorBound);
-	
-	if(pwrErrorBound != NULL)
-		conf_params->pw_relBoundRatio = pw_relBoundRatio = atof(pwrErrorBound);
-	
-	if(psnr_ != NULL)
-		conf_params->psnr = psnr = atof(psnr_);
-	
+	char outputFilePath[256];	
 	unsigned char *bytes = NULL; //the binary data read from "compressed data file"
 	if(isCompression == 1)
 	{
-		if(conPath==NULL)
-		{
-			printf("Error: compression requires configuration file sz.config\n");
-			printf("Please add -c sz.config in the command\n");
-			exit(0); 
-		}
+		if(absErrorBound != NULL)
+			conf_params->absErrBound = absErrBound = atof(absErrorBound);
+		
+		if(relErrorBound != NULL)
+			conf_params->relBoundRatio = relBoundRatio = atof(relErrorBound);
+	
+		if(pwrErrorBound != NULL)
+			conf_params->pw_relBoundRatio = pw_relBoundRatio = atof(pwrErrorBound);
+	
+		if(psnr_ != NULL)
+			conf_params->psnr = psnr = atof(psnr_);
 
-		size_t outSize;
-		char outputFilePath[256];		
+		size_t outSize;	
 		if(dataType == 0) //single precision
 		{
 			if(tucker)
@@ -345,7 +357,10 @@ int main(int argc, char* argv[])
 			cost_start();	
 			bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
 			cost_end();
-			sprintf(outputFilePath, "%s.sz", inPath);
+			if(cmpPath == NULL)
+				sprintf(outputFilePath, "%s.sz", inPath);
+			else
+				strcpy(outputFilePath, cmpPath);
 			writeByteData(bytes, outSize, outputFilePath, &status);		
 			free(data);
 			if(status != SZ_SCES)
@@ -445,7 +460,10 @@ int main(int argc, char* argv[])
 				cost_start();
 				bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
 				cost_end();
-				sprintf(outputFilePath, "%s.sz", inPath);
+				if(cmpPath == NULL)
+					sprintf(outputFilePath, "%s.sz", inPath);
+				else
+					strcpy(outputFilePath, cmpPath);
 				writeByteData(bytes, outSize, outputFilePath, &status);		
 				free(data);
 				if(status != SZ_SCES)
@@ -540,7 +558,10 @@ int main(int argc, char* argv[])
 
 				free (dwtdata);
 			}
-			sprintf(outputFilePath, "%s.out", cmpPath);	
+			if(decPath == NULL)
+				sprintf(outputFilePath, "%s.out", cmpPath);	
+			else
+				strcpy(outputFilePath, decPath);
 			if(binaryOutput==1)		
 				writeFloatData_inBytes(data, nbEle, outputFilePath, &status);
 			else //txt output
@@ -725,7 +746,10 @@ int main(int argc, char* argv[])
 
 					free (dwtdata);
 				}
-				sprintf(outputFilePath, "%s.out", cmpPath);
+				if(decPath == NULL)
+					sprintf(outputFilePath, "%s.out", cmpPath);	
+				else
+					strcpy(outputFilePath, decPath);
 				if(binaryOutput==1)		
 				  writeDoubleData_inBytes(data, nbEle, outputFilePath, &status);
 				else //txt output
