@@ -132,7 +132,6 @@ int main(int argc, char* argv[])
 			isCompression = 1;
 			if (i+1 < argc)
 			{
-				printf("------------\n");
 				cmpPath = argv[i+1];
 				if(cmpPath[0]!='-')
 					i++;
