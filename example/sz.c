@@ -742,6 +742,15 @@ int main(int argc, char* argv[])
 		free(metadata->conf_params);
 		free(metadata);
 	}
+	else 
+	{
+		if(isCompression<0)
+		{
+			printf("Error: confusing option. the option of operation cannot be missing. \n");
+			printf("Hint: please specify the operation using '-z', '-x', '-p', or '-h'.\n");
+			usage();
+		}
+	}
 	
 	free(bytes);
 }
