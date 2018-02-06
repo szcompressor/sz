@@ -82,12 +82,12 @@ int main(int argc, char * argv[])
     
     unsigned char *bytes = SZ_compress_args(SZ_FLOAT, data, &outSize, errboundmode, absErrBound, absErrBound, absErrBound, 0, r5, r4, r3, r2, r1);
     //unsigned char *bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
-    ZC_CompareData* compareResult = ZC_endCmpr(dataProperty, outSize);
+    ZC_CompareData* compareResult = ZC_endCmpr(dataProperty, solName, outSize);
     //writeByteData(bytes, outSize, outputFilePath, &status);
    
     ZC_startDec();
     float *decData = SZ_decompress(SZ_FLOAT, bytes, outSize, r5, r4, r3, r2, r1);
-    ZC_endDec(compareResult, solName, decData);
+    ZC_endDec(compareResult, decData);
     //ZC_endDec(compareResult, "sz(1E-7)", decData);
 
     freeDataProperty(dataProperty);
