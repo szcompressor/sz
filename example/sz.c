@@ -262,8 +262,10 @@ int main(int argc, char* argv[])
 	
 	//Initialization (only for compression because decompression doesn't need the initialization)
 	if(isCompression == 1)
-		SZ_Init(conPath);
-	
+	{
+		if(SZ_NSCS==SZ_Init(conPath))
+			exit(0);
+	}
 	if(isCompression == 1 && errBoundMode != NULL)
 	{
 		if(strcmp(errBoundMode, "ABS")==0)
@@ -314,6 +316,11 @@ int main(int argc, char* argv[])
 			}
 
 			float *data = readFloatData(inPath, &nbEle, &status);
+			if(status!=SZ_SCES)
+			{
+				printf("Error: cannot read the input file: %s\n", inPath);
+				exit(0);
+			}
 			cost_start();	
 			bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
 			cost_end();
@@ -387,6 +394,11 @@ int main(int argc, char* argv[])
 			else
 			{
 				double *data = readDoubleData(inPath, &nbEle, &status);	
+				if(status!=SZ_SCES)
+				{
+					printf("Error: cannot read the input file: %s\n", inPath);
+					exit(0);
+				}
 				cost_start();
 				bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
 				cost_end();
