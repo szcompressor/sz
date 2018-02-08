@@ -25,7 +25,7 @@
 unsigned int maxRangeRadius = 32768;
 
 int sysEndianType; //endian type of the system
-int dataEndianType; //endian type of the data
+int dataEndianType = LITTLE_ENDIAN_DATA; //endian type of the data
 
 char maxHeap[10];
 

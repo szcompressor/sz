@@ -88,12 +88,57 @@ int SZ_ReadConf() {
     char *endianTypeString;
     dictionary *ini;
     char *par;
-    printf("[SZ] Reading SZ configuration file (%s) ...\n", sz_cfgFile);
+
+	char *y = (char*)&x;
+	
+	if(*y==1)
+		sysEndianType = LITTLE_ENDIAN_SYSTEM;
+	else //=0
+		sysEndianType = BIG_ENDIAN_SYSTEM;
+	conf_params->sysEndianType = sysEndianType;
+    
+    if(sz_cfgFile == NULL)
+    {
+		conf_params->dataEndianType = dataEndianType = LITTLE_ENDIAN_DATA;
+		conf_params->sol_ID = sol_ID = SZ;
+		conf_params->layers = layers = 0;
+		conf_params->max_quant_intervals = 65536;
+		maxRangeRadius = conf_params->max_quant_intervals/2;
+		
+		stateNum = maxRangeRadius*2;
+		allNodes = maxRangeRadius*4;
+		
+		intvCapacity = maxRangeRadius*2;
+		intvRadius = maxRangeRadius;
+		
+		conf_params->quantization_intervals = 0;
+		optQuantMode = 1;
+		conf_params->predThreshold = predThreshold = 0.99;
+		conf_params->sampleDistance = sampleDistance = 100;
+		conf_params->offset = offset = 0;
+		
+		conf_params->szMode = szMode = SZ_BEST_COMPRESSION;
+		
+		conf_params->gzipMode = gzipMode = 1;
+		conf_params->errorBoundMode = errorBoundMode = PSNR;
+		conf_params->psnr = psnr = 90;
+		
+		conf_params->pw_relBoundRatio = pw_relBoundRatio = 1E-3;
+		conf_params->segment_size = segment_size = 36;
+		
+		conf_params->pwr_type = pwr_type = SZ_PWR_AVG_TYPE;
+		
+		SZ_Reset();
+		return SZ_SCES;
+	}
+    
     if (access(sz_cfgFile, F_OK) != 0)
     {
         printf("[SZ] Configuration file NOT accessible.\n");
         return SZ_NSCS;
     }
+    
+    printf("[SZ] Reading SZ configuration file (%s) ...\n", sz_cfgFile);    
     ini = iniparser_load(sz_cfgFile);
     if (ini == NULL)
     {
@@ -101,7 +146,7 @@ int SZ_ReadConf() {
         return SZ_NSCS;
     }
 
-	endianTypeString = iniparser_getstring(ini, "ENV:dataEndianType", NULL);
+	endianTypeString = iniparser_getstring(ini, "ENV:dataEndianType", "LITTLE_ENDIAN_DATA");
 	if(strcmp(endianTypeString, "LITTLE_ENDIAN_DATA")==0)
 		dataEndianType = LITTLE_ENDIAN_DATA;
 	else if(strcmp(endianTypeString, "BIG_ENDIAN_DATA")==0)
@@ -113,17 +158,7 @@ int SZ_ReadConf() {
 		return SZ_NSCS;
 	}
 
-	//printf("dataEndianType=%d\n", dataEndianType);
-
 	conf_params->dataEndianType = dataEndianType;
-
-	char *y = (char*)&x;
-	
-	if(*y==1)
-		sysEndianType = LITTLE_ENDIAN_SYSTEM;
-	else //=0
-		sysEndianType = BIG_ENDIAN_SYSTEM;
-	conf_params->sysEndianType = sysEndianType;
 
 	// Reading/setting detection parameters
 	
@@ -148,23 +183,26 @@ int SZ_ReadConf() {
 		
 		int max_quant_intervals = iniparser_getint(ini, "PARAMETER:max_quant_intervals", 65536);
 		conf_params->max_quant_intervals = max_quant_intervals;
-		maxRangeRadius = max_quant_intervals/2;
-		
-		stateNum = maxRangeRadius*2;
-		allNodes = maxRangeRadius*4;
-		
-		intvCapacity = maxRangeRadius*2;
-		intvRadius = maxRangeRadius;
 		
 		int quantization_intervals = (int)iniparser_getint(ini, "PARAMETER:quantization_intervals", 0);
 		conf_params->quantization_intervals = quantization_intervals;
 		if(quantization_intervals>0)
 		{
 			updateQuantizationInfo(quantization_intervals);
+			conf_params->max_quant_intervals = max_quant_intervals = quantization_intervals;
+			stateNum = quantization_intervals;
+			allNodes = quantization_intervals*2;
 			optQuantMode = 0;
 		}
-		else
+		else //==0
 		{
+			maxRangeRadius = max_quant_intervals/2;
+			stateNum = maxRangeRadius*2;
+			allNodes = maxRangeRadius*4;
+
+			intvCapacity = maxRangeRadius*2;
+			intvRadius = maxRangeRadius;
+			
 			optQuantMode = 1;
 		}
 		
@@ -237,7 +275,7 @@ int SZ_ReadConf() {
 			printf("[SZ] Error: Null error bound setting (please check sz.config file)\n");
 			iniparser_freedict(ini);
 			return SZ_NSCS;				
-		}		
+		}
 		else if(strcmp(errBoundMode,"ABS")==0||strcmp(errBoundMode,"abs")==0)
 			errorBoundMode=ABS;
 		else if(strcmp(errBoundMode, "REL")==0||strcmp(errBoundMode,"rel")==0)
