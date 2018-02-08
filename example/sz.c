@@ -53,6 +53,7 @@ void usage()
 	printf("	-A <absolute error bound>: specifying absolute error bound\n");
 	printf("	-R <value_range based relative error bound>: specifying relative error bound\n");
 	printf("	-P <point-wise relative error bound>: specifying point-wise relative error bound\n");
+	printf("	-S <PSNR>: specifying PSNR\n");
 	printf("* input data file:\n");
 	printf("	-i <original data file> : original data file\n");
 	printf("	-s <compressed data file> : compressed data file in decompression\n");
