@@ -7,6 +7,8 @@
  *      See COPYRIGHT in top-level directory.
  */
 
+#include <stdint.h>
+
 #ifndef _CompressElement_H
 #define _CompressElement_H
 
