@@ -23,6 +23,8 @@
 extern "C" {
 #endif
 
+int checkFileExistance(char* filePath);
+
 float** create2DArray_float(size_t m, size_t n);
 void free2DArray_float(float** data, size_t m);
 float*** create3DArray_float(size_t p, size_t m, size_t n);

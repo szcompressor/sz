@@ -14,6 +14,17 @@
 #include "rw.h"
 #include "sz.h"
 
+int checkFileExistance(char* filePath)
+{
+	if( access( filePath, F_OK ) != -1 ) {
+		// file exists
+		return 1;
+	} else {
+		// file doesn't exist
+		return 0;
+	}	
+}
+
 float** create2DArray_float(size_t m, size_t n)
 {
 	size_t i=0;
