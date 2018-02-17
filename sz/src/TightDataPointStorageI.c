@@ -117,6 +117,7 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 		//wrong version
 		printf("Wrong version: \nCompressed-data version (%d.%d.%d)\n",version[0], version[1], version[2]);
 		printf("Current sz version: (%d.%d.%d)\n", versionNumber[0], versionNumber[1], versionNumber[2]);
+		printf("Please double-check if the compressed data (or file) is correct.\n");
 		exit(0);
 	}
 	int same = sameRByte & 0x01;
