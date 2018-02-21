@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "NetCDFReader.h"
+#include "rw.h"
 
 void usage()
 {
@@ -11,13 +12,15 @@ void usage()
 	printf("* input data file:\n");
 	printf("	-i <NetCDF data file> : NetCDF data file\n");
 	printf("	-n <dataset path> : dataset path in NetCDF file\n");
+	printf("* output data file:\n");
+	printf("	-o <output binary file> : binary file in little_endian type\n");
 	printf("* dimensions: \n");
 	printf("	-1 <nx> : dimension for 1D data such as data[nx]\n");
 	printf("	-2 <nx> <ny> : dimensions for 2D data such as data[ny][nx]\n");
 	printf("	-3 <nx> <ny> <nz> : dimensions for 3D data such as data[nz][ny][nx] \n");
 	printf("	-4 <nx> <ny> <nz> <np>: dimensions for 4D data such as data[np][nz][ny][nx] \n");
 	printf("* examples: \n");
-	printf("	test_NetCDFReader -f -i testdata/testdata.nc -n data -2 6 12\n");
+	printf("	test_NetCDFReader -f -i testdata/testdata.nc -n data -2 6 12 -o test.dat\n");
 	exit(0);
 }
 
@@ -25,6 +28,7 @@ int main(int argc, char* argv[])
 {
 	int dataType;
 	char* inPath = NULL;
+	char* outPath = NULL;
 	char *dataset = NULL;
 
 	size_t i = 0;
@@ -45,6 +49,11 @@ int main(int argc, char* argv[])
 		  usage();
 		switch (argv[i][1])
 		{
+			case 'o': 
+				if (++i == argc)
+				  usage();
+				outPath = argv[i];	
+				break;
 			case 'f': 
 				dataType = 0;
 				break;
@@ -110,6 +119,7 @@ int main(int argc, char* argv[])
 	else
 	  nbEle = r1*r2*r3*r4*r5;
 
+	int status = 0;
 	if (dataType == 0)
 	{
 		float *data = (float*)malloc(nbEle*sizeof(float));
@@ -117,6 +127,8 @@ int main(int argc, char* argv[])
 
 		for (i = 0; i < 10; i++)
 		  printf ("%f\n", ((float*)data)[i]);
+
+		writeFloatData_inBytes(data, nbEle, outPath, &status);
 	}
 	else
 	  if (dataType == 1)
@@ -126,6 +138,7 @@ int main(int argc, char* argv[])
 
 		  for (i = 0; i < 10; i++)
 			printf ("%lf\n", ((double*)data)[i]);
+		  writeDoubleData_inBytes(data, nbEle, outPath, &status);
 	  }
 
 	return 0;

@@ -1,6 +1,10 @@
 ##   COMPILERS
 CC	= gcc
 
+SZPATH =/home/sdi/Install/sz-1.4.12.3-install
+SZINC   = -I$(SZPATH)/include
+SZFLAGS = -L$(SZPATH)/lib -lSZ
+
 #Please modify NETCDFPATH based on your own installation of netcdf
 NETCDFPATH	=/home/sdi/Install/netcdf-4.5.0-install
 
@@ -25,7 +29,7 @@ libnetcdfreader.so:	$(OBJS)
 	$(CC) $(SO_FLAGS) -Wl,-soname,libnetcdfreader.so -o $@ $^ -lc $(NETCDFFLAGS)
 
 test/test_NetCDFReader: test/test_NetCDFReader.c
-	$(CC) -o test/test_NetCDFReader test/test_NetCDFReader.c $(INC) -L. $(FLAGS) $(NETCDFINC) $(NETCDFFLAGS)
+	$(CC) -o test/test_NetCDFReader test/test_NetCDFReader.c $(INC) -L. $(FLAGS) $(NETCDFINC) $(NETCDFFLAGS) $(SZINC) $(SZFLAGS)
 	
 clean: 
 	rm -rf src/*.o *.a *.so test/test_NetCDFReader
