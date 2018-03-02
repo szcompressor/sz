@@ -123,16 +123,21 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__sz_SOURCES_DIST = sz.c sz_gsl.c
-@GSL_FALSE@am_sz_OBJECTS = sz.$(OBJEXT)
-@GSL_TRUE@am_sz_OBJECTS = sz_gsl.$(OBJEXT)
+am__sz_SOURCES_DIST = sz.c sz_gsl.c sz_pastri.c
+@GSL_FALSE@@PASTRI_FALSE@am_sz_OBJECTS = sz.$(OBJEXT)
+@GSL_TRUE@@PASTRI_FALSE@am_sz_OBJECTS = sz_gsl.$(OBJEXT)
+@PASTRI_TRUE@am_sz_OBJECTS = sz_pastri.$(OBJEXT)
 sz_OBJECTS = $(am_sz_OBJECTS)
 am__DEPENDENCIES_1 =
-@GSL_FALSE@sz_DEPENDENCIES = ../sz/.libs/libSZ.a \
-@GSL_FALSE@	../zlib/.libs/libzlib.a
-@GSL_TRUE@sz_DEPENDENCIES = ../sz/.libs/libSZ.a \
-@GSL_TRUE@	../zlib/.libs/libzlib.a $(am__DEPENDENCIES_1) \
-@GSL_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@GSL_FALSE@@PASTRI_FALSE@sz_DEPENDENCIES = ../sz/.libs/libSZ.a \
+@GSL_FALSE@@PASTRI_FALSE@	../zlib/.libs/libzlib.a
+@GSL_TRUE@@PASTRI_FALSE@sz_DEPENDENCIES = ../sz/.libs/libSZ.a \
+@GSL_TRUE@@PASTRI_FALSE@	../zlib/.libs/libzlib.a \
+@GSL_TRUE@@PASTRI_FALSE@	$(am__DEPENDENCIES_1) \
+@GSL_TRUE@@PASTRI_FALSE@	$(am__DEPENDENCIES_1) \
+@GSL_TRUE@@PASTRI_FALSE@	$(am__DEPENDENCIES_1)
+@PASTRI_TRUE@sz_DEPENDENCIES = ../sz/.libs/libSZ.a \
+@PASTRI_TRUE@	../zlib/.libs/libzlib.a
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -367,6 +372,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
+PASTRI_FLAGS = @PASTRI_FLAGS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
 SED = @SED@
@@ -460,10 +466,12 @@ testfloat_CompDecomp_subblock_SOURCES = testfloat_CompDecomp_subblock.c
 testfloat_CompDecomp_subblock_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 testdouble_CompDecomp_subblock_SOURCES = testdouble_CompDecomp_subblock.c
 testdouble_CompDecomp_subblock_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
-@GSL_FALSE@sz_SOURCES = sz.c
-@GSL_TRUE@sz_SOURCES = sz_gsl.c
-@GSL_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
-@GSL_TRUE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB) -lm
+@GSL_FALSE@@PASTRI_FALSE@sz_SOURCES = sz.c
+@GSL_TRUE@@PASTRI_FALSE@sz_SOURCES = sz_gsl.c
+@PASTRI_TRUE@sz_SOURCES = sz_pastri.c
+@GSL_FALSE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@GSL_TRUE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB) -lm
+@PASTRI_TRUE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 all: all-am
 
 .SUFFIXES:
@@ -611,6 +619,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz_gsl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz_pastri.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_CompDecomp_subblock.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_batch_compress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_compress.Po@am__quote@

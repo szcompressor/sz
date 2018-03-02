@@ -190,7 +190,7 @@ AC_ARG_ENABLE(pastri, [  --enable-pastri            use PASTRI], ok=$enableval, 
 AM_CONDITIONAL([PASTRI], [test "x$enable_pastri" = "xyes"])
 
 if test "$ok" = "yes"; then
-        PASTRI_FLAGS="-DHAVE_MPI"
+        PASTRI_FLAGS="-DHAVE_PASTRI"
 fi
 
 AC_SUBST(PASTRI_FLAGS)

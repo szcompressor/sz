@@ -16243,7 +16243,7 @@ fi
 
 
 if test "$ok" = "yes"; then
-        PASTRI_FLAGS="-DHAVE_MPI"
+        PASTRI_FLAGS="-DHAVE_PASTRI"
 fi
 
 
