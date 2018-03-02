@@ -3061,3 +3061,20 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 
 	return tdps;
 }
+
+//Pastri compression
+/*
+void SZ_compress_args_double_Pastri(unsigned char** newByteData, double *oriData, 
+size_t dataLength, double realPrecision, size_t *outSize, parameter* )
+{
+	SZ_Reset();
+
+	TightDataPointStorageD* tdps = SZ_compress_double_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_d);
+
+	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
+	
+	if(*outSize>dataLength*sizeof(double))
+		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+	
+	free_TightDataPointStorageD(tdps);	
+}*/

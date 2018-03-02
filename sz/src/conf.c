@@ -12,6 +12,7 @@
 #include "sz.h"
 #include "iniparser.h"
 #include "Huffman.h"
+#include "pastri.h"
 
 /*-------------------------------------------------------------------------*/
 /**
@@ -167,8 +168,9 @@ int SZ_ReadConf() {
 	
     if(strcmp(sol_name, "SZ")==0)
 		sol_ID = SZ;
-	else
-	{
+	else if(strcmp(sol_name, "PASTRI")==0)
+		sol_ID = PASTRI;
+	else{
 		printf("[SZ] Error: wrong solution name (please check sz.config file)\n");
 		iniparser_freedict(ini);
 		return SZ_NSCS;
@@ -332,16 +334,20 @@ int SZ_ReadConf() {
 		else //by default
 			pwr_type = SZ_PWR_AVG_TYPE;
 		conf_params->pwr_type = pwr_type;
-	}
-	
-//	versionNumber[0] = SZ_VER_MAJOR; //0
-//	versionNumber[1] = SZ_VER_MINOR; //5
-//	versionNumber[2] = SZ_VER_BUILD; //15
     //initialization for Huffman encoding
     
-    SZ_Reset();
-    
-	//printf("dataEndianType=%d\n", dataEndianType);    
+		SZ_Reset();		
+	}
+	else if(sol_ID == PASTRI)
+	{//load parameters for PSTRI
+		pastri_par.bf[0] = (int)iniparser_getint(ini, "PARAMETER:basisFunction_0", 0);		
+		pastri_par.bf[1] = (int)iniparser_getint(ini, "PARAMETER:basisFunction_1", 0);		
+		pastri_par.bf[2] = (int)iniparser_getint(ini, "PARAMETER:basisFunction_2", 0);		
+		pastri_par.bf[3] = (int)iniparser_getint(ini, "PARAMETER:basisFunction_3", 0);
+		pastri_par.numBlocks = (int)iniparser_getint(ini, "PARAMETER:numBlocks", 0);		
+		absErrBound = pastri_par.originalEb = (double)iniparser_getdouble(ini, "PARAMETER:absErrBound", 1E-3);
+	}
+	
     iniparser_freedict(ini);
     return SZ_SCES;
 }

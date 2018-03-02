@@ -31,7 +31,7 @@ char maxHeap[10];
 
 long status;
 
-int sol_ID;
+int sol_ID = SZ;
 int errorBoundMode; //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PSNR, or PW_REL, PSNR
 
 int gzipMode; //four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
@@ -67,6 +67,9 @@ int SZ_SIZE_TYPE = 8;
 SZ_VarSet* sz_varset = NULL;
 
 sz_params *conf_params = NULL;
+
+//only for Pastri compressor
+pastri_params pastri_par;
 
 int SZ_Init(char *configFilePath)
 {

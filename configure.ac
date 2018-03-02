@@ -182,6 +182,19 @@ AC_SUBST(GSL_LIB)
 AC_SUBST(GSL_STATIC)
 fi
 
+##
+## PASTRI
+##
+
+AC_ARG_ENABLE(pastri, [  --enable-pastri            use PASTRI], ok=$enableval, ok=no)
+AM_CONDITIONAL([PASTRI], [test "x$enable_pastri" = "xyes"])
+
+if test "$ok" = "yes"; then
+        PASTRI_FLAGS="-DHAVE_MPI"
+fi
+
+AC_SUBST(PASTRI_FLAGS)
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 AC_CHECK_TYPES([ptrdiff_t])

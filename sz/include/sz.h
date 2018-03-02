@@ -51,6 +51,7 @@
 #include "sz_double_pwr.h"
 #include "callZlib.h"
 #include "rw.h"
+#include "pastri.h"
 
 #ifdef _WIN32
 #define PATH_SEPARATOR ';'
@@ -77,6 +78,7 @@ extern "C" {
 #define SZ_VER_BUILD 12
 #define SZ_VER_REVISION 3
 
+#define PASTRI 103
 #define HZ 102
 #define SZ 101
 
@@ -265,6 +267,9 @@ typedef struct sz_metadata
 } sz_metadata;
 
 extern sz_params *conf_params;
+
+//for pastri 
+extern pastri_params pastri_par; 
 
 //sz.h
 void SZ_Reset();

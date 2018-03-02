@@ -40,10 +40,16 @@ testfloat_CompDecomp_subblock_SOURCES=testfloat_CompDecomp_subblock.c
 testfloat_CompDecomp_subblock_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 testdouble_CompDecomp_subblock_SOURCES=testdouble_CompDecomp_subblock.c
 testdouble_CompDecomp_subblock_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+
+if PASTRI
+sz_SOURCES=sz_pastri.c
+sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+else
 if GSL
 sz_SOURCES=sz_gsl.c
 sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB) -lm
 else
 sz_SOURCES=sz.c
 sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+endif
 endif
