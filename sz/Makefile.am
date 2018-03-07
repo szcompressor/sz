@@ -33,8 +33,10 @@ include_HEADERS=include/CompressElement.h include/DynamicDoubleArray.h include/r
 		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
 		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
 		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
-		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
-		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h
+		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h
+if PASTRI
+include_HEADERS+=include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h
+endif
 
 lib_LTLIBRARIES=libSZ.la
 libSZ_la_CFLAGS=-I./include -I../zlib
