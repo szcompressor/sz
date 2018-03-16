@@ -69,7 +69,9 @@ SZ_VarSet* sz_varset = NULL;
 sz_params *conf_params = NULL;
 
 //only for Pastri compressor
+#ifdef PASTRI
 pastri_params pastri_par;
+#endif
 
 int SZ_Init(char *configFilePath)
 {

@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-void computeReqLength_float(float realPrecision, short radExpo, int* reqLength, float* medianValue);
+void computeReqLength_float(double realPrecision, short radExpo, int* reqLength, float* medianValue);
 
 unsigned int optimize_intervals_float_1D(float *oriData, size_t dataLength, double realPrecision);
 unsigned int optimize_intervals_float_2D(float *oriData, size_t r1, size_t r2, double realPrecision);

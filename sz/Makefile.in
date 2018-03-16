@@ -92,8 +92,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@FORTRAN_FALSE@@PASTRI_TRUE@am__append_1 = include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h
-@FORTRAN_FALSE@@PASTRI_TRUE@am__append_2 = src/pastri.c
+@FORTRAN_FALSE@@PASTRI_TRUE@am__append_1 = src/pastri.c
 subdir = sz
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -470,59 +469,23 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
-@FORTRAN_FALSE@include_HEADERS = include/CompressElement.h \
-@FORTRAN_FALSE@	include/DynamicDoubleArray.h include/rw.h \
-@FORTRAN_FALSE@	include/conf.h include/dataCompression.h \
-@FORTRAN_FALSE@	include/dictionary.h \
-@FORTRAN_FALSE@	include/DynamicFloatArray.h include/VarSet.h \
-@FORTRAN_FALSE@	include/sz.h include/Huffman.h \
-@FORTRAN_FALSE@	include/ByteToolkit.h include/sz_float.h \
-@FORTRAN_FALSE@	include/sz_double.h include/callZlib.h \
-@FORTRAN_FALSE@	include/iniparser.h include/TypeManager.h \
-@FORTRAN_FALSE@	include/sz_int8.h include/sz_int16.h \
-@FORTRAN_FALSE@	include/sz_int32.h include/sz_int64.h \
-@FORTRAN_FALSE@	include/szd_int8.h include/szd_int16.h \
-@FORTRAN_FALSE@	include/szd_int32.h include/szd_int64.h \
-@FORTRAN_FALSE@	include/sz_uint8.h include/sz_uint16.h \
-@FORTRAN_FALSE@	include/sz_uint32.h include/sz_uint64.h \
-@FORTRAN_FALSE@	include/szd_uint8.h include/szd_uint16.h \
-@FORTRAN_FALSE@	include/szd_uint32.h include/szd_uint64.h \
-@FORTRAN_FALSE@	include/sz_float_pwr.h include/sz_double_pwr.h \
-@FORTRAN_FALSE@	include/szd_float.h include/szd_double.h \
-@FORTRAN_FALSE@	include/szd_float_pwr.h \
-@FORTRAN_FALSE@	include/szd_double_pwr.h \
-@FORTRAN_FALSE@	include/DynamicByteArray.h \
-@FORTRAN_FALSE@	include/DynamicIntArray.h \
-@FORTRAN_FALSE@	include/TightDataPointStorageI.h \
-@FORTRAN_FALSE@	include/TightDataPointStorageD.h \
-@FORTRAN_FALSE@	include/TightDataPointStorageF.h \
-@FORTRAN_FALSE@	$(am__append_1)
-@FORTRAN_TRUE@include_HEADERS = include/CompressElement.h \
-@FORTRAN_TRUE@	include/DynamicDoubleArray.h include/rw.h \
-@FORTRAN_TRUE@	include/conf.h include/dataCompression.h \
-@FORTRAN_TRUE@	include/dictionary.h include/DynamicFloatArray.h \
-@FORTRAN_TRUE@	include/VarSet.h include/sz.h include/Huffman.h \
-@FORTRAN_TRUE@	include/ByteToolkit.h include/szf.h \
-@FORTRAN_TRUE@	include/sz_float.h include/sz_double.h \
-@FORTRAN_TRUE@	include/callZlib.h include/iniparser.h \
-@FORTRAN_TRUE@	include/TypeManager.h include/sz_int8.h \
-@FORTRAN_TRUE@	include/sz_int16.h include/sz_int32.h \
-@FORTRAN_TRUE@	include/sz_int64.h include/szd_int8.h \
-@FORTRAN_TRUE@	include/szd_int16.h include/szd_int32.h \
-@FORTRAN_TRUE@	include/szd_int64.h include/sz_uint8.h \
-@FORTRAN_TRUE@	include/sz_uint16.h include/sz_uint32.h \
-@FORTRAN_TRUE@	include/sz_uint64.h include/szd_uint8.h \
-@FORTRAN_TRUE@	include/szd_uint16.h include/szd_uint32.h \
-@FORTRAN_TRUE@	include/szd_uint64.h include/sz_float_pwr.h \
-@FORTRAN_TRUE@	include/sz_double_pwr.h include/szd_float.h \
-@FORTRAN_TRUE@	include/szd_double.h include/szd_float_pwr.h \
-@FORTRAN_TRUE@	include/szd_double_pwr.h \
-@FORTRAN_TRUE@	include/DynamicByteArray.h \
-@FORTRAN_TRUE@	include/DynamicIntArray.h \
-@FORTRAN_TRUE@	include/TightDataPointStorageI.h \
-@FORTRAN_TRUE@	include/TightDataPointStorageD.h \
-@FORTRAN_TRUE@	include/TightDataPointStorageF.h sz.mod rw.mod \
-@FORTRAN_TRUE@	$(am__append_1)
+@FORTRAN_FALSE@include_HEADERS = include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
+@FORTRAN_FALSE@		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h\
+@FORTRAN_FALSE@		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\
+@FORTRAN_FALSE@		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
+@FORTRAN_FALSE@		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
+@FORTRAN_FALSE@		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
+@FORTRAN_FALSE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
+@FORTRAN_FALSE@		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h
+
+@FORTRAN_TRUE@include_HEADERS = include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
+@FORTRAN_TRUE@		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h include/szf.h\
+@FORTRAN_TRUE@		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\
+@FORTRAN_TRUE@		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
+@FORTRAN_TRUE@		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
+@FORTRAN_TRUE@		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
+@FORTRAN_TRUE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h sz.mod rw.mod
+
 @FORTRAN_FALSE@lib_LTLIBRARIES = libSZ.la
 @FORTRAN_TRUE@lib_LTLIBRARIES = libSZ.la
 @FORTRAN_FALSE@libSZ_la_CFLAGS = -I./include -I../zlib
@@ -551,7 +514,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@	src/szd_int32.c src/szd_int64.c src/sz.c \
 @FORTRAN_FALSE@	src/sz_float_pwr.c src/sz_double_pwr.c \
 @FORTRAN_FALSE@	src/szd_float_pwr.c src/szd_double_pwr.c \
-@FORTRAN_FALSE@	$(am__append_2)
+@FORTRAN_FALSE@	$(am__append_1)
 @FORTRAN_TRUE@libSZ_la_SOURCES = src/ByteToolkit.c \
 @FORTRAN_TRUE@	src/dataCompression.c src/DynamicIntArray.c \
 @FORTRAN_TRUE@	src/iniparser.c src/szf.c src/CompressElement.c \
@@ -573,7 +536,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@	src/sz.c src/sz_float_pwr.c src/sz_double_pwr.c \
 @FORTRAN_TRUE@	src/szd_float_pwr.c src/szd_double_pwr.c \
 @FORTRAN_TRUE@	src/sz_interface.F90 src/rw_interface.F90 \
-@FORTRAN_TRUE@	$(am__append_2)
+@FORTRAN_TRUE@	$(am__append_1)
 @FORTRAN_FALSE@libSZ_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=CC --mode=link $(CCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 @FORTRAN_TRUE@libSZ_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=FC --mode=link $(FCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 all: all-am

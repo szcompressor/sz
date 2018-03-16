@@ -269,7 +269,9 @@ typedef struct sz_metadata
 extern sz_params *conf_params;
 
 //for pastri 
+#ifdef PASTRI
 extern pastri_params pastri_par; 
+#endif
 
 //sz.h
 void SZ_Reset();

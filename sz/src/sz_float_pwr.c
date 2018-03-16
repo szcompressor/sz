@@ -45,6 +45,8 @@ void compute_segment_precisions_float_1D(float *oriData, size_t dataLength, floa
 				realPrecision = sum/segment_size;
 				sum = 0;			
 			}
+			realPrecision *= pw_relBoundRatio;
+			
 			if(errorBoundMode==ABS_AND_PW_REL||errorBoundMode==REL_AND_PW_REL)
 				realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
 			else if(errorBoundMode==ABS_OR_PW_REL||errorBoundMode==REL_OR_PW_REL)
@@ -59,12 +61,12 @@ void compute_segment_precisions_float_1D(float *oriData, size_t dataLength, floa
 			pwrErrBoundBytes[k++] = realPrecBytes[0];
 			pwrErrBoundBytes[k++] = realPrecBytes[1];
 			
-			realPrecision = fabs(pw_relBoundRatio*curValue);
+			realPrecision = fabs(curValue);
 		}
 		
 		if(curValue!=0)
 		{
-			curPrecision = fabs(pw_relBoundRatio*curValue);
+			curPrecision = fabs(curValue);
 			
 			switch(pwr_type)
 			{
@@ -542,9 +544,6 @@ size_t dataLength, size_t *outSize, float min, float max)
 		
 	float* spaceFillingValue = oriData; //
 	
-	DynamicByteArray *resiBitLengthArray;
-	new_DBA(&resiBitLengthArray, DynArrayInitLen);
-	
 	DynamicIntArray *exactLeadNumArray;
 	new_DIA(&exactLeadNumArray, DynArrayInitLen);
 	
@@ -567,7 +566,6 @@ size_t dataLength, size_t *outSize, float min, float max)
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
 						
 	//add the first data	
-	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
@@ -577,7 +575,6 @@ size_t dataLength, size_t *outSize, float min, float max)
 		
 	//add the second data
 	type[1] = 0;
-	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);			
 	compressSingleFloatValue(vce, spaceFillingValue[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
@@ -640,9 +637,7 @@ size_t dataLength, size_t *outSize, float min, float max)
 			updateReqLength = 1;		
 		}
 		
-		type[i] = 0;
-		addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-		
+		type[i] = 0;		
 		compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 		memcpy(preDataBytes,vce->curBytes,4);
@@ -661,7 +656,7 @@ size_t dataLength, size_t *outSize, float min, float max)
 			type, exactMidByteArray->array, exactMidByteArray->size,  
 			exactLeadNumArray->array,  
 			resiBitArray->array, resiBitArray->size, 
-			resiBitLengthArray->array, resiBitLengthArray->size, 
+			resiBitsLength, 
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, pwrErrBoundBytes, pwrErrBoundBytes_size, radExpo);
 
 //sdi:Debug
@@ -677,7 +672,6 @@ size_t dataLength, size_t *outSize, float min, float max)
 //	printf("tdps->typeArray_size=%d\n", tdps->typeArray_size);
 	
 	//free memory
-	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
@@ -778,9 +772,6 @@ size_t *outSize, float min, float max)
 		
 	float* spaceFillingValue = oriData; //
 	
-	DynamicByteArray *resiBitLengthArray;
-	new_DBA(&resiBitLengthArray, DynArrayInitLen);
-	
 	DynamicIntArray *exactLeadNumArray;
 	new_DIA(&exactLeadNumArray, DynArrayInitLen);
 	
@@ -803,7 +794,6 @@ size_t *outSize, float min, float max)
 			
 	/* Process Row-0 data 0*/
 	type[0] = 0;
-	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
@@ -825,8 +815,6 @@ size_t *outSize, float min, float max)
 	else
 	{		
 		type[1] = 0;
-
-		addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 		compressSingleFloatValue(vce, spaceFillingValue[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 		memcpy(preDataBytes,vce->curBytes,4);
@@ -866,8 +854,6 @@ size_t *outSize, float min, float max)
 			}
 
 			type[j] = 0;
-
-			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 			compressSingleFloatValue(vce, spaceFillingValue[j], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -910,8 +896,6 @@ size_t *outSize, float min, float max)
 			}
 			
 			type[index] = 0;
-
-			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 			compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -953,8 +937,6 @@ size_t *outSize, float min, float max)
 				}
 
 				type[index] = 0;
-
-				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
@@ -980,11 +962,10 @@ size_t *outSize, float min, float max)
 			type, exactMidByteArray->array, exactMidByteArray->size,  
 			exactLeadNumArray->array,  
 			resiBitArray->array, resiBitArray->size, 
-			resiBitLengthArray->array, resiBitLengthArray->size, 
+			resiBitsLength, 
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, pwrErrBoundBytes, pwrErrBoundBytes_size, radExpo);
 	
 	//free memory
-	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
@@ -1048,9 +1029,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 	//type[dataLength]=0;
 
 	float* spaceFillingValue = oriData; //
-	
-	DynamicByteArray *resiBitLengthArray;
-	new_DBA(&resiBitLengthArray, DynArrayInitLen);
 
 	DynamicIntArray *exactLeadNumArray;
 	new_DIA(&exactLeadNumArray, DynArrayInitLen);
@@ -1076,7 +1054,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 	///////////////////////////	Process layer-0 ///////////////////////////
 	/* Process Row-0 data 0*/
 	type[0] = 0;
-	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
@@ -1106,8 +1083,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 		}		
 		
 		type[1] = 0;
-
-		addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 		compressSingleFloatValue(vce, spaceFillingValue[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 		memcpy(preDataBytes,vce->curBytes,4);
@@ -1146,8 +1121,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 			}			
 
 			type[j] = 0;
-
-			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 			compressSingleFloatValue(vce, spaceFillingValue[j], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -1192,8 +1165,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 			}		
 						
 			type[index] = 0;
-
-			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 			compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -1235,8 +1206,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 				}						
 				
 				type[index] = 0;
-
-				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
@@ -1281,8 +1250,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 			}					
 			
 			type[index] = 0;
-
-			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 			compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -1325,8 +1292,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 				}						
 				
 				type[index] = 0;
-
-				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
@@ -1370,8 +1335,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 				}						
 				
 				type[index] = 0;
-
-				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 				compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
@@ -1412,8 +1375,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 					}							
 					
 					type[index] = 0;
-
-					addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 					compressSingleFloatValue(vce, spaceFillingValue[index], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 					updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 					memcpy(preDataBytes,vce->curBytes,4);
@@ -1439,7 +1400,7 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 			type, exactMidByteArray->array, exactMidByteArray->size,
 			exactLeadNumArray->array,
 			resiBitArray->array, resiBitArray->size,
-			resiBitLengthArray->array, resiBitLengthArray->size, 
+			resiBitsLength, 
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, pwrErrBoundBytes, pwrErrBoundBytes_size, radExpo);
 
 //sdi:Debug
@@ -1450,7 +1411,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 */
 
 	//free memory
-	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
@@ -1545,9 +1505,6 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 		
 	float* spaceFillingValue = oriData; 
 	
-	DynamicByteArray *resiBitLengthArray;
-	new_DBA(&resiBitLengthArray, DynArrayInitLen);
-	
 	DynamicIntArray *exactLeadNumArray;
 	new_DIA(&exactLeadNumArray, DynArrayInitLen);
 	
@@ -1575,7 +1532,6 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 	
 	//add the first data	
 	type[0] = 0;
-	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
@@ -1647,8 +1603,6 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 		if(groupNum>=GROUP_COUNT)
 		{
 			type[i] = 0;
-			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-
 			compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -1658,8 +1612,6 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 		else if(flags[grpNum]==0) //the dec value may not be in the same group
 		{	
 			type[i] = 0;
-			addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-
 			compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
@@ -1711,8 +1663,6 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 			if(fabs(curData-decValue)>realGroupPrecision)
 			{	
 				type[i] = 0;
-				addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
-
 				compressSingleFloatValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
@@ -1738,7 +1688,7 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 			type, exactMidByteArray->array, exactMidByteArray->size,  
 			exactLeadNumArray->array,  
 			resiBitArray->array, resiBitArray->size, 
-			resiBitLengthArray->array, resiBitLengthArray->size, 
+			resiBitsLength, 
 			realPrecision, medianValue, (char)reqLength, nbBins, NULL, 0, radExpo);	
 	
 	compressGroupIDArray_float(groupID, tdps);
@@ -1750,7 +1700,6 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 	free(groupID);
 	free(groupErrorBounds);
 	
-	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);	
