@@ -638,6 +638,9 @@ LIBOBJS
 PASTRI_FLAGS
 PASTRI_FALSE
 PASTRI_TRUE
+OPENMP_FLAGS
+OPENMP_FALSE
+OPENMP_TRUE
 GSL_STATIC
 GSL_LIB
 GSL_HDR
@@ -788,6 +791,7 @@ with_gsl_exec_prefix
 enable_gsltest
 with_gsl_include_path
 with_gsl_lib_path
+enable_openmp
 enable_pastri
 '
       ac_precious_vars='build_alias
@@ -1437,6 +1441,7 @@ Optional Features:
   --enable-fortran        Enable fortran compilation
   --enable-gsl            use GSL
   --disable-gsltest       Do not try to compile and run a test GSL program
+  --enable-openmp            use OPENMP
   --enable-pastri            use PASTRI
 
 Optional Packages:
@@ -3005,7 +3010,7 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 # Checks for programs.
-: ${CFLAGS=-O3}
+: ${CFLAGS=-O3 -std=c99}
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -16223,6 +16228,31 @@ fi
 fi
 
 ##
+## OPENMP
+##
+
+# Check whether --enable-openmp was given.
+if test "${enable_openmp+set}" = set; then :
+  enableval=$enable_openmp; ok=$enableval
+else
+  ok=no
+fi
+
+ if test "x$enable_openmp" = "xyes"; then
+  OPENMP_TRUE=
+  OPENMP_FALSE='#'
+else
+  OPENMP_TRUE='#'
+  OPENMP_FALSE=
+fi
+
+
+if test "$ok" = "yes"; then
+        OPENMP_FLAGS="-DHAVE_OPENMP"
+fi
+
+
+##
 ## PASTRI
 ##
 
@@ -16564,6 +16594,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GSL_TRUE}" && test -z "${GSL_FALSE}"; then
   as_fn_error $? "conditional \"GSL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${OPENMP_TRUE}" && test -z "${OPENMP_FALSE}"; then
+  as_fn_error $? "conditional \"OPENMP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${PASTRI_TRUE}" && test -z "${PASTRI_FALSE}"; then

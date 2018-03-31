@@ -8,7 +8,7 @@ AC_CONFIG_SRCDIR([sz/src/sz.c])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
-: ${CFLAGS=-O3}
+: ${CFLAGS=-O3 -std=c99}
 AC_PROG_CC
 AC_PROG_FC
 AC_PROG_RANLIB
@@ -181,6 +181,18 @@ AC_SUBST(GSL_HDR)
 AC_SUBST(GSL_LIB)
 AC_SUBST(GSL_STATIC)
 fi
+
+## 
+## OPENMP
+##
+
+AC_ARG_ENABLE(openmp, [  --enable-openmp            use OPENMP], ok=$enableval, ok=no)
+AM_CONDITIONAL([OPENMP], [test "x$enable_openmp" = "xyes"])
+
+if test "$ok" = "yes"; then
+        OPENMP_FLAGS="-DHAVE_OPENMP"
+fi
+AC_SUBST(OPENMP_FLAGS)
 
 ##
 ## PASTRI

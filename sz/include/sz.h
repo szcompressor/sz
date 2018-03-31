@@ -75,8 +75,8 @@ extern "C" {
 #define SZ_VERNUM 0x0140
 #define SZ_VER_MAJOR 1
 #define SZ_VER_MINOR 4
-#define SZ_VER_BUILD 12
-#define SZ_VER_REVISION 3
+#define SZ_VER_BUILD 13
+#define SZ_VER_REVISION 0
 
 #define PASTRI 103
 #define HZ 102
@@ -147,6 +147,47 @@ extern "C" {
 //#define intvRadius 32768
 //#define intvCapacity 131072
 //#define intvRadius 65536
+
+#define COLL_BASE_COMPUTE_BLOCKCOUNT( COUNT, NUM_BLOCKS, SPLIT_INDEX,       \
+                                       EARLY_BLOCK_COUNT, LATE_BLOCK_COUNT ) \
+    EARLY_BLOCK_COUNT = LATE_BLOCK_COUNT = COUNT / NUM_BLOCKS;               \
+    SPLIT_INDEX = COUNT % NUM_BLOCKS;                                        \
+    if (0 != SPLIT_INDEX) {                                                  \
+        EARLY_BLOCK_COUNT = EARLY_BLOCK_COUNT + 1;                           \
+    }                                                                        \
+
+#define COMPUTE_1D_NUMBER_OF_BLOCKS( COUNT, NUM_BLOCKS, BLOCK_SIZE ) \
+    if (COUNT <= BLOCK_SIZE){                  \
+        NUM_BLOCKS = 1;             \
+    }                                   \
+    else{                               \
+        NUM_BLOCKS = COUNT / BLOCK_SIZE;       \
+    }                                   \
+
+#define COMPUTE_2D_NUMBER_OF_BLOCKS( COUNT, NUM_BLOCKS, BLOCK_SIZE ) \
+    if (COUNT <= BLOCK_SIZE){                   \
+        NUM_BLOCKS = 1;             \
+    }                                   \
+    else{                               \
+        NUM_BLOCKS = COUNT / BLOCK_SIZE;        \
+    }                                   \
+
+#define COMPUTE_3D_NUMBER_OF_BLOCKS( COUNT, NUM_BLOCKS, BLOCK_SIZE ) \
+    if (COUNT <= BLOCK_SIZE){                   \
+        NUM_BLOCKS = 1;             \
+    }                                   \
+    else{                               \
+        NUM_BLOCKS = COUNT / BLOCK_SIZE;        \
+    }                                   \
+
+#define COLL_BASE_COMPUTE_BLOCKCOUNT( COUNT, NUM_BLOCKS, SPLIT_INDEX,       \
+                                       EARLY_BLOCK_COUNT, LATE_BLOCK_COUNT ) \
+    EARLY_BLOCK_COUNT = LATE_BLOCK_COUNT = COUNT / NUM_BLOCKS;               \
+    SPLIT_INDEX = COUNT % NUM_BLOCKS;                                        \
+    if (0 != SPLIT_INDEX) {                                                  \
+        EARLY_BLOCK_COUNT = EARLY_BLOCK_COUNT + 1;                           \
+    }                                                                        \
+
 
 extern unsigned int maxRangeRadius;
 

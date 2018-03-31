@@ -88,6 +88,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@OPENMP_TRUE@am__append_1 = -fopenmp
 @FORTRAN_FALSE@bin_PROGRAMS = testint_compress$(EXEEXT) \
 @FORTRAN_FALSE@	testint_decompress$(EXEEXT) \
 @FORTRAN_FALSE@	testfloat_compress$(EXEEXT) \
@@ -123,14 +124,20 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__sz_SOURCES_DIST = sz.c sz_gsl.c sz_pastri.c
-@GSL_FALSE@@PASTRI_FALSE@am_sz_OBJECTS = sz.$(OBJEXT)
+am__sz_SOURCES_DIST = sz.c sz_openmp.c sz_gsl.c sz_pastri.c
+@GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@am_sz_OBJECTS = sz.$(OBJEXT)
+@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@am_sz_OBJECTS =  \
+@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@	sz_openmp.$(OBJEXT)
 @GSL_TRUE@@PASTRI_FALSE@am_sz_OBJECTS = sz_gsl.$(OBJEXT)
 @PASTRI_TRUE@am_sz_OBJECTS = sz_pastri.$(OBJEXT)
 sz_OBJECTS = $(am_sz_OBJECTS)
 am__DEPENDENCIES_1 =
-@GSL_FALSE@@PASTRI_FALSE@sz_DEPENDENCIES = ../sz/.libs/libSZ.a \
-@GSL_FALSE@@PASTRI_FALSE@	../zlib/.libs/libzlib.a
+@GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@sz_DEPENDENCIES =  \
+@GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@	../sz/.libs/libSZ.a \
+@GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@	../zlib/.libs/libzlib.a
+@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@sz_DEPENDENCIES =  \
+@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@	../sz/.libs/libSZ.a \
+@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@	../zlib/.libs/libzlib.a
 @GSL_TRUE@@PASTRI_FALSE@sz_DEPENDENCIES = ../sz/.libs/libSZ.a \
 @GSL_TRUE@@PASTRI_FALSE@	../zlib/.libs/libzlib.a \
 @GSL_TRUE@@PASTRI_FALSE@	$(am__DEPENDENCIES_1) \
@@ -363,6 +370,7 @@ NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
+OPENMP_FLAGS = @OPENMP_FLAGS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -434,7 +442,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
-AM_CFLAGS = -I../sz/include -I../zlib $(GSL_CFLAGS) $(GSL_STATIC)
+AM_CFLAGS = -I../sz/include -I../zlib $(GSL_CFLAGS) $(GSL_STATIC) \
+	$(am__append_1)
 AM_FCFLAGS = -I../sz/include -I../sz -I../zlib $(GSL_CFLAGS) $(GSL_STATIC)
 
 #if GSL
@@ -466,10 +475,12 @@ testfloat_CompDecomp_subblock_SOURCES = testfloat_CompDecomp_subblock.c
 testfloat_CompDecomp_subblock_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 testdouble_CompDecomp_subblock_SOURCES = testdouble_CompDecomp_subblock.c
 testdouble_CompDecomp_subblock_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
-@GSL_FALSE@@PASTRI_FALSE@sz_SOURCES = sz.c
+@GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@sz_SOURCES = sz.c
+@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@sz_SOURCES = sz_openmp.c
 @GSL_TRUE@@PASTRI_FALSE@sz_SOURCES = sz_gsl.c
 @PASTRI_TRUE@sz_SOURCES = sz_pastri.c
-@GSL_FALSE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 @GSL_TRUE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB) -lm
 @PASTRI_TRUE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 all: all-am
@@ -619,6 +630,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz_gsl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz_openmp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz_pastri.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_CompDecomp_subblock.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_batch_compress.Po@am__quote@

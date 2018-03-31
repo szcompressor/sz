@@ -3209,3 +3209,381 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 
 	return tdps;
 }
+
+unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision){	
+	size_t i,j,k, index;
+	size_t radiusIndex;
+	size_t r23=r2*r3;
+	float pred_value = 0, pred_err;
+	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
+	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)/sampleDistance;
+
+	size_t offset_count = sampleDistance - 2; // count r3 offset
+	size_t offset_count_2;
+	float * data_pos = oriData + r23 + r3 + offset_count;
+	size_t n1_count = 1, n2_count = 1; // count i,j sum
+	float * last_pos = data_pos;
+	size_t len = r1 * r2 * r3;
+	while(data_pos - oriData < len){
+
+		pred_value = data_pos[-1] + data_pos[-r3] + data_pos[-r23] - data_pos[-1-r23] - data_pos[-r3-1] - data_pos[-r3-r23] + data_pos[-r3-r23-1];
+		pred_err = fabs(pred_value - *data_pos);
+		radiusIndex = (pred_err/realPrecision+1)/2;
+		if(radiusIndex>=maxRangeRadius)
+		{
+			radiusIndex = maxRangeRadius - 1;
+			//printf("radiusIndex=%d\n", radiusIndex);
+		}
+		intervals[radiusIndex]++;
+		// printf("TEST: %ld, i: %ld\tj: %ld\tk: %ld\n", data_pos - oriData);
+		// fflush(stdout);
+		offset_count += sampleDistance;
+		if(offset_count >= r3){
+			n2_count ++;
+			if(n2_count == r2){
+				n1_count ++;
+				n2_count = 1;
+				data_pos += r3;
+			}
+			offset_count_2 = (n1_count + n2_count) % sampleDistance;
+			data_pos += (r3 + sampleDistance - offset_count) + (sampleDistance - offset_count_2);
+			offset_count = (sampleDistance - offset_count_2);
+			if(offset_count == 0) offset_count ++;
+		}
+		else data_pos += sampleDistance;
+	}	
+	// printf("sample_count: %ld\n", sample_count);
+	// fflush(stdout);
+	// if(*max_freq < 0.15) *max_freq *= 2;
+	//compute the appropriate number
+	size_t targetCount = totalSampleSize*predThreshold;
+	size_t sum = 0;
+	for(i=0;i<maxRangeRadius;i++)
+	{
+		sum += intervals[i];
+		if(sum>targetCount)
+			break;
+	}
+	if(i>=maxRangeRadius)
+		i = maxRangeRadius-1;
+	unsigned int accIntervals = 2*(i+1);
+	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
+
+	if(powerOf2<32)
+		powerOf2 = 32;
+	free(intervals);
+	//printf("targetCount=%d, sum=%d, totalSampleSize=%d, ratio=%f, accIntervals=%d, powerOf2=%d\n", targetCount, sum, totalSampleSize, (double)sum/(double)totalSampleSize, accIntervals, powerOf2);
+	return powerOf2;
+}
+
+size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, size_t dim_0, size_t dim_1, size_t dim_2, size_t block_dim_0, size_t block_dim_1, size_t block_dim_2, double realPrecision, float * P0, float * P1, int * type, float * unpredictable_data){
+
+	float sum = 0.0;
+	float * data_pos;
+	size_t dim0_offset = dim_1 * dim_2;
+	size_t dim1_offset = dim_2;
+
+	// data_pos = block_ori_data;
+	// for(size_t i=0; i<block_dim_0; i++){
+	// 	for(size_t j=0; j<block_dim_1; j++){
+	// 		for(size_t k=0; k<block_dim_2; k++){
+	// 			sum += *data_pos;
+	// 			data_pos ++;
+	// 		}
+	// 		data_pos += dim1_offset - block_dim_2;
+	// 	}
+	// 	data_pos += dim0_offset - block_dim_1 * dim1_offset;
+	// }
+	// size_t num_elements = block_dim_0 * block_dim_1 * block_dim_2;
+	// if(num_elements > 0) mean[0] = sum / num_elements;
+	// else mean[0] = 0.0;
+	mean[0] = block_ori_data[0];
+
+	size_t unpredictable_count = 0;
+	size_t r1, r2, r3;
+	r1 = block_dim_0;
+	r2 = block_dim_1;
+	r3 = block_dim_2;
+
+	float * cur_data_pos = block_ori_data;
+	float curData;
+	float pred1D, pred2D, pred3D;
+	double itvNum;
+	double diff;
+	size_t i, j, k;
+	size_t r23 = r2*r3;
+	// Process Row-0 data 0
+	pred1D = mean[0];
+	curData = *cur_data_pos;
+	diff = curData - pred1D;
+	itvNum = fabs(diff)/realPrecision + 1;
+	if (itvNum < intvCapacity){
+		if (diff < 0) itvNum = -itvNum;
+		type[0] = (int) (itvNum/2) + intvRadius;
+		P1[0] = pred1D + 2 * (type[0] - intvRadius) * realPrecision;
+		//ganrantee comporession error against the case of machine-epsilon
+		if(fabs(curData-P1[0])>realPrecision){	
+			type[0] = 0;
+			P1[0] = curData;
+			unpredictable_data[unpredictable_count ++] = curData;
+		}		
+	}
+	else{
+		type[0] = 0;
+		P1[0] = curData;
+		unpredictable_data[unpredictable_count ++] = curData;
+	}
+
+	/* Process Row-0 data 1*/
+	pred1D = P1[0];
+	curData = cur_data_pos[1];
+	diff = curData - pred1D;
+	itvNum = fabs(diff)/realPrecision + 1;
+	if (itvNum < intvCapacity){
+		if (diff < 0) itvNum = -itvNum;
+		type[1] = (int) (itvNum/2) + intvRadius;
+		P1[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+		//ganrantee comporession error against the case of machine-epsilon
+		if(fabs(curData-P1[1])>realPrecision){	
+			type[1] = 0;
+			P1[1] = curData;	
+			unpredictable_data[unpredictable_count ++] = curData;
+		}		
+	}
+	else{
+		type[1] = 0;
+		P1[1] = curData;
+		unpredictable_data[unpredictable_count ++] = curData;
+	}
+    /* Process Row-0 data 2 --> data r3-1 */
+	for (j = 2; j < r3; j++){
+		pred1D = 2*P1[j-1] - P1[j-2];
+		curData = cur_data_pos[j];
+		diff = curData - pred1D;
+		itvNum = fabs(diff)/realPrecision + 1;
+		if (itvNum < intvCapacity){
+			if (diff < 0) itvNum = -itvNum;
+			type[j] = (int) (itvNum/2) + intvRadius;
+			P1[j] = pred1D + 2 * (type[j] - intvRadius) * realPrecision;
+			//ganrantee comporession error against the case of machine-epsilon
+			if(fabs(curData-P1[j])>realPrecision){	
+				type[j] = 0;
+				P1[j] = curData;	
+				unpredictable_data[unpredictable_count ++] = curData;
+			}			
+		}
+		else{
+			type[j] = 0;
+			P1[j] = curData;
+			unpredictable_data[unpredictable_count ++] = curData;
+		}
+	}
+	cur_data_pos += dim1_offset;
+
+	/* Process Row-1 --> Row-r2-1 */
+	size_t index;
+	for (i = 1; i < r2; i++)
+	{
+		/* Process row-i data 0 */
+		index = i*r3;	
+		pred1D = P1[index-r3];
+		curData = *cur_data_pos;
+		diff = curData - pred1D;
+
+		itvNum = fabs(diff)/realPrecision + 1;
+
+		if (itvNum < intvCapacity)
+		{
+			if (diff < 0) itvNum = -itvNum;
+			type[index] = (int) (itvNum/2) + intvRadius;
+			P1[index] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			
+			//ganrantee comporession error against the case of machine-epsilon
+			if(fabs(curData-P1[index])>realPrecision)
+			{	
+				type[index] = 0;
+				P1[index] = curData;	
+				unpredictable_data[unpredictable_count ++] = curData;
+			}			
+		}
+		else
+		{
+			type[index] = 0;
+			P1[index] = curData;
+			unpredictable_data[unpredictable_count ++] = curData;
+		}
+
+		/* Process row-i data 1 --> data r3-1*/
+		for (j = 1; j < r3; j++)
+		{
+			index = i*r3+j;
+			pred2D = P1[index-1] + P1[index-r3] - P1[index-r3-1];
+
+			curData = cur_data_pos[j];
+			diff = curData - pred2D;
+
+			itvNum = fabs(diff)/realPrecision + 1;
+
+			if (itvNum < intvCapacity)
+			{
+				if (diff < 0) itvNum = -itvNum;
+				type[index] = (int) (itvNum/2) + intvRadius;
+				P1[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				
+				//ganrantee comporession error against the case of machine-epsilon
+				if(fabs(curData-P1[index])>realPrecision)
+				{	
+					type[index] = 0;
+					P1[index] = curData;	
+					unpredictable_data[unpredictable_count ++] = curData;
+				}				
+			}
+			else
+			{
+				type[index] = 0;
+				P1[index] = curData;
+				unpredictable_data[unpredictable_count ++] = curData;
+			}
+		}
+		cur_data_pos += dim1_offset;
+	}
+	cur_data_pos += dim0_offset - r2 * dim1_offset;
+
+	///////////////////////////	Process layer-1 --> layer-r1-1 ///////////////////////////
+
+	for (k = 1; k < r1; k++)
+	{
+		/* Process Row-0 data 0*/
+		index = k*r23;
+		pred1D = P1[0];
+		curData = *cur_data_pos;
+		diff = curData - pred1D;
+		itvNum = fabs(diff)/realPrecision + 1;
+		if (itvNum < intvCapacity)
+		{
+			if (diff < 0) itvNum = -itvNum;
+			type[index] = (int) (itvNum/2) + intvRadius;
+			P0[0] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			//ganrantee comporession error against the case of machine-epsilon
+			if(fabs(curData-P0[0])>realPrecision)
+			{	
+				type[index] = 0;
+				P0[0] = curData;	
+				unpredictable_data[unpredictable_count ++] = curData;
+			}			
+		}
+		else
+		{
+			type[index] = 0;
+			P0[0] = curData;
+			unpredictable_data[unpredictable_count ++] = curData;
+		}
+	    /* Process Row-0 data 1 --> data r3-1 */
+		for (j = 1; j < r3; j++)
+		{
+			//index = k*r2*r3+j;
+			index ++;
+			pred2D = P0[j-1] + P1[j] - P1[j-1];
+			curData = cur_data_pos[j];
+			diff = curData - pred2D;
+			itvNum = fabs(diff)/realPrecision + 1;
+			if (itvNum < intvCapacity)
+			{
+				if (diff < 0) itvNum = -itvNum;
+				type[index] = (int) (itvNum/2) + intvRadius;
+				P0[j] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				//ganrantee comporession error against the case of machine-epsilon
+				if(fabs(curData-P0[j])>realPrecision)
+				{	
+					type[index] = 0;
+					P0[j] = curData;	
+					unpredictable_data[unpredictable_count ++] = curData;
+				}
+			}
+			else
+			{
+				type[index] = 0;
+				P0[j] = curData;
+				unpredictable_data[unpredictable_count ++] = curData;
+			}
+		}
+
+		cur_data_pos += dim1_offset;
+	    /* Process Row-1 --> Row-r2-1 */
+		size_t index2D;
+		for (i = 1; i < r2; i++)
+		{
+			/* Process Row-i data 0 */
+			index = k*r23 + i*r3;
+			index2D = i*r3;		
+			pred2D = P0[index2D-r3] + P1[index2D] - P1[index2D-r3];
+			curData = *cur_data_pos;
+			diff = curData - pred2D;
+
+			itvNum = fabs(diff)/realPrecision + 1;
+
+			if (itvNum < intvCapacity)
+			{
+				if (diff < 0) itvNum = -itvNum;
+				type[index] = (int) (itvNum/2) + intvRadius;
+				P0[index2D] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				//ganrantee comporession error against the case of machine-epsilon
+				if(fabs(curData-P0[index2D])>realPrecision)
+				{	
+					type[index] = 0;
+					P0[index2D] = curData;	
+					unpredictable_data[unpredictable_count ++] = curData;
+				}				
+			}
+			else
+			{
+				type[index] = 0;
+				P0[index2D] = curData;
+				unpredictable_data[unpredictable_count ++] = curData;
+			}
+
+			/* Process Row-i data 1 --> data r3-1 */
+			for (j = 1; j < r3; j++)
+			{
+				//index = k*r2*r3 + i*r3 + j;			
+				index ++;
+				index2D = i*r3 + j;
+				pred3D = P0[index2D-1] + P0[index2D-r3]+ P1[index2D] - P0[index2D-r3-1] - P1[index2D-r3] - P1[index2D-1] + P1[index2D-r3-1];
+				curData = cur_data_pos[j];
+				diff = curData - pred3D;
+
+				itvNum = fabs(diff)/realPrecision + 1;
+
+				if (itvNum < intvCapacity)
+				{
+					if (diff < 0) itvNum = -itvNum;
+					type[index] = (int) (itvNum/2) + intvRadius;
+					P0[index2D] = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
+					
+					//ganrantee comporession error against the case of machine-epsilon
+					if(fabs(curData-P0[index2D])>realPrecision)
+					{	
+						type[index] = 0;
+						P0[index2D] = curData;	
+						unpredictable_data[unpredictable_count ++] = curData;
+					}					
+				}
+				else
+				{
+					type[index] = 0;
+					P0[index2D] = curData;
+					unpredictable_data[unpredictable_count ++] = curData;
+				}
+			}
+			cur_data_pos += dim1_offset;
+		}
+		cur_data_pos += dim0_offset - r2 * dim1_offset;
+		float *Pt;
+		Pt = P1;
+		P1 = P0;
+		P0 = Pt;
+	}
+
+	return unpredictable_count;
+}

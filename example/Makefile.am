@@ -2,6 +2,10 @@ AUTOMAKE_OPTIONS=foreign
 AM_CFLAGS = -I../sz/include -I../zlib $(GSL_CFLAGS) $(GSL_STATIC)
 AM_FCFLAGS = -I../sz/include -I../sz -I../zlib $(GSL_CFLAGS) $(GSL_STATIC)
 
+if OPENMP
+AM_CFLAGS += -fopenmp
+endif
+
 if FORTRAN
 bin_PROGRAMS=testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress sz testdouble_batch_f testdouble_compress_f testdouble_decompress_f testfloat_CompDecomp_subblock testdouble_CompDecomp_subblock
 else
@@ -49,7 +53,12 @@ if GSL
 sz_SOURCES=sz_gsl.c
 sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB) -lm
 else
+if OPENMP
+sz_SOURCES=sz_openmp.c
+sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+else
 sz_SOURCES=sz.c
 sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+endif
 endif
 endif
