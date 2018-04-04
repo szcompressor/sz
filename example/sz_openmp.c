@@ -346,11 +346,6 @@ int main(int argc, char* argv[])
 			}
 			else if(parallelMode==1) //openMP
 			{
-				if(r3==0 || r2==0)
-				{
-					printf("Error: current version just supports 3D data\n");
-					exit(0);
-				}
 				if(r5>0)
 					r3 = r5*r4*r3;
 				else if(r4>0)
@@ -360,8 +355,14 @@ int main(int argc, char* argv[])
 					printf("Error: current version supports only absolute error bound (errorBoundMode=%d)\n", errorBoundMode);
 					exit(0);
 				}
-				cost_start_omp();	
-				bytes = SZ_compress_float_3D_MDQ_openmp(data, r3, r2, r1, absErrBound, &outSize);
+				
+				cost_start_omp();
+				if(r2==0)
+					bytes = SZ_compress_float_1D_MDQ_openmp(data, r1, absErrBound, &outSize);
+				else if(r3==0)
+					bytes = SZ_compress_float_2D_MDQ_openmp(data, r2, r1, absErrBound, &outSize);
+				else //3d
+					bytes = SZ_compress_float_3D_MDQ_openmp(data, r3, r2, r1, absErrBound, &outSize);
 				printf("outSize=%zu\n", outSize);
 				cost_end_omp();	
 			}
@@ -531,7 +532,12 @@ int main(int argc, char* argv[])
 			else if(parallelMode==1) //openMP
 			{
 				cost_start_omp();
-				decompressDataSeries_float_3D_openmp(&data, r3, r2, r1, bytes + 24);
+				if(r2==0)
+					decompressDataSeries_float_1D_openmp(&data, r1, bytes + 24);
+				else if(r3==0)
+					decompressDataSeries_float_2D_openmp(&data, r2, r1, bytes + 24);
+				else
+					decompressDataSeries_float_3D_openmp(&data, r3, r2, r1, bytes + 24);
 				cost_end_omp();
 			}
 			if(decPath == NULL)

@@ -102,7 +102,7 @@ int SZ_ReadConf() {
     {
 		conf_params->dataEndianType = dataEndianType = LITTLE_ENDIAN_DATA;
 		conf_params->sol_ID = sol_ID = SZ;
-		conf_params->layers = layers = 0;
+		conf_params->layers = layers = 0; //x
 		conf_params->max_quant_intervals = 65536;
 		maxRangeRadius = conf_params->max_quant_intervals/2;
 		
