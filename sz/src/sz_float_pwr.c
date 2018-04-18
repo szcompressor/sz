@@ -1748,3 +1748,52 @@ size_t dataLength, double absErrBound, double relBoundRatio, double pwrErrRatio,
 
         free_TightDataPointStorageF(tdps);
 }
+
+void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log(unsigned char** newByteData, float *oriData,
+size_t dataLength, double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSize, float medianValue_f, size_t *outSize)
+{
+    SZ_Reset();
+	unsigned char * signs = (unsigned char *) malloc(dataLength);
+	memset(signs, 0, dataLength);
+	float * log_data = (float *) malloc(dataLength * sizeof(float));
+	float min_log_data = log2(0.001);
+	// preprocess
+	for(size_t i=0; i<dataLength; i++){
+		if(oriData[i] < 0){
+			signs[i] = 1;
+			log_data[i] = -oriData[i];
+		}
+		else
+			log_data[i] = oriData[i];
+		if(log_data[i] > 0.001){
+			log_data[i] = log2(log_data[i]);
+		}
+		else
+			log_data[i] = min_log_data;
+	}
+	double realPrecision = log2(1.0 + pwrErrRatio);
+	printf("Origin bound: %.6f\nAbs bound for log data: %.14f\n", pw_relBoundRatio, realPrecision);
+
+    TightDataPointStorageF* tdps = SZ_compress_float_1D_MDQ(log_data, dataLength, realPrecision, valueRangeSize, medianValue_f);
+    printf("Compressed size: %ld\n", tdps->typeArray_size);
+	// {
+	// 	int status;
+	// 	printf("write log data, length: %ld\n", dataLength);
+	// 	writeFloatData_inBytes(log_data, dataLength, "vx_log_data.dat", &status);
+	// }
+    free(log_data);
+    unsigned char * comp_signs;
+	// compress signs
+	unsigned long signSize = zlib_compress5(signs, dataLength, &comp_signs, 1);
+	tdps->pwrErrBoundBytes = comp_signs;
+	tdps->pwrErrBoundBytes_size = signSize;
+	free(signs);
+
+    convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
+    printf("Sign size: %ld\nTDPS size: %ld\n", signSize, *outSize);
+
+    if(*outSize>dataLength*sizeof(float))
+            SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
+
+    free_TightDataPointStorageF(tdps);
+}
