@@ -22,7 +22,6 @@ void decompressDataSeries_float_3D_pwr(float** data, size_t r1, size_t r2, size_
 
 char* decompressGroupIDArray(unsigned char* bytes, size_t dataLength);
 void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps);
-void decompressDataSeries_float_1D_pwr_pre_log(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps);
 
 #ifdef __cplusplus
 }

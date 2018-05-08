@@ -1356,21 +1356,3 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 	free(negFlags);
 	free(groupErrorBounds);
 }
-
-void decompressDataSeries_float_1D_pwr_pre_log(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps) {
-
-	printf("pre log decompression start\n");
-	fflush(stdout);
-	decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
-	printf("pre log decompression done\n");
-	fflush(stdout);
-	unsigned char * signs;// = (unsigned char *) malloc(dataSeriesLength);
-	unsigned long tmpSize = zlib_uncompress5(tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
-	printf("change log data to origin data\n");
-	fflush(stdout);
-	for(size_t i=0; i<dataSeriesLength; i++){
-		(*data)[i] = pow(2, (*data)[i]);
-		if(signs[i]) (*data)[i] = -((*data)[i]);
-	}
-
-}
