@@ -144,7 +144,7 @@ static inline uint64_t readBits_UI64(unsigned char* buffer,uint64_t *bitPosPtr,c
     
     (*bitPosPtr) += numBits;
     return (temp64b & mask);
-};
+}
 
 static inline int64_t readBits_I64(unsigned char* buffer,uint64_t *bitPosPtr,char numBits){ // numBits must be in range [0:56]
   int64_t val;
@@ -164,7 +164,7 @@ static inline uint64_t readBits_EndianSafe(unsigned char* buffer,uint64_t *bitPo
     temp64b >>= (*bitPosPtr) & (uint64_t)0x0000000000000007;
     (*bitPosPtr) += numBits;
     return temp64b & mask;
-};
+}
 
 //WARNING: writeBits_Fast works properly only on Little Endian machines! (For Big Endians, some modifications are needed)
 //The buffer should be initialized as 0's for this to work!
@@ -182,7 +182,7 @@ static inline void writeBits_Fast(unsigned char* buffer,uint64_t *bitPosPtr,char
 
     
     (*bitPosPtr) += numBits;
-};
+}
 
 //WARNING: writeBits_EndianSafe is not tested on Big-Endian machines
 static inline void writeBits_EndianSafe(unsigned char* buffer,uint64_t *bitPosPtr,char numBits,uint64_t data){
@@ -199,7 +199,7 @@ static inline void writeBits_EndianSafe(unsigned char* buffer,uint64_t *bitPosPt
     }
     *(uint64_t*)(buffer + ((*bitPosPtr)>>3))=temp64b_outBuffer;  // "|=" may also work
     (*bitPosPtr) += numBits;
-};
+}
 
 
 #endif

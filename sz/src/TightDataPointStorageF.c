@@ -177,7 +177,6 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 		byteBuf[i] = flatBytes[index++];
 	(*this)->exactMidBytes_size = bytesToSize(byteBuf);// ST
 
-	size_t typeArrayLength = 0;
 	if (rtype_ != 0) {
 		if((*this)->rtypeArray_size>0)
 			(*this)->rtypeArray = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->rtypeArray_size);
@@ -330,7 +329,6 @@ void convertTDPStoBytes_float(TightDataPointStorageF* tdps, unsigned char* bytes
 	size_t i, k = 0;
 	unsigned char intervalsBytes[4];
 	unsigned char typeArrayLengthBytes[8];
-	unsigned char rTypeLengthBytes[8];
 	unsigned char exactLengthBytes[8];
 	unsigned char exactMidBytesLength[8];
 	unsigned char realPrecisionBytes[8];

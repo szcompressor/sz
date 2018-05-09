@@ -199,7 +199,7 @@ extern int errorBoundMode; //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PW_REL
 
 extern int gzipMode; //four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
 
-extern char *sz_cfgFile;
+extern const char *sz_cfgFile;
 
 extern int offset;
 
@@ -309,7 +309,7 @@ extern pastri_params pastri_par;
 //sz.h
 void SZ_Reset();
 
-int SZ_Init(char *configFilePath);
+int SZ_Init(const char *configFilePath);
 
 int SZ_Init_Params(sz_params *params);
 

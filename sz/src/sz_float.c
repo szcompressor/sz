@@ -327,7 +327,6 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 	size_t i;
 	int reqLength;
 	float medianValue = medianValue_f;
-	short reqExpo = getPrecisionReqLength_float((float)realPrecision);
 	short radExpo = getExponent_float(valueRangeSize/2);
 	
 	computeReqLength_float(realPrecision, radExpo, &reqLength, &medianValue);	
@@ -374,13 +373,10 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 	//printf("%.30G\n",last3CmprsData[0]);	
 	
 	int state;
-	float lcf, qcf;	
 	double checkRadius;
 	float curData;
 	float pred;
 	float predAbsErr;
-	float min_pred, minErr, minIndex;
-	int a = 0;		
 	checkRadius = (intvCapacity-1)*realPrecision;
 	double interval = 2*realPrecision;
 	
@@ -1752,7 +1748,6 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		}
 		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
 		{
-			int i = 0;
 			*outSize = zlib_compress5(tmpByteData, tmpOutSize, newByteData, gzipMode);
 			free(tmpByteData);
 		}
@@ -1790,8 +1785,7 @@ size_t *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
 	int status = SZ_SCES;
 	float valueRangeSize = 0, medianValue = 0;
-	float min = computeRangeSize_float_subblock(oriData, &valueRangeSize, &medianValue, r5, r4, r3, r2, r1, s5, s4, s3, s2, s1, e5, e4, e3, e2, e1);
-	float max = min+valueRangeSize;
+	computeRangeSize_float_subblock(oriData, &valueRangeSize, &medianValue, r5, r4, r3, r2, r1, s5, s4, s3, s2, s1, e5, e4, e3, e2, e1);
 
 	double realPrecision = getRealPrecision_float(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
 
@@ -2200,7 +2194,6 @@ size_t r1, size_t s1, size_t e1)
 	size_t i; 
 	int reqLength;
 	float medianValue = medianValue_f;
-	short reqExpo = getPrecisionReqLength_float((float)realPrecision);
 	short radExpo = getExponent_float(valueRangeSize/2);
 
 	computeReqLength_float(realPrecision, radExpo, &reqLength, &medianValue);
@@ -2246,13 +2239,10 @@ size_t r1, size_t s1, size_t e1)
 	listAdd_float(last3CmprsData, vce->data);
 
 	int state;
-	float lcf, qcf;
 	double checkRadius;
 	float curData;
 	float pred;
 	float predAbsErr;
-	float min_pred, minErr, minIndex;
-	int a = 0;
 	checkRadius = (intvCapacity-1)*realPrecision;
 	double interval = 2*realPrecision;
 
@@ -3211,7 +3201,7 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 }
 
 unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision){	
-	size_t i,j,k, index;
+	size_t i;
 	size_t radiusIndex;
 	size_t r23=r2*r3;
 	float pred_value = 0, pred_err;
@@ -3223,7 +3213,6 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 	size_t offset_count_2;
 	float * data_pos = oriData + r23 + r3 + offset_count;
 	size_t n1_count = 1, n2_count = 1; // count i,j sum
-	float * last_pos = data_pos;
 	size_t len = r1 * r2 * r3;
 	while(data_pos - oriData < len){
 
@@ -3279,8 +3268,6 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 
 size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, size_t dim_0, size_t dim_1, size_t dim_2, size_t block_dim_0, size_t block_dim_1, size_t block_dim_2, double realPrecision, float * P0, float * P1, int * type, float * unpredictable_data){
 
-	float sum = 0.0;
-	float * data_pos;
 	size_t dim0_offset = dim_1 * dim_2;
 	size_t dim1_offset = dim_2;
 
@@ -3590,7 +3577,7 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 
 unsigned int optimize_intervals_float_2D_opt(float *oriData, size_t r1, size_t r2, double realPrecision)
 {	
-	size_t i,j, index;
+	size_t i;
 	size_t radiusIndex;
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
@@ -3693,7 +3680,6 @@ size_t SZ_compress_float_1D_MDQ_RA_block(float * block_ori_data, float * mean, s
 	mean[0] = block_ori_data[0];
 	unsigned short unpredictable_count = 0;
 
-	float * cur_data_pos = block_ori_data;
 	float curData;
 	double itvNum;
 	double diff;

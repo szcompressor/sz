@@ -13,7 +13,7 @@ static inline int64_t pastri_float_quantize(float x, float binSize){
   //printf("pastri_float_quantize:\nx=%lf  x=0x%lx\n",x,(*((uint64_t *)(&x))));
   //printf("sign(x):0x%lx\n", x);
   //printf("0.5:0x%lx\n", (*((uint64_t *)(&half))));
-  half.ui64 |= (u1.ui64 & (int64_t)0x8000000000000000);
+  half.ui64 |= (u1.ui64 & (uint64_t)0x8000000000000000);
   //printf("sign(x)*0.5:0x%lx\n", (*((uint64_t *)(&half))));
   return (int64_t)(x + half.d);
 }
@@ -139,10 +139,10 @@ static inline void pastri_float_Encode(float *data,int64_t* patternQ,int64_t* sc
   //Uncompressed, Sparse Data
   //Uncompressed, Non-spsarse Data
   
-  int UCSparseBits;  //Uncompressed, Sparse bits. Just like the original GAMESS data. Includes: mode, nonZeros, {indexes, data}
-  int UCNonSparseBits;  //Uncompressed, NonSparse bits. Includes: mode, data
-  int CSparseBits;  //Includes: mode, compressedBytes, patternBits, ECQBits,numOutliers,P, S, {Indexes(Sparse), ECQ}
-  int CNonSparseBits;  //Includes: mode, compressedBytes, patternBits, ECQBits,P, S, {ECQ}
+  unsigned int UCSparseBits;  //Uncompressed, Sparse bits. Just like the original GAMESS data. Includes: mode, nonZeros, {indexes, data}
+  unsigned int UCNonSparseBits;  //Uncompressed, NonSparse bits. Includes: mode, data
+  unsigned int CSparseBits;  //Includes: mode, compressedBytes, patternBits, ECQBits,numOutliers,P, S, {Indexes(Sparse), ECQ}
+  unsigned int CNonSparseBits;  //Includes: mode, compressedBytes, patternBits, ECQBits,P, S, {ECQ}
   //int BOOKKEEPINGBITS=120; //Includes: mode, compressedBytes, patternBits, ECQBits (8+64+32+8+8) //Moved to much earlier!
     
   //Consider: ECQ0s, ECQ1s, ECQOthers. Number of following values in ECQ: {0}, {1,-1}, { val<=-2, val>=2}

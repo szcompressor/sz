@@ -209,7 +209,7 @@ void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightData
 	updateQuantizationInfo(tdps->intervals);
 	//printf("tdps->intervals=%d, intvRadius=%d\n", tdps->intervals, intvRadius);
 	
-	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
@@ -238,7 +238,7 @@ void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightData
 	size_t curByteIndex = 0;
 	int reqBytesLength, resiBitsLength, resiBits; 
 	unsigned char leadingNum;	
-	float medianValue, exactData, predValue;
+	float medianValue, exactData;
 	int type_;
 
 	reqBytesLength = tdps->reqLength/8;
@@ -518,7 +518,7 @@ void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightData
 void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageF* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
-	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
@@ -545,7 +545,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 	size_t curByteIndex = 0;
 	int reqBytesLength, resiBitsLength, resiBits;
 	unsigned char leadingNum;
-	float medianValue, exactData, predValue;
+	float medianValue, exactData;
 	int type_;
 
 	reqBytesLength = tdps->reqLength/8;
@@ -1054,7 +1054,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageF* tdps)
 {
 	updateQuantizationInfo(tdps->intervals);
-	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
@@ -1082,7 +1082,7 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 	size_t curByteIndex = 0;
 	int reqBytesLength, resiBitsLength, resiBits;
 	unsigned char leadingNum;
-	float medianValue, exactData, predValue;
+	float medianValue, exactData;
 	int type_;
 
 	reqBytesLength = tdps->reqLength/8;
@@ -1816,8 +1816,6 @@ void getSnapshotData_float_4D(float** data, size_t r1, size_t r2, size_t r3, siz
 
 size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t dim_0, size_t dim_1, size_t dim_2, size_t block_dim_0, size_t block_dim_1, size_t block_dim_2, double realPrecision, int * type, float * unpredictable_data){
 
-	float sum = 0.0;
-	float * data_pos;
 	size_t dim0_offset = dim_1 * dim_2;
 	size_t dim1_offset = dim_2;
 	// printf("SZ_compress_float_3D_MDQ_RA_block real dim: %d %d %d\n", real_block_dims[0], real_block_dims[1], real_block_dims[2]);
@@ -1831,9 +1829,7 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 
 	float * cur_data_pos = data;
 	float * last_row_pos;
-	float curData;
 	float pred1D, pred2D, pred3D;
-	double diff;
 	size_t i, j, k;
 	size_t r23 = r2*r3;
 	int type_;
@@ -1955,7 +1951,6 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 		// }
 
 	    /* Process Row-1 --> Row-r2-1 */
-		size_t index2D;
 		for (i = 1; i < r2; i++)
 		{
 			// if(idx == 63 && idy == 63 && idz == 63){
@@ -1964,7 +1959,6 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 			// }
 			/* Process Row-i data 0 */
 			index = k*r23 + i*r3;
-			index2D = i*r3;		
 			pred2D = last_row_pos[0] + cur_data_pos[- dim0_offset] - last_row_pos[- dim0_offset];
 			type_ = type[index];
 			if (type_ != 0){
@@ -1981,7 +1975,6 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 //					printf("i=%d\n", i);
 				//index = k*r2*r3 + i*r3 + j;			
 				index ++;
-				index2D = i*r3 + j;
 				pred3D = cur_data_pos[j-1] + last_row_pos[j]+ cur_data_pos[j - dim0_offset] - last_row_pos[j-1] - last_row_pos[j - dim0_offset] - cur_data_pos[j-1 - dim0_offset] + last_row_pos[j-1 - dim0_offset];
 				type_ = type[index];
 				if (type_ != 0){
@@ -2028,7 +2021,6 @@ size_t decompressDataSeries_float_1D_RA_block(float * data, float mean, size_t d
 
 size_t decompressDataSeries_float_2D_RA_block(float * data, float mean, size_t dim_0, size_t dim_1, size_t block_dim_0, size_t block_dim_1, double realPrecision, int * type, float * unpredictable_data){
 
-	float * data_pos;
 	size_t dim0_offset = dim_1;
 	// printf("SZ_compress_float_3D_MDQ_RA_block real dim: %d %d %d\n", real_block_dims[0], real_block_dims[1], real_block_dims[2]);
 	// fflush(stdout);
@@ -2040,9 +2032,7 @@ size_t decompressDataSeries_float_2D_RA_block(float * data, float mean, size_t d
 
 	float * cur_data_pos = data;
 	float * last_row_pos;
-	float curData;
 	float pred1D, pred2D;
-	double diff;
 	size_t i, j;
 	int type_;
 	// Process Row-0 data 0

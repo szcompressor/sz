@@ -138,7 +138,7 @@ size_t convertIntArray2ByteArray_fast_2b(unsigned char* timeStepType, size_t tim
 				tmp = (tmp | (3 << (6-j*2)));
 				break;
 			default:
-				printf("Error: wrong timestep type...: type[%d]=%d\n", n, type);
+				printf("Error: wrong timestep type...: type[%zu]=%d\n", n, type);
 				exit(0);
 			}
 			n++;
@@ -181,7 +181,7 @@ void convertByteArray2IntArray_fast_2b(size_t stepLength, unsigned char* byteArr
 
 size_t convertIntArray2ByteArray_fast_3b(unsigned char* timeStepType, size_t timeStepTypeLength, unsigned char **result)
 {	
-	size_t i = 0, j = 0, k = 0, byteLength = 0, n = 0;
+	size_t i = 0, k = 0, byteLength = 0, n = 0;
 	if(timeStepTypeLength%8==0)
 		byteLength = timeStepTypeLength*3/8;
 	else

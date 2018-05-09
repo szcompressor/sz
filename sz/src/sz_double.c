@@ -249,7 +249,6 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	size_t i;
 	int reqLength;
 	double medianValue = medianValue_d;
-	short reqExpo = getPrecisionReqLength_double((double)realPrecision);
 	short radExpo = getExponent_double(valueRangeSize/2);
 
 	computeReqLength_double(realPrecision, radExpo, &reqLength, &medianValue);	
@@ -295,13 +294,10 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	listAdd_double(last3CmprsData, vce->data);
 	
 	int state;
-	double lcf, qcf;		
 	double checkRadius;
 	double curData;
 	double pred;
 	double predAbsErr;
-	double min_pred, minErr, minIndex;
-	int a = 0;		
 	checkRadius = (intvCapacity-1)*realPrecision;
 	double interval = 2*realPrecision;
 
@@ -1518,8 +1514,7 @@ size_t *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
 	int status = SZ_SCES;
 	double valueRangeSize = 0, medianValue = 0;
-	double min = computeRangeSize_double_subblock(oriData, &valueRangeSize, &medianValue, r5, r4, r3, r2, r1, s5, s4, s3, s2, s1, e5, e4, e3, e2, e1);
-	double max = min+valueRangeSize;
+	computeRangeSize_double_subblock(oriData, &valueRangeSize, &medianValue, r5, r4, r3, r2, r1, s5, s4, s3, s2, s1, e5, e4, e3, e2, e1);
 
 	double realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
 
@@ -1930,7 +1925,6 @@ size_t r1, size_t s1, size_t e1)
 	size_t i; 
 	int reqLength;
 	double medianValue = medianValue_d;
-	short reqExpo = getPrecisionReqLength_double((double)realPrecision);
 	short radExpo = getExponent_double(valueRangeSize/2);
 
 	computeReqLength_double(realPrecision, radExpo, &reqLength, &medianValue);
@@ -1976,13 +1970,10 @@ size_t r1, size_t s1, size_t e1)
 	listAdd_double(last3CmprsData, vce->data);
 
 	int state;
-	double lcf, qcf;
 	double checkRadius;
 	double curData;
 	double pred;
 	double predAbsErr;
-	double min_pred, minErr, minIndex;
-	int a = 0;
 	checkRadius = (intvCapacity-1)*realPrecision;
 	double interval = 2*realPrecision;
 

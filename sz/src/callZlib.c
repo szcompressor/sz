@@ -11,8 +11,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <zlib.h>
-#include <zutil.h>
 #include <sz.h>
+
+#if MAX_MEM_LEVEL >= 8
+#define DEF_MEM_LEVEL 8
+#else
+#define DEF_MEM_LEVEL MAX_MEM_LEVEL
+#endif
+
 
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK && err != Z_STREAM_END) { \
@@ -192,7 +198,7 @@ unsigned long zlib_compress5(unsigned char* data, unsigned long dataLength, unsi
 	if (ret != Z_OK)
 		return ret;
 
-	size_t o_size = 0, p_size = 0, av_in = 0;
+	size_t p_size = 0, av_in = 0;
     uLong estCmpLen = deflateBound(&strm, dataLength);
    	*compressBytes = (unsigned char*)malloc(sizeof(unsigned char)*estCmpLen);	
 	unsigned char* out = *compressBytes; 
@@ -380,9 +386,11 @@ unsigned long zlib_uncompress4(unsigned char* compressBytes, unsigned long cmpSi
     strm.next_in = Z_NULL;
     ret = inflateInit(&strm);
     if (ret != Z_OK)
+	{
         return ret;
+	}
 
-	size_t o_size = 0, p_size = 0, av_in = 0;
+	size_t p_size = 0, av_in = 0;
     /* decompress until deflate stream ends or end of file */
     do {
 		p_size += SZ_ZLIB_BUFFER_SIZE;

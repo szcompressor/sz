@@ -198,7 +198,7 @@ void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDa
 	updateQuantizationInfo(tdps->intervals);
 	//printf("tdps->intervals=%d, intvRadius=%d\n", tdps->intervals, intvRadius);
 	
-	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
@@ -231,7 +231,7 @@ void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDa
 	size_t curByteIndex = 0;
 	int reqBytesLength, resiBitsLength, resiBits; 
 	unsigned char leadingNum;	
-	double medianValue, exactData, predValue;
+	double medianValue, exactData;
 	int type_;
 
 	reqBytesLength = tdps->reqLength/8;
@@ -511,7 +511,7 @@ void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDa
 void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
-	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
@@ -543,7 +543,7 @@ void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t 
 	size_t curByteIndex = 0;
 	int reqBytesLength, resiBitsLength, resiBits;
 	unsigned char leadingNum;
-	double medianValue, exactData, predValue;
+	double medianValue, exactData;
 	int type_;
 
 	reqBytesLength = tdps->reqLength/8;
@@ -1053,7 +1053,7 @@ void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t 
 void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageD* tdps)
 {
 	updateQuantizationInfo(tdps->intervals);
-	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
@@ -1086,7 +1086,7 @@ void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t 
 	size_t curByteIndex = 0;
 	int reqBytesLength, resiBitsLength, resiBits;
 	unsigned char leadingNum;
-	double medianValue, exactData, predValue;
+	double medianValue, exactData;
 	int type_;
 
 	reqBytesLength = tdps->reqLength/8;
