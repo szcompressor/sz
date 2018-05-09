@@ -324,6 +324,53 @@ void new_TightDataPointStorageF(TightDataPointStorageF **this,
 	(*this)->pwrErrBoundBytes_size = pwrErrBoundBytes_size;
 }
 
+void new_TightDataPointStorageF2(TightDataPointStorageF **this,
+		size_t dataSeriesLength, size_t exactDataNum, 
+		int* type, unsigned char* exactMidBytes, size_t exactMidBytes_size,
+		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
+		unsigned char* resiMidBits, size_t resiMidBits_size,
+		unsigned char* resiBitLength, size_t resiBitLengthSize, 
+		double realPrecision, float medianValue, char reqLength, unsigned int intervals, 
+		unsigned char* pwrErrBoundBytes, size_t pwrErrBoundBytes_size, unsigned char radExpo) {
+	//int i = 0;
+	*this = (TightDataPointStorageF *)malloc(sizeof(TightDataPointStorageF));
+	(*this)->allSameData = 0;
+	(*this)->realPrecision = realPrecision;
+	(*this)->medianValue = medianValue;
+	(*this)->reqLength = reqLength;
+
+	(*this)->dataSeriesLength = dataSeriesLength;
+	(*this)->exactDataNum = exactDataNum;
+
+	(*this)->rtypeArray = NULL;
+	(*this)->rtypeArray_size = 0;
+
+	encode_withTree(type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
+	
+	(*this)->exactMidBytes = exactMidBytes;
+	(*this)->exactMidBytes_size = exactMidBytes_size;
+
+	(*this)->leadNumArray_size = convertIntArray2ByteArray_fast_2b(leadNumIntArray, exactDataNum, &((*this)->leadNumArray));
+
+	(*this)->residualMidBits = resiMidBits;
+	(*this)->residualMidBits_size = resiMidBits_size;
+
+	(*this)->residualMidBits_size = convertIntArray2ByteArray_fast_dynamic2(resiMidBits, resiBitLength, resiBitLengthSize, &((*this)->residualMidBits));
+	
+	(*this)->intervals = intervals;
+	
+	(*this)->isLossless = 0;
+	
+	if(errorBoundMode>=PW_REL)
+		(*this)->pwrErrBoundBytes = pwrErrBoundBytes;
+	else
+		(*this)->pwrErrBoundBytes = NULL;
+		
+	(*this)->radExpo = radExpo;
+	
+	(*this)->pwrErrBoundBytes_size = pwrErrBoundBytes_size;
+}
+
 void convertTDPStoBytes_float(TightDataPointStorageF* tdps, unsigned char* bytes, unsigned char* dsLengthBytes, unsigned char sameByte)
 {
 	size_t i, k = 0;

@@ -623,6 +623,7 @@ size_t SZ_decompress_args(int dataType, unsigned char *bytes, size_t byteLength,
 	return nbEle;
 }
 
+
 sz_metadata* SZ_getMetadata(unsigned char* bytes)
 {
 	int index = 0, i, isConstant, isLossless, sizeType;
@@ -645,6 +646,8 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	if(params->dataType!=SZ_FLOAT && params->dataType!= SZ_DOUBLE) //if this type is an Int type
 		index++; //jump to the dataLength info byte address
 	dataSeriesLength = bytesToSize(&(bytes[index]));// 4 or 8	
+	index += SZ_SIZE_TYPE;
+	index += 4; //max_quant_intervals
 	
 	sz_metadata* metadata = (sz_metadata*)malloc(sizeof(struct sz_metadata));
 	
@@ -658,6 +661,24 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	
 	metadata->conf_params = conf_params;
 	
+	int defactoNBBins = 0; //real # bins
+	if(isConstant==0 && isLossless==0)
+	{
+		int radExpoL = 0, segmentL = 0, pwrErrBoundBytesL = 0;
+		if(metadata->conf_params->errorBoundMode >= PW_REL)
+		{
+			radExpoL = 1;
+			segmentL = SZ_SIZE_TYPE;
+			pwrErrBoundBytesL = 4;
+		}
+		
+		int offset_typearray = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrErrBoundBytesL + 4 + 4 + 1 + 8 
+				+ SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE;
+		size_t nodeCount = bytesToInt_bigEndian(bytes+offset_typearray);
+		defactoNBBins = (nodeCount+1)/2;
+	}
+	
+	metadata->defactoNBBins = defactoNBBins;
 	return metadata;
 }
 
@@ -710,6 +731,7 @@ void SZ_printMetadata(sz_metadata* metadata)
 	{
 		printf("quantization_intervals:         \t 0\n");
 		printf("max_quant_intervals:            \t %d\n", params->max_quant_intervals);
+		printf("actual used # intervals:        \t %d\n", metadata->defactoNBBins);
 	}
 	else
 	{
