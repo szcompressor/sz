@@ -1391,7 +1391,6 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 		}
 		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
 		{
-			int i = 0;
 			*outSize = zlib_compress5(tmpByteData, tmpOutSize, newByteData, gzipMode);
 			free(tmpByteData);
 		}

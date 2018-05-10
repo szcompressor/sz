@@ -579,13 +579,10 @@ size_t dataLength, size_t *outSize, double min, double max)
 	//printf("%.30G\n",last3CmprsData[0]);	
 	
 	int state;
-	double lcf, qcf;	
 	double checkRadius;
 	double curData;
 	double pred;
 	double predAbsErr;
-	double min_pred, minErr, minIndex;
-	int a = 0;
 	checkRadius = (intvCapacity-1)*realPrecision;
 	double interval = 2*realPrecision;
 	int updateReqLength = 0; //a marker: 1 means already updated
@@ -1479,9 +1476,9 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, double valueRangeS
 	if(realPrecision<0)
 		realPrecision = pwrErrRatio;
 	double realGroupPrecision; //precision (error) based on group ID
-	short reqExpo = getPrecisionReqLength_double(realPrecision);
+	getPrecisionReqLength_double(realPrecision);
 	short radExpo = getExponent_double(valueRangeSize/2);
-	short lastGroupNum, groupNum, decGroupNum, grpNum = 0;
+	short lastGroupNum, groupNum, grpNum = 0;
 	
 	double* groupErrorBounds = generateGroupErrBounds(errBoundMode, realPrecision, pwrErrRatio);
 	intvRadius = generateGroupMaxIntervalCount(groupErrorBounds);
@@ -1513,11 +1510,10 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, double valueRangeS
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
 			
 	int state;
-	double lcf, qcf;	
 	double curData, decValue;
 	double pred;
 	double predAbsErr;
-	double errBound, interval = 0;
+	double interval = 0;
 	
 	//add the first data	
 	type[0] = 0;

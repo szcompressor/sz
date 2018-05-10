@@ -25,7 +25,7 @@ unsigned char * SZ_compress_float_1D_MDQ_openmp(float *oriData, size_t r1, doubl
 	size_t num_x = thread_num;
 	omp_set_num_threads(thread_num);
 	// calculate block dims
-	printf("number of blocks: %d\n", num_x);
+	printf("number of blocks: %zu\n", num_x);
 
 	size_t split_index_x;
 	size_t early_blockcount_x;
@@ -151,7 +151,6 @@ unsigned char * SZ_compress_float_1D_MDQ_openmp(float *oriData, size_t r1, doubl
 		unsigned char * encoding_buffer_pos = encoding_buffer + id * max_num_block_elements * sizeof(int);
 		size_t enCodeSize = 0;
 		size_t offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
-		float * data_pos = oriData + offset_x;
 		size_t current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
 		size_t current_block_elements = current_blockcount_x;
 		size_t type_offset = offset_x;
@@ -244,7 +243,7 @@ unsigned char * SZ_compress_float_2D_MDQ_openmp(float *oriData, size_t r1, size_
 	}
 	omp_set_num_threads(thread_num);
 	// calculate block dims
-	printf("number of blocks: %d %d\n", num_x, num_y);
+	printf("number of blocks:%zu %zu\n", num_x, num_y);
 
 	size_t split_index_x, split_index_y;
 	size_t early_blockcount_x, early_blockcount_y;
@@ -385,7 +384,6 @@ unsigned char * SZ_compress_float_2D_MDQ_openmp(float *oriData, size_t r1, size_
 		size_t enCodeSize = 0;
 		size_t offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
 		size_t offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
-		float * data_pos = oriData + offset_x * dim0_offset + offset_y;
 		size_t current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
 		size_t current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
 		size_t current_block_elements = current_blockcount_x * current_blockcount_y;
@@ -489,7 +487,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	}
 	omp_set_num_threads(thread_num);
 	// calculate block dims
-	printf("number of blocks: %d %d %d\n", num_x, num_y, num_z);
+	printf("number of blocks: %zu %zu %zu\n", num_x, num_y, num_z);
 
 	size_t split_index_x, split_index_y, split_index_z;
 	size_t early_blockcount_x, early_blockcount_y, early_blockcount_z;
@@ -638,7 +636,6 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 		size_t offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
 		size_t offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
 		size_t offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
-		float * data_pos = oriData + offset_x * dim0_offset + offset_y * dim1_offset + offset_z;
 		size_t current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
 		size_t current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
 		size_t current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
@@ -699,7 +696,6 @@ void decompressDataSeries_float_1D_openmp(float** data, size_t r1, unsigned char
 	double elapsed_time = 0.0;
 	elapsed_time = -omp_get_wtime();
 
-	size_t dim0_offset = 1;
 	size_t num_elements = r1;
 
 	*data = (float*)malloc(sizeof(float)*num_elements);
@@ -711,14 +707,13 @@ void decompressDataSeries_float_1D_openmp(float** data, size_t r1, unsigned char
 	int thread_num = bytesToInt_bigEndian(comp_data_pos);
 	comp_data_pos += 4;
 	size_t num_x = thread_num;
-	printf("number of blocks: %d, thread_num %d\n", num_x, thread_num);
+	printf("number of blocks: %zu, thread_num %d\n", num_x, thread_num);
 	omp_set_num_threads(thread_num);
 	size_t split_index_x;
 	size_t early_blockcount_x;
 	size_t late_blockcount_x;
 	SZ_COMPUTE_BLOCKCOUNT(r1, num_x, split_index_x, early_blockcount_x, late_blockcount_x);
 
-	size_t max_num_block_elements = early_blockcount_x;
 	size_t num_blocks = num_x;
 
 	double realPrecision = bytesToDouble(comp_data_pos);
@@ -818,7 +813,7 @@ void decompressDataSeries_float_1D_openmp(float** data, size_t r1, unsigned char
 		// 	printf("%.2f ", unpredictable_data[tmp]);
 		// }
 		// printf("\n\n");
-		int cur_unpred_count = decompressDataSeries_float_1D_RA_block(data_pos, mean, r1, current_blockcount_x, realPrecision, type, unpredictable_data);
+		decompressDataSeries_float_1D_RA_block(data_pos, mean, r1, current_blockcount_x, realPrecision, type, unpredictable_data);
 	}	
 	elapsed_time += omp_get_wtime();
 	printf("Parallel decompress elapsed time: %.4f\n", elapsed_time);
@@ -846,7 +841,7 @@ void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, un
 	int thread_num = bytesToInt_bigEndian(comp_data_pos);
 	comp_data_pos += 4;
 	int thread_order = (int)log2(thread_num);
-	size_t num_x, num_y, num_z;
+	size_t num_x, num_y;
 	{
 		int block_thread_order = thread_order / 2;
 		switch(thread_order % 2){
@@ -862,7 +857,7 @@ void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, un
 			}
 		}
 	}
-	printf("number of blocks: %d %d, thread_num %d\n", num_x, num_y, thread_num);
+	printf("number of blocks: %zu %zu, thread_num %d\n", num_x, num_y, thread_num);
 	omp_set_num_threads(thread_num);
 	size_t split_index_x, split_index_y;
 	size_t early_blockcount_x, early_blockcount_y;
@@ -870,7 +865,6 @@ void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, un
 	SZ_COMPUTE_BLOCKCOUNT(r1, num_x, split_index_x, early_blockcount_x, late_blockcount_x);
 	SZ_COMPUTE_BLOCKCOUNT(r2, num_y, split_index_y, early_blockcount_y, late_blockcount_y);
 
-	size_t max_num_block_elements = early_blockcount_x * early_blockcount_y;
 	size_t num_blocks = num_x * num_y;
 
 	double realPrecision = bytesToDouble(comp_data_pos);
@@ -970,13 +964,7 @@ void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, un
 
 		float * unpredictable_data = result_unpredictable_data + unpred_offset[id];
 		float mean = mean_pos[id];
-		// printf("\n%d\ndata_offset: %ld\n", t, offset_x * dim0_offset + offset_y * dim1_offset + offset_z);
-		// printf("mean: %.2f\n", mean);
-		// for(int tmp=0; tmp<10; tmp++){
-		// 	printf("%.2f ", unpredictable_data[tmp]);
-		// }
-		// printf("\n\n");
-		int cur_unpred_count = decompressDataSeries_float_2D_RA_block(data_pos, mean, r1, r2, current_blockcount_x, current_blockcount_y, realPrecision, type, unpredictable_data);
+		decompressDataSeries_float_2D_RA_block(data_pos, mean, r1, r2, current_blockcount_x, current_blockcount_y, realPrecision, type, unpredictable_data);
 	}	
 	elapsed_time += omp_get_wtime();
 	printf("Parallel decompress elapsed time: %.4f\n", elapsed_time);
@@ -1029,7 +1017,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 			}
 		}
 	}
-	printf("number of blocks: %d %d %d, thread_num %d\n", num_x, num_y, num_z, thread_num);
+	printf("number of blocks: %zu %zu %zu, thread_num %d\n", num_x, num_y, num_z, thread_num);
 	omp_set_num_threads(thread_num);
 	size_t split_index_x, split_index_y, split_index_z;
 	size_t early_blockcount_x, early_blockcount_y, early_blockcount_z;
@@ -1038,7 +1026,6 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 	SZ_COMPUTE_BLOCKCOUNT(r2, num_y, split_index_y, early_blockcount_y, late_blockcount_y);
 	SZ_COMPUTE_BLOCKCOUNT(r3, num_z, split_index_z, early_blockcount_z, late_blockcount_z);
 
-	size_t max_num_block_elements = early_blockcount_x * early_blockcount_y * early_blockcount_z;
 	size_t num_blocks = num_x * num_y * num_z;
 
 	double realPrecision = bytesToDouble(comp_data_pos);
@@ -1151,7 +1138,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 		// 	printf("%.2f ", unpredictable_data[tmp]);
 		// }
 		// printf("\n\n");
-		int cur_unpred_count = decompressDataSeries_float_3D_RA_block(data_pos, mean, r1, r2, r3, current_blockcount_x, current_blockcount_y, current_blockcount_z, realPrecision, type, unpredictable_data);
+		decompressDataSeries_float_3D_RA_block(data_pos, mean, r1, r2, r3, current_blockcount_x, current_blockcount_y, current_blockcount_z, realPrecision, type, unpredictable_data);
 	}	
 	elapsed_time += omp_get_wtime();
 	printf("Parallel decompress elapsed time: %.4f\n", elapsed_time);

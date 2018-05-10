@@ -123,7 +123,7 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 	int same = sameRByte & 0x01;
 	//szMode = (sameRByte & 0x06)>>1;
 	int dataByteSizeCode = (sameRByte & 0x0C)>>2;
-	int dataTypeSize = convertDataTypeSizeCode(dataByteSizeCode); //in bytes
+	convertDataTypeSizeCode(dataByteSizeCode); //in bytes
 	(*this)->isLossless = (sameRByte & 0x10)>>4;
 
 	SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
@@ -207,7 +207,6 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 		byteBuf[i] = flatBytes[index++];
 	(*this)->exactDataBytes_size = bytesToSize(byteBuf);// ST		
 
-	size_t typeArrayLength = 0;
 
 	(*this)->typeArray = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->typeArray_size);
 

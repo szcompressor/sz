@@ -149,7 +149,7 @@ void init(int *s, size_t length)
 void encode(int *s, size_t length, unsigned char *out, size_t *outSize)
 {
 	size_t i = 0;
-	unsigned char curByte, bitSize = 0, byteSize, byteSizep;
+	unsigned char bitSize = 0, byteSize, byteSizep;
 	int state;
 	unsigned char *p = out;
 	int lackBits = 0;
@@ -260,7 +260,6 @@ void decode(unsigned char *s, size_t targetLength, node t, int *out)
 	size_t i = 0, byteIndex = 0, count = 0;
 	int r; 
 	node n = t;
-	char byte;
 	
 	if(n->t) //root->t==1 means that all state values are the same (constant)
 	{

@@ -7,6 +7,9 @@
  *      See COPYRIGHT in top-level directory.
  */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wchar-subscripts"
+
 #include <stdlib.h> 
 #include <stdio.h>
 #include <math.h>
@@ -240,3 +243,5 @@ void updateLossyCompElement_Float(unsigned char* curBytes, unsigned char* preByt
 	lce->resMidBitsLength = resiBitsLength;
 	lce->residualMidBits = resiBits;
 }
+
+#pragma GCC diagnostic pop

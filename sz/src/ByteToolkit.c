@@ -621,7 +621,7 @@ unsigned short* convertByteDataToUShortArray(unsigned char* bytes, size_t byteLe
 void convertShortArrayToBytes(short* states, size_t stateLength, unsigned char* bytes)
 {
 	lint16 ls;
-	size_t i, byteLength = stateLength*2;
+	size_t i;
 	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)
@@ -645,7 +645,7 @@ void convertShortArrayToBytes(short* states, size_t stateLength, unsigned char* 
 void convertUShortArrayToBytes(unsigned short* states, size_t stateLength, unsigned char* bytes)
 {
 	lint16 ls;
-	size_t i, byteLength = stateLength*2;
+	size_t i;
 	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)
@@ -670,7 +670,7 @@ void convertIntArrayToBytes(int* states, size_t stateLength, unsigned char* byte
 {
 	lint32 ls;
 	size_t index = 0;
-	size_t i, byteLength = stateLength << 2;
+	size_t i;
 	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)
@@ -701,7 +701,7 @@ void convertUIntArrayToBytes(unsigned int* states, size_t stateLength, unsigned 
 {
 	lint32 ls;
 	size_t index = 0;
-	size_t i, byteLength = stateLength << 2;
+	size_t i;
 	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)
@@ -732,7 +732,7 @@ void convertLongArrayToBytes(int64_t* states, size_t stateLength, unsigned char*
 {
 	lint64 ls;
 	size_t index = 0;
-	size_t i, byteLength = stateLength << 3;
+	size_t i;
 	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)
@@ -771,7 +771,7 @@ void convertULongArrayToBytes(uint64_t* states, size_t stateLength, unsigned cha
 {
 	lint64 ls;
 	size_t index = 0;
-	size_t i, byteLength = stateLength << 3;
+	size_t i;
 	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)

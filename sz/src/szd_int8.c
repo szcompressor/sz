@@ -109,7 +109,6 @@ int SZ_decompress_args_int8(int8_t** newData, size_t r5, size_t r4, size_t r3, s
 void decompressDataSeries_int8_1D(int8_t** data, size_t dataSeriesLength, TightDataPointStorageI* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
-	size_t i, j;
 	double interval = tdps->realPrecision*2;
 	
 	*data = (int8_t*)malloc(sizeof(int8_t)*dataSeriesLength);
@@ -138,7 +137,7 @@ void decompressDataSeries_int8_1D(int8_t** data, size_t dataSeriesLength, TightD
 		exit(0);
 	}
 	int type_;
-	for (i = 0; i < dataSeriesLength; i++) {
+	for (size_t i = 0; i < dataSeriesLength; i++) {
 		type_ = type[i];
 		switch (type_) {
 		case 0:
@@ -172,7 +171,6 @@ void decompressDataSeries_int8_2D(int8_t** data, size_t r1, size_t r2, TightData
 	updateQuantizationInfo(tdps->intervals);
 	//printf("tdps->intervals=%d, intvRadius=%d\n", tdps->intervals, intvRadius);
 	
-	size_t i, j;
 	size_t dataSeriesLength = r1*r2;
 	//	printf ("%d %d\n", r1, r2);
 
@@ -322,11 +320,9 @@ void decompressDataSeries_int8_2D(int8_t** data, size_t r1, size_t r2, TightData
 void decompressDataSeries_int8_3D(int8_t** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageI* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
-	size_t i, j;
 	size_t dataSeriesLength = r1*r2*r3;
 	size_t r23 = r2*r3;
 //	printf ("%d %d %d\n", r1, r2, r3);
-	unsigned char* leadNum;
 	double realPrecision = tdps->realPrecision;
 
 	*data = (int8_t*)malloc(sizeof(int8_t)*dataSeriesLength);
@@ -581,7 +577,6 @@ void decompressDataSeries_int8_3D(int8_t** data, size_t r1, size_t r2, size_t r3
 void decompressDataSeries_int8_4D(int8_t** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageI* tdps)
 {
 	updateQuantizationInfo(tdps->intervals);
-	size_t i, j;
 	size_t dataSeriesLength = r1*r2*r3*r4;
 	size_t r234 = r2*r3*r4;
 	size_t r34 = r3*r4;

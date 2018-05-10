@@ -17,6 +17,10 @@
 #include "Huffman.h"
 #include "sz_float_pwr.h"
 //#include "rw.h"
+//
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wchar-subscripts"
+
 
 void decompressDataSeries_float_1D_pwr(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps) 
 {
@@ -50,7 +54,7 @@ void decompressDataSeries_float_1D_pwr(float** data, size_t dataSeriesLength, Ti
 	memset(preBytes, 0, 4);
 
 	size_t curByteIndex = 0;
-	int reqLength, reqBytesLength, resiBitsLength, resiBits, reqExpo, reqMantLength; 
+	int reqLength, reqBytesLength, resiBitsLength, resiBits; 
 	unsigned char leadingNum;	
 	float medianValue, exactData, predValue, realPrecision;
 	
@@ -158,7 +162,7 @@ void decompressDataSeries_float_2D_pwr(float** data, size_t r1, size_t r2, Tight
 	updateQuantizationInfo(tdps->intervals);
 	//printf("tdps->intervals=%d, intvRadius=%d\n", tdps->intervals, intvRadius);
 	
-	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
@@ -184,9 +188,9 @@ void decompressDataSeries_float_2D_pwr(float** data, size_t r1, size_t r2, Tight
 	memset(preBytes, 0, 4);
 
 	size_t curByteIndex = 0;
-	int reqLength, reqBytesLength, resiBitsLength, resiBits, reqExpo, reqMantLength; 
+	int reqLength, reqBytesLength, resiBitsLength, resiBits; 
 	unsigned char leadingNum;	
-	float medianValue, exactData, predValue, realPrecision;
+	float medianValue, exactData, realPrecision;
 	int type_;	
 	float pred1D, pred2D;
 	size_t ii, jj, II = 0, JJ = 0, updateReqLength = 1;
@@ -539,7 +543,7 @@ float* extractRealPrecision_3D_float(size_t R1, size_t R2, size_t R3, int blockS
 void decompressDataSeries_float_3D_pwr(float** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageF* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
-	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
 	// byte_index of resiMidBits, l is for
 	// leadNum
@@ -563,9 +567,9 @@ void decompressDataSeries_float_3D_pwr(float** data, size_t r1, size_t r2, size_
 
 	memset(preBytes, 0, 4);
 	size_t curByteIndex = 0;
-	int reqLength, reqBytesLength, resiBitsLength, resiBits, reqExpo, reqMantLength; 
+	int reqLength, reqBytesLength, resiBitsLength, resiBits; 
 	unsigned char leadingNum;
-	float medianValue, exactData, predValue, realPrecision;
+	float medianValue, exactData, realPrecision;
 	int type_;
 	float pred1D, pred2D, pred3D;
 	size_t ii, jj, kk, II = 0, JJ = 0, KK = 0, updateReqLength = 1;
@@ -1181,11 +1185,9 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 {
 	float *posGroups, *negGroups, *groups;
 	float pos_01_group, neg_01_group;
-	int *posFlags, *negFlags, *flags;
-	int pos_01_flag, neg_01_flag;	
+	int *posFlags, *negFlags;
 	
 	updateQuantizationInfo(tdps->intervals);
-	unsigned char tmpPrecBytes[4] = {0}; //used when needing to convert bytes to float values	
 	
 	unsigned char* leadNum;
 	double interval;// = (float)tdps->realPrecision*2;
@@ -1214,10 +1216,7 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 		nbBins++;
 	intvRadius = nbBins;
 
-	double absErrBound = conf_params->absErrBound;
-	double pwrErrRatio = conf_params->pw_relBoundRatio;
 	
-	short lastGroupNum, groupNum, decGroupNum;
 
 	unsigned char preBytes[4];
 	unsigned char curBytes[4];
@@ -1225,7 +1224,7 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 	memset(preBytes, 0, 4);
 
 	size_t curByteIndex = 0;
-	int reqLength, reqBytesLength, resiBitsLength, resiBits, reqExpo, reqMantLength; 
+	int reqLength, reqBytesLength, resiBitsLength, resiBits; 
 	unsigned char leadingNum;	
 	float medianValue, exactData, curValue, predValue;
 	
@@ -1237,7 +1236,7 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 							// leadNum
 							
 	int type_, updateReqLength = 0;
-	char rawGrpID = 0, indexGrpID = 0, realGrpID = 0;
+	char rawGrpID = 0, indexGrpID = 0;
 	for (i = 0; i < dataSeriesLength; i++) 
 	{
 		rawGrpID = groupID[i];
@@ -1245,24 +1244,20 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 		if(rawGrpID >= 2)
 		{
 			groups = posGroups;
-			flags = posFlags;
 			indexGrpID = rawGrpID - 2;
 		}
 		else if(rawGrpID <= -2)
 		{
 			groups = negGroups;
-			flags = negFlags;
 			indexGrpID = -rawGrpID - 2;		}
 		else if(rawGrpID == 1)
 		{
 			groups = &pos_01_group;
-			flags = &pos_01_flag;
 			indexGrpID = 0;
 		}
 		else //rawGrpID == -1
 		{
 			groups = &neg_01_group;
-			flags = &neg_01_flag;
 			indexGrpID = 0;			
 		}
 		
@@ -1330,7 +1325,7 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 			
 			//groupNum = computeGroupNum_float(curValue);
 			
-			if(curValue>0&&rawGrpID<0||curValue<0&&rawGrpID>0)
+			if((curValue>0&&rawGrpID<0)||(curValue<0&&rawGrpID>0))
 				curValue = 0;
 			//else
 			//{
@@ -1356,3 +1351,4 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 	free(negFlags);
 	free(groupErrorBounds);
 }
+#pragma GCC diagnostic pop

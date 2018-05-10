@@ -139,7 +139,7 @@ int SZ_ReadConf() {
         return SZ_NSCS;
     }
     
-    printf("[SZ] Reading SZ configuration file (%s) ...\n", sz_cfgFile);    
+    //printf("[SZ] Reading SZ configuration file (%s) ...\n", sz_cfgFile);    
     ini = iniparser_load(sz_cfgFile);
     if (ini == NULL)
     {

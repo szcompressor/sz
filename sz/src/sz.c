@@ -36,7 +36,7 @@ int errorBoundMode = 0; //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PSNR, or PW_REL,
 
 int gzipMode; //four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
 
-char *sz_cfgFile;
+const char *sz_cfgFile;
 
 int offset;
 
@@ -73,9 +73,8 @@ sz_params *conf_params = NULL;
 pastri_params pastri_par;
 #endif
 
-int SZ_Init(char *configFilePath)
+int SZ_Init(const char *configFilePath)
 {
-	char str[512]="", str2[512]="", str3[512]="";
 	sz_cfgFile = configFilePath;
 	int loadFileResult = SZ_LoadConf();
 	if(loadFileResult==SZ_NSCS)
@@ -427,9 +426,7 @@ unsigned char *SZ_compress(int dataType, void *data, size_t *outSize, size_t r5,
 unsigned char *SZ_compress_rev_args(int dataType, void *data, void *reservedValue, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
-	size_t dataLength;
 	unsigned char *newByteData;
-	dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	//TODO
 	printf("SZ compression with reserved data is TO BE DONE LATER.\n");
 	exit(0);
@@ -449,10 +446,7 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 
 unsigned char *SZ_compress_rev(int dataType, void *data, void *reservedValue, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
-	size_t dataLength;
-
 	unsigned char *newByteData;
-	dataLength = computeDataLength(r5,r4,r3,r2,r1);	
 	//TODO
 	printf("SZ compression with reserved data is TO BE DONE LATER.\n");
 	exit(0);
@@ -742,7 +736,7 @@ void SZ_printMetadata(sz_metadata* metadata)
 	else
 	{
 		printf("quantization_intervals:         \t %d\n", params->quantization_intervals);
-		printf("max_quant_intervals:            \t - %d\n");		
+		printf("max_quant_intervals:            \t - %d\n", params->max_quant_intervals);		
 	}
 	
 	printf("dataEndianType (prior raw data):\t %s\n", params->dataEndianType==1?"BIG_ENDIAN":"LITTLE_ENDIAN");
@@ -904,7 +898,6 @@ int isZlibFormat(unsigned char magic1, unsigned char magic2)
 
 unsigned char* SZ_batch_compress(size_t *outSize)
 {	
-	size_t dataLength;
 	DynamicByteArray* dba; 
 	new_DBA(&dba, 32768);
 	
@@ -916,14 +909,13 @@ unsigned char* SZ_batch_compress(size_t *outSize)
 	addDBA_Data(dba, countBufBytes[2]);
 	addDBA_Data(dba, countBufBytes[3]);
 	
-	size_t i, j, k = 0;
+	size_t i, j;
 	SZ_Variable* p = sz_varset->header->next;
 	while(p!=NULL)
 	{
 		if(p->dataType==SZ_FLOAT)
 		{
 			unsigned char *newByteData;
-			size_t outSize;
 			SZ_compress_args_float_wRngeNoGzip(&newByteData, (float *)p->data, 
 			p->r5, p->r4, p->r3, p->r2, p->r1, 
 			&(p->compressedSize), p->errBoundMode, p->absErrBound, p->relBoundRatio, p->pwRelBoundRatio);
@@ -933,7 +925,6 @@ unsigned char* SZ_batch_compress(size_t *outSize)
 		else if(p->dataType==SZ_DOUBLE)
 		{
 			unsigned char *newByteData;
-			size_t outSize;
 			SZ_compress_args_double_wRngeNoGzip(&newByteData, (double *)p->data, 
 			p->r5, p->r4, p->r3, p->r2, p->r1, 
 			&(p->compressedSize), p->errBoundMode, p->absErrBound, p->relBoundRatio, p->pwRelBoundRatio);
@@ -1091,7 +1082,7 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, size_t compresse
 	int varCount = bytesToInt_bigEndian(sizeByteBuf);	
 		
 	int varNum = sz_varset->count;
-	size_t dataLength, cpressedLength;
+	size_t cpressedLength;
 	
 	if(varNum==0)
 	{
@@ -1150,7 +1141,7 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, size_t compresse
 			varNameString[varNameLength] = '\0';
 		
 			//TODO: convert szTmpBytes to data array.
-			dataLength = computeDataLength(dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);
+			computeDataLength(dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);
 			int dim = computeDimension(dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);
 			if(dataType==SZ_FLOAT)
 			{
@@ -1285,7 +1276,7 @@ SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, size_t compresse
 			}
 						
 			//TODO: convert szTmpBytes to data array.
-			dataLength = computeDataLength(dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);
+			computeDataLength(dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);
 			int dim = computeDimension(dimSize[0], dimSize[1], dimSize[2], dimSize[3], dimSize[4]);			
 			if(dataType==SZ_FLOAT)
 			{

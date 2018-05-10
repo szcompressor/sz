@@ -442,11 +442,19 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 				{
 					curAbsValue = fabs(curValue);
 					if(pwr_type == SZ_PWR_MIN_TYPE)
+					{
 						if(statAbsValues[J][K]>curAbsValue)
+						{
 							statAbsValues[J][K] = curAbsValue;
+						}
+					}
 					else if(pwr_type == SZ_PWR_MAX_TYPE)
+					{
 						if(statAbsValues[J][K]<curAbsValue)
+						{
 							statAbsValues[J][K] = curAbsValue;
+						}
+					}
 				}
 			}			
 		}
@@ -611,13 +619,10 @@ size_t dataLength, size_t *outSize, float min, float max)
 	//printf("%.30G\n",last3CmprsData[0]);	
 	
 	int state;
-	float lcf, qcf;	
 	double checkRadius;
 	float curData;
 	float pred;
 	double predAbsErr;
-	float min_pred, minErr, minIndex;
-	int a = 0;
 	checkRadius = (intvCapacity-1)*realPrecision;
 	double interval = 2*realPrecision;
 	int updateReqLength = 0; //a marker: 1 means already updated
@@ -1554,9 +1559,9 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 	if(realPrecision<0)
 		realPrecision = pwrErrRatio;
 	float realGroupPrecision; //precision (error) based on group ID
-	short reqExpo = getPrecisionReqLength_float(realPrecision);
+	getPrecisionReqLength_float(realPrecision);
 	short radExpo = getExponent_float(valueRangeSize/2);
-	short lastGroupNum, groupNum, decGroupNum, grpNum = 0;
+	short lastGroupNum, groupNum, grpNum = 0;
 	
 	double* groupErrorBounds = generateGroupErrBounds(errBoundMode, realPrecision, pwrErrRatio);
 	intvRadius = generateGroupMaxIntervalCount(groupErrorBounds);
@@ -1588,11 +1593,10 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
 			
 	int state;
-	float lcf, qcf;	
 	float curData, decValue;
 	float pred;
 	float predAbsErr;
-	double errBound, interval = 0;
+	double interval = 0;
 	
 	//add the first data	
 	type[0] = 0;
