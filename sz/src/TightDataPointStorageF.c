@@ -352,8 +352,8 @@ void new_TightDataPointStorageF2(TightDataPointStorageF **this,
 
 	(*this)->leadNumArray_size = convertIntArray2ByteArray_fast_2b(leadNumIntArray, exactDataNum, &((*this)->leadNumArray));
 
-	(*this)->residualMidBits = resiMidBits;
-	(*this)->residualMidBits_size = resiMidBits_size;
+	//(*this)->residualMidBits = resiMidBits;
+	//(*this)->residualMidBits_size = resiMidBits_size;
 
 	(*this)->residualMidBits_size = convertIntArray2ByteArray_fast_dynamic2(resiMidBits, resiBitLength, resiBitLengthSize, &((*this)->residualMidBits));
 	

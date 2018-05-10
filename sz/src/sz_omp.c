@@ -1,3 +1,12 @@
+/**
+ *  @file sz_omp.c
+ *  @author Xin Liang
+ *  @date July, 2017
+ *  @brief the implementation of openMP version
+ *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
+ *      See COPYRIGHT in top-level directory.
+ */
+
 #include "sz_omp.h"
 #include <math.h>
 #include <time.h>

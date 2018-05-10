@@ -15,7 +15,6 @@
 #include <unistd.h>
 #include <math.h>
 #include "sz.h"
-//#include "ExpSegmentConstructor.h"
 #include "CompressElement.h"
 #include "DynamicByteArray.h"
 #include "DynamicIntArray.h"
@@ -629,8 +628,6 @@ size_t dataLength, size_t *outSize, float min, float max)
 	
 	for(i=2;i<dataLength;i++)
 	{
-//		if(i==2499435)
-//			printf("i=%d\n", i);
 		curData = spaceFillingValue[i];
 		if(i%segment_size==0)
 		{
@@ -655,8 +652,6 @@ size_t dataLength, size_t *outSize, float min, float max)
 				type[i] = intvRadius-state;
 				pred = pred - state*interval;
 			}
-/*			if(type[i]==0)
-				printf("err:type[%d]=0\n", i);*/
 			listAdd_float(last3CmprsData, pred);			
 			continue;
 		}
@@ -719,10 +714,10 @@ size_t dataLength, size_t *outSize, float min, float max)
 	{
 		size_t k = 0, i;
 		tdps->isLossless = 1;
-		size_t totalByteLength = 3 + 4 + 1 + floatSize*dataLength;
+		size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + floatSize*dataLength;
 		*newByteData = (unsigned char*)malloc(totalByteLength);
 		
-		unsigned char dsLengthBytes[4];
+		unsigned char dsLengthBytes[SZ_SIZE_TYPE];
 		intToBytes_bigEndian(dsLengthBytes, dataLength);//4
 		for (i = 0; i < 3; i++)//3
 			(*newByteData)[k++] = versionNumber[i];
@@ -1039,7 +1034,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 	size_t R1 = 1+(r1-1)/blockEdgeSize;
 	size_t R2 = 1+(r2-1)/blockEdgeSize;
 	size_t R3 = 1+(r3-1)/blockEdgeSize;
-	//float*** pwrErrBound = create3DArray_float(R1, R2, R3);
 	float* pwrErrBound = (float*)malloc(sizeof(float)*R1*R2*R3);
 	size_t pwrErrBoundBytes_size = sizeof(unsigned char)*R1*R2*R3*2;
 	unsigned char* pwrErrBoundBytes = (unsigned char*)malloc(pwrErrBoundBytes_size);	
@@ -1106,6 +1100,7 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 	///////////////////////////	Process layer-0 ///////////////////////////
 	/* Process Row-0 data 0*/
 	type[0] = 0;
+	addDBA_Data(resiBitLengthArray, (unsigned char)resiBitsLength);
 	compressSingleFloatValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
@@ -1478,13 +1473,14 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 	printf("opt_quantizations=%d, exactDataNum=%d, sum=%d\n",quantization_intervals, exactDataNum, sum);
 */
 
+	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
+
 	//free memory
 	free_DBA(resiBitLengthArray);
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
 
-	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 
 	free(pwrErrBound);
 

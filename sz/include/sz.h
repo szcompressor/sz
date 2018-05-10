@@ -76,7 +76,7 @@ extern "C" {
 #define SZ_VER_MAJOR 1
 #define SZ_VER_MINOR 4
 #define SZ_VER_BUILD 13
-#define SZ_VER_REVISION 0
+#define SZ_VER_REVISION 1
 
 #define PASTRI 103
 #define HZ 102
@@ -105,10 +105,10 @@ extern "C" {
 #define SZ_UINT64 8
 #define SZ_INT64 9
 
-#define LITTLE_ENDIAN_DATA 0
+#define LITTLE_ENDIAN_DATA 0 //refers to the endian type of the data read from the disk
 #define BIG_ENDIAN_DATA 1 //big_endian (ppc, max, etc.) ; little_endian (x86, x64, etc.)
 
-#define LITTLE_ENDIAN_SYSTEM 0
+#define LITTLE_ENDIAN_SYSTEM 0 //refers to the endian type of the system
 #define BIG_ENDIAN_SYSTEM 1
 
 #define DynArrayInitLen 1024

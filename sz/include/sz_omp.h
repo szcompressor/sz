@@ -1,7 +1,19 @@
+/**
+ *  @file sz_omp.h
+ *  @author Xin Liang
+ *  @date July, 2017
+ *  @brief Header file for the sz_omp.c.
+ *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
+ *      See COPYRIGHT in top-level directory.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "omp.h"
 #include "sz.h"
+
+#ifndef _SZ_OMP_H
+#define _SZ_OMP_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,3 +36,5 @@ void Huffman_init_openmp(int *s, size_t length, int thread_num);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* ----- #ifndef _SZ_OMP_H  ----- */
