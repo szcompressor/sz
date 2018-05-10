@@ -1196,10 +1196,10 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
 
 //sdi:Debug
-	int sum =0;
+/*	int sum =0;
 	for(i=0;i<dataLength;i++)
 		if(type[i]==0) sum++;
-	printf("opt_quantizations=%d, exactDataNum=%d, sum=%d\n",quantization_intervals, exactDataNum, sum);
+	printf("opt_quantizations=%d, exactDataNum=%d, sum=%d\n",quantization_intervals, exactDataNum, sum);*/
 
 
 //	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d\n",
