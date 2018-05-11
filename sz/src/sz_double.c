@@ -240,7 +240,7 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 {
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
-		quantization_intervals = optimize_intervals_double_1D(oriData, dataLength, realPrecision);
+		quantization_intervals = optimize_intervals_double_1D_opt(oriData, dataLength, realPrecision);
 	else
 		quantization_intervals = intvCapacity;
 	updateQuantizationInfo(quantization_intervals);	
@@ -417,7 +417,7 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
-		quantization_intervals = optimize_intervals_double_2D(oriData, r1, r2, realPrecision);
+		quantization_intervals = optimize_intervals_double_2D_opt(oriData, r1, r2, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
 	}
 	else
@@ -646,7 +646,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
-		quantization_intervals = optimize_intervals_double_3D(oriData, r1, r2, r3, realPrecision);
+		quantization_intervals = optimize_intervals_double_3D_opt(oriData, r1, r2, r3, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
 	}	
 	else
@@ -2927,19 +2927,171 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 	return tdps;
 }
 
-//Pastri compression
-/*
-void SZ_compress_args_double_Pastri(unsigned char** newByteData, double *oriData, 
-size_t dataLength, double realPrecision, size_t *outSize, parameter* )
-{
-	SZ_Reset();
+/**
+ * 
+ * This is a fast implementation for optimize_intervals_double_3D()
+ * */
+unsigned int optimize_intervals_double_3D_opt(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision){	
+	size_t i;
+	size_t radiusIndex;
+	size_t r23=r2*r3;
+	double pred_value = 0, pred_err;
+	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
+	size_t totalSampleSize = 0;
 
-	TightDataPointStorageD* tdps = SZ_compress_double_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_d);
+	size_t offset_count = sampleDistance - 2; // count r3 offset
+	size_t offset_count_2;
+	double * data_pos = oriData + r23 + r3 + offset_count;
+	size_t n1_count = 1, n2_count = 1; // count i,j sum
+	size_t len = r1 * r2 * r3;
+	while(data_pos - oriData < len){
+		totalSampleSize++;
+		pred_value = data_pos[-1] + data_pos[-r3] + data_pos[-r23] - data_pos[-1-r23] - data_pos[-r3-1] - data_pos[-r3-r23] + data_pos[-r3-r23-1];
+		pred_err = fabs(pred_value - *data_pos);
+		radiusIndex = (pred_err/realPrecision+1)/2;
+		if(radiusIndex>=maxRangeRadius)
+		{
+			radiusIndex = maxRangeRadius - 1;
+			//printf("radiusIndex=%d\n", radiusIndex);
+		}
+		intervals[radiusIndex]++;
+		// printf("TEST: %ld, i: %ld\tj: %ld\tk: %ld\n", data_pos - oriData);
+		// fflush(stdout);
+		offset_count += sampleDistance;
+		if(offset_count >= r3){
+			n2_count ++;
+			if(n2_count == r2){
+				n1_count ++;
+				n2_count = 1;
+				data_pos += r3;
+			}
+			offset_count_2 = (n1_count + n2_count) % sampleDistance;
+			data_pos += (r3 + sampleDistance - offset_count) + (sampleDistance - offset_count_2);
+			offset_count = (sampleDistance - offset_count_2);
+			if(offset_count == 0) offset_count ++;
+		}
+		else data_pos += sampleDistance;
+	}	
+	// printf("sample_count: %ld\n", sample_count);
+	// fflush(stdout);
+	// if(*max_freq < 0.15) *max_freq *= 2;
+	//compute the appropriate number
+	size_t targetCount = totalSampleSize*predThreshold;
+	size_t sum = 0;
+	for(i=0;i<maxRangeRadius;i++)
+	{
+		sum += intervals[i];
+		if(sum>targetCount)
+			break;
+	}
+	if(i>=maxRangeRadius)
+		i = maxRangeRadius-1;
+	unsigned int accIntervals = 2*(i+1);
+	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 
-	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
+	if(powerOf2<32)
+		powerOf2 = 32;
+	free(intervals);
+	//printf("targetCount=%d, sum=%d, totalSampleSize=%d, ratio=%f, accIntervals=%d, powerOf2=%d\n", targetCount, sum, totalSampleSize, (double)sum/(double)totalSampleSize, accIntervals, powerOf2);
+	return powerOf2;
+}
+
+unsigned int optimize_intervals_double_2D_opt(double *oriData, size_t r1, size_t r2, double realPrecision)
+{	
+	size_t i;
+	size_t radiusIndex;
+	double pred_value = 0, pred_err;
+	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
+	size_t totalSampleSize = 0;//(r1-1)*(r2-1)/sampleDistance;
+
+	size_t offset_count = sampleDistance - 1; // count r2 offset
+	size_t offset_count_2;
+	double * data_pos = oriData + r2 + offset_count;
+	size_t n1_count = 1; // count i sum
+	size_t len = r1 * r2;
+	while(data_pos - oriData < len){
+		totalSampleSize++;
+		pred_value = data_pos[-1] + data_pos[-r2] - data_pos[-r2-1];
+		pred_err = fabs(pred_value - *data_pos);
+		radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
+		if(radiusIndex>=maxRangeRadius)
+			radiusIndex = maxRangeRadius - 1;
+		intervals[radiusIndex]++;
+
+		offset_count += sampleDistance;
+		if(offset_count >= r2){
+			n1_count ++;
+			offset_count_2 = n1_count % sampleDistance;
+			data_pos += (r2 + sampleDistance - offset_count) + (sampleDistance - offset_count_2);
+			offset_count = (sampleDistance - offset_count_2);
+			if(offset_count == 0) offset_count ++;
+		}
+		else data_pos += sampleDistance;
+	}
+
+	//compute the appropriate number
+	size_t targetCount = totalSampleSize*predThreshold;
+	size_t sum = 0;
+	for(i=0;i<maxRangeRadius;i++)
+	{
+		sum += intervals[i];
+		if(sum>targetCount)
+			break;
+	}
+	if(i>=maxRangeRadius)
+		i = maxRangeRadius-1;
+	unsigned int accIntervals = 2*(i+1);
+	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
+
+	if(powerOf2<32)
+		powerOf2 = 32;
+
+	free(intervals);
+	return powerOf2;
+}
+
+unsigned int optimize_intervals_double_1D_opt(double *oriData, size_t dataLength, double realPrecision)
+{	
+	size_t i = 0, radiusIndex;
+	double pred_value = 0, pred_err;
+	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
+	size_t totalSampleSize = 0;//dataLength/sampleDistance;
+
+	double * data_pos = oriData + 2;
+	while(data_pos - oriData < dataLength){
+		totalSampleSize++;
+		//pred_value = 2*data_pos[-1] - data_pos[-2];
+		pred_value = data_pos[-1];
+		pred_err = fabs(pred_value - *data_pos);
+		radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
+		if(radiusIndex>=maxRangeRadius)
+			radiusIndex = maxRangeRadius - 1;			
+		intervals[radiusIndex]++;
+
+		data_pos += sampleDistance;
+	}
+	//compute the appropriate number
+	size_t targetCount = totalSampleSize*predThreshold;
+	size_t sum = 0;
+	for(i=0;i<maxRangeRadius;i++)
+	{
+		sum += intervals[i];
+		if(sum>targetCount)
+			break;
+	}
+	if(i>=maxRangeRadius)
+		i = maxRangeRadius-1;
+		
+	unsigned int accIntervals = 2*(i+1);
+	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 	
-	if(*outSize>dataLength*sizeof(double))
-		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+	if(powerOf2<32)
+		powerOf2 = 32;
 	
-	free_TightDataPointStorageD(tdps);	
-}*/
+	free(intervals);
+	//printf("accIntervals=%d, powerOf2=%d\n", accIntervals, powerOf2);
+	return powerOf2;
+}

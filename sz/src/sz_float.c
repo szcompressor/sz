@@ -319,11 +319,11 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 {
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
-		quantization_intervals = optimize_intervals_float_1D(oriData, dataLength, realPrecision);
+		quantization_intervals = optimize_intervals_float_1D_opt(oriData, dataLength, realPrecision);
 	else
 		quantization_intervals = intvCapacity;
 	updateQuantizationInfo(quantization_intervals);	
-	//clearHuffmanMem();
+
 	size_t i;
 	int reqLength;
 	float medianValue = medianValue_f;
@@ -529,7 +529,7 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
-		quantization_intervals = optimize_intervals_float_2D(oriData, r1, r2, realPrecision);
+		quantization_intervals = optimize_intervals_float_2D_opt(oriData, r1, r2, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
 	}	
 	else
@@ -801,7 +801,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 	unsigned int quantization_intervals;
 	if(optQuantMode==1)
 	{
-		quantization_intervals = optimize_intervals_float_3D(oriData, r1, r2, r3, realPrecision);
+		quantization_intervals = optimize_intervals_float_3D_opt(oriData, r1, r2, r3, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
 	}	
 	else
@@ -3207,7 +3207,7 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)/sampleDistance;
+	size_t totalSampleSize = 0;//(r1-1)*(r2-1)*(r3-1)/sampleDistance;
 
 	size_t offset_count = sampleDistance - 2; // count r3 offset
 	size_t offset_count_2;
@@ -3215,7 +3215,7 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 	size_t n1_count = 1, n2_count = 1; // count i,j sum
 	size_t len = r1 * r2 * r3;
 	while(data_pos - oriData < len){
-
+		totalSampleSize++;
 		pred_value = data_pos[-1] + data_pos[-r3] + data_pos[-r23] - data_pos[-1-r23] - data_pos[-r3-1] - data_pos[-r3-r23] + data_pos[-r3-r23-1];
 		pred_err = fabs(pred_value - *data_pos);
 		radiusIndex = (pred_err/realPrecision+1)/2;
@@ -3582,7 +3582,7 @@ unsigned int optimize_intervals_float_2D_opt(float *oriData, size_t r1, size_t r
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = (r1-1)*(r2-1)/sampleDistance;
+	size_t totalSampleSize = 0;//(r1-1)*(r2-1)/sampleDistance;
 
 	//float max = oriData[0];
 	//float min = oriData[0];
@@ -3593,6 +3593,7 @@ unsigned int optimize_intervals_float_2D_opt(float *oriData, size_t r1, size_t r
 	size_t n1_count = 1; // count i sum
 	size_t len = r1 * r2;
 	while(data_pos - oriData < len){
+		totalSampleSize++;
 		pred_value = data_pos[-1] + data_pos[-r2] - data_pos[-r2-1];
 		pred_err = fabs(pred_value - *data_pos);
 		radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
@@ -3638,10 +3639,11 @@ unsigned int optimize_intervals_float_1D_opt(float *oriData, size_t dataLength, 
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = dataLength/sampleDistance;
+	size_t totalSampleSize = 0;//dataLength/sampleDistance;
 
 	float * data_pos = oriData + 2;
 	while(data_pos - oriData < dataLength){
+		totalSampleSize++;
 		//pred_value = 2*data_pos[-1] - data_pos[-2];
 		pred_value = data_pos[-1];
 		pred_err = fabs(pred_value - *data_pos);
