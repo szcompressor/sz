@@ -22,6 +22,10 @@ unsigned int optimize_intervals_double_2D(double *oriData, size_t r1, size_t r2,
 unsigned int optimize_intervals_double_3D(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision);
 unsigned int optimize_intervals_double_4D(double *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision);
 
+unsigned int optimize_intervals_double_3D_opt(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision);
+unsigned int optimize_intervals_double_2D_opt(double *oriData, size_t r1, size_t r2, double realPrecision);
+unsigned int optimize_intervals_double_1D_opt(double *oriData, size_t dataLength, double realPrecision);
+
 TightDataPointStorageD* SZ_compress_double_1D_MDQ(double *oriData, 
 size_t dataLength, double realPrecision, double valueRangeSize, double medianValue_d);
 void SZ_compress_args_double_StoreOriData(double* oriData, size_t dataLength, TightDataPointStorageD* tdps, unsigned char** newByteData, size_t *outSize);
@@ -69,10 +73,6 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_subblock(double *oriData, doub
 size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, size_t e2, size_t e3);
 TightDataPointStorageD* SZ_compress_double_4D_MDQ_subblock(double *oriData, double realPrecision, double valueRangeSize, double medianValue_d,
 size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, size_t s4, size_t e1, size_t e2, size_t e3, size_t e4);
-
-unsigned int optimize_intervals_double_3D_opt(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision);
-unsigned int optimize_intervals_double_2D_opt(double *oriData, size_t r1, size_t r2, double realPrecision);
-unsigned int optimize_intervals_double_1D_opt(double *oriData, size_t dataLength, double realPrecision);
 
 #ifdef __cplusplus
 }

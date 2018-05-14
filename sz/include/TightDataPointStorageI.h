@@ -26,6 +26,11 @@ typedef struct TightDataPointStorageI
 	int exactByteSize;
 	int dataTypeSize; //the size of data type, e.g., it's 4 when data type is int32_t
 	
+	int stateNum;
+	int allNodes;
+	int intvCapacity;
+	int intvRadius;	
+	
 	unsigned char* typeArray; //its size is dataSeriesLength/4 (or xxx/4+1) 
 	size_t typeArray_size;
 	
@@ -53,6 +58,7 @@ void convertTDPStoBytes_int(TightDataPointStorageI* tdps, unsigned char* bytes, 
 void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** bytes, size_t *size);
 void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char* bytes, size_t *size);
 void free_TightDataPointStorageI(TightDataPointStorageI *tdps);
+void free_TightDataPointStorageI2(TightDataPointStorageI *tdps);
 
 #ifdef __cplusplus
 }

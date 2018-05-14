@@ -171,11 +171,11 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 
 	maxRangeRadius = max_quant_intervals/2;
 	
-	stateNum = maxRangeRadius*2;
-	allNodes = maxRangeRadius*4;
+	(*this)->stateNum = maxRangeRadius*2;
+	(*this)->allNodes = maxRangeRadius*4;
 	
-	intvCapacity = maxRangeRadius*2;
-	intvRadius = maxRangeRadius;
+	(*this)->intvCapacity = maxRangeRadius*2;
+	(*this)->intvRadius = maxRangeRadius;
 
 	if(errorBoundMode>=PW_REL)
 	{
@@ -208,15 +208,13 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 	(*this)->exactDataBytes_size = bytesToSize(byteBuf);// ST		
 
 
-	(*this)->typeArray = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->typeArray_size);
+	(*this)->typeArray = &flatBytes[index];
 
-	memcpy((*this)->typeArray, &flatBytes[index], (*this)->typeArray_size*sizeof(char));
-	index+=(*this)->typeArray_size*sizeof(char);
+	index+=(*this)->typeArray_size;
 	
 	if((*this)->exactDataBytes_size > 0)
 	{	
-		(*this)->exactDataBytes = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->exactDataBytes_size);
-		memcpy((*this)->exactDataBytes, &flatBytes[index], (*this)->exactDataBytes_size*sizeof(char));
+		(*this)->exactDataBytes = &flatBytes[index];
 		index+=(*this)->exactDataBytes_size*sizeof(char);	
 	}
 	else
@@ -263,7 +261,11 @@ void new_TightDataPointStorageI(TightDataPointStorageI **this,
 	(*this)->exactDataNum = exactDataNum;
 	(*this)->exactByteSize = byteSize;
 
-	encode_withTree(type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
+
+	int stateNum = 2*intervals;
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
+	encode_withTree(huffmanTree, type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
+	SZ_ReleaseHuffman(huffmanTree);
 		
 	(*this)->exactDataBytes = exactDataBytes;
 	(*this)->exactDataBytes_size = exactDataBytes_size;
@@ -451,3 +453,10 @@ void free_TightDataPointStorageI(TightDataPointStorageI *tdps)
 		free(tdps->exactDataBytes);
 	free(tdps);
 }
+
+void free_TightDataPointStorageI2(TightDataPointStorageI *tdps)
+{
+	free(tdps);
+}
+
+

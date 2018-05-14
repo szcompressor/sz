@@ -18,9 +18,9 @@
 
 char* decompressGroupIDArray(unsigned char* bytes, size_t dataLength)
 {
-	SZ_Reset(); //reset the huffman tree	
+	HuffmanTree* huffmanTree = SZ_Reset(); //create a default huffman tree	
 	int* standGroupID = (int*)malloc(dataLength*sizeof(int));
-	decode_withTree(bytes, dataLength, standGroupID);
+	decode_withTree(huffmanTree, bytes, dataLength, standGroupID);
 	
 	char* groupID = (char*)malloc(dataLength*sizeof(char));
 	size_t i = 0;

@@ -93,10 +93,9 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 		printf("Error: currently support only at most 4 dimensions!\n");
 		status = SZ_DERR;
 	}
-	free_TightDataPointStorageD(tdps);
+	free_TightDataPointStorageD2(tdps);
 	if(szMode!=SZ_BEST_SPEED && cmpSize!=12+MetaDataByteLength+SZ_SIZE_TYPE)
 		free(szTmpBytes);	
-	SZ_ReleaseHuffman();	
 	return status;
 }
 
@@ -114,11 +113,10 @@ void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, Tigh
 	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
-	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
-	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
-	//type = tdps->typeArray;
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 	
 	unsigned char preBytes[8];
 	unsigned char curBytes[8];
@@ -213,15 +211,10 @@ void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDa
 	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
-	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
-	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
-	//type = tdps->typeArray;
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
 
-/*	for(i=0;i<dataSeriesLength;i++)
-		printf("%d ", type[i]);
-	printf("\n");*/
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	unsigned char preBytes[8];
 	unsigned char curBytes[8];
@@ -527,13 +520,10 @@ void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t 
 	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
-	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
-	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
-	//type = tdps->typeArray;
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
-	//for(i=0;i<dataSeriesLength;i++)
-	//	printf("%u\n", type[i]);
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	unsigned char preBytes[8];
 	unsigned char curBytes[8];
@@ -1070,13 +1060,10 @@ void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t 
 	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
-	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
-	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
-	//type = tdps->typeArray;
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
-	//for(i=0;i<dataSeriesLength;i++)
-	//	printf("%u\n", type[i]);
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	unsigned char preBytes[8];
 	unsigned char curBytes[8];
@@ -1610,8 +1597,7 @@ void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t 
 }
 
 void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps, int errBoundMode) 
-{	
-	SZ_Reset();
+{
 	size_t i;
 	if (tdps->allSameData) {
 		double value = bytesToDouble(tdps->exactMidBytes);
@@ -1664,7 +1650,6 @@ void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightData
 
 void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps, int errBoundMode) 
 {
-	SZ_Reset();
 	size_t i;
 	size_t dataSeriesLength = r1*r2;
 	if (tdps->allSameData) {
@@ -1715,7 +1700,6 @@ void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPoi
 
 void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps, int errBoundMode) 
 {
-	SZ_Reset();
 	size_t i;
 	size_t dataSeriesLength = r1*r2*r3;
 	if (tdps->allSameData) {
@@ -1766,7 +1750,6 @@ void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, T
 
 void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageD* tdps, int errBoundMode)
 {
-	SZ_Reset();
 	size_t i;
 	size_t dataSeriesLength = r1*r2*r3*r4;
 	if (tdps->allSameData) {

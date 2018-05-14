@@ -47,20 +47,8 @@ unsigned int roundUpToPowerOf2(unsigned int base)
  
 void updateQuantizationInfo(int quant_intervals)
 {
-	//allNodes = 2*quant_intervals;
-	//stateNum = quant_intervals;
 	intvCapacity = quant_intervals;
 	intvRadius = quant_intervals/2;
-} 
- 
-void clearHuffmanMem()
-{
-   	memset(pool, 0, allNodes*sizeof(struct node_t));
-	memset(code, 0, stateNum*sizeof(long*)); //original:128; we just used '0'-'7', so max ascii is 55.
-	memset(cout, 0, stateNum);
-    n_nodes = 0;
-    n_inode = 0;
-    qend = 1;	
 } 
  
 double computeABSErrBoundFromPSNR(double psnr, double threshold, double value_range)
@@ -105,10 +93,7 @@ int SZ_ReadConf() {
 		conf_params->layers = layers = 0; //x
 		conf_params->max_quant_intervals = 65536;
 		maxRangeRadius = conf_params->max_quant_intervals/2;
-		
-		stateNum = maxRangeRadius*2;
-		allNodes = maxRangeRadius*4;
-		
+				
 		intvCapacity = maxRangeRadius*2;
 		intvRadius = maxRangeRadius;
 		
@@ -129,7 +114,7 @@ int SZ_ReadConf() {
 		
 		conf_params->pwr_type = pwr_type = SZ_PWR_MIN_TYPE;
 		
-		SZ_Reset();
+		//SZ_Reset();
 		return SZ_SCES;
 	}
     
@@ -192,15 +177,11 @@ int SZ_ReadConf() {
 		{
 			updateQuantizationInfo(quantization_intervals);
 			conf_params->max_quant_intervals = max_quant_intervals = quantization_intervals;
-			stateNum = quantization_intervals;
-			allNodes = quantization_intervals*2;
 			optQuantMode = 0;
 		}
 		else //==0
 		{
 			maxRangeRadius = max_quant_intervals/2;
-			stateNum = maxRangeRadius*2;
-			allNodes = maxRangeRadius*4;
 
 			intvCapacity = maxRangeRadius*2;
 			intvRadius = maxRangeRadius;
@@ -334,9 +315,9 @@ int SZ_ReadConf() {
 		else //by default
 			pwr_type = SZ_PWR_AVG_TYPE;
 		conf_params->pwr_type = pwr_type;
-    //initialization for Huffman encoding
     
-		SZ_Reset();		
+		//initialization for Huffman encoding
+		//SZ_Reset();	
 	}
 	else if(sol_ID == PASTRI)
 	{//load parameters for PSTRI

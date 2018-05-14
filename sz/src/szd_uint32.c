@@ -100,8 +100,7 @@ int SZ_decompress_args_uint32(uint32_t** newData, size_t r5, size_t r4, size_t r
 	}
 	free_TightDataPointStorageI(tdps);
 	if(szMode!=SZ_BEST_SPEED && cmpSize!=4+sizeof(uint32_t)+SZ_SIZE_TYPE+MetaDataByteLength)
-		free(szTmpBytes);
-	SZ_ReleaseHuffman();	
+		free(szTmpBytes);	
 	return status;
 }
 
@@ -116,7 +115,9 @@ void decompressDataSeries_uint32_1D(uint32_t** data, size_t dataSeriesLength, Ti
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
 
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	//sdi:Debug
 	//writeUShortData(type, dataSeriesLength, "decompressStateBytes.sb");
@@ -174,7 +175,9 @@ void decompressDataSeries_uint32_2D(uint32_t** data, size_t r1, size_t r2, Tight
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
 
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	uint32_t minValue, exactData;
 
@@ -297,7 +300,9 @@ void decompressDataSeries_uint32_3D(uint32_t** data, size_t r1, size_t r2, size_
 	*data = (uint32_t*)malloc(sizeof(uint32_t)*dataSeriesLength);
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
 
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	uint32_t minValue, exactData;
 
@@ -507,7 +512,10 @@ void decompressDataSeries_uint32_4D(uint32_t** data, size_t r1, size_t r2, size_
 
 	*data = (uint32_t*)malloc(sizeof(uint32_t)*dataSeriesLength);
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	uint32_t minValue, exactData;
 
@@ -725,7 +733,6 @@ void decompressDataSeries_uint32_4D(uint32_t** data, size_t r1, size_t r2, size_
 
 void getSnapshotData_uint32_1D(uint32_t** data, size_t dataSeriesLength, TightDataPointStorageI* tdps, int errBoundMode)
 {	
-	SZ_Reset();
 	size_t i;
 
 	if (tdps->allSameData) {
@@ -740,7 +747,6 @@ void getSnapshotData_uint32_1D(uint32_t** data, size_t dataSeriesLength, TightDa
 
 void getSnapshotData_uint32_2D(uint32_t** data, size_t r1, size_t r2, TightDataPointStorageI* tdps, int errBoundMode) 
 {
-	SZ_Reset();
 	size_t i;
 	size_t dataSeriesLength = r1*r2;
 	if (tdps->allSameData) {
@@ -755,7 +761,6 @@ void getSnapshotData_uint32_2D(uint32_t** data, size_t r1, size_t r2, TightDataP
 
 void getSnapshotData_uint32_3D(uint32_t** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageI* tdps, int errBoundMode)
 {
-	SZ_Reset();
 	size_t i;
 	size_t dataSeriesLength = r1*r2*r3;
 	if (tdps->allSameData) {
@@ -770,7 +775,6 @@ void getSnapshotData_uint32_3D(uint32_t** data, size_t r1, size_t r2, size_t r3,
 
 void getSnapshotData_uint32_4D(uint32_t** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageI* tdps, int errBoundMode)
 {
-	SZ_Reset();
 	size_t i;
 	size_t dataSeriesLength = r1*r2*r3*r4;
 	if (tdps->allSameData) {

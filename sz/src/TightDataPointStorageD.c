@@ -123,11 +123,11 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 
 	maxRangeRadius = max_quant_intervals/2;
 	
-	stateNum = maxRangeRadius*2;
-	allNodes = maxRangeRadius*4;
+	(*this)->stateNum = maxRangeRadius*2;
+	(*this)->allNodes = maxRangeRadius*4;
 	
-	intvCapacity = maxRangeRadius*2;
-	intvRadius = maxRangeRadius;
+	(*this)->intvCapacity = maxRangeRadius*2;
+	(*this)->intvRadius = maxRangeRadius;
 
 	if(errorBoundMode>=PW_REL)
 	{
@@ -193,26 +193,17 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 		for (i = 0; i < 8; i++)
 			byteBuf[i] = flatBytes[index++];
 		(*this)->reservedValue = bytesToDouble(byteBuf);//8
-		
 	}
 
-	(*this)->typeArray = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->typeArray_size);
-		
 	size_t logicLeadNumBitsNum = (*this)->exactDataNum * 2;
 	if (logicLeadNumBitsNum % 8 == 0)
+	{
 		(*this)->leadNumArray_size = logicLeadNumBitsNum >> 3;
+	}
 	else
+	{
 		(*this)->leadNumArray_size = (logicLeadNumBitsNum >> 3) + 1;
-	
-	if((*this)->leadNumArray_size>0)
-		(*this)->leadNumArray = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->leadNumArray_size);
-	else
-		(*this)->leadNumArray = NULL;
-	
-	if((*this)->exactMidBytes_size>0)
-		(*this)->exactMidBytes = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->exactMidBytes_size);
-	else
-		(*this)->exactMidBytes = NULL;
+	}
 
 	if ((*this)->rtypeArray != NULL) 
 	{
@@ -229,25 +220,28 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 				- SZ_SIZE_TYPE - SZ_SIZE_TYPE - SZ_SIZE_TYPE - (*this)->typeArray_size
 				- (*this)->leadNumArray_size - (*this)->exactMidBytes_size - pwrErrBoundBytes_size;
 	}	
-	if((*this)->residualMidBits_size>0)
-		(*this)->residualMidBits = (unsigned char*)malloc(sizeof(unsigned char)*(*this)->residualMidBits_size);
-	else
-		(*this)->residualMidBits = NULL;
-	//for (i = 0; i < (*this)->typeArray_size; i++)
-	//	(*this)->typeArray[i] = flatBytes[index++];
-	memcpy((*this)->typeArray, &flatBytes[index], (*this)->typeArray_size*sizeof(char));
-	index+=(*this)->typeArray_size*sizeof(char);
-	memcpy((*this)->pwrErrBoundBytes, &flatBytes[index], pwrErrBoundBytes_size*sizeof(char));
-	index+=pwrErrBoundBytes_size*sizeof(char);
-	for (i = 0; i < (*this)->leadNumArray_size; i++)
-		(*this)->leadNumArray[i] = flatBytes[index++];
-	for (i = 0; i < (*this)->exactMidBytes_size; i++)
-	{
-		(*this)->exactMidBytes[i] = flatBytes[index++];
-	}	
-	for (i = 0; i < (*this)->residualMidBits_size; i++)
-		(*this)->residualMidBits[i] = flatBytes[index++];	
-	return errorBoundMode;		
+
+	(*this)->typeArray = &flatBytes[index];
+
+	index+=(*this)->typeArray_size;
+	
+	(*this)->pwrErrBoundBytes = &flatBytes[index];
+	
+	index+=pwrErrBoundBytes_size;
+	
+	(*this)->leadNumArray = &flatBytes[index];
+	
+	index+=(*this)->leadNumArray_size;
+	
+	(*this)->exactMidBytes = &flatBytes[index];
+	
+	index+=(*this)->exactMidBytes_size;
+	
+	(*this)->residualMidBits = &flatBytes[index];
+	
+	//index+=(*this)->residualMidBits_size;
+	
+	return errorBoundMode;
 }
 
 /**
@@ -272,40 +266,27 @@ void new_TightDataPointStorageD(TightDataPointStorageD **this,
 	(*this)->realPrecision = realPrecision;
 	(*this)->medianValue = medianValue;
 	(*this)->reqLength = reqLength;
-	
+
 	(*this)->dataSeriesLength = dataSeriesLength;
 	(*this)->exactDataNum = exactDataNum;
-	
+
 	(*this)->rtypeArray = NULL;
 	(*this)->rtypeArray_size = 0;
-	
-	//(*this)->typeArray_size = convertIntArray2ByteArray_fast_3b(type, dataSeriesLength, &((*this)->typeArray));
-	//for(;i<dataSeriesLength;i++)
-	//	type[i]+=48;
-	//huff_init(type);
-	
-	//(*this)->typeArray_size = convert_HuffTree_and_Encode_16states(type, dataSeriesLength, &((*this)->typeArray));
-	
-	/*(*this)->typeArray_size = sizeof(unsigned short)*dataSeriesLength;
-	(*this)->typeArray = (unsigned char*)malloc(dataSeriesLength*sizeof(unsigned short));
-	memcpy((*this)->typeArray, type, dataSeriesLength*sizeof(unsigned short));
-	free(type);*/
-	
-	//for(i=0;i<dataSeriesLength;i++)
-	//	printf("%u\n", type[i]);
-	encode_withTree(type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
-	
+
+	int stateNum = 2*intervals;
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
+	encode_withTree(huffmanTree, type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
+	SZ_ReleaseHuffman(huffmanTree);
+		
 	(*this)->exactMidBytes = exactMidBytes;
 	(*this)->exactMidBytes_size = exactMidBytes_size;
-	
-	(*this)->leadNumArray_size = convertIntArray2ByteArray_fast_2b(leadNumIntArray, exactDataNum, &((*this)->leadNumArray));
 
-	//(*this)->residualMidBits = resiMidBits;
-	//(*this)->residualMidBits_size = resiMidBits_size;
+	(*this)->leadNumArray_size = convertIntArray2ByteArray_fast_2b(leadNumIntArray, exactDataNum, &((*this)->leadNumArray));
 
 	(*this)->residualMidBits_size = convertIntArray2ByteArray_fast_dynamic(resiMidBits, resiBitLength, exactDataNum, &((*this)->residualMidBits));
 	
 	(*this)->intervals = intervals;
+	
 	(*this)->isLossless = 0;
 	
 	if(errorBoundMode>=PW_REL)
@@ -339,7 +320,10 @@ void new_TightDataPointStorageD2(TightDataPointStorageD **this,
 	(*this)->rtypeArray = NULL;
 	(*this)->rtypeArray_size = 0;
 
-	encode_withTree(type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
+	int stateNum = 2*intervals;
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
+	encode_withTree(huffmanTree, type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
+	SZ_ReleaseHuffman(huffmanTree);
 	
 	(*this)->exactMidBytes = exactMidBytes;
 	(*this)->exactMidBytes_size = exactMidBytes_size;
@@ -740,11 +724,17 @@ void free_TightDataPointStorageD(TightDataPointStorageD *tdps)
 		free(tdps->leadNumArray);
 	if(tdps->exactMidBytes!=NULL)
 		free(tdps->exactMidBytes);
-	//if(tdps->escBytes!=NULL)
-	//	free(tdps->escBytes);
 	if(tdps->residualMidBits!=NULL)
 		free(tdps->residualMidBits);
 	if(tdps->pwrErrBoundBytes!=NULL) 	
 		free(tdps->pwrErrBoundBytes);
+	free(tdps);
+}
+
+/**
+ * to free the memory used in the decompression
+ * */
+void free_TightDataPointStorageD2(TightDataPointStorageD *tdps)
+{			
 	free(tdps);
 }

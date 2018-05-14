@@ -39,11 +39,10 @@ void decompressDataSeries_float_1D_pwr(float** data, size_t dataSeriesLength, Ti
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
-	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
-	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
-	//type = tdps->typeArray;
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	//sdi:Debug
 	//writeUShortData(type, dataSeriesLength, "decompressStateBytes.sb");
@@ -176,11 +175,10 @@ void decompressDataSeries_float_2D_pwr(float** data, size_t r1, size_t r2, Tight
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
-	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
-	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
-	//type = tdps->typeArray;
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	unsigned char preBytes[4];
 	unsigned char curBytes[4];
@@ -556,11 +554,10 @@ void decompressDataSeries_float_3D_pwr(float** data, size_t r1, size_t r2, size_
 
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
-	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
-	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
-	//type = tdps->typeArray;
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	unsigned char preBytes[4];
 	unsigned char curBytes[4];
@@ -1198,7 +1195,9 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
 
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 	
 	createRangeGroups_float(&posGroups, &negGroups, &posFlags, &negFlags);
 	
@@ -1215,8 +1214,6 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 	if(nbBins%2==1)
 		nbBins++;
 	intvRadius = nbBins;
-
-	
 
 	unsigned char preBytes[4];
 	unsigned char curBytes[4];

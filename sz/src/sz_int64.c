@@ -231,7 +231,6 @@ TightDataPointStorageI* SZ_compress_int64_1D_MDQ(int64_t *oriData, size_t dataLe
 	else
 		quantization_intervals = intvCapacity;
 	updateQuantizationInfo(quantization_intervals);	
-	//clearHuffmanMem();
 	size_t i;
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
@@ -309,18 +308,6 @@ TightDataPointStorageI* SZ_compress_int64_1D_MDQ(int64_t *oriData, size_t dataLe
 	for(i=0;i<dataLength;i++)
 		if(type[i]==0) sum++;
 	printf("opt_quantizations=%d, exactDataNum=%d, sum=%d\n",quantization_intervals, exactDataNum, sum);*/
-
-//	writeUShortData(type, dataLength, "compressStateBytes.sb");
-//	unsigned short type_[dataLength];
-//	SZ_Reset();
-//	decode_withTree(tdps->typeArray, tdps->typeArray_size, type_);	
-//	printf("tdps->typeArray_size=%d\n", tdps->typeArray_size);
-	
-//	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d,resiBitLengthArray->size=%d\n", 
-//			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size, resiBitLengthArray->size);
-	
-//	for(i = 3800;i<3844;i++)
-//		printf("exactLeadNumArray->array[%d]=%d\n",i,exactLeadNumArray->array[i]);
 	
 	//free memory
 	free(type);	
@@ -368,8 +355,6 @@ unsigned char** newByteData, size_t *outSize)
 void SZ_compress_args_int64_NoCkRngeNoGzip_1D(unsigned char** newByteData, int64_t *oriData, 
 size_t dataLength, double realPrecision, size_t *outSize, int64_t valueRangeSize, int64_t minValue)
 {
-	SZ_Reset();	
-	
 	TightDataPointStorageI* tdps = SZ_compress_int64_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, minValue);
 	//TODO: return bytes....
 	convertTDPStoFlatBytes_int(tdps, newByteData, outSize);
@@ -543,8 +528,6 @@ TightDataPointStorageI* SZ_compress_int64_2D_MDQ(int64_t *oriData, size_t r1, si
 void SZ_compress_args_int64_NoCkRngeNoGzip_2D(unsigned char** newByteData, int64_t *oriData, size_t r1, size_t r2, double realPrecision, size_t *outSize, 
 int64_t valueRangeSize, int64_t minValue)
 {
-	SZ_Reset();	
-
 	TightDataPointStorageI* tdps = SZ_compress_int64_2D_MDQ(oriData, r1, r2, realPrecision, valueRangeSize, minValue);
 
 	convertTDPStoFlatBytes_int(tdps, newByteData, outSize);
@@ -824,8 +807,6 @@ TightDataPointStorageI* SZ_compress_int64_3D_MDQ(int64_t *oriData, size_t r1, si
 void SZ_compress_args_int64_NoCkRngeNoGzip_3D(unsigned char** newByteData, int64_t *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t *outSize, 
 int64_t valueRangeSize, int64_t minValue)
 {
-	SZ_Reset();	
-	
 	TightDataPointStorageI* tdps = SZ_compress_int64_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, minValue);
 
 	convertTDPStoFlatBytes_int(tdps, newByteData, outSize);
@@ -1133,8 +1114,6 @@ TightDataPointStorageI* SZ_compress_int64_4D_MDQ(int64_t *oriData, size_t r1, si
 void SZ_compress_args_int64_NoCkRngeNoGzip_4D(unsigned char** newByteData, int64_t *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision, 
 size_t *outSize, int64_t valueRangeSize, int64_t minValue)
 {
-	SZ_Reset();
-
 	TightDataPointStorageI* tdps = SZ_compress_int64_4D_MDQ(oriData, r1, r2, r3, r4, realPrecision, valueRangeSize, minValue);
 
 	convertTDPStoFlatBytes_int(tdps, newByteData, outSize);
@@ -1283,7 +1262,6 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 			printf("Error: Wrong setting of szMode in the int64_t compression.\n");
 			status = SZ_MERR; //mode error			
 		}
-		SZ_ReleaseHuffman();
 	}
 	
 	return status;

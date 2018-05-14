@@ -23,6 +23,11 @@ typedef struct TightDataPointStorageD
 	char reqLength;	
 	char radExpo; //used to compute reqLength based on segmented precisions in "pw_rel_compression"
 
+	int stateNum;
+	int allNodes;
+	int intvCapacity;
+	int intvRadius;
+
 	size_t exactDataNum;
 	double reservedValue;
 	
@@ -78,6 +83,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 void convertTDPStoFlatBytes_double_args(TightDataPointStorageD *tdps, unsigned char* bytes, size_t *size);
 
 void free_TightDataPointStorageD(TightDataPointStorageD *tdps);
+void free_TightDataPointStorageD2(TightDataPointStorageD *tdps);
 
 #ifdef __cplusplus
 }

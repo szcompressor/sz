@@ -18,7 +18,6 @@ extern "C" {
 
 //conf.c
 void updateQuantizationInfo(int quant_intervals);
-void clearHuffmanMem();
 int SZ_ReadConf();
 int SZ_LoadConf();
 int checkVersion(char* version);

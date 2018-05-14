@@ -308,7 +308,7 @@ extern pastri_params pastri_par;
 #endif
 
 //sz.h
-void SZ_Reset();
+HuffmanTree* SZ_Reset();
 
 int SZ_Init(const char *configFilePath);
 
@@ -363,10 +363,6 @@ void filloutDimArray(size_t* dim, size_t r5, size_t r4, size_t r3, size_t r2, si
 size_t compute_total_batch_size();
 
 int isZlibFormat(unsigned char magic1, unsigned char magic2);
-
-unsigned char* SZ_batch_compress(size_t *outSize);
-
-SZ_VarSet* SZ_batch_decompress(unsigned char* compressedStream, size_t length, int *status);
 
 void SZ_Finalize();
 

@@ -80,7 +80,7 @@ unsigned char * SZ_compress_float_1D_MDQ_openmp(float *oriData, size_t r1, doubl
 	// printf("total_unpred num: %d\n", total_unpred);
 	// printf("Block wise compression end, num_elements %ld\n", num_elements);
 	// huffman encode
-	SZ_Reset(allNodes, stateNum);
+	SZ_Reset();
 	size_t nodeCount = 0;
 	Huffman_init_openmp(result_type, num_elements, thread_num);
 	elapsed_time += omp_get_wtime();
@@ -311,7 +311,7 @@ unsigned char * SZ_compress_float_2D_MDQ_openmp(float *oriData, size_t r1, size_
 	// printf("total_unpred num: %d\n", total_unpred);
 	// printf("Block wise compression end, num_elements %ld\n", num_elements);
 	// huffman encode
-	SZ_Reset(allNodes, stateNum);
+	SZ_Reset();
 	size_t nodeCount = 0;
 	Huffman_init_openmp(result_type, num_elements, thread_num);
 	elapsed_time += omp_get_wtime();
@@ -561,7 +561,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	// printf("total_unpred num: %d\n", total_unpred);
 	// printf("Block wise compression end, num_elements %ld\n", num_elements);
 	// huffman encode
-	SZ_Reset(allNodes, stateNum);
+	SZ_Reset();
 	size_t nodeCount = 0;
 	Huffman_init_openmp(result_type, num_elements, thread_num);
 	elapsed_time += omp_get_wtime();
@@ -737,7 +737,7 @@ void decompressDataSeries_float_1D_openmp(float** data, size_t r1, unsigned char
 	comp_data_pos += 4;
 	allNodes = bytesToInt_bigEndian(comp_data_pos);
 	stateNum = allNodes/2;
-	SZ_Reset(allNodes, stateNum);
+	SZ_Reset();
 	// printf("Reconstruct huffman tree with node count %ld\n", nodeCount);
 	// fflush(stdout);
 	node root = reconstruct_HuffTree_from_bytes_anyStates(comp_data_pos+4, allNodes);
@@ -888,7 +888,7 @@ void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, un
 	comp_data_pos += 4;
 	allNodes = bytesToInt_bigEndian(comp_data_pos);
 	stateNum = allNodes/2;
-	SZ_Reset(allNodes, stateNum);
+	SZ_Reset();
 	// printf("Reconstruct huffman tree with node count %ld\n", nodeCount);
 	// fflush(stdout);
 	node root = reconstruct_HuffTree_from_bytes_anyStates(comp_data_pos+4, allNodes);
@@ -1049,7 +1049,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 	comp_data_pos += 4;
 	allNodes = bytesToInt_bigEndian(comp_data_pos);
 	stateNum = allNodes/2;
-	SZ_Reset(allNodes, stateNum);
+	SZ_Reset();
 	// printf("Reconstruct huffman tree with node count %ld\n", nodeCount);
 	// fflush(stdout);
 	node root = reconstruct_HuffTree_from_bytes_anyStates(comp_data_pos+4, allNodes);

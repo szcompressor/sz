@@ -555,7 +555,6 @@ size_t dataLength, size_t *outSize, double min, double max)
 	}
 	else
 		quantization_intervals = intvCapacity;
-	//clearHuffmanMem();
 	size_t i = 0, j = 0;
 	int reqLength;
 	double realPrecision = pwrErrBound[j++];	
@@ -776,7 +775,6 @@ size_t *outSize, double min, double max)
 	}
 	else
 		quantization_intervals = intvCapacity;	
-	//clearHuffmanMem();	
 	//printf("quantization_intervals=%d\n",quantization_intervals);
 	
 	size_t i=0,j=0,I=0,J=0; 
@@ -1047,7 +1045,6 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, double min, double max)
 	}	
 	else
 		quantization_intervals = intvCapacity;
-	//clearHuffmanMem();
 	size_t i=0,j=0,k=0, I = 0, J = 0, K = 0;
 	int reqLength;
 	double realPrecision = pwrErrBound[0];		
@@ -1498,7 +1495,6 @@ void createRangeGroups_double(double** posGroups, double** negGroups, int** posF
 
 void compressGroupIDArray_double(char* groupID, TightDataPointStorageD* tdps)
 {
-	SZ_Reset(); //reset the huffman tree
 	size_t dataLength = tdps->dataSeriesLength;
 	int* standGroupID = (int*)malloc(dataLength*sizeof(int));
 
@@ -1516,10 +1512,9 @@ void compressGroupIDArray_double(char* groupID, TightDataPointStorageD* tdps)
 	unsigned char* out = (unsigned char*)malloc(sizeof(unsigned char)*dataLength);
 	size_t outSize;
 	
-	encode_withTree(standGroupID, dataLength, &out, &outSize);
-	//encode2_withTree(standGroupID, dataLength, &out, &outSize);
-	
-	//outSize = zlib_compress5(standGroupID, dataLength, &out, 9);
+	HuffmanTree* huffmanTree = SZ_Reset();
+	encode_withTree(huffmanTree, standGroupID, dataLength, &out, &outSize);
+	SZ_ReleaseHuffman(huffmanTree);
 	
 	tdps->pwrErrBoundBytes = out; //groupIDArray
 	tdps->pwrErrBoundBytes_size = outSize;

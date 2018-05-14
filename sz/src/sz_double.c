@@ -244,7 +244,6 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	else
 		quantization_intervals = intvCapacity;
 	updateQuantizationInfo(quantization_intervals);	
-	//clearHuffmanMem();
 
 	size_t i;
 	int reqLength;
@@ -400,8 +399,6 @@ unsigned char** newByteData, size_t *outSize)
 void SZ_compress_args_double_NoCkRngeNoGzip_1D(unsigned char** newByteData, double *oriData, 
 size_t dataLength, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
 {
-	SZ_Reset();
-
 	TightDataPointStorageD* tdps = SZ_compress_double_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_d);
 
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
@@ -422,7 +419,6 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
 	}
 	else
 		quantization_intervals = intvCapacity;	
-	//clearHuffmanMem();	
 	size_t i,j; 
 	int reqLength;
 	double pred1D, pred2D;
@@ -628,8 +624,6 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
  * */
 void SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, double *oriData, size_t r1, size_t r2, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
 {
-	SZ_Reset();	
-
 	TightDataPointStorageD* tdps = SZ_compress_double_2D_MDQ(oriData, r1, r2, realPrecision, valueRangeSize, medianValue_d);
 
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
@@ -651,7 +645,6 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 	}	
 	else
 		quantization_intervals = intvCapacity;
-	//clearHuffmanMem();
 	size_t i,j,k; 
 	int reqLength;
 	double pred1D, pred2D, pred3D;
@@ -959,8 +952,6 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 
 void SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
 {
-	SZ_Reset();	
-
 	TightDataPointStorageD* tdps = SZ_compress_double_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_d);
 
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
@@ -1303,8 +1294,6 @@ TightDataPointStorageD* SZ_compress_double_4D_MDQ(double *oriData, size_t r1, si
 
 void SZ_compress_args_double_NoCkRngeNoGzip_4D(unsigned char** newByteData, double *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
 {
-	SZ_Reset();
-
 	TightDataPointStorageD* tdps = SZ_compress_double_4D_MDQ(oriData, r1, r2, r3, r4, realPrecision, valueRangeSize, medianValue_d);
 
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
@@ -1498,8 +1487,6 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			printf("Error: Wrong setting of szMode in the double compression.\n");
 			status = SZ_MERR;	
 		}
-		
-		SZ_ReleaseHuffman();
 	}
 
 	return status;
@@ -1579,14 +1566,12 @@ size_t *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio)
 			status = SZ_DERR; //dimension error
 		}
 	}
-	SZ_ReleaseHuffman();
 	return status;
 }
 
 void SZ_compress_args_double_NoCkRnge_1D_subblock(unsigned char* compressedBytes, double *oriData, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d,
 size_t r1, size_t s1, size_t e1)
 {
-	SZ_Reset();
 	TightDataPointStorageD* tdps = SZ_compress_double_1D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_d, r1, s1, e1);
 
 	if (szMode==SZ_BEST_SPEED)
@@ -1614,7 +1599,6 @@ size_t r1, size_t s1, size_t e1)
 void SZ_compress_args_double_NoCkRnge_2D_subblock(unsigned char* compressedBytes, double *oriData, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d,
 size_t r2, size_t r1, size_t s2, size_t s1, size_t e2, size_t e1)
 {
-	SZ_Reset();
 	TightDataPointStorageD* tdps = SZ_compress_double_2D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_d, r2, r1, s2, s1, e2, e1);
 
 	if (szMode==SZ_BEST_SPEED)
@@ -1642,7 +1626,6 @@ size_t r2, size_t r1, size_t s2, size_t s1, size_t e2, size_t e1)
 void SZ_compress_args_double_NoCkRnge_3D_subblock(unsigned char* compressedBytes, double *oriData, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d,
 size_t r3, size_t r2, size_t r1, size_t s3, size_t s2, size_t s1, size_t e3, size_t e2, size_t e1)
 {
-	SZ_Reset();
 	TightDataPointStorageD* tdps = SZ_compress_double_3D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_d, r3, r2, r1, s3, s2, s1, e3, e2, e1);
 
 	if (szMode==SZ_BEST_SPEED)
@@ -1670,7 +1653,6 @@ size_t r3, size_t r2, size_t r1, size_t s3, size_t s2, size_t s1, size_t e3, siz
 void SZ_compress_args_double_NoCkRnge_4D_subblock(unsigned char* compressedBytes, double *oriData, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d,
 size_t r4, size_t r3, size_t r2, size_t r1, size_t s4, size_t s3, size_t s2, size_t s1, size_t e4, size_t e3, size_t e2, size_t e1)
 {
-	SZ_Reset();
 	TightDataPointStorageD* tdps = SZ_compress_double_4D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_d, r4, r3, r2, r1, s4, s3, s2, s1, e4, e3, e2, e1);
 
 	if (szMode==SZ_BEST_SPEED)

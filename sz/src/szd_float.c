@@ -100,10 +100,9 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 		printf("Error: currently support only at most 4 dimensions!\n");
 		status = SZ_DERR;
 	}
-	free_TightDataPointStorageF(tdps);
+	free_TightDataPointStorageF2(tdps);
 	if(szMode!=SZ_BEST_SPEED && cmpSize!=8+MetaDataByteLength+SZ_SIZE_TYPE)
 		free(szTmpBytes);
-	SZ_ReleaseHuffman();	
 	return status;
 }
 
@@ -122,14 +121,10 @@ void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, TightD
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
-	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
-	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
-	//type = tdps->typeArray;
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
-
-	//sdi:Debug
-	//writeUShortData(type, dataSeriesLength, "decompressStateBytes.sb");
+	
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	unsigned char preBytes[4];
 	unsigned char curBytes[4];
@@ -224,11 +219,10 @@ void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightData
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
-	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
-	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
-	//type = tdps->typeArray;
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	unsigned char preBytes[4];
 	unsigned char curBytes[4];
@@ -524,19 +518,18 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 	// leadNum
 	size_t dataSeriesLength = r1*r2*r3;
 	size_t r23 = r2*r3;
-//	printf ("%d %d %d\n", r1, r2, r3);
 	unsigned char* leadNum;
 	double realPrecision = tdps->realPrecision;
 
+	//TODO
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
-	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
-	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
-	//type = tdps->typeArray;
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	unsigned char preBytes[4];
 	unsigned char curBytes[4];
@@ -1069,11 +1062,10 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
-	//convertByteArray2IntArray_fast_3b(dataSeriesLength, tdps->typeArray, tdps->typeArray_size, &type);
-	//reconstruct_HuffTree_and_Decode_16states(tdps->typeArray, dataSeriesLength, &type);
-	//memcpy(type, tdps->typeArray, dataSeriesLength*sizeof(unsigned short));
-	//type = tdps->typeArray;
-	decode_withTree(tdps->typeArray, dataSeriesLength, type);
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
 
 	unsigned char preBytes[4];
 	unsigned char curBytes[4];
@@ -1608,7 +1600,6 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 
 void getSnapshotData_float_1D(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps, int errBoundMode)
 {	
-	SZ_Reset();
 	size_t i;
 
 	if (tdps->allSameData) {
@@ -1662,7 +1653,6 @@ void getSnapshotData_float_1D(float** data, size_t dataSeriesLength, TightDataPo
 
 void getSnapshotData_float_2D(float** data, size_t r1, size_t r2, TightDataPointStorageF* tdps, int errBoundMode) 
 {
-	SZ_Reset();
 	size_t i;
 	size_t dataSeriesLength = r1*r2;
 	if (tdps->allSameData) {
@@ -1713,7 +1703,6 @@ void getSnapshotData_float_2D(float** data, size_t r1, size_t r2, TightDataPoint
 
 void getSnapshotData_float_3D(float** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageF* tdps, int errBoundMode)
 {
-	SZ_Reset();
 	size_t i;
 	size_t dataSeriesLength = r1*r2*r3;
 	if (tdps->allSameData) {
@@ -1764,7 +1753,6 @@ void getSnapshotData_float_3D(float** data, size_t r1, size_t r2, size_t r3, Tig
 
 void getSnapshotData_float_4D(float** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageF* tdps, int errBoundMode)
 {
-	SZ_Reset();
 	size_t i;
 	size_t dataSeriesLength = r1*r2*r3*r4;
 	if (tdps->allSameData) {
