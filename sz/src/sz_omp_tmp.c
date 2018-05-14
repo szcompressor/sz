@@ -28,6 +28,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	{
 		// quantization_intervals = optimize_intervals_float_3D(oriData, r1, realPrecision);
 		quantization_intervals = optimize_intervals_float_3D_opt(oriData, r1, r2, r3, realPrecision);
+		//quantization_intervals = 32768;
 		printf("3D number of bins: %d\nerror bound %.20f\n", quantization_intervals, realPrecision);
 		// exit(0);		
 		updateQuantizationInfo(quantization_intervals);
@@ -41,7 +42,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	elapsed_time = -omp_get_wtime();
 	int thread_num = omp_get_max_threads();
 	int thread_order = (int)log2(thread_num);
-	size_t num_x, num_y, num_z;
+	size_t num_x = 0, num_y = 0, num_z = 0;
 	{
 		int block_thread_order = thread_order / 3;
 		switch(thread_order % 3){
@@ -103,6 +104,10 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	size_t * block_offset = (size_t *) malloc(num_blocks * sizeof(size_t));
 	size_t *freq = (size_t *)malloc(thread_num*quantization_intervals*4*sizeof(size_t));
 	memset(freq, 0, thread_num*quantization_intervals*4*sizeof(size_t));
+	
+	size_t stateNum = quantization_intervals*2;
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);	
+	
 	int num_yz = num_y * num_z;
 	#pragma omp parallel for
 	for(int t=0; t<thread_num; t++){
@@ -143,8 +148,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	// printf("total_unpred num: %d\n", total_unpred);
 	// printf("Block wise compression end, num_elements %ld\n", num_elements);
 	// huffman encode
-	size_t stateNum = quantization_intervals*2;
-	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);	
+
 	size_t nodeCount = 0;
 	Huffman_init_openmp(huffmanTree, result_type, num_elements, thread_num, freq);
 	elapsed_time += omp_get_wtime();
@@ -303,7 +307,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 	int thread_num = bytesToInt_bigEndian(comp_data_pos);
 	comp_data_pos += 4;
 	int thread_order = (int)log2(thread_num);
-	size_t num_x, num_y, num_z;
+	size_t num_x = 0, num_y = 0, num_z = 0;
 	{
 		int block_thread_order = thread_order / 3;
 		switch(thread_order % 3){
@@ -347,13 +351,15 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 	unsigned int intervals = bytesToInt_bigEndian(comp_data_pos);
 	comp_data_pos += 4;
 
+	size_t stateNum = intervals*2;
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
+
 	updateQuantizationInfo(intervals);
 	// intvRadius = (int)((tdps->intervals - 1)/ 2);
 
 	unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);
 	comp_data_pos += 4;
 	size_t huffman_nodes = bytesToInt_bigEndian(comp_data_pos);
-	HuffmanTree* huffmanTree = createHuffmanTree((huffman_nodes+1)/2);
 	huffmanTree->allNodes = huffman_nodes;
 	// printf("Reconstruct huffman tree with node count %ld\n", nodeCount);
 	// fflush(stdout);
