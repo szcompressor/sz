@@ -117,12 +117,6 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 	int max_quant_intervals = bytesToInt_bigEndian(byteBuf);// 4	
 
 	maxRangeRadius = max_quant_intervals/2;
-	
-	(*this)->stateNum = maxRangeRadius*2;
-	(*this)->allNodes = maxRangeRadius*4;
-	
-	(*this)->intvCapacity = maxRangeRadius*2;
-	(*this)->intvRadius = maxRangeRadius;
 
 	if(errorBoundMode>=PW_REL)
 	{
@@ -212,7 +206,12 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 				- (*this)->leadNumArray_size - (*this)->exactMidBytes_size - pwrErrBoundBytes_size;
 	}	
 
-	(*this)->typeArray = &flatBytes[index];
+	(*this)->typeArray = &flatBytes[index]; 
+	//retrieve the number of states (i.e., stateNum)
+	(*this)->allNodes = bytesToInt_bigEndian((*this)->typeArray); //the first 4 bytes store the stateNum
+	(*this)->stateNum = ((*this)->allNodes+1)/2;	
+	(*this)->intvCapacity = (*this)->stateNum;
+	(*this)->intvRadius = (*this)->stateNum/2;	
 
 	index+=(*this)->typeArray_size;
 	

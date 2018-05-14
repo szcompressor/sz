@@ -98,7 +98,7 @@ int SZ_decompress_args_uint16(uint16_t** newData, size_t r5, size_t r4, size_t r
 		printf("Error: currently support only at most 4 dimensions!\n");
 		status = SZ_DERR;
 	}
-	free_TightDataPointStorageI(tdps);
+	free_TightDataPointStorageI2(tdps);
 	if(szMode!=SZ_BEST_SPEED && cmpSize!=4+sizeof(uint16_t)+SZ_SIZE_TYPE+MetaDataByteLength)
 		free(szTmpBytes);
 	return status;
