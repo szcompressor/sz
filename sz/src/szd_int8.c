@@ -36,15 +36,15 @@ int SZ_decompress_args_int8(int8_t** newData, size_t r5, size_t r4, size_t r3, s
 	{
 		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
 		if(isZlib)
-			szMode = SZ_BEST_COMPRESSION;
+			conf_params->szMode = SZ_BEST_COMPRESSION;
 		else
-			szMode = SZ_BEST_SPEED;		
-		if(szMode==SZ_BEST_SPEED)
+			conf_params->szMode = SZ_BEST_SPEED;		
+		if(conf_params->szMode==SZ_BEST_SPEED)
 		{
 			tmpSize = cmpSize;
 			szTmpBytes = cmpBytes;	
 		}
-		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
+		else if(conf_params->szMode==SZ_BEST_COMPRESSION || conf_params->szMode==SZ_DEFAULT_COMPRESSION)
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
@@ -55,7 +55,7 @@ int SZ_decompress_args_int8(int8_t** newData, size_t r5, size_t r4, size_t r3, s
 		}
 		else
 		{
-			printf("Wrong value of szMode in the double compressed bytes.\n");
+			printf("Wrong value of conf_params->szMode in the double compressed bytes.\n");
 			status = SZ_MERR;
 			return status;
 		}	
@@ -71,7 +71,7 @@ int SZ_decompress_args_int8(int8_t** newData, size_t r5, size_t r4, size_t r3, s
 	if(tdps->isLossless)
 	{
 		*newData = (int8_t*)malloc(intSize*dataLength);
-		if(sysEndianType==BIG_ENDIAN_SYSTEM)
+		if(exe_params->sysEndianType==BIG_ENDIAN_SYSTEM)
 		{
 			memcpy(*newData, szTmpBytes+4+MetaDataByteLength+SZ_SIZE_TYPE, dataLength*intSize);
 		}
@@ -99,7 +99,7 @@ int SZ_decompress_args_int8(int8_t** newData, size_t r5, size_t r4, size_t r3, s
 		status = SZ_DERR;
 	}
 	free_TightDataPointStorageI2(tdps);
-	if(szMode!=SZ_BEST_SPEED && cmpSize!=4+sizeof(int8_t)+SZ_SIZE_TYPE+MetaDataByteLength)
+	if(conf_params->szMode!=SZ_BEST_SPEED && cmpSize!=4+sizeof(int8_t)+SZ_SIZE_TYPE+MetaDataByteLength)
 		free(szTmpBytes);
 	return status;
 }
@@ -152,7 +152,7 @@ void decompressDataSeries_int8_1D(int8_t** data, size_t dataSeriesLength, TightD
 		default:
 			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
 			predValue = (*data)[i-1];
-			tmp = predValue + (type_-intvRadius)*interval;
+			tmp = predValue + (type_-exe_params->intvRadius)*interval;
 			if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 				(*data)[i] = tmp;
 			else if(tmp < SZ_INT8_MIN)
@@ -170,7 +170,7 @@ void decompressDataSeries_int8_1D(int8_t** data, size_t dataSeriesLength, TightD
 void decompressDataSeries_int8_2D(int8_t** data, size_t r1, size_t r2, TightDataPointStorageI* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
-	//printf("tdps->intervals=%d, intvRadius=%d\n", tdps->intervals, intvRadius);
+	//printf("tdps->intervals=%d, exe_params->intvRadius=%d\n", tdps->intervals, exe_params->intvRadius);
 	
 	size_t dataSeriesLength = r1*r2;
 	//	printf ("%d %d\n", r1, r2);
@@ -213,7 +213,7 @@ void decompressDataSeries_int8_2D(int8_t** data, size_t r1, size_t r2, TightData
 	if (type_ != 0)
 	{
 		pred1D = (*data)[0];
-		tmp = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+		tmp = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 			(*data)[1] = tmp;
 		else if(tmp < SZ_INT8_MIN)
@@ -239,7 +239,7 @@ void decompressDataSeries_int8_2D(int8_t** data, size_t r1, size_t r2, TightData
 		if (type_ != 0)
 		{
 			pred1D = 2*(*data)[jj-1] - (*data)[jj-2];				
-			tmp = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			tmp = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 				(*data)[jj] = tmp;
 			else if(tmp < SZ_INT8_MIN)
@@ -269,7 +269,7 @@ void decompressDataSeries_int8_2D(int8_t** data, size_t r1, size_t r2, TightData
 		if (type_ != 0)
 		{
 			pred1D = (*data)[index-r2];		
-			tmp = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			tmp = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 				(*data)[index] = tmp;
 			else if(tmp < SZ_INT8_MIN)
@@ -296,7 +296,7 @@ void decompressDataSeries_int8_2D(int8_t** data, size_t r1, size_t r2, TightData
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				tmp = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				tmp = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 					(*data)[index] = tmp;
 				else if(tmp < SZ_INT8_MIN)
@@ -365,7 +365,7 @@ void decompressDataSeries_int8_3D(int8_t** data, size_t r1, size_t r2, size_t r3
 	int type_ = type[1];
 	if (type_ != 0)
 	{
-		tmp = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+		tmp = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 			(*data)[1] = tmp;
 		else if(tmp < SZ_INT8_MIN)
@@ -389,7 +389,7 @@ void decompressDataSeries_int8_3D(int8_t** data, size_t r1, size_t r2, size_t r3
 		type_ = type[jj];
 		if (type_ != 0)
 		{
-			tmp = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			tmp = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 				(*data)[jj] = tmp;
 			else if(tmp < SZ_INT8_MIN)
@@ -417,7 +417,7 @@ void decompressDataSeries_int8_3D(int8_t** data, size_t r1, size_t r2, size_t r3
 		type_ = type[index];
 		if (type_ != 0)
 		{
-			tmp = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			tmp = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 				(*data)[index] = tmp;
 			else if(tmp < SZ_INT8_MIN)
@@ -443,7 +443,7 @@ void decompressDataSeries_int8_3D(int8_t** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				tmp = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				tmp = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 					(*data)[index] = tmp;
 				else if(tmp < SZ_INT8_MIN)
@@ -473,7 +473,7 @@ void decompressDataSeries_int8_3D(int8_t** data, size_t r1, size_t r2, size_t r3
 		type_ = type[index];
 		if (type_ != 0)
 		{
-			tmp = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			tmp = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 				(*data)[index] = tmp;
 			else if(tmp < SZ_INT8_MIN)
@@ -499,7 +499,7 @@ void decompressDataSeries_int8_3D(int8_t** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				tmp = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				tmp = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 					(*data)[index] = tmp;
 				else if(tmp < SZ_INT8_MIN)
@@ -527,7 +527,7 @@ void decompressDataSeries_int8_3D(int8_t** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				tmp = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				tmp = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 					(*data)[index] = tmp;
 				else if(tmp < SZ_INT8_MIN)
@@ -554,7 +554,7 @@ void decompressDataSeries_int8_3D(int8_t** data, size_t r1, size_t r2, size_t r3
 				type_ = type[index];
 				if (type_ != 0)
 				{
-					tmp = pred3D + 2 * (type_ - intvRadius) * realPrecision;
+					tmp = pred3D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 					if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 						(*data)[index] = tmp;
 					else if(tmp < SZ_INT8_MIN)
@@ -632,7 +632,7 @@ void decompressDataSeries_int8_4D(int8_t** data, size_t r1, size_t r2, size_t r3
 		type_ = type[index];
 		if (type_ != 0)
 		{
-			tmp = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			tmp = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 				(*data)[index] = tmp;
 			else if(tmp < SZ_INT8_MIN)
@@ -659,7 +659,7 @@ void decompressDataSeries_int8_4D(int8_t** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				tmp = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+				tmp = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 					(*data)[index] = tmp;
 				else if(tmp < SZ_INT8_MIN)
@@ -688,7 +688,7 @@ void decompressDataSeries_int8_4D(int8_t** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				tmp = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+				tmp = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 					(*data)[index] = tmp;
 				else if(tmp < SZ_INT8_MIN)
@@ -715,7 +715,7 @@ void decompressDataSeries_int8_4D(int8_t** data, size_t r1, size_t r2, size_t r3
 				type_ = type[index];
 				if (type_ != 0)
 				{
-					tmp = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+					tmp = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 					if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 						(*data)[index] = tmp;
 					else if(tmp < SZ_INT8_MIN)
@@ -746,7 +746,7 @@ void decompressDataSeries_int8_4D(int8_t** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				tmp = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+				tmp = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 					(*data)[index] = tmp;
 				else if(tmp < SZ_INT8_MIN)
@@ -773,7 +773,7 @@ void decompressDataSeries_int8_4D(int8_t** data, size_t r1, size_t r2, size_t r3
 				type_ = type[index];
 				if (type_ != 0)
 				{
-					tmp = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+					tmp = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 					if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 						(*data)[index] = tmp;
 					else if(tmp < SZ_INT8_MIN)
@@ -802,7 +802,7 @@ void decompressDataSeries_int8_4D(int8_t** data, size_t r1, size_t r2, size_t r3
 				type_ = type[index];
 				if (type_ != 0)
 				{
-					tmp = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+					tmp = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 					if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 						(*data)[index] = tmp;
 					else if(tmp < SZ_INT8_MIN)
@@ -830,7 +830,7 @@ void decompressDataSeries_int8_4D(int8_t** data, size_t r1, size_t r2, size_t r3
 					type_ = type[index];
 					if (type_ != 0)
 					{
-						tmp = pred3D + 2 * (type_ - intvRadius) * realPrecision;
+						tmp = pred3D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 						if(tmp >= SZ_INT8_MIN&&tmp<SZ_INT8_MAX)
 							(*data)[index] = tmp;
 						else if(tmp < SZ_INT8_MIN)

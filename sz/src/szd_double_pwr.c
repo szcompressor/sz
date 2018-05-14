@@ -119,7 +119,7 @@ void decompressDataSeries_double_1D_pwr(double** data, size_t dataSeriesLength, 
 		default:
 			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
 			predValue = (*data)[i-1];
-			(*data)[i] = predValue + (type_-intvRadius)*interval;
+			(*data)[i] = predValue + (type_-exe_params->intvRadius)*interval;
 			break;
 		}
 		//printf("%.30G\n",(*data)[i]);
@@ -151,7 +151,7 @@ double* extractRealPrecision_2D_double(size_t R1, size_t R2, int blockSize, Tigh
 void decompressDataSeries_double_2D_pwr(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
-	//printf("tdps->intervals=%d, intvRadius=%d\n", tdps->intervals, intvRadius);
+	//printf("tdps->intervals=%d, exe_params->intvRadius=%d\n", tdps->intervals, exe_params->intvRadius);
 	
 	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
@@ -243,7 +243,7 @@ void decompressDataSeries_double_2D_pwr(double** data, size_t r1, size_t r2, Tig
 	if (type_ != 0)
 	{
 		pred1D = (*data)[0];		
-		(*data)[1] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+		(*data)[1] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 	}
 	else
 	{
@@ -304,7 +304,7 @@ void decompressDataSeries_double_2D_pwr(double** data, size_t r1, size_t r2, Tig
 		if (type_ != 0)
 		{			
 			pred1D = 2*(*data)[jj-1] - (*data)[jj-2];
-			(*data)[jj] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			(*data)[jj] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -375,7 +375,7 @@ void decompressDataSeries_double_2D_pwr(double** data, size_t r1, size_t r2, Tig
 		if (type_ != 0)
 		{
 			pred1D = (*data)[index-r2];
-			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -443,7 +443,7 @@ void decompressDataSeries_double_2D_pwr(double** data, size_t r1, size_t r2, Tig
 			if (type_ != 0)
 			{
 				pred2D = (*data)[index-1] + (*data)[index-r2] - (*data)[index-r2-1];
-				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -626,7 +626,7 @@ void decompressDataSeries_double_3D_pwr(double** data, size_t r1, size_t r2, siz
 	type_ = type[1];
 	if (type_ != 0)
 	{
-		(*data)[1] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+		(*data)[1] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 	}
 	else
 	{
@@ -687,7 +687,7 @@ void decompressDataSeries_double_3D_pwr(double** data, size_t r1, size_t r2, siz
 		if (type_ != 0)
 		{
 			pred1D = 2*(*data)[jj-1] - (*data)[jj-2];
-			(*data)[jj] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			(*data)[jj] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -759,7 +759,7 @@ void decompressDataSeries_double_3D_pwr(double** data, size_t r1, size_t r2, siz
 		if (type_ != 0)
 		{
 			pred1D = (*data)[index-r3];			
-			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -827,7 +827,7 @@ void decompressDataSeries_double_3D_pwr(double** data, size_t r1, size_t r2, siz
 			if (type_ != 0)
 			{
 				pred2D = (*data)[index-1] + (*data)[index-r3] - (*data)[index-r3-1];				
-				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -901,7 +901,7 @@ void decompressDataSeries_double_3D_pwr(double** data, size_t r1, size_t r2, siz
 		if (type_ != 0)
 		{
 			pred1D = (*data)[index-r23];			
-			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -970,7 +970,7 @@ void decompressDataSeries_double_3D_pwr(double** data, size_t r1, size_t r2, siz
 			if (type_ != 0)
 			{
 				pred2D = (*data)[index-1] + (*data)[index-r23] - (*data)[index-r23-1];			
-				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1042,7 +1042,7 @@ void decompressDataSeries_double_3D_pwr(double** data, size_t r1, size_t r2, siz
 			if (type_ != 0)
 			{
 				pred2D = (*data)[index-r3] + (*data)[index-r23] - (*data)[index-r23-r3];				
-				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1111,7 +1111,7 @@ void decompressDataSeries_double_3D_pwr(double** data, size_t r1, size_t r2, siz
 				{
 					pred3D = (*data)[index-1] + (*data)[index-r3] + (*data)[index-r23]
 					- (*data)[index-r3-1] - (*data)[index-r23-r3] - (*data)[index-r23-1] + (*data)[index-r23-r3-1];					
-					(*data)[index] = pred3D + 2 * (type_ - intvRadius) * realPrecision;
+					(*data)[index] = pred3D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -1204,12 +1204,12 @@ void decompressDataSeries_double_1D_pwrgroup(double** data, size_t dataSeriesLen
 	//note that the groupID values here are [1,2,3,....,18] or [-1,-2,...,-18]
 	
 	double* groupErrorBounds = generateGroupErrBounds(conf_params->errorBoundMode, realPrecision, conf_params->pw_relBoundRatio);
-	intvRadius = generateGroupMaxIntervalCount(groupErrorBounds);
+	exe_params->intvRadius = generateGroupMaxIntervalCount(groupErrorBounds);
 		
 	size_t nbBins = (size_t)(1/conf_params->pw_relBoundRatio + 0.5);
 	if(nbBins%2==1)
 		nbBins++;
-	intvRadius = nbBins;
+	exe_params->intvRadius = nbBins;
 
 	
 
@@ -1316,7 +1316,7 @@ void decompressDataSeries_double_1D_pwrgroup(double** data, size_t dataSeriesLen
 			realGroupPrecision = groupErrorBounds[indexGrpID];
 			interval = realGroupPrecision*2;		
 			
-			curValue = predValue + (type_-intvRadius)*interval;
+			curValue = predValue + (type_-exe_params->intvRadius)*interval;
 			
 			//groupNum = computeGroupNum_double(curValue);
 			

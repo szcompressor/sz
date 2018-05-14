@@ -18,8 +18,8 @@ extern "C" {
 
 //conf.c
 void updateQuantizationInfo(int quant_intervals);
-int SZ_ReadConf();
-int SZ_LoadConf();
+int SZ_ReadConf(const char* sz_cfgFile);
+int SZ_LoadConf(const char* sz_cfgFile);
 int checkVersion(char* version);
 unsigned int roundUpToPowerOf2(unsigned int base);
 double computeABSErrBoundFromPSNR(double psnr, double threshold, double value_range);

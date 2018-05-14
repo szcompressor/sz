@@ -27,8 +27,6 @@ typedef struct TightDataPointStorageF
 	
 	int stateNum;
 	int allNodes;
-	int intvCapacity;
-	int intvRadius;
 	
 	size_t exactDataNum;
 	float reservedValue;

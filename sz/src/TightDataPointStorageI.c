@@ -121,7 +121,7 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 		exit(0);
 	}
 	int same = sameRByte & 0x01;
-	//szMode = (sameRByte & 0x06)>>1;
+	//conf_params->szMode = (sameRByte & 0x06)>>1;
 	int dataByteSizeCode = (sameRByte & 0x0C)>>2;
 	convertDataTypeSizeCode(dataByteSizeCode); //in bytes
 	(*this)->isLossless = (sameRByte & 0x10)>>4;
@@ -205,9 +205,7 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 	(*this)->typeArray = &flatBytes[index];
 	//retrieve the number of states (i.e., stateNum)
 	(*this)->allNodes = bytesToInt_bigEndian((*this)->typeArray); //the first 4 bytes store the stateNum
-	(*this)->stateNum = ((*this)->allNodes+1)/2;	
-	(*this)->intvCapacity = (*this)->stateNum;
-	(*this)->intvRadius = (*this)->stateNum/2;		
+	(*this)->stateNum = ((*this)->allNodes+1)/2;		
 
 	index+=(*this)->typeArray_size;
 	
@@ -340,7 +338,7 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 		longToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//8
 
 	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
-	sameByte = sameByte | (szMode << 1);
+	sameByte = sameByte | (conf_params->szMode << 1);
 	if(tdps->isLossless)
 		sameByte = (unsigned char) (sameByte | 0x10);
 	
@@ -401,7 +399,7 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 		longToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//8
 		
 	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
-	sameByte = sameByte | (szMode << 1);
+	sameByte = sameByte | (conf_params->szMode << 1);
 	if(tdps->isLossless)
 		sameByte = (unsigned char) (sameByte | 0x10);
 	if(SZ_SIZE_TYPE==8)

@@ -25,49 +25,23 @@
 
 unsigned int maxRangeRadius = 32768;
 
-int sysEndianType; //endian type of the system
-int dataEndianType = LITTLE_ENDIAN_DATA; //endian type of the data
-
-char maxHeap[10];
-
-long status;
-
-int sol_ID = SZ;
 int errorBoundMode = 0; //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PSNR, or PW_REL, PSNR
-
-int gzipMode; //four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
-
-const char *sz_cfgFile;
-
-int offset;
 
 double absErrBound;
 double relBoundRatio;
 double psnr;
 double pw_relBoundRatio;
-int segment_size;
-int pwr_type = SZ_PWR_MIN_TYPE;
 
 int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 
-int spaceFillingCurveTransform; //default is 0, or 1 set by sz.config
-int reOrgSize; //the granularity of the reganization of the original data
-
-int intvCapacity = 0;
-int intvRadius = 0;
-
-int layers = 1;
 float predThreshold = 0.98;
-int sampleDistance = 10;
-char optQuantMode = 0; //opt Quantization (0: fixed ; 1: optimized)
-
-int szMode = SZ_BEST_COMPRESSION;
 
 int SZ_SIZE_TYPE = 8;
 
 SZ_VarSet* sz_varset = NULL;
 
 sz_params *conf_params = NULL;
+sz_exedata *exe_params = NULL;
 
 //only for Pastri compressor
 #ifdef PASTRI
@@ -81,8 +55,7 @@ HuffmanTree* SZ_Reset()
 
 int SZ_Init(const char *configFilePath)
 {
-	sz_cfgFile = configFilePath;
-	int loadFileResult = SZ_LoadConf();
+	int loadFileResult = SZ_LoadConf(configFilePath);
 	if(loadFileResult==SZ_NSCS)
 		return SZ_NSCS;
 	
@@ -92,95 +65,31 @@ int SZ_Init(const char *configFilePath)
 
 int SZ_Init_Params(sz_params *params)
 {
-	conf_params = (sz_params*)malloc(sizeof(sz_params));   
-	memcpy(conf_params, params, sizeof(sz_params));
-    int x = 1;
-    char *y = (char*)&x;
-    int endianType = BIG_ENDIAN_SYSTEM;
-    if(*y==1) endianType = LITTLE_ENDIAN_SYSTEM;
+	int x = 1;
+	char *y = (char*)&x;
+	int endianType = BIG_ENDIAN_SYSTEM;
+	if(*y==1) endianType = LITTLE_ENDIAN_SYSTEM;
 
+	exe_params->sysEndianType = endianType;
 	SZ_SIZE_TYPE = sizeof(size_t);
 
-    // set default values
-    if(params->max_quant_intervals > 0) 
+	// set default values
+	if(params->max_quant_intervals > 0) 
 		maxRangeRadius = params->max_quant_intervals/2;
 	else
 		params->max_quant_intervals = maxRangeRadius*2;
 
-	intvCapacity = maxRangeRadius*2;
-	intvRadius = maxRangeRadius;
+	exe_params->intvCapacity = maxRangeRadius*2;
+	exe_params->intvRadius = maxRangeRadius;
 
-    dataEndianType    = endianType;
-    //sysEndianType    = endianType;
-    sol_ID                    = SZ;
-    offset                    = 0;
-    gzipMode               = Z_BEST_SPEED;
-    sampleDistance = 50;
-    predThreshold = 0.97;
-    errorBoundMode    = REL;
-    absErrBound         = 0.000001;
-    relBoundRatio         = 0.001;
-    szMode = SZ_BEST_COMPRESSION;
+	if(params->quantization_intervals>0)
+	{
+		updateQuantizationInfo(params->quantization_intervals);
+		exe_params->optQuantMode = 0;
+	}
+	else
+		exe_params->optQuantMode = 1;
 
-    // set values from function arguments if avail.
-    // [ENV]
-    if(params->dataEndianType >= 0) dataEndianType    = params->dataEndianType;
-    //if(params->sysEndianType >= 0)    sysEndianType    = params->sysEndianType;
-    if(params->sol_ID >= 0)  
-		sol_ID = params->sol_ID;
-
-    // [PARAMETER]
-    if(sol_ID==SZ) {
-        if(params->offset >= 0) offset = params->offset;
-
-        /* gzipModes:
-            Gzip_NO_COMPRESSION=0,
-            Gzip_BEST_SPEED=1,
-            Gzip_BEST_COMPRESSION=9,
-            Gzip_DEFAULT_COMPRESSION=-1 */
-        if(params->gzipMode >= -1) gzipMode = params->gzipMode;
-
-		if(params->szMode >= 0) szMode = params->szMode;
-        //if(params->maxSegmentNum >= 0) maxSegmentNum = params->maxSegmentNum;
-        //if(params->spaceFillingCurveTransform >= 0) spaceFillingCurveTransform = params->spaceFillingCurveTransform;
-        //if(params->reOrgSize >= 0) reOrgSize = params->reOrgSize;
-
-        /* errBoundModes:
-            ABS = 0
-            REL = 1
-            ABS_AND_REL =2
-            ABS_OR_REL = 3 */
-        if( params->errorBoundMode >= 0)  errorBoundMode =  params->errorBoundMode;
-
-        if(params->absErrBound >= 0) absErrBound = params->absErrBound;
-        
-        if(params->relBoundRatio >= 0) relBoundRatio = params->relBoundRatio;
-        
-        if(params->psnr >= 0) psnr = params->psnr;
-        
-		if(params->quantization_intervals>0)
-		{
-			updateQuantizationInfo(params->quantization_intervals);
-			optQuantMode = 0;
-		}
-		else
-			optQuantMode = 1;
-	
-		if(params->layers >= 0)
-			layers = params->layers;
-		if(params->sampleDistance >= 0)
-			sampleDistance = params->sampleDistance;
-		if(params->predThreshold > 0)
-			predThreshold = params->predThreshold;
-		if(params->psnr > 0)
-			psnr = params->psnr;
-		if(params->pw_relBoundRatio > 0)
-			pw_relBoundRatio = params->pw_relBoundRatio;
-		if(params->segment_size > 0)
-			segment_size = params->segment_size;
-		if(params->pwr_type >= 0)
-			pwr_type = params->pwr_type;
-    }
 
 	if(params->quantization_intervals%2!=0)
 	{
@@ -188,10 +97,10 @@ int SZ_Init_Params(sz_params *params)
 		return SZ_NSCS;
 	}
 
-    //initialization for Huffman encoding
-	//SZ_Reset();
-	
-    return SZ_SCES;
+	conf_params = (sz_params*)malloc(sizeof(sz_params));
+	memcpy(conf_params, params, sizeof(sz_params));	
+
+	return SZ_SCES;
 }
 
 int computeDimension(size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
@@ -387,7 +296,7 @@ size_t e5, size_t e4, size_t e3, size_t e2, size_t e1)
 unsigned char *SZ_compress(int dataType, void *data, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {	
 	unsigned char *newByteData = SZ_compress_args(dataType, data, outSize, errorBoundMode, absErrBound, relBoundRatio, 
-	pw_relBoundRatio, pwr_type, r5, r4, r3, r2, r1);
+	pw_relBoundRatio, conf_params->pwr_type, r5, r4, r3, r2, r1);
 	return newByteData;
 }
 
@@ -436,12 +345,20 @@ unsigned char *SZ_compress_rev(int dataType, void *data, void *reservedValue, si
 
 void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
+	if(conf_params==NULL)
+		conf_params = (sz_params*)malloc(sizeof(sz_params));
+	memset(conf_params, 0, sizeof(sz_params));
+	
+	if(exe_params==NULL)
+		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
+	memset(exe_params, 0, sizeof(sz_exedata));
+	
 	int x = 1;
 	char *y = (char*)&x;
 	if(*y==1)
-		sysEndianType = LITTLE_ENDIAN_SYSTEM;
+		exe_params->sysEndianType = LITTLE_ENDIAN_SYSTEM;
 	else //=0
-		sysEndianType = BIG_ENDIAN_SYSTEM;
+		exe_params->sysEndianType = BIG_ENDIAN_SYSTEM;
 	
 	if(dataType == SZ_FLOAT)
 	{
@@ -613,7 +530,7 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 		versions[i] = bytes[index++]; //3
 	unsigned char sameRByte = bytes[index++]; //1
 	isConstant = sameRByte & 0x01;
-	//szMode = (sameRByte & 0x06)>>1;
+	//conf_params->szMode = (sameRByte & 0x06)>>1;
 	isLossless = (sameRByte & 0x10)>>4;
 	SZ_SIZE_TYPE = sizeType = ((sameRByte & 0x40)>>6)==1?8:4;
 	
@@ -707,7 +624,7 @@ void SZ_printMetadata(sz_metadata* metadata)
 		break;				
 	}
 	
-	if(optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 	{
 		printf("quantization_intervals:         \t 0\n");
 		printf("max_quant_intervals:            \t %d\n", params->max_quant_intervals);
@@ -720,7 +637,7 @@ void SZ_printMetadata(sz_metadata* metadata)
 	}
 	
 	printf("dataEndianType (prior raw data):\t %s\n", params->dataEndianType==1?"BIG_ENDIAN":"LITTLE_ENDIAN");
-	printf("sysEndianType (at compression): \t %s\n", params->sysEndianType==1?"BIG_ENDIAN":"LITTLE_ENDIAN");
+	printf("sysEndianType (at compression): \t %s\n", exe_params->sysEndianType==1?"BIG_ENDIAN":"LITTLE_ENDIAN");
 	printf("sampleDistance:                 \t %d\n", params->sampleDistance);
 	printf("predThreshold:                  \t %f\n", params->predThreshold);
 	switch(params->szMode)

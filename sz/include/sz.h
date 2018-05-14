@@ -180,52 +180,7 @@ extern "C" {
         EARLY_BLOCK_COUNT = EARLY_BLOCK_COUNT + 1;                           \
     }                                                                        \
 
-
-extern unsigned int maxRangeRadius;
-
-extern int intvCapacity;
-extern int intvRadius;
-
-extern int sysEndianType; //endian type of the system
-extern int dataEndianType; //endian type of the data
-//extern int maxSegmentNum;
-
-extern char maxHeap[10];
- 
-extern long status;
-
-extern int sol_ID;
-extern int errorBoundMode; //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PW_REL
-
-extern int gzipMode; //four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
-
-extern const char *sz_cfgFile;
-
-extern int offset;
-
-extern double absErrBound;
-extern double relBoundRatio;
-extern double psnr;
-extern double pw_relBoundRatio;
-extern int segment_size;
-
-extern int pwr_type;
-
-extern int versionNumber[4];
-
-extern int layers;
-extern float predThreshold;
-extern int sampleDistance;
-extern char optQuantMode;
-
-extern int szMode; //0 (best speed) or 1 (better compression with Gzip)
-
-//extern int spaceFillingCurveTransform; //default is 0, or 1 set by sz.config
-//extern int reOrgSize; //the granularity of the reganization of the original data
-
-extern SZ_VarSet* sz_varset;
-
-extern int SZ_SIZE_TYPE; //4 or 8: sizeof(size_t) 
+extern SZ_VarSet* sz_varset; //used only for batch-mode
 
 //typedef unsigned long unsigned long;
 //typedef unsigned int uint;
@@ -271,22 +226,19 @@ typedef struct sz_params
 	int dataType;
 	unsigned int max_quant_intervals;
 	unsigned int quantization_intervals;
-    int dataEndianType; //*
-    int sysEndianType; //*sysEndianType is actually set automatically.
-    int sol_ID;//x
-    int layers;//x
-    int sampleDistance; //2 bytes
-    float predThreshold;  // 2 bytes
-    int offset;//x
-    int szMode; //*
-    int gzipMode; //*
-    int  errorBoundMode; //4bits (0.5byte)
-    double absErrBound;
-    double relBoundRatio;
-    double psnr;
-    double pw_relBoundRatio;
-    int segment_size;
-    int pwr_type;
+	int dataEndianType; //*endian type of the data read from disk
+	int sol_ID;//x
+	int sampleDistance; //2 bytes
+	float predThreshold;  // 2 bytes
+	int szMode; //* 0 (best speed) or 1 (better compression with Gzip)
+	int gzipMode; //* four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
+	int  errorBoundMode; //4bits (0.5byte)
+	double absErrBound;
+	double relBoundRatio;
+	double psnr;
+	double pw_relBoundRatio;
+	int segment_size;
+	int pwr_type;
 } sz_params;
 
 typedef struct sz_metadata
@@ -300,7 +252,35 @@ typedef struct sz_metadata
 	struct sz_params* conf_params;
 } sz_metadata;
 
+typedef struct sz_exedata
+{
+	char optQuantMode;	//opt Quantization (0: fixed ; 1: optimized)
+    int sysEndianType; //*sysEndianType is actually set automatically.	
+	int intvCapacity;
+	int intvRadius;    
+} sz_exedata;
+
+//-------------------global variables--------------
+
+extern unsigned int maxRangeRadius;
+
+extern int errorBoundMode; //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PW_REL
+
+extern double absErrBound;
+extern double relBoundRatio;
+extern double psnr;
+extern double pw_relBoundRatio;
+
+extern int versionNumber[4];
+
+extern float predThreshold;
+
+extern int SZ_SIZE_TYPE; //4 or 8: sizeof(size_t) 
+
 extern sz_params *conf_params;
+extern sz_exedata *exe_params;
+
+//------------------------------------------------
 
 //for pastri 
 #ifdef PASTRI

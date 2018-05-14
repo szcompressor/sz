@@ -66,7 +66,7 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 		exit(0);
 	}
 	int same = sameRByte & 0x01;
-	//szMode = (sameRByte & 0x06)>>1;
+	//conf_params->szMode = (sameRByte & 0x06)>>1;
 	(*this)->isLossless = (sameRByte & 0x10)>>4;
 	int isPW_REL = (sameRByte & 0x20)>>5;
 	SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
@@ -124,7 +124,7 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 		radExpoL = 1;
 		for (i = 0; i < SZ_SIZE_TYPE; i++)
 			byteBuf[i] = flatBytes[index++];
-		segment_size = (*this)->segment_size = bytesToSize(byteBuf);// SZ_SIZE_TYPE	
+		params->segment_size = (*this)->segment_size = bytesToSize(byteBuf);// SZ_SIZE_TYPE	
 
 		for (i = 0; i < 4; i++)
 			byteBuf[i] = flatBytes[index++];
@@ -210,8 +210,6 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 	//retrieve the number of states (i.e., stateNum)
 	(*this)->allNodes = bytesToInt_bigEndian((*this)->typeArray); //the first 4 bytes store the stateNum
 	(*this)->stateNum = ((*this)->allNodes+1)/2;	
-	(*this)->intvCapacity = (*this)->stateNum;
-	(*this)->intvRadius = (*this)->stateNum/2;	
 
 	index+=(*this)->typeArray_size;
 	
@@ -372,7 +370,7 @@ void convertTDPStoBytes_float(TightDataPointStorageF* tdps, unsigned char* bytes
 	{
 		bytes[k++] = tdps->radExpo; //1 byte			
 		
-		sizeToBytes(segment_sizeBytes, segment_size);
+		sizeToBytes(segment_sizeBytes, conf_params->segment_size);
 		for(i = 0;i<SZ_SIZE_TYPE;i++)//ST
 			bytes[k++] = segment_sizeBytes[i];				
 			
@@ -467,7 +465,7 @@ void convertTDPStoBytes_float_reserve(TightDataPointStorageF* tdps, unsigned cha
 	{
 		bytes[k++] = tdps->radExpo; //1 byte			
 		
-		sizeToBytes(segment_sizeBytes, segment_size);
+		sizeToBytes(segment_sizeBytes, conf_params->segment_size);
 		for(i = 0;i<SZ_SIZE_TYPE;i++)//ST
 			bytes[k++] = segment_sizeBytes[i];				
 			
@@ -542,7 +540,7 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 		longToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//8
 		
 	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
-	sameByte = sameByte | (szMode << 1);
+	sameByte = sameByte | (conf_params->szMode << 1);
 	if(tdps->isLossless)
 		sameByte = (unsigned char) (sameByte | 0x10);
 	if(errorBoundMode>=PW_REL)
@@ -634,7 +632,7 @@ void convertTDPStoFlatBytes_float_args(TightDataPointStorageF *tdps, unsigned ch
 		longToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//8
 		
 	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
-	sameByte = sameByte | (szMode << 1);
+	sameByte = sameByte | (conf_params->szMode << 1);
 	if(tdps->isLossless)
 		sameByte = (unsigned char) (sameByte | 0x10);
 	if(errorBoundMode>=PW_REL)

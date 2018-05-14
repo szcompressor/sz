@@ -24,7 +24,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 
 	elapsed_time = -omp_get_wtime();
 	unsigned int quantization_intervals;
-	if(optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 	{
 		// quantization_intervals = optimize_intervals_float_3D(oriData, r1, realPrecision);
 		quantization_intervals = optimize_intervals_float_3D_opt(oriData, r1, r2, r3, realPrecision);
@@ -34,7 +34,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 		updateQuantizationInfo(quantization_intervals);
 	}	
 	else{
-		quantization_intervals = intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;
 	}
 	elapsed_time += omp_get_wtime();
 	printf("opt interval time: %.4f\n", elapsed_time);
@@ -355,7 +355,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
 
 	updateQuantizationInfo(intervals);
-	// intvRadius = (int)((tdps->intervals - 1)/ 2);
+	// exe_params->intvRadius = (int)((tdps->intervals - 1)/ 2);
 
 	unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);
 	comp_data_pos += 4;

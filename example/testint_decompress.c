@@ -44,8 +44,8 @@ int main(int argc, char * argv[])
     char zipFilePath[640], outputFilePath[640];
     if(argc < 2)
     {
-		printf("Test case: testint_decompress [datatype(-i8/-i16/-i32/-i64/-ui8/-ui16/-ui32/-ui64)] [configFile] [srcFilePath] [dimension sizes...]\n");
-		printf("Example: testint_decompress -i32 sz.config testdata/x86/testint32_8x8x8.dat.sz 8 8 8\n");
+		printf("Test case: testint_decompress [datatype(-i8/-i16/-i32/-i64/-ui8/-ui16/-ui32/-ui64)] [srcFilePath] [dimension sizes...]\n");
+		printf("Example: testint_decompress -i32 testdata/x86/testint32_8x8x8.dat.sz 8 8 8\n");
 		exit(0);
 	}	
    

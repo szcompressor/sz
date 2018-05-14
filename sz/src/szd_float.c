@@ -37,15 +37,15 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 	{
 		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
 		if(isZlib)
-			szMode = SZ_BEST_COMPRESSION;
+			conf_params->szMode = SZ_BEST_COMPRESSION;
 		else
-			szMode = SZ_BEST_SPEED;		
-		if(szMode==SZ_BEST_SPEED)
+			conf_params->szMode = SZ_BEST_SPEED;		
+		if(conf_params->szMode==SZ_BEST_SPEED)
 		{
 			tmpSize = cmpSize;
 			szTmpBytes = cmpBytes;	
 		}
-		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
+		else if(conf_params->szMode==SZ_BEST_COMPRESSION || conf_params->szMode==SZ_DEFAULT_COMPRESSION)
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
@@ -56,7 +56,7 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 		}
 		else
 		{
-			printf("Wrong value of szMode in the double compressed bytes.\n");
+			printf("Wrong value of conf_params->szMode in the double compressed bytes.\n");
 			status = SZ_MERR;
 			return status;
 		}	
@@ -73,7 +73,7 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 	if(tdps->isLossless)
 	{
 		*newData = (float*)malloc(floatSize*dataLength);
-		if(sysEndianType==BIG_ENDIAN_SYSTEM)
+		if(exe_params->sysEndianType==BIG_ENDIAN_SYSTEM)
 		{
 			memcpy(*newData, szTmpBytes+4+MetaDataByteLength+SZ_SIZE_TYPE, dataLength*floatSize);
 		}
@@ -101,7 +101,7 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 		status = SZ_DERR;
 	}
 	free_TightDataPointStorageF2(tdps);
-	if(szMode!=SZ_BEST_SPEED && cmpSize!=8+MetaDataByteLength+SZ_SIZE_TYPE)
+	if(conf_params->szMode!=SZ_BEST_SPEED && cmpSize!=8+MetaDataByteLength+SZ_SIZE_TYPE)
 		free(szTmpBytes);
 	return status;
 }
@@ -189,7 +189,7 @@ void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, TightD
 		default:
 			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
 			predValue = (*data)[i-1];
-			(*data)[i] = predValue + (type_-intvRadius)*interval;
+			(*data)[i] = predValue + (type_-exe_params->intvRadius)*interval;
 			break;
 		}
 		//printf("%.30G\n",(*data)[i]);
@@ -202,7 +202,7 @@ void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, TightD
 void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightDataPointStorageF* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
-	//printf("tdps->intervals=%d, intvRadius=%d\n", tdps->intervals, intvRadius);
+	//printf("tdps->intervals=%d, exe_params->intvRadius=%d\n", tdps->intervals, exe_params->intvRadius);
 	
 	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 	// in resiMidBits, p is to track the
@@ -290,7 +290,7 @@ void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightData
 	if (type_ != 0)
 	{
 		pred1D = (*data)[0];
-		(*data)[1] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+		(*data)[1] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 	}
 	else
 	{
@@ -343,7 +343,7 @@ void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightData
 		if (type_ != 0)
 		{
 			pred1D = 2*(*data)[jj-1] - (*data)[jj-2];				
-			(*data)[jj] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			(*data)[jj] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -401,7 +401,7 @@ void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightData
 		if (type_ != 0)
 		{
 			pred1D = (*data)[index-r2];		
-			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -456,7 +456,7 @@ void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightData
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -596,7 +596,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 	type_ = type[1];
 	if (type_ != 0)
 	{
-		(*data)[1] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+		(*data)[1] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 	}
 	else
 	{
@@ -649,7 +649,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 		type_ = type[jj];
 		if (type_ != 0)
 		{
-			(*data)[jj] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			(*data)[jj] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -707,7 +707,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 		type_ = type[index];
 		if (type_ != 0)
 		{
-			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -762,7 +762,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -821,7 +821,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 		type_ = type[index];
 		if (type_ != 0)
 		{
-			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -876,7 +876,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -933,7 +933,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				(*data)[index] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -989,7 +989,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 				type_ = type[index];
 				if (type_ != 0)
 				{
-					(*data)[index] = pred3D + 2 * (type_ - intvRadius) * realPrecision;
+					(*data)[index] = pred3D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -1140,7 +1140,7 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 		type_ = type[index];
 		if (type_ != 0)
 		{
-			(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			(*data)[index] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -1196,7 +1196,7 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+				(*data)[index] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1254,7 +1254,7 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+				(*data)[index] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1310,7 +1310,7 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 				type_ = type[index];
 				if (type_ != 0)
 				{
-					(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+					(*data)[index] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -1370,7 +1370,7 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				(*data)[index] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+				(*data)[index] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1426,7 +1426,7 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 				type_ = type[index];
 				if (type_ != 0)
 				{
-					(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+					(*data)[index] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -1484,7 +1484,7 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 				type_ = type[index];
 				if (type_ != 0)
 				{
-					(*data)[index] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+					(*data)[index] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -1542,7 +1542,7 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 					type_ = type[index];
 					if (type_ != 0)
 					{
-						(*data)[index] = pred3D + 2 * (type_ - intvRadius) * realPrecision;
+						(*data)[index] = pred3D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 					}
 					else
 					{
@@ -1826,7 +1826,7 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 	type_ = type[0];
 	// printf("Type 0 %d, mean %.4f\n", type_, mean);
 	if (type_ != 0){
-		cur_data_pos[0] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+		cur_data_pos[0] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 	}
 	else{
 		cur_data_pos[0] = unpredictable_data[unpredictable_count ++];
@@ -1836,7 +1836,7 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 	pred1D = cur_data_pos[0];
 	type_ = type[1];
 	if (type_ != 0){
-		cur_data_pos[1] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+		cur_data_pos[1] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 	}
 	else{
 		cur_data_pos[1] = unpredictable_data[unpredictable_count ++];
@@ -1846,7 +1846,7 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 		pred1D = 2*cur_data_pos[j-1] - cur_data_pos[j-2];
 		type_ = type[j];
 		if (type_ != 0){
-			cur_data_pos[j] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			cur_data_pos[j] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else{
 			cur_data_pos[j] = unpredictable_data[unpredictable_count ++];
@@ -1867,7 +1867,7 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 		pred1D = last_row_pos[0];
 		type_ = type[index];
 		if (type_ != 0){
-			cur_data_pos[0] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			cur_data_pos[0] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else{
 			cur_data_pos[0] = unpredictable_data[unpredictable_count ++];
@@ -1879,7 +1879,7 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 			pred2D = cur_data_pos[j-1] + last_row_pos[j] - last_row_pos[j-1];
 			type_ = type[index];
 			if (type_ != 0){
-				cur_data_pos[j] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				cur_data_pos[j] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else{
 				cur_data_pos[j] = unpredictable_data[unpredictable_count ++];
@@ -1909,7 +1909,7 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 		pred1D = cur_data_pos[- dim0_offset];
 		type_ = type[index];
 		if (type_ != 0){
-			cur_data_pos[0] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			cur_data_pos[0] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else{
 			cur_data_pos[0] = unpredictable_data[unpredictable_count ++];
@@ -1922,7 +1922,7 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 			pred2D = cur_data_pos[j-1] + cur_data_pos[j - dim0_offset] - cur_data_pos[j - 1 - dim0_offset];
 			type_ = type[index];
 			if (type_ != 0){
-				cur_data_pos[j] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				cur_data_pos[j] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else{
 				cur_data_pos[j] = unpredictable_data[unpredictable_count ++];
@@ -1950,7 +1950,7 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 			pred2D = last_row_pos[0] + cur_data_pos[- dim0_offset] - last_row_pos[- dim0_offset];
 			type_ = type[index];
 			if (type_ != 0){
-				cur_data_pos[0] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				cur_data_pos[0] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else{
 				cur_data_pos[0] = unpredictable_data[unpredictable_count ++];
@@ -1966,7 +1966,7 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 				pred3D = cur_data_pos[j-1] + last_row_pos[j]+ cur_data_pos[j - dim0_offset] - last_row_pos[j-1] - last_row_pos[j - dim0_offset] - cur_data_pos[j-1 - dim0_offset] + last_row_pos[j-1 - dim0_offset];
 				type_ = type[index];
 				if (type_ != 0){
-					cur_data_pos[j] = pred3D + 2 * (type_ - intvRadius) * realPrecision;
+					cur_data_pos[j] = pred3D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 				}
 				else{
 					cur_data_pos[j] = unpredictable_data[unpredictable_count ++];
@@ -1996,7 +1996,7 @@ size_t decompressDataSeries_float_1D_RA_block(float * data, float mean, size_t d
 			last_over_thres = cur_data_pos[0];
 		}
 		else{
-			cur_data_pos[0] = last_over_thres + 2 * (type_ - intvRadius) * realPrecision;
+			cur_data_pos[0] = last_over_thres + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			last_over_thres = cur_data_pos[0];
 		}
 
@@ -2028,7 +2028,7 @@ size_t decompressDataSeries_float_2D_RA_block(float * data, float mean, size_t d
 	type_ = type[0];
 	// printf("Type 0 %d, mean %.4f\n", type_, mean);
 	if (type_ != 0){
-		cur_data_pos[0] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+		cur_data_pos[0] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 	}
 	else{
 		cur_data_pos[0] = unpredictable_data[unpredictable_count ++];
@@ -2038,7 +2038,7 @@ size_t decompressDataSeries_float_2D_RA_block(float * data, float mean, size_t d
 	pred1D = cur_data_pos[0];
 	type_ = type[1];
 	if (type_ != 0){
-		cur_data_pos[1] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+		cur_data_pos[1] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 	}
 	else{
 		cur_data_pos[1] = unpredictable_data[unpredictable_count ++];
@@ -2048,7 +2048,7 @@ size_t decompressDataSeries_float_2D_RA_block(float * data, float mean, size_t d
 		pred1D = 2*cur_data_pos[j-1] - cur_data_pos[j-2];
 		type_ = type[j];
 		if (type_ != 0){
-			cur_data_pos[j] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			cur_data_pos[j] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else{
 			cur_data_pos[j] = unpredictable_data[unpredictable_count ++];
@@ -2069,7 +2069,7 @@ size_t decompressDataSeries_float_2D_RA_block(float * data, float mean, size_t d
 		type_ = type[index];
 		if (type_ != 0){
 			pred1D = last_row_pos[0];
-			cur_data_pos[0] = pred1D + 2 * (type_ - intvRadius) * realPrecision;
+			cur_data_pos[0] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 		}
 		else{
 			cur_data_pos[0] = unpredictable_data[unpredictable_count ++];
@@ -2081,7 +2081,7 @@ size_t decompressDataSeries_float_2D_RA_block(float * data, float mean, size_t d
 			pred2D = cur_data_pos[j-1] + last_row_pos[j] - last_row_pos[j-1];
 			type_ = type[index];
 			if (type_ != 0){
-				cur_data_pos[j] = pred2D + 2 * (type_ - intvRadius) * realPrecision;
+				cur_data_pos[j] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
 			}
 			else{
 				cur_data_pos[j] = unpredictable_data[unpredictable_count ++];

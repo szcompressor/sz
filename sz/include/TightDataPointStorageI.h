@@ -28,8 +28,6 @@ typedef struct TightDataPointStorageI
 	
 	int stateNum;
 	int allNodes;
-	int intvCapacity;
-	int intvRadius;	
 	
 	unsigned char* typeArray; //its size is dataSeriesLength/4 (or xxx/4+1) 
 	size_t typeArray_size;

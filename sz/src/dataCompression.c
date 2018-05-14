@@ -586,7 +586,7 @@ int initRandomAccessBytes(unsigned char* raBytes)
         int sameByte = 0x80; //indicating this is random-access mode
         if(SZ_SIZE_TYPE==8)
                 sameByte = (unsigned char) (sameByte | 0x40); // 01000000, the 6th bit
-        sameByte = sameByte | (szMode << 1);
+        sameByte = sameByte | (conf_params->szMode << 1);
 
         raBytes[k++] = sameByte;
 

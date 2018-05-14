@@ -31,10 +31,10 @@ unsigned int optimize_intervals_float_1D(float *oriData, size_t dataLength, doub
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = dataLength/sampleDistance;
+	size_t totalSampleSize = dataLength/conf_params->sampleDistance;
 	for(i=2;i<dataLength;i++)
 	{
-		if(i%sampleDistance==0)
+		if(i%conf_params->sampleDistance==0)
 		{
 			//pred_value = 2*oriData[i-1] - oriData[i-2];
 			pred_value = oriData[i-1];
@@ -75,7 +75,7 @@ unsigned int optimize_intervals_float_2D(float *oriData, size_t r1, size_t r2, d
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = (r1-1)*(r2-1)/sampleDistance;
+	size_t totalSampleSize = (r1-1)*(r2-1)/conf_params->sampleDistance;
 
 	//float max = oriData[0];
 	//float min = oriData[0];
@@ -84,7 +84,7 @@ unsigned int optimize_intervals_float_2D(float *oriData, size_t r1, size_t r2, d
 	{
 		for(j=1;j<r2;j++)
 		{
-			if((i+j)%sampleDistance==0)
+			if((i+j)%conf_params->sampleDistance==0)
 			{
 				index = i*r2+j;
 				pred_value = oriData[index-1] + oriData[index-r2] - oriData[index-r2-1];
@@ -167,7 +167,7 @@ unsigned int optimize_intervals_float_3D(float *oriData, size_t r1, size_t r2, s
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)/sampleDistance;
+	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)/conf_params->sampleDistance;
 
 	//float max = oriData[0];
 	//float min = oriData[0];
@@ -178,7 +178,7 @@ unsigned int optimize_intervals_float_3D(float *oriData, size_t r1, size_t r2, s
 		{
 			for(k=1;k<r3;k++)
 			{			
-				if((i+j+k)%sampleDistance==0)
+				if((i+j+k)%conf_params->sampleDistance==0)
 				{
 					index = i*r23+j*r3+k;
 					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23] 
@@ -268,7 +268,7 @@ unsigned int optimize_intervals_float_4D(float *oriData, size_t r1, size_t r2, s
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)*(r4-1)/sampleDistance;
+	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)*(r4-1)/conf_params->sampleDistance;
 	for(i=1;i<r1;i++)
 	{
 		for(j=1;j<r2;j++)
@@ -277,7 +277,7 @@ unsigned int optimize_intervals_float_4D(float *oriData, size_t r1, size_t r2, s
 			{
 				for (l=1;l<r4;l++)
 				{
-					if((i+j+k+l)%sampleDistance==0)
+					if((i+j+k+l)%conf_params->sampleDistance==0)
 					{
 						index = i*r234+j*r34+k*r4+l;
 						pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r34]
@@ -318,10 +318,10 @@ TightDataPointStorageF* SZ_compress_float_1D_MDQ(float *oriData,
 size_t dataLength, double realPrecision, float valueRangeSize, float medianValue_f)
 {
 	unsigned int quantization_intervals;
-	if(optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 		quantization_intervals = optimize_intervals_float_1D_opt(oriData, dataLength, realPrecision);
 	else
-		quantization_intervals = intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;
 	updateQuantizationInfo(quantization_intervals);	
 
 	size_t i;
@@ -377,7 +377,7 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 	float curData;
 	float pred;
 	float predAbsErr;
-	checkRadius = (intvCapacity-1)*realPrecision;
+	checkRadius = (exe_params->intvCapacity-1)*realPrecision;
 	double interval = 2*realPrecision;
 	
 	for(i=2;i<dataLength;i++)
@@ -393,12 +393,12 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 			state = (predAbsErr/realPrecision+1)/2;
 			if(curData>=pred)
 			{
-				type[i] = intvRadius+state;
+				type[i] = exe_params->intvRadius+state;
 				pred = pred + state*interval;
 			}
 			else //curData<pred
 			{
-				type[i] = intvRadius-state;
+				type[i] = exe_params->intvRadius-state;
 				pred = pred - state*interval;
 			}
 /*			if(type[i]==0)
@@ -486,7 +486,7 @@ unsigned char** newByteData, size_t *outSize)
 	for (i = 0; i < SZ_SIZE_TYPE; i++)
 		(*newByteData)[k++] = dsLengthBytes[i];
 		
-	if(sysEndianType==BIG_ENDIAN_SYSTEM)
+	if(exe_params->sysEndianType==BIG_ENDIAN_SYSTEM)
 		memcpy((*newByteData)+4+MetaDataByteLength+SZ_SIZE_TYPE, oriData, dataLength*floatSize);
 	else
 	{
@@ -513,13 +513,13 @@ size_t dataLength, double realPrecision, size_t *outSize, float valueRangeSize, 
 TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size_t r2, double realPrecision, float valueRangeSize, float medianValue_f)
 {
 	unsigned int quantization_intervals;
-	if(optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_float_2D_opt(oriData, r1, r2, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
 	}	
 	else
-		quantization_intervals = intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;
 	size_t i,j; 
 	int reqLength;
 	float pred1D, pred2D;
@@ -579,11 +579,11 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 
 	itvNum =  fabs(diff)/realPrecision + 1;
 
-	if (itvNum < intvCapacity)
+	if (itvNum < exe_params->intvCapacity)
 	{
 		if (diff < 0) itvNum = -itvNum;
-		type[1] = (int) (itvNum/2) + intvRadius;
-		P1[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+		type[1] = (int) (itvNum/2) + exe_params->intvRadius;
+		P1[1] = pred1D + 2 * (type[1] - exe_params->intvRadius) * realPrecision;
 
 		//ganrantee comporession error against the case of machine-epsilon
 		if(fabs(spaceFillingValue[1]-P1[1])>realPrecision)
@@ -616,11 +616,11 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[j] = (int) (itvNum/2) + intvRadius;
-			P1[j] = pred1D + 2 * (type[j] - intvRadius) * realPrecision;
+			type[j] = (int) (itvNum/2) + exe_params->intvRadius;
+			P1[j] = pred1D + 2 * (type[j] - exe_params->intvRadius) * realPrecision;
 		
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P1[j])>realPrecision)
@@ -657,11 +657,11 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[index] = (int) (itvNum/2) + intvRadius;
-			P0[0] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+			P0[0] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P0[0])>realPrecision)
@@ -696,11 +696,11 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[index] = (int) (itvNum/2) + intvRadius;
-				P0[j] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+				P0[j] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 			
 				//ganrantee comporession error against the case of machine-epsilon
 				if(fabs(curData-P0[j])>realPrecision)
@@ -783,13 +783,13 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D(unsigned char** newByteData, float
 TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, float valueRangeSize, float medianValue_f)
 {
 	unsigned int quantization_intervals;
-	if(optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_float_3D_opt(oriData, r1, r2, r3, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
 	}	
 	else
-		quantization_intervals = intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;
 	size_t i,j,k; 
 	int reqLength;
 	float pred1D, pred2D, pred3D;
@@ -847,11 +847,11 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 
 	itvNum = fabs(diff)/realPrecision + 1;
 
-	if (itvNum < intvCapacity)
+	if (itvNum < exe_params->intvCapacity)
 	{
 		if (diff < 0) itvNum = -itvNum;
-		type[1] = (int) (itvNum/2) + intvRadius;
-		P1[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+		type[1] = (int) (itvNum/2) + exe_params->intvRadius;
+		P1[1] = pred1D + 2 * (type[1] - exe_params->intvRadius) * realPrecision;
 		
 		//ganrantee comporession error against the case of machine-epsilon
 		if(fabs(curData-P1[1])>realPrecision)
@@ -884,11 +884,11 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[j] = (int) (itvNum/2) + intvRadius;
-			P1[j] = pred1D + 2 * (type[j] - intvRadius) * realPrecision;
+			type[j] = (int) (itvNum/2) + exe_params->intvRadius;
+			P1[j] = pred1D + 2 * (type[j] - exe_params->intvRadius) * realPrecision;
 			
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P1[j])>realPrecision)
@@ -925,11 +925,11 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[index] = (int) (itvNum/2) + intvRadius;
-			P1[index] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+			P1[index] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 			
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P1[index])>realPrecision)
@@ -964,11 +964,11 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[index] = (int) (itvNum/2) + intvRadius;
-				P1[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+				P1[index] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				
 				//ganrantee comporession error against the case of machine-epsilon
 				if(fabs(curData-P1[index])>realPrecision)
@@ -1007,11 +1007,11 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[index] = (int) (itvNum/2) + intvRadius;
-			P0[0] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+			P0[0] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 			
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P0[0])>realPrecision)
@@ -1047,11 +1047,11 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[index] = (int) (itvNum/2) + intvRadius;
-				P0[j] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+				P0[j] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				//ganrantee comporession error against the case of machine-epsilon
 				if(fabs(curData-P0[j])>realPrecision)
 				{	
@@ -1088,11 +1088,11 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[index] = (int) (itvNum/2) + intvRadius;
-				P0[index2D] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+				P0[index2D] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				//ganrantee comporession error against the case of machine-epsilon
 				if(fabs(curData-P0[index2D])>realPrecision)
 				{	
@@ -1129,11 +1129,11 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 
 				itvNum = fabs(diff)/realPrecision + 1;
 
-				if (itvNum < intvCapacity)
+				if (itvNum < exe_params->intvCapacity)
 				{
 					if (diff < 0) itvNum = -itvNum;
-					type[index] = (int) (itvNum/2) + intvRadius;
-					P0[index2D] = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
+					type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+					P0[index2D] = pred3D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 					
 					//ganrantee comporession error against the case of machine-epsilon
 					if(fabs(curData-P0[index2D])>realPrecision)
@@ -1217,13 +1217,13 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision, float valueRangeSize, float medianValue_f)
 {
 	unsigned int quantization_intervals;
-	if(optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_float_4D(oriData, r1, r2, r3, r4, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
 	}
 	else
-		quantization_intervals = intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;
 
 	size_t i,j,k; 
 	int reqLength;
@@ -1292,11 +1292,11 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, size_t r1, size
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[index] = (int) (itvNum/2) + intvRadius;
-			P1[index2D] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+			P1[index2D] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -1319,11 +1319,11 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, size_t r1, size
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[index] = (int) (itvNum/2) + intvRadius;
-				P1[index2D] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+				P1[index2D] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1348,11 +1348,11 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, size_t r1, size
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[index] = (int) (itvNum/2) + intvRadius;
-				P1[index2D] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+				P1[index2D] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1376,11 +1376,11 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, size_t r1, size
 
 				itvNum = fabs(diff)/realPrecision + 1;
 
-				if (itvNum < intvCapacity)
+				if (itvNum < exe_params->intvCapacity)
 				{
 					if (diff < 0) itvNum = -itvNum;
-					type[index] = (int) (itvNum/2) + intvRadius;
-					P1[index2D] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+					type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+					P1[index2D] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -1408,11 +1408,11 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, size_t r1, size
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[index] = (int) (itvNum/2) + intvRadius;
-				P0[index2D] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+				P0[index2D] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -1435,11 +1435,11 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, size_t r1, size
 
 				itvNum = fabs(diff)/realPrecision + 1;
 
-				if (itvNum < intvCapacity)
+				if (itvNum < exe_params->intvCapacity)
 				{
 					if (diff < 0) itvNum = -itvNum;
-					type[index] = (int) (itvNum/2) + intvRadius;
-					P0[index2D] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+					type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+					P0[index2D] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -1464,11 +1464,11 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, size_t r1, size
 
 				itvNum = fabs(diff)/realPrecision + 1;
 
-				if (itvNum < intvCapacity)
+				if (itvNum < exe_params->intvCapacity)
 				{
 					if (diff < 0) itvNum = -itvNum;
-					type[index] = (int) (itvNum/2) + intvRadius;
-					P0[index2D] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+					type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+					P0[index2D] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -1492,11 +1492,11 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, size_t r1, size
 
 					itvNum = fabs(diff)/realPrecision + 1;
 
-					if (itvNum < intvCapacity)
+					if (itvNum < exe_params->intvCapacity)
 					{
 						if (diff < 0) itvNum = -itvNum;
-						type[index] = (int) (itvNum/2) + intvRadius;
-						P0[index2D] = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
+						type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+						P0[index2D] = pred3D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 					}
 					else
 					{
@@ -1643,7 +1643,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	if(errBoundMode==PW_REL)
 	{
 		pw_relBoundRatio = pwRelBoundRatio;	
-		pwr_type = pwrType;
+		conf_params->pwr_type = pwrType;
 		if(pwrType==SZ_PWR_AVG_TYPE && r3 != 0 )
 		{
 			printf("Error: Current version doesn't support 3D data compression with point-wise relative error bound being based on pwrType=AVG\n");
@@ -1720,19 +1720,19 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			status = SZ_DERR; //dimension error
 		}
 		//Call Gzip to do the further compression.
-		if(szMode==SZ_BEST_SPEED)
+		if(conf_params->szMode==SZ_BEST_SPEED)
 		{
 			*outSize = tmpOutSize;
 			*newByteData = tmpByteData;
 		}
-		else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
+		else if(conf_params->szMode==SZ_BEST_COMPRESSION || conf_params->szMode==SZ_DEFAULT_COMPRESSION)
 		{
-			*outSize = zlib_compress5(tmpByteData, tmpOutSize, newByteData, gzipMode);
+			*outSize = zlib_compress5(tmpByteData, tmpOutSize, newByteData, conf_params->gzipMode);
 			free(tmpByteData);
 		}
 		else
 		{
-			printf("Error: Wrong setting of szMode in the float compression.\n");
+			printf("Error: Wrong setting of conf_params->szMode in the float compression.\n");
 			status = SZ_MERR; //mode error			
 		}
 	}
@@ -1835,19 +1835,19 @@ size_t r1, size_t s1, size_t e1)
 {
 	TightDataPointStorageF* tdps = SZ_compress_float_1D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_f, r1, s1, e1);
 
-	if (szMode==SZ_BEST_SPEED)
+	if (conf_params->szMode==SZ_BEST_SPEED)
 		convertTDPStoFlatBytes_float_args(tdps, compressedBytes, outSize);
-	else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
+	else if(conf_params->szMode==SZ_BEST_COMPRESSION || conf_params->szMode==SZ_DEFAULT_COMPRESSION)
 	{
 		unsigned char *tmpCompBytes;
 		size_t tmpOutSize;
 		convertTDPStoFlatBytes_float(tdps, &tmpCompBytes, &tmpOutSize);
-		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
+		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, conf_params->gzipMode);
 		free(tmpCompBytes);
 	}
 	else
 	{
-		printf ("Error: Wrong setting of szMode in the double compression.\n");
+		printf ("Error: Wrong setting of conf_params->szMode in the double compression.\n");
 	}
 
 	//TODO
@@ -1862,19 +1862,19 @@ size_t r2, size_t r1, size_t s2, size_t s1, size_t e2, size_t e1)
 {
 	TightDataPointStorageF* tdps = SZ_compress_float_2D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_f, r2, r1, s2, s1, e2, e1);
 
-	if (szMode==SZ_BEST_SPEED)
+	if (conf_params->szMode==SZ_BEST_SPEED)
 		convertTDPStoFlatBytes_float_args(tdps, compressedBytes, outSize);
-	else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
+	else if(conf_params->szMode==SZ_BEST_COMPRESSION || conf_params->szMode==SZ_DEFAULT_COMPRESSION)
 	{
 		unsigned char *tmpCompBytes;
 		size_t tmpOutSize;
 		convertTDPStoFlatBytes_float(tdps, &tmpCompBytes, &tmpOutSize);
-		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
+		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, conf_params->gzipMode);
 		free(tmpCompBytes);
 	}
 	else
 	{
-		printf ("Error: Wrong setting of szMode in the double compression.\n");
+		printf ("Error: Wrong setting of conf_params->szMode in the double compression.\n");
 	}
 
 	//TODO
@@ -1889,19 +1889,19 @@ size_t r3, size_t r2, size_t r1, size_t s3, size_t s2, size_t s1, size_t e3, siz
 {
 	TightDataPointStorageF* tdps = SZ_compress_float_3D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_f, r3, r2, r1, s3, s2, s1, e3, e2, e1);
 
-	if (szMode==SZ_BEST_SPEED)
+	if (conf_params->szMode==SZ_BEST_SPEED)
 		convertTDPStoFlatBytes_float_args(tdps, compressedBytes, outSize);
-	else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
+	else if(conf_params->szMode==SZ_BEST_COMPRESSION || conf_params->szMode==SZ_DEFAULT_COMPRESSION)
 	{
 		unsigned char *tmpCompBytes;
 		size_t tmpOutSize;
 		convertTDPStoFlatBytes_float(tdps, &tmpCompBytes, &tmpOutSize);
-		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
+		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, conf_params->gzipMode);
 		free(tmpCompBytes);
 	}
 	else
 	{
-		printf ("Error: Wrong setting of szMode in the double compression.\n");
+		printf ("Error: Wrong setting of conf_params->szMode in the double compression.\n");
 	}
 
 	//TODO
@@ -1916,19 +1916,19 @@ size_t r4, size_t r3, size_t r2, size_t r1, size_t s4, size_t s3, size_t s2, siz
 {
 	TightDataPointStorageF* tdps = SZ_compress_float_4D_MDQ_subblock(oriData, realPrecision, valueRangeSize, medianValue_f, r4, r3, r2, r1, s4, s3, s2, s1, e4, e3, e2, e1);
 
-	if (szMode==SZ_BEST_SPEED)
+	if (conf_params->szMode==SZ_BEST_SPEED)
 		convertTDPStoFlatBytes_float_args(tdps, compressedBytes, outSize);
-	else if(szMode==SZ_BEST_COMPRESSION || szMode==SZ_DEFAULT_COMPRESSION)
+	else if(conf_params->szMode==SZ_BEST_COMPRESSION || conf_params->szMode==SZ_DEFAULT_COMPRESSION)
 	{
 		unsigned char *tmpCompBytes;
 		size_t tmpOutSize;
 		convertTDPStoFlatBytes_float(tdps, &tmpCompBytes, &tmpOutSize);
-		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, gzipMode);
+		*outSize = zlib_compress3(tmpCompBytes, tmpOutSize, compressedBytes, conf_params->gzipMode);
 		free(tmpCompBytes);
 	}
 	else
 	{
-		printf ("Error: Wrong setting of szMode in the double compression.\n");
+		printf ("Error: Wrong setting of conf_params->szMode in the double compression.\n");
 	}
 
 	//TODO
@@ -1949,10 +1949,10 @@ unsigned int optimize_intervals_float_1D_subblock(float *oriData, double realPre
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	size_t totalSampleSize = dataLength/sampleDistance;
+	size_t totalSampleSize = dataLength/conf_params->sampleDistance;
 	for(i=2;i<dataLength;i++)
 	{
-		if(i%sampleDistance==0)
+		if(i%conf_params->sampleDistance==0)
 		{
 			pred_value = 2*oriData[i-1] - oriData[i-2];
 			//pred_value = oriData[i-1];
@@ -1996,12 +1996,12 @@ unsigned int optimize_intervals_float_2D_subblock(float *oriData, double realPre
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	size_t totalSampleSize = R1*R2/sampleDistance;
+	size_t totalSampleSize = R1*R2/conf_params->sampleDistance;
 	for(i=s1+1;i<=e1;i++)
 	{
 		for(j=s2+1;j<=e2;j++)
 		{
-			if((i+j)%sampleDistance==0)
+			if((i+j)%conf_params->sampleDistance==0)
 			{
 				index = i*r2+j;
 				pred_value = oriData[index-1] + oriData[index-r2] - oriData[index-r2-1];
@@ -2048,14 +2048,14 @@ unsigned int optimize_intervals_float_3D_subblock(float *oriData, double realPre
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	size_t totalSampleSize = R1*R2*R3/sampleDistance;
+	size_t totalSampleSize = R1*R2*R3/conf_params->sampleDistance;
 	for(i=s1+1;i<=e1;i++)
 	{
 		for(j=s2+1;j<=e2;j++)
 		{
 			for(k=s3+1;k<=e3;k++)
 			{
-				if((i+j+k)%sampleDistance==0)
+				if((i+j+k)%conf_params->sampleDistance==0)
 				{
 					index = i*r23+j*r3+k;
 					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23]
@@ -2106,7 +2106,7 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 	float pred_value = 0, pred_err;
 	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
 	memset(intervals, 0, maxRangeRadius*sizeof(int));
-	size_t totalSampleSize = R1*R2*R3*R4/sampleDistance;
+	size_t totalSampleSize = R1*R2*R3*R4/conf_params->sampleDistance;
 	for(i=s1+1;i<=e1;i++)
 	{
 		for(j=s2+1;j<=e2;j++)
@@ -2115,7 +2115,7 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 			{
 				for (l=s4+1;l<=e4;l++)
 				{
-					if((i+j+k+l)%sampleDistance==0)
+					if((i+j+k+l)%conf_params->sampleDistance==0)
 					{
 						index = i*r234+j*r34+k*r4+l;
 						pred_value = oriData[index-1] + oriData[index-r4] + oriData[index-r34]
@@ -2157,10 +2157,10 @@ size_t r1, size_t s1, size_t e1)
 {
 	size_t dataLength = e1 - s1 + 1;
 	unsigned int quantization_intervals;
-	if(optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 		quantization_intervals = optimize_intervals_float_1D_subblock(oriData, realPrecision, r1, s1, e1);
 	else
-		quantization_intervals = intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;
 	updateQuantizationInfo(quantization_intervals);
 
 	size_t i; 
@@ -2215,7 +2215,7 @@ size_t r1, size_t s1, size_t e1)
 	float curData;
 	float pred;
 	float predAbsErr;
-	checkRadius = (intvCapacity-1)*realPrecision;
+	checkRadius = (exe_params->intvCapacity-1)*realPrecision;
 	double interval = 2*realPrecision;
 
 	for(i=2;i<dataLength;i++)
@@ -2228,12 +2228,12 @@ size_t r1, size_t s1, size_t e1)
 			state = (predAbsErr/realPrecision+1)/2;
 			if(curData>=pred)
 			{
-				type[i] = intvRadius+state;
+				type[i] = exe_params->intvRadius+state;
 				pred = pred + state*interval;
 			}
 			else
 			{
-				type[i] = intvRadius-state;
+				type[i] = exe_params->intvRadius-state;
 				pred = pred - state*interval;
 			}
 
@@ -2277,13 +2277,13 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ_subblock(float *oriData, double
 size_t r1, size_t r2, size_t s1, size_t s2, size_t e1, size_t e2)
 {
 	unsigned int quantization_intervals;
-	if(optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_float_2D_subblock(oriData, realPrecision, r1, r2, s1, s2, e1, e2);
 		updateQuantizationInfo(quantization_intervals);
 	}
 	else
-		quantization_intervals = intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;
 
 	size_t i,j; 
 	int reqLength;
@@ -2350,11 +2350,11 @@ size_t r1, size_t r2, size_t s1, size_t s2, size_t e1, size_t e2)
 
 	itvNum =  fabs(diff)/realPrecision + 1;
 
-	if (itvNum < intvCapacity)
+	if (itvNum < exe_params->intvCapacity)
 	{
 		if (diff < 0) itvNum = -itvNum;
-		type[lIndex] = (int) (itvNum/2) + intvRadius;
-		P1[1] = pred1D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+		type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+		P1[1] = pred1D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 	}
 	else
 	{
@@ -2377,11 +2377,11 @@ size_t r1, size_t r2, size_t s1, size_t s2, size_t e1, size_t e2)
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[lIndex] = (int) (itvNum/2) + intvRadius;
-			P1[j] = pred1D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+			type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+			P1[j] = pred1D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -2406,11 +2406,11 @@ size_t r1, size_t r2, size_t s1, size_t s2, size_t e1, size_t e2)
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[lIndex] = (int) (itvNum/2) + intvRadius;
-			P0[0] = pred1D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+			type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+			P0[0] = pred1D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -2436,11 +2436,11 @@ size_t r1, size_t r2, size_t s1, size_t s2, size_t e1, size_t e2)
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[lIndex] = (int) (itvNum/2) + intvRadius;
-				P0[j] = pred2D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+				type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+				P0[j] = pred2D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -2487,13 +2487,13 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_subblock(float *oriData, double
 size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, size_t e2, size_t e3)
 {
 	unsigned int quantization_intervals;
-	if(optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_float_3D_subblock(oriData, realPrecision, r1, r2, r3, s1, s2, s3, e1, e2, e3);
 		updateQuantizationInfo(quantization_intervals);
 	}
 	else
-		quantization_intervals = intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;
 
 	size_t i,j,k; 
 	int reqLength;
@@ -2568,11 +2568,11 @@ size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, siz
 
 	itvNum = fabs(diff)/realPrecision + 1;
 
-	if (itvNum < intvCapacity)
+	if (itvNum < exe_params->intvCapacity)
 	{
 		if (diff < 0) itvNum = -itvNum;
-		type[lIndex] = (int) (itvNum/2) + intvRadius;
-		P1[index2D] = pred1D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+		type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+		P1[index2D] = pred1D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 	}
 	else
 	{
@@ -2596,11 +2596,11 @@ size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, siz
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[lIndex] = (int) (itvNum/2) + intvRadius;
-			P1[index2D] = pred1D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+			type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+			P1[index2D] = pred1D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -2626,11 +2626,11 @@ size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, siz
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[lIndex] = (int) (itvNum/2) + intvRadius;
-			P1[index2D] = pred1D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+			type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+			P1[index2D] = pred1D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -2654,11 +2654,11 @@ size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, siz
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[lIndex] = (int) (itvNum/2) + intvRadius;
-				P1[index2D] = pred2D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+				type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+				P1[index2D] = pred2D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -2687,11 +2687,11 @@ size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, siz
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[lIndex] = (int) (itvNum/2) + intvRadius;
-			P0[index2D] = pred1D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+			type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+			P0[index2D] = pred1D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -2715,11 +2715,11 @@ size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, siz
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[lIndex] = (int) (itvNum/2) + intvRadius;
-				P0[index2D] = pred2D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+				type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+				P0[index2D] = pred2D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -2745,11 +2745,11 @@ size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, siz
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[lIndex] = (int) (itvNum/2) + intvRadius;
-				P0[index2D] = pred2D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+				type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+				P0[index2D] = pred2D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -2775,11 +2775,11 @@ size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, siz
 
 				itvNum = fabs(diff)/realPrecision + 1;
 
-				if (itvNum < intvCapacity)
+				if (itvNum < exe_params->intvCapacity)
 				{
 					if (diff < 0) itvNum = -itvNum;
-					type[lIndex] = (int) (itvNum/2) + intvRadius;
-					P0[index2D] = pred3D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+					type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+					P0[index2D] = pred3D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -2827,13 +2827,13 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ_subblock(float *oriData, double
 size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, size_t s4, size_t e1, size_t e2, size_t e3, size_t e4)
 {
 	unsigned int quantization_intervals;
-	if(optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_float_4D_subblock(oriData, realPrecision, r1, r2, r3, r4, s1, s2, s3, s4, e1, e2, e3, e4);
 		updateQuantizationInfo(quantization_intervals);
 	}
 	else
-		quantization_intervals = intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;
 
 	size_t i,j,k; 
 	int reqLength;
@@ -2915,11 +2915,11 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[lIndex] = (int) (itvNum/2) + intvRadius;
-			P1[index2D] = pred1D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+			type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+			P1[index2D] = pred1D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 		}
 		else
 		{
@@ -2943,11 +2943,11 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[lIndex] = (int) (itvNum/2) + intvRadius;
-				P1[index2D] = pred1D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+				type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+				P1[index2D] = pred1D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -2973,11 +2973,11 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[lIndex] = (int) (itvNum/2) + intvRadius;
-				P1[index2D] = pred1D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+				type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+				P1[index2D] = pred1D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -3001,11 +3001,11 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 
 				itvNum = fabs(diff)/realPrecision + 1;
 
-				if (itvNum < intvCapacity)
+				if (itvNum < exe_params->intvCapacity)
 				{
 					if (diff < 0) itvNum = -itvNum;
-					type[lIndex] = (int) (itvNum/2) + intvRadius;
-					P1[index2D] = pred2D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+					type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+					P1[index2D] = pred2D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -3034,11 +3034,11 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[lIndex] = (int) (itvNum/2) + intvRadius;
-				P0[index2D] = pred1D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+				type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+				P0[index2D] = pred1D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 			}
 			else
 			{
@@ -3062,11 +3062,11 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 
 				itvNum = fabs(diff)/realPrecision + 1;
 
-				if (itvNum < intvCapacity)
+				if (itvNum < exe_params->intvCapacity)
 				{
 					if (diff < 0) itvNum = -itvNum;
-					type[lIndex] = (int) (itvNum/2) + intvRadius;
-					P0[index2D] = pred2D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+					type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+					P0[index2D] = pred2D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -3092,11 +3092,11 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 
 				itvNum = fabs(diff)/realPrecision + 1;
 
-				if (itvNum < intvCapacity)
+				if (itvNum < exe_params->intvCapacity)
 				{
 					if (diff < 0) itvNum = -itvNum;
-					type[lIndex] = (int) (itvNum/2) + intvRadius;
-					P0[index2D] = pred2D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+					type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+					P0[index2D] = pred2D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 				}
 				else
 				{
@@ -3122,11 +3122,11 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 
 					itvNum = fabs(diff)/realPrecision + 1;
 
-					if (itvNum < intvCapacity)
+					if (itvNum < exe_params->intvCapacity)
 					{
 						if (diff < 0) itvNum = -itvNum;
-						type[lIndex] = (int) (itvNum/2) + intvRadius;
-						P0[index2D] = pred3D + 2 * (type[lIndex] - intvRadius) * realPrecision;
+						type[lIndex] = (int) (itvNum/2) + exe_params->intvRadius;
+						P0[index2D] = pred3D + 2 * (type[lIndex] - exe_params->intvRadius) * realPrecision;
 					}
 					else
 					{
@@ -3180,9 +3180,9 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = 0;//(r1-1)*(r2-1)*(r3-1)/sampleDistance;
+	size_t totalSampleSize = 0;//(r1-1)*(r2-1)*(r3-1)/conf_params->sampleDistance;
 
-	size_t offset_count = sampleDistance - 2; // count r3 offset
+	size_t offset_count = conf_params->sampleDistance - 2; // count r3 offset
 	size_t offset_count_2;
 	float * data_pos = oriData + r23 + r3 + offset_count;
 	size_t n1_count = 1, n2_count = 1; // count i,j sum
@@ -3200,7 +3200,7 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 		intervals[radiusIndex]++;
 		// printf("TEST: %ld, i: %ld\tj: %ld\tk: %ld\n", data_pos - oriData);
 		// fflush(stdout);
-		offset_count += sampleDistance;
+		offset_count += conf_params->sampleDistance;
 		if(offset_count >= r3){
 			n2_count ++;
 			if(n2_count == r2){
@@ -3208,12 +3208,12 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 				n2_count = 1;
 				data_pos += r3;
 			}
-			offset_count_2 = (n1_count + n2_count) % sampleDistance;
-			data_pos += (r3 + sampleDistance - offset_count) + (sampleDistance - offset_count_2);
-			offset_count = (sampleDistance - offset_count_2);
+			offset_count_2 = (n1_count + n2_count) % conf_params->sampleDistance;
+			data_pos += (r3 + conf_params->sampleDistance - offset_count) + (conf_params->sampleDistance - offset_count_2);
+			offset_count = (conf_params->sampleDistance - offset_count_2);
 			if(offset_count == 0) offset_count ++;
 		}
-		else data_pos += sampleDistance;
+		else data_pos += conf_params->sampleDistance;
 	}	
 	// printf("sample_count: %ld\n", sample_count);
 	// fflush(stdout);
@@ -3278,10 +3278,10 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 	curData = *cur_data_pos;
 	diff = curData - pred1D;
 	itvNum = fabs(diff)/realPrecision + 1;
-	if (itvNum < intvCapacity){
+	if (itvNum < exe_params->intvCapacity){
 		if (diff < 0) itvNum = -itvNum;
-		type[0] = (int) (itvNum/2) + intvRadius;
-		P1[0] = pred1D + 2 * (type[0] - intvRadius) * realPrecision;
+		type[0] = (int) (itvNum/2) + exe_params->intvRadius;
+		P1[0] = pred1D + 2 * (type[0] - exe_params->intvRadius) * realPrecision;
 		//ganrantee comporession error against the case of machine-epsilon
 		if(fabs(curData-P1[0])>realPrecision){	
 			type[0] = 0;
@@ -3300,10 +3300,10 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 	curData = cur_data_pos[1];
 	diff = curData - pred1D;
 	itvNum = fabs(diff)/realPrecision + 1;
-	if (itvNum < intvCapacity){
+	if (itvNum < exe_params->intvCapacity){
 		if (diff < 0) itvNum = -itvNum;
-		type[1] = (int) (itvNum/2) + intvRadius;
-		P1[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+		type[1] = (int) (itvNum/2) + exe_params->intvRadius;
+		P1[1] = pred1D + 2 * (type[1] - exe_params->intvRadius) * realPrecision;
 		//ganrantee comporession error against the case of machine-epsilon
 		if(fabs(curData-P1[1])>realPrecision){	
 			type[1] = 0;
@@ -3322,10 +3322,10 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 		curData = cur_data_pos[j];
 		diff = curData - pred1D;
 		itvNum = fabs(diff)/realPrecision + 1;
-		if (itvNum < intvCapacity){
+		if (itvNum < exe_params->intvCapacity){
 			if (diff < 0) itvNum = -itvNum;
-			type[j] = (int) (itvNum/2) + intvRadius;
-			P1[j] = pred1D + 2 * (type[j] - intvRadius) * realPrecision;
+			type[j] = (int) (itvNum/2) + exe_params->intvRadius;
+			P1[j] = pred1D + 2 * (type[j] - exe_params->intvRadius) * realPrecision;
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P1[j])>realPrecision){	
 				type[j] = 0;
@@ -3353,11 +3353,11 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 
 		itvNum = fabs(diff)/realPrecision + 1;
 
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[index] = (int) (itvNum/2) + intvRadius;
-			P1[index] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+			P1[index] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 			
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P1[index])>realPrecision)
@@ -3385,11 +3385,11 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[index] = (int) (itvNum/2) + intvRadius;
-				P1[index] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+				P1[index] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				
 				//ganrantee comporession error against the case of machine-epsilon
 				if(fabs(curData-P1[index])>realPrecision)
@@ -3420,11 +3420,11 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 		curData = *cur_data_pos;
 		diff = curData - pred1D;
 		itvNum = fabs(diff)/realPrecision + 1;
-		if (itvNum < intvCapacity)
+		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
-			type[index] = (int) (itvNum/2) + intvRadius;
-			P0[0] = pred1D + 2 * (type[index] - intvRadius) * realPrecision;
+			type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+			P0[0] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P0[0])>realPrecision)
 			{	
@@ -3448,11 +3448,11 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 			curData = cur_data_pos[j];
 			diff = curData - pred2D;
 			itvNum = fabs(diff)/realPrecision + 1;
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[index] = (int) (itvNum/2) + intvRadius;
-				P0[j] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+				P0[j] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				//ganrantee comporession error against the case of machine-epsilon
 				if(fabs(curData-P0[j])>realPrecision)
 				{	
@@ -3483,11 +3483,11 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 
 			itvNum = fabs(diff)/realPrecision + 1;
 
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[index] = (int) (itvNum/2) + intvRadius;
-				P0[index2D] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+				P0[index2D] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				//ganrantee comporession error against the case of machine-epsilon
 				if(fabs(curData-P0[index2D])>realPrecision)
 				{	
@@ -3515,11 +3515,11 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 
 				itvNum = fabs(diff)/realPrecision + 1;
 
-				if (itvNum < intvCapacity)
+				if (itvNum < exe_params->intvCapacity)
 				{
 					if (diff < 0) itvNum = -itvNum;
-					type[index] = (int) (itvNum/2) + intvRadius;
-					P0[index2D] = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
+					type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+					P0[index2D] = pred3D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 					
 					//ganrantee comporession error against the case of machine-epsilon
 					if(fabs(curData-P0[index2D])>realPrecision)
@@ -3555,12 +3555,12 @@ unsigned int optimize_intervals_float_2D_opt(float *oriData, size_t r1, size_t r
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = 0;//(r1-1)*(r2-1)/sampleDistance;
+	size_t totalSampleSize = 0;//(r1-1)*(r2-1)/conf_params->sampleDistance;
 
 	//float max = oriData[0];
 	//float min = oriData[0];
 
-	size_t offset_count = sampleDistance - 1; // count r2 offset
+	size_t offset_count = conf_params->sampleDistance - 1; // count r2 offset
 	size_t offset_count_2;
 	float * data_pos = oriData + r2 + offset_count;
 	size_t n1_count = 1; // count i sum
@@ -3574,15 +3574,15 @@ unsigned int optimize_intervals_float_2D_opt(float *oriData, size_t r1, size_t r
 			radiusIndex = maxRangeRadius - 1;
 		intervals[radiusIndex]++;
 
-		offset_count += sampleDistance;
+		offset_count += conf_params->sampleDistance;
 		if(offset_count >= r2){
 			n1_count ++;
-			offset_count_2 = n1_count % sampleDistance;
-			data_pos += (r2 + sampleDistance - offset_count) + (sampleDistance - offset_count_2);
-			offset_count = (sampleDistance - offset_count_2);
+			offset_count_2 = n1_count % conf_params->sampleDistance;
+			data_pos += (r2 + conf_params->sampleDistance - offset_count) + (conf_params->sampleDistance - offset_count_2);
+			offset_count = (conf_params->sampleDistance - offset_count_2);
 			if(offset_count == 0) offset_count ++;
 		}
-		else data_pos += sampleDistance;
+		else data_pos += conf_params->sampleDistance;
 	}
 
 	//compute the appropriate number
@@ -3612,7 +3612,7 @@ unsigned int optimize_intervals_float_1D_opt(float *oriData, size_t dataLength, 
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = 0;//dataLength/sampleDistance;
+	size_t totalSampleSize = 0;//dataLength/conf_params->sampleDistance;
 
 	float * data_pos = oriData + 2;
 	while(data_pos - oriData < dataLength){
@@ -3625,7 +3625,7 @@ unsigned int optimize_intervals_float_1D_opt(float *oriData, size_t dataLength, 
 			radiusIndex = maxRangeRadius - 1;			
 		intervals[radiusIndex]++;
 
-		data_pos += sampleDistance;
+		data_pos += conf_params->sampleDistance;
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
@@ -3668,10 +3668,10 @@ size_t SZ_compress_float_1D_MDQ_RA_block(float * block_ori_data, float * mean, s
 		pred1D = last_over_thres;
 		diff = curData - pred1D;
 		itvNum = fabs(diff)/realPrecision + 1;
-		if (itvNum < intvCapacity){
+		if (itvNum < exe_params->intvCapacity){
 			if (diff < 0) itvNum = -itvNum;
-			type[type_index] = (int) (itvNum/2) + intvRadius;	
-			last_over_thres = pred1D + 2 * (type[type_index] - intvRadius) * realPrecision;
+			type[type_index] = (int) (itvNum/2) + exe_params->intvRadius;	
+			last_over_thres = pred1D + 2 * (type[type_index] - exe_params->intvRadius) * realPrecision;
 			if(fabs(curData-last_over_thres)>realPrecision){
 				type[type_index] = 0;
 				last_over_thres = curData;
@@ -3712,10 +3712,10 @@ size_t SZ_compress_float_2D_MDQ_RA_block(float * block_ori_data, float * mean, s
 	pred1D = mean[0];
 	diff = curData - pred1D;
 	itvNum = fabs(diff)/realPrecision + 1;
-	if (itvNum < intvCapacity){
+	if (itvNum < exe_params->intvCapacity){
 		if (diff < 0) itvNum = -itvNum;
-		type[0] = (int) (itvNum/2) + intvRadius;
-		P1[0] = pred1D + 2 * (type[0] - intvRadius) * realPrecision;
+		type[0] = (int) (itvNum/2) + exe_params->intvRadius;
+		P1[0] = pred1D + 2 * (type[0] - exe_params->intvRadius) * realPrecision;
 		//ganrantee comporession error against the case of machine-epsilon
 		if(fabs(curData-P1[0])>realPrecision){	
 			type[0] = 0;
@@ -3734,10 +3734,10 @@ size_t SZ_compress_float_2D_MDQ_RA_block(float * block_ori_data, float * mean, s
 	pred1D = P1[0];
 	diff = curData - pred1D;
 	itvNum = fabs(diff)/realPrecision + 1;
-	if (itvNum < intvCapacity){
+	if (itvNum < exe_params->intvCapacity){
 		if (diff < 0) itvNum = -itvNum;
-		type[1] = (int) (itvNum/2) + intvRadius;
-		P1[1] = pred1D + 2 * (type[1] - intvRadius) * realPrecision;
+		type[1] = (int) (itvNum/2) + exe_params->intvRadius;
+		P1[1] = pred1D + 2 * (type[1] - exe_params->intvRadius) * realPrecision;
 		//ganrantee comporession error against the case of machine-epsilon
 		if(fabs(curData-P1[1])>realPrecision){	
 			type[1] = 0;
@@ -3758,10 +3758,10 @@ size_t SZ_compress_float_2D_MDQ_RA_block(float * block_ori_data, float * mean, s
 		pred1D = 2*P1[j-1] - P1[j-2];
 		diff = curData - pred1D;
 		itvNum = fabs(diff)/realPrecision + 1;
-		if (itvNum < intvCapacity){
+		if (itvNum < exe_params->intvCapacity){
 			if (diff < 0) itvNum = -itvNum;
-			type[j] = (int) (itvNum/2) + intvRadius;
-			P1[j] = pred1D + 2 * (type[j] - intvRadius) * realPrecision;
+			type[j] = (int) (itvNum/2) + exe_params->intvRadius;
+			P1[j] = pred1D + 2 * (type[j] - exe_params->intvRadius) * realPrecision;
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P1[j])>realPrecision){	
 				type[j] = 0;
@@ -3786,10 +3786,10 @@ size_t SZ_compress_float_2D_MDQ_RA_block(float * block_ori_data, float * mean, s
 		pred1D = P1[0];
 		diff = curData - pred1D;
 		itvNum = fabs(diff)/realPrecision + 1;
-		if (itvNum < intvCapacity){
+		if (itvNum < exe_params->intvCapacity){
 			if (diff < 0) itvNum = -itvNum;
-			type[index] = (int) (itvNum/2) + intvRadius;
-			P0[0] = pred1D + 2 * (type[j] - intvRadius) * realPrecision;
+			type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+			P0[0] = pred1D + 2 * (type[j] - exe_params->intvRadius) * realPrecision;
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P0[0])>realPrecision){	
 				type[index] = 0;
@@ -3811,11 +3811,11 @@ size_t SZ_compress_float_2D_MDQ_RA_block(float * block_ori_data, float * mean, s
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 			diff = curData - pred2D;
 			itvNum = fabs(diff)/realPrecision + 1;
-			if (itvNum < intvCapacity)
+			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
-				type[index] = (int) (itvNum/2) + intvRadius;
-				P0[j] = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
+				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
+				P0[j] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				
 				//ganrantee comporession error against the case of machine-epsilon
 				if(fabs(curData-P0[j])>realPrecision)

@@ -47,8 +47,8 @@ unsigned int roundUpToPowerOf2(unsigned int base)
  
 void updateQuantizationInfo(int quant_intervals)
 {
-	intvCapacity = quant_intervals;
-	intvRadius = quant_intervals/2;
+	exe_params->intvCapacity = quant_intervals;
+	exe_params->intvRadius = quant_intervals/2;
 } 
  
 double computeABSErrBoundFromPSNR(double psnr, double threshold, double value_range)
@@ -65,10 +65,11 @@ double computeABSErrBoundFromPSNR(double psnr, double threshold, double value_ra
  * 
  * @return the status of loading conf. file: 1 (success) or 0 (error code);
  * */
-int SZ_ReadConf() {
+int SZ_ReadConf(const char* sz_cfgFile) {
     // Check access to SZ configuration file and load dictionary
     //record the setting in conf_params
     conf_params = (sz_params*)malloc(sizeof(sz_params));    
+    exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
     
     int x = 1;
     char sol_name[256];
@@ -81,40 +82,36 @@ int SZ_ReadConf() {
 	char *y = (char*)&x;
 	
 	if(*y==1)
-		sysEndianType = LITTLE_ENDIAN_SYSTEM;
+		exe_params->sysEndianType = LITTLE_ENDIAN_SYSTEM;
 	else //=0
-		sysEndianType = BIG_ENDIAN_SYSTEM;
-	conf_params->sysEndianType = sysEndianType;
+		exe_params->sysEndianType = BIG_ENDIAN_SYSTEM;
     
     if(sz_cfgFile == NULL)
     {
-		conf_params->dataEndianType = dataEndianType = LITTLE_ENDIAN_DATA;
-		conf_params->sol_ID = sol_ID = SZ;
-		conf_params->layers = layers = 0; //x
+		conf_params->dataEndianType = LITTLE_ENDIAN_DATA;
+		conf_params->sol_ID = SZ;
 		conf_params->max_quant_intervals = 65536;
 		maxRangeRadius = conf_params->max_quant_intervals/2;
 				
-		intvCapacity = maxRangeRadius*2;
-		intvRadius = maxRangeRadius;
+		exe_params->intvCapacity = maxRangeRadius*2;
+		exe_params->intvRadius = maxRangeRadius;
 		
 		conf_params->quantization_intervals = 0;
-		optQuantMode = 1;
+		exe_params->optQuantMode = 1;
 		conf_params->predThreshold = predThreshold = 0.99;
-		conf_params->sampleDistance = sampleDistance = 100;
-		conf_params->offset = offset = 0;
+		conf_params->sampleDistance = 100;
 		
-		conf_params->szMode = szMode = SZ_BEST_COMPRESSION;
+		conf_params->szMode = SZ_BEST_COMPRESSION;
 		
-		conf_params->gzipMode = gzipMode = 1;
+		conf_params->gzipMode = 1; //fast mode
 		conf_params->errorBoundMode = errorBoundMode = PSNR;
 		conf_params->psnr = psnr = 90;
 		
 		conf_params->pw_relBoundRatio = pw_relBoundRatio = 1E-3;
-		conf_params->segment_size = segment_size = 36;
+		conf_params->segment_size = 36;
 		
-		conf_params->pwr_type = pwr_type = SZ_PWR_MIN_TYPE;
-		
-		//SZ_Reset();
+		conf_params->pwr_type = SZ_PWR_MIN_TYPE;
+	
 		return SZ_SCES;
 	}
     
@@ -134,9 +131,9 @@ int SZ_ReadConf() {
 
 	endianTypeString = iniparser_getstring(ini, "ENV:dataEndianType", "LITTLE_ENDIAN_DATA");
 	if(strcmp(endianTypeString, "LITTLE_ENDIAN_DATA")==0)
-		dataEndianType = LITTLE_ENDIAN_DATA;
+		conf_params->dataEndianType = LITTLE_ENDIAN_DATA;
 	else if(strcmp(endianTypeString, "BIG_ENDIAN_DATA")==0)
-		dataEndianType = BIG_ENDIAN_DATA;
+		conf_params->dataEndianType = BIG_ENDIAN_DATA;
 	else
 	{
 		printf("Error: Wrong dataEndianType: please set it correctly in sz.config.\n");
@@ -144,30 +141,23 @@ int SZ_ReadConf() {
 		return SZ_NSCS;
 	}
 
-	conf_params->dataEndianType = dataEndianType;
-
 	// Reading/setting detection parameters
 	
 	par = iniparser_getstring(ini, "ENV:sol_name", NULL);
 	snprintf(sol_name, 256, "%s", par);
 	
     if(strcmp(sol_name, "SZ")==0)
-		sol_ID = SZ;
+		conf_params->sol_ID = SZ;
 	else if(strcmp(sol_name, "PASTRI")==0)
-		sol_ID = PASTRI;
+		conf_params->sol_ID = PASTRI;
 	else{
 		printf("[SZ] Error: wrong solution name (please check sz.config file)\n");
 		iniparser_freedict(ini);
 		return SZ_NSCS;
 	}
 	
-	conf_params->sol_ID = sol_ID;
-
-	if(sol_ID==SZ)
+	if(conf_params->sol_ID==SZ)
 	{
-		layers = (int)iniparser_getint(ini, "PARAMETER:layers", 0);
-		conf_params->layers = layers;
-		
 		int max_quant_intervals = iniparser_getint(ini, "PARAMETER:max_quant_intervals", 65536);
 		conf_params->max_quant_intervals = max_quant_intervals;
 		
@@ -177,16 +167,16 @@ int SZ_ReadConf() {
 		{
 			updateQuantizationInfo(quantization_intervals);
 			conf_params->max_quant_intervals = max_quant_intervals = quantization_intervals;
-			optQuantMode = 0;
+			exe_params->optQuantMode = 0;
 		}
 		else //==0
 		{
 			maxRangeRadius = max_quant_intervals/2;
 
-			intvCapacity = maxRangeRadius*2;
-			intvRadius = maxRangeRadius;
+			exe_params->intvCapacity = maxRangeRadius*2;
+			exe_params->intvRadius = maxRangeRadius;
 			
-			optQuantMode = 1;
+			exe_params->optQuantMode = 1;
 		}
 		
 		if(quantization_intervals%2!=0)
@@ -198,11 +188,7 @@ int SZ_ReadConf() {
 		
 		predThreshold = (float)iniparser_getdouble(ini, "PARAMETER:predThreshold", 0);
 		conf_params->predThreshold = predThreshold;
-		sampleDistance = (int)iniparser_getint(ini, "PARAMETER:sampleDistance", 0);
-		conf_params->sampleDistance = sampleDistance;
-		
-		offset = (int)iniparser_getint(ini, "PARAMETER:offset", 0);
-		conf_params->offset = offset;
+		conf_params->sampleDistance = (int)iniparser_getint(ini, "PARAMETER:sampleDistance", 0);
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:szMode", NULL);
 		if(modeBuf==NULL)
@@ -212,18 +198,17 @@ int SZ_ReadConf() {
 			return SZ_NSCS;					
 		}
 		else if(strcmp(modeBuf, "SZ_BEST_SPEED")==0)
-			szMode = SZ_BEST_SPEED;
+			conf_params->szMode = SZ_BEST_SPEED;
 		else if(strcmp(modeBuf, "SZ_DEFAULT_COMPRESSION")==0)
-			szMode = SZ_DEFAULT_COMPRESSION;
+			conf_params->szMode = SZ_DEFAULT_COMPRESSION;
 		else if(strcmp(modeBuf, "SZ_BEST_COMPRESSION")==0)
-			szMode = SZ_BEST_COMPRESSION;
+			conf_params->szMode = SZ_BEST_COMPRESSION;
 		else
 		{
 			printf("[SZ] Error: Wrong szMode setting (please check sz.config file)\n");
 			iniparser_freedict(ini);
 			return SZ_NSCS;	
 		}
-		conf_params->szMode = szMode;
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:gzipMode", NULL);
 		if(modeBuf==NULL)
@@ -233,25 +218,19 @@ int SZ_ReadConf() {
 			return SZ_NSCS;					
 		}		
 		else if(strcmp(modeBuf, "Gzip_NO_COMPRESSION")==0)
-			gzipMode = 0;
+			conf_params->gzipMode = 0;
 		else if(strcmp(modeBuf, "Gzip_BEST_SPEED")==0)
-			gzipMode = 1;
+			conf_params->gzipMode = 1;
 		else if(strcmp(modeBuf, "Gzip_BEST_COMPRESSION")==0)
-			gzipMode = 9;
+			conf_params->gzipMode = 9;
 		else if(strcmp(modeBuf, "Gzip_DEFAULT_COMPRESSION")==0)
-			gzipMode = -1;
+			conf_params->gzipMode = -1;
 		else
 		{
 			printf("[SZ] Error: Wrong gzip Mode (please check sz.config file)\n");
 			return SZ_NSCS;
 		}
-		conf_params->gzipMode = gzipMode;
-		//maxSegmentNum = (int)iniparser_getint(ini, "PARAMETER:maxSegmentNum", 0); //1024
-		
-		//spaceFillingCurveTransform = (int)iniparser_getint(ini, "PARAMETER:spaceFillingCurveTransform", 0);
-		
-		//reOrgSize = (int)iniparser_getint(ini, "PARAMETER:reOrgBlockSize", 0); //8
-		
+				
 		errBoundMode = iniparser_getstring(ini, "PARAMETER:errorBoundMode", NULL);
 		if(errBoundMode==NULL)
 		{
@@ -295,17 +274,16 @@ int SZ_ReadConf() {
 		conf_params->psnr = psnr;
 		pw_relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:pw_relBoundRatio", 0);
 		conf_params->pw_relBoundRatio = pw_relBoundRatio;
-		segment_size = (int)iniparser_getint(ini, "PARAMETER:segment_size", 0);
-		conf_params->segment_size = segment_size;
+		conf_params->segment_size = (int)iniparser_getint(ini, "PARAMETER:segment_size", 0);
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:pwr_type", "MIN");
 		
 		if(strcmp(modeBuf, "MIN")==0)
-			pwr_type = SZ_PWR_MIN_TYPE;
+			conf_params->pwr_type = SZ_PWR_MIN_TYPE;
 		else if(strcmp(modeBuf, "AVG")==0)
-			pwr_type = SZ_PWR_AVG_TYPE;
+			conf_params->pwr_type = SZ_PWR_AVG_TYPE;
 		else if(strcmp(modeBuf, "MAX")==0)
-			pwr_type = SZ_PWR_MAX_TYPE;
+			conf_params->pwr_type = SZ_PWR_MAX_TYPE;
 		else if(modeBuf!=NULL)
 		{
 			printf("[SZ] Error: Wrong pwr_type setting (please check sz.config file).\n");
@@ -313,13 +291,12 @@ int SZ_ReadConf() {
 			return SZ_NSCS;	
 		}
 		else //by default
-			pwr_type = SZ_PWR_AVG_TYPE;
-		conf_params->pwr_type = pwr_type;
+			conf_params->pwr_type = SZ_PWR_AVG_TYPE;
     
 		//initialization for Huffman encoding
 		//SZ_Reset();	
 	}
-	else if(sol_ID == PASTRI)
+	else if(conf_params->sol_ID == PASTRI)
 	{//load parameters for PSTRI
 		pastri_par.bf[0] = (int)iniparser_getint(ini, "PARAMETER:basisFunction_0", 0);		
 		pastri_par.bf[1] = (int)iniparser_getint(ini, "PARAMETER:basisFunction_1", 0);		
@@ -343,8 +320,8 @@ int SZ_ReadConf() {
 
  **/
 /*-------------------------------------------------------------------------*/
-int SZ_LoadConf() {
-    int res = SZ_ReadConf();
+int SZ_LoadConf(const char* sz_cfgFile) {
+    int res = SZ_ReadConf(sz_cfgFile);
     if (res != SZ_SCES)
     {
         printf("[SZ] ERROR: Impossible to read configuration.\n");
