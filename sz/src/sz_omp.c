@@ -830,6 +830,7 @@ void decompressDataSeries_float_1D_openmp(float** data, size_t r1, unsigned char
 	elapsed_time += omp_get_wtime();
 	printf("Parallel decompress elapsed time: %.4f\n", elapsed_time);
 
+	free(block_offset);
 	free(result_type);
 	free(unpred_offset);
 	SZ_ReleaseHuffman(huffmanTree);
@@ -981,6 +982,7 @@ void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, un
 	elapsed_time += omp_get_wtime();
 	printf("Parallel decompress elapsed time: %.4f\n", elapsed_time);
 
+	free(block_offset);
 	free(result_type);
 	free(unpred_offset);
 	SZ_ReleaseHuffman(huffmanTree);
@@ -1155,6 +1157,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 	elapsed_time += omp_get_wtime();
 	printf("Parallel decompress elapsed time: %.4f\n", elapsed_time);
 
+	free(block_offset);
 	free(result_type);
 	free(unpred_offset);
 	SZ_ReleaseHuffman(huffmanTree);
