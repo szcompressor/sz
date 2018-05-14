@@ -14,8 +14,6 @@
 #include "sz.h"
 
 
-static HuffmanTree* huffmanTree = NULL;
- 
 HuffmanTree* createHuffmanTree(int stateNum)
 {			
 	HuffmanTree *huffmanTree = (HuffmanTree*)malloc(sizeof(HuffmanTree));
@@ -78,7 +76,8 @@ node new_node2(HuffmanTree *huffmanTree, unsigned int c, unsigned char t)
 void qinsert(HuffmanTree *huffmanTree, node n)
 {
 	int j, i = huffmanTree->qend++;
-	while (j = i / 2) {
+	while ((j = (i>>1)))  //j=i/2
+	{
 		if (huffmanTree->qq[j]->freq <= n->freq) break;
 		huffmanTree->qq[i] = huffmanTree->qq[j], i = j;
 	}
@@ -92,7 +91,8 @@ node qremove(HuffmanTree* huffmanTree)
  
 	if (huffmanTree->qend < 2) return 0;
 	huffmanTree->qend --;
-	while ((l = i * 2) < huffmanTree->qend) {
+	while ((l = (i<<1)) < huffmanTree->qend)  //l=(i*2)
+	{
 		if (l + 1 < huffmanTree->qend && huffmanTree->qq[l + 1]->freq < huffmanTree->qq[l]->freq) l++;
 		huffmanTree->qq[i] = huffmanTree->qq[l], i = l;
 	}

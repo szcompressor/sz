@@ -150,7 +150,7 @@ unsigned int optimize_intervals_double_1D_pwr(double *oriData, size_t dataLength
 void compute_segment_precisions_double_2D(double *oriData, double* pwrErrBound, 
 size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundBytes, double Min, double Max, double globalPrecision)
 {
-	size_t i = 0, j = 0, k = 0, p = 0, index = 0, J; //I=-1,J=-1 if they are needed
+	size_t i = 0, j = 0, k = 0, p = 0, index = 0, J = 0; //I=-1,J=-1 if they are needed
 	double realPrecision; 
 	double approxPrecision;
 	unsigned char realPrecBytes[8];
@@ -1544,7 +1544,7 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, double valueRangeS
 	double realGroupPrecision; //precision (error) based on group ID
 	getPrecisionReqLength_double(realPrecision);
 	short radExpo = getExponent_double(valueRangeSize/2);
-	short lastGroupNum, groupNum, grpNum = 0;
+	short lastGroupNum = 0, groupNum, grpNum = 0;
 	
 	double* groupErrorBounds = generateGroupErrBounds(errBoundMode, realPrecision, pwrErrRatio);
 	intvRadius = generateGroupMaxIntervalCount(groupErrorBounds);

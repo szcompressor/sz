@@ -42,26 +42,24 @@ int main(int argc, char * argv[])
     size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     size_t nbEle, totalNbEle;
     char zipFilePath[640], outputFilePath[640];
-    char *cfgFile;
     if(argc < 2)
     {
-		printf("Test case: testfloat_decompress [configFile] [srcFilePath] [dimension sizes...]\n");
-		printf("Example: testfloat_decompress sz.config testfloat_8_8_128.dat.sz 8 8 128\n");
+		printf("Test case: testfloat_decompress [srcFilePath] [dimension sizes...]\n");
+		printf("Example: testfloat_decompress testfloat_8_8_128.dat.sz 8 8 128\n");
 		exit(0);
 	}	
    
-    cfgFile = argv[1];
-    sprintf(zipFilePath, "%s", argv[2]);
-    if(argc>=4)
-	r1 = atoi(argv[3]); //8  
-    if(argc>=5)
-    	r2 = atoi(argv[4]); //8
-    if(argc>=6)
-    	r3 = atoi(argv[5]); //128  
-    if(argc>=7)
-        r4 = atoi(argv[6]);
-    if(argc>=8)
-        r5 = atoi(argv[7]);
+    sprintf(zipFilePath, "%s", argv[1]);
+	if(argc>=3)
+		r1 = atoi(argv[2]); //8  
+	if(argc>=4)
+		r2 = atoi(argv[3]); //8
+	if(argc>=5)
+		r3 = atoi(argv[4]); //128  
+	if(argc>=6)
+		r4 = atoi(argv[5]);
+	if(argc>=7)
+		r5 = atoi(argv[6]);
     
     if(r2==0)
 	nbEle = r1;
@@ -122,7 +120,6 @@ int main(int argc, char * argv[])
     Max = ori_data[0];
     Min = ori_data[0];
     diffMax = fabs(data[0] - ori_data[0]);
-    size_t k = 0;
     double sum1 = 0, sum2 = 0;
     for (i = 0; i < nbEle; i++)
     {

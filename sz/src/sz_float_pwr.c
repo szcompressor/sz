@@ -152,7 +152,7 @@ unsigned int optimize_intervals_float_1D_pwr(float *oriData, size_t dataLength, 
 void compute_segment_precisions_float_2D(float *oriData, float* pwrErrBound, 
 size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundBytes, float Min, float Max, double globalPrecision)
 {
-	size_t i = 0, j = 0, k = 0, p = 0, index = 0, J; //I=-1,J=-1 if they are needed
+	size_t i = 0, j = 0, k = 0, p = 0, index = 0, J = 0; //I=-1,J=-1 if they are needed
 	float realPrecision; 
 	float approxPrecision;
 	unsigned char realPrecBytes[4];
@@ -1066,7 +1066,7 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 	computeReqLength_float(realPrecision, radExpo, &reqLength, &medianValue);
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
-	//type[dataLength]=0;
+	//type[dataLength]=0;realPrecision
 
 	float* spaceFillingValue = oriData; //
 	
@@ -1553,7 +1553,7 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 	float realGroupPrecision; //precision (error) based on group ID
 	getPrecisionReqLength_float(realPrecision);
 	short radExpo = getExponent_float(valueRangeSize/2);
-	short lastGroupNum, groupNum, grpNum = 0;
+	short lastGroupNum = 0, groupNum, grpNum = 0;
 	
 	double* groupErrorBounds = generateGroupErrBounds(errBoundMode, realPrecision, pwrErrRatio);
 	intvRadius = generateGroupMaxIntervalCount(groupErrorBounds);

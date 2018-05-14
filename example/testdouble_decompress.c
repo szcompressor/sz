@@ -40,25 +40,24 @@ int main(int argc, char * argv[])
     size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     size_t nbEle, totalNbEle;
     char zipFilePath[640], outputFilePath[640];
-    char *cfgFile;
+    
     if(argc < 2)
     {
-		printf("Test case: testdouble_decompress [configFile] [srcFilePath] [dimension sizes...]\n");
-		printf("Example: testdouble_decompress sz.config testdouble_8_8_128.dat.sz 8 8 128\n");
+		printf("Test case: testdouble_decompress [srcFilePath] [dimension sizes...]\n");
+		printf("Example: testdouble_decompress testdouble_8_8_128.dat.sz 8 8 128\n");
 		exit(0);
 	}	
-    cfgFile = argv[1];
-    sprintf(zipFilePath, "%s", argv[2]);
+    sprintf(zipFilePath, "%s", argv[1]);
+    if(argc>=3)
+        r1 = atoi(argv[2]); //8  
     if(argc>=4)
-        r1 = atoi(argv[3]); //8  
+        r2 = atoi(argv[3]); //8
     if(argc>=5)
-        r2 = atoi(argv[4]); //8
+        r3 = atoi(argv[4]); //128  
     if(argc>=6)
-        r3 = atoi(argv[5]); //128  
+        r4 = atoi(argv[5]);
     if(argc>=7)
-        r4 = atoi(argv[6]);
-    if(argc>=8)
-        r5 = atoi(argv[7]);
+        r5 = atoi(argv[6]);
 
     if(r2==0)
         nbEle = r1;

@@ -19,7 +19,6 @@ struct timeval endTime;  /* Start and end times */
 struct timeval costStart; /*only used for recording the cost*/
 double totalCost = 0;
 
-
 void cost_start()
 {
 	gettimeofday(&costStart, NULL);
@@ -37,7 +36,7 @@ void cost_end()
 
 int main(int argc, char * argv[])
 {
-    size_t i, r5=0,r4=0,r3=0,r2=0,r1=0;
+    size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     char oriFilePath[640], outputFilePath[640];
     char *cfgFile;
     int dataType = SZ_INT32;
@@ -85,8 +84,9 @@ int main(int argc, char * argv[])
     if(argc>=8)
         r4 = atoi(argv[7]);
     if(argc>=9)
-        r5 = atoi(argv[8]);
-
+    {
+	   r5 = atoi(argv[8]);
+	}
 	printf("cfgFile=%s\n", cfgFile); 
     status = SZ_Init(cfgFile);
     if(status == SZ_NSCS)
@@ -94,7 +94,7 @@ int main(int argc, char * argv[])
     sprintf(outputFilePath, "%s.sz", oriFilePath);
    
     size_t nbEle, outSize; 
-    unsigned char *bytes;
+    unsigned char *bytes = NULL;
 	if(dataType==SZ_INT8)
 	{
 		int8_t *data = (int8_t *) readByteData(oriFilePath, &nbEle, &status);

@@ -33,7 +33,7 @@ int computeByteSizePerIntValue(long valueRangeSize)
 long computeRangeSize_int(void* oriData, int dataType, size_t size, int64_t* valueRangeSize)
 {
 	size_t i = 0;
-	long max, min;
+	long max = 0, min = 0;
 
 	if(dataType==SZ_UINT8)
 	{

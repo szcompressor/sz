@@ -40,9 +40,8 @@ void cost_end()
 int main(int argc, char * argv[])
 {
     size_t r5=0,r4=0,r3=0,r2=0,r1=0;
-    size_t nbEle, totalNbEle;
+    size_t nbEle;
     char zipFilePath[640], outputFilePath[640];
-    char *cfgFile;
     if(argc < 2)
     {
 		printf("Test case: testint_decompress [datatype(-i8/-i16/-i32/-i64/-ui8/-ui16/-ui32/-ui64)] [configFile] [srcFilePath] [dimension sizes...]\n");
@@ -70,23 +69,22 @@ int main(int argc, char * argv[])
 	else
 	{
 		printf("Error: missing/unrecoganized data type: %s. \n", argv[1]);
-		printf("Test case: testint_compress [datatype(-i8/-i16/-i32/-i64)] [config_file] [data_file]\n");
-		printf("Example: testint_compress -i32 sz.config testdata/x86/testint32_8x8x8.dat 8 8 8\n");
+		printf("Test case: testint_decompress [datatype(-i8/-i16/-i32/-i64)] [config_file] [data_file]\n");
+		printf("Example: testint_decompress -i32 sz.config testdata/x86/testint32_8x8x8.dat.sz 8 8 8\n");
 		exit(0);		
 	}    
     
-    cfgFile = argv[2];
-    sprintf(zipFilePath, "%s", argv[3]);
+    sprintf(zipFilePath, "%s", argv[2]);
+    if(argc>=4)
+	r1 = atoi(argv[3]); //8  
     if(argc>=5)
-	r1 = atoi(argv[4]); //8  
+    	r2 = atoi(argv[4]); //8
     if(argc>=6)
-    	r2 = atoi(argv[5]); //8
+    	r3 = atoi(argv[5]); //128  
     if(argc>=7)
-    	r3 = atoi(argv[6]); //128  
+        r4 = atoi(argv[6]);
     if(argc>=8)
-        r4 = atoi(argv[7]);
-    if(argc>=9)
-        r5 = atoi(argv[8]);
+        r5 = atoi(argv[7]);
     
     if(r2==0)
 		nbEle = r1;
@@ -398,7 +396,6 @@ void assessDeCompressionData(int dataType, char* zipFilePath, void* decompressed
     Max = ori_data[0];
     Min = ori_data[0];
     diffMax = llabs(data[0] - ori_data[0]);
-    size_t k = 0;
     double sum1 = 0, sum2 = 0;
     for (i = 0; i < nbEle; i++)
     {
@@ -447,8 +444,8 @@ void assessDeCompressionData(int dataType, char* zipFilePath, void* decompressed
     double psnr = 20*log10(range)-10*log10(mse);
     double nrmse = sqrt(mse)/range;
 
-    printf ("Min=%lld, Max=%lld, range=%f\n", Min, Max, range);
-    printf ("Max absolute error = %lld\n", diffMax);
+    printf ("Min=%ld, Max=%ld, range=%f\n", Min, Max, range);
+    printf ("Max absolute error = %ld\n", diffMax);
     printf ("Max relative error = %f\n", ((float)diffMax)/(Max-Min));
     printf ("Max pw relative error = %f\n", maxpw_relerr);
     printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);

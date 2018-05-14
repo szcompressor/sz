@@ -32,7 +32,7 @@ void decompressDataSeries_float_1D_pwr(float** data, size_t dataSeriesLength, Ti
 								// byte_index of resiMidBits, l is for
 								// leadNum
 	unsigned char* leadNum;
-	float interval;// = (float)tdps->realPrecision*2;
+	float interval = 0;// = (float)tdps->realPrecision*2;
 	
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 
@@ -53,9 +53,9 @@ void decompressDataSeries_float_1D_pwr(float** data, size_t dataSeriesLength, Ti
 	memset(preBytes, 0, 4);
 
 	size_t curByteIndex = 0;
-	int reqLength, reqBytesLength, resiBitsLength, resiBits; 
+	int reqLength = 0, reqBytesLength = 0, resiBitsLength = 0, resiBits = 0; 
 	unsigned char leadingNum;	
-	float medianValue, exactData, predValue, realPrecision;
+	float medianValue, exactData, predValue = 0, realPrecision = 0;
 	
 	medianValue = tdps->medianValue;
 	

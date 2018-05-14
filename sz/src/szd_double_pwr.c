@@ -29,7 +29,7 @@ void decompressDataSeries_double_1D_pwr(double** data, size_t dataSeriesLength, 
 								// leadNum
 
 	unsigned char* leadNum;
-	double interval;// = (double)tdps->realPrecision*2;
+	double interval = 0;// = (double)tdps->realPrecision*2;
 	
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
@@ -46,9 +46,9 @@ void decompressDataSeries_double_1D_pwr(double** data, size_t dataSeriesLength, 
 	memset(preBytes, 0, 8);
 
 	size_t curByteIndex = 0;
-	int reqLength, reqBytesLength, resiBitsLength, resiBits; 
+	int reqLength = 0, reqBytesLength = 0, resiBitsLength = 0, resiBits = 0; 
 	unsigned char leadingNum;	
-	double medianValue, exactData, predValue, realPrecision;
+	double medianValue, exactData, predValue = 0, realPrecision = 0;
 	
 	medianValue = tdps->medianValue;
 	
