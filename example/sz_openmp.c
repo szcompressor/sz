@@ -64,7 +64,7 @@ void usage()
 	printf("	-P <point-wise relative error bound>: specifying point-wise relative error bound\n");
 	printf("	-S <PSNR>: specifying PSNR\n");
 	printf("* parallel mode:\n");
-	printf("	-k: using openMP (only 3D is supported for now)\n");
+	printf("	-k: using openMP\n");
 	printf("* input data file:\n");
 	printf("	-i <original data file> : original data file\n");
 	printf("	-s <compressed data file> : compressed data file in decompression\n");
