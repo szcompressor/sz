@@ -31,7 +31,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 
 void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, unsigned char* comp_data);
 
-void Huffman_init_openmp(int *s, size_t length, int thread_num);
+void Huffman_init_openmp(HuffmanTree* huffmanTree, int *s, size_t length, int thread_num);
 
 #ifdef __cplusplus
 }

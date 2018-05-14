@@ -80,17 +80,18 @@ unsigned char * SZ_compress_float_1D_MDQ_openmp(float *oriData, size_t r1, doubl
 	// printf("total_unpred num: %d\n", total_unpred);
 	// printf("Block wise compression end, num_elements %ld\n", num_elements);
 	// huffman encode
-	SZ_Reset();
+	size_t stateNum = quantization_intervals*2;
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);	
 	size_t nodeCount = 0;
-	Huffman_init_openmp(result_type, num_elements, thread_num);
+	Huffman_init_openmp(huffmanTree, result_type, num_elements, thread_num);
 	elapsed_time += omp_get_wtime();
 	printf("Build Huffman: %.4f\n", elapsed_time);
 	elapsed_time = -omp_get_wtime();
 	for (size_t i = 0; i < stateNum; i++)
-		if (code[i]) nodeCount++;
+		if (huffmanTree->code[i]) nodeCount++;
 	nodeCount = nodeCount*2-1;
 	unsigned char *treeBytes;
-	unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(nodeCount, &treeBytes);
+	unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(huffmanTree, nodeCount, &treeBytes);
 
 	unsigned int meta_data_offset = 3 + 1 + MetaDataByteLength;
 	size_t total_unpred = 0;
@@ -164,7 +165,7 @@ unsigned char * SZ_compress_float_1D_MDQ_openmp(float *oriData, size_t r1, doubl
 		size_t current_block_elements = current_blockcount_x;
 		size_t type_offset = offset_x;
 		int * type = result_type + type_offset;
-		encode(type, current_block_elements, encoding_buffer_pos, &enCodeSize);
+		encode(huffmanTree, type, current_block_elements, encoding_buffer_pos, &enCodeSize);
 		block_pos[id] = enCodeSize;
 	}
 	elapsed_time += omp_get_wtime();
@@ -206,7 +207,7 @@ unsigned char * SZ_compress_float_1D_MDQ_openmp(float *oriData, size_t r1, doubl
 	free(result_unpredictable_data);
 	free(unpredictable_count);
 	free(result_type);
-	SZ_ReleaseHuffman();
+	SZ_ReleaseHuffman(huffmanTree);
 
 	*comp_size = totalEncodeSize;
 	return result;
@@ -311,17 +312,18 @@ unsigned char * SZ_compress_float_2D_MDQ_openmp(float *oriData, size_t r1, size_
 	// printf("total_unpred num: %d\n", total_unpred);
 	// printf("Block wise compression end, num_elements %ld\n", num_elements);
 	// huffman encode
-	SZ_Reset();
+	size_t stateNum = quantization_intervals*2;
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);	
 	size_t nodeCount = 0;
-	Huffman_init_openmp(result_type, num_elements, thread_num);
+	Huffman_init_openmp(huffmanTree, result_type, num_elements, thread_num);
 	elapsed_time += omp_get_wtime();
 	printf("Build Huffman: %.4f\n", elapsed_time);
 	elapsed_time = -omp_get_wtime();
 	for (size_t i = 0; i < stateNum; i++)
-		if (code[i]) nodeCount++;
+		if (huffmanTree->code[i]) nodeCount++;
 	nodeCount = nodeCount*2-1;
 	unsigned char *treeBytes;
-	unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(nodeCount, &treeBytes);
+	unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(huffmanTree, nodeCount, &treeBytes);
 
 	unsigned int meta_data_offset = 3 + 1 + MetaDataByteLength;
 	size_t total_unpred = 0;
@@ -398,7 +400,7 @@ unsigned char * SZ_compress_float_2D_MDQ_openmp(float *oriData, size_t r1, size_
 		size_t current_block_elements = current_blockcount_x * current_blockcount_y;
 		size_t type_offset = offset_x * dim0_offset +  offset_y * current_blockcount_x;
 		int * type = result_type + type_offset;
-		encode(type, current_block_elements, encoding_buffer_pos, &enCodeSize);
+		encode(huffmanTree, type, current_block_elements, encoding_buffer_pos, &enCodeSize);
 		block_pos[id] = enCodeSize;
 	}
 	elapsed_time += omp_get_wtime();
@@ -440,7 +442,7 @@ unsigned char * SZ_compress_float_2D_MDQ_openmp(float *oriData, size_t r1, size_
 	free(result_unpredictable_data);
 	free(unpredictable_count);
 	free(result_type);
-	SZ_ReleaseHuffman();
+	SZ_ReleaseHuffman(huffmanTree);
 
 	*comp_size = totalEncodeSize;
 	return result;
@@ -561,17 +563,18 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	// printf("total_unpred num: %d\n", total_unpred);
 	// printf("Block wise compression end, num_elements %ld\n", num_elements);
 	// huffman encode
-	SZ_Reset();
+	size_t stateNum = quantization_intervals*2;
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);	
 	size_t nodeCount = 0;
-	Huffman_init_openmp(result_type, num_elements, thread_num);
+	Huffman_init_openmp(huffmanTree, result_type, num_elements, thread_num);
 	elapsed_time += omp_get_wtime();
 	printf("Build Huffman: %.4f\n", elapsed_time);
 	elapsed_time = -omp_get_wtime();
 	for (size_t i = 0; i < stateNum; i++)
-		if (code[i]) nodeCount++;
+		if (huffmanTree->code[i]) nodeCount++;
 	nodeCount = nodeCount*2-1;
 	unsigned char *treeBytes;
-	unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(nodeCount, &treeBytes);
+	unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(huffmanTree, nodeCount, &treeBytes);
 
 	unsigned int meta_data_offset = 3 + 1 + MetaDataByteLength;
 	size_t total_unpred = 0;
@@ -651,7 +654,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 		size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
 		size_t type_offset = offset_x * dim0_offset +  offset_y * current_blockcount_x * dim1_offset + offset_z * current_blockcount_x * current_blockcount_y;
 		int * type = result_type + type_offset;
-		encode(type, current_block_elements, encoding_buffer_pos, &enCodeSize);
+		encode(huffmanTree, type, current_block_elements, encoding_buffer_pos, &enCodeSize);
 		block_pos[id] = enCodeSize;
 	}
 	elapsed_time += omp_get_wtime();
@@ -693,7 +696,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	free(result_unpredictable_data);
 	free(unpredictable_count);
 	free(result_type);
-	SZ_ReleaseHuffman();
+	SZ_ReleaseHuffman(huffmanTree);
 
 	*comp_size = totalEncodeSize;
 	return result;
@@ -735,12 +738,12 @@ void decompressDataSeries_float_1D_openmp(float** data, size_t r1, unsigned char
 
 	unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);
 	comp_data_pos += 4;
-	allNodes = bytesToInt_bigEndian(comp_data_pos);
-	stateNum = allNodes/2;
-	SZ_Reset();
+	size_t huffman_nodes = bytesToInt_bigEndian(comp_data_pos);
+	HuffmanTree* huffmanTree = createHuffmanTree((huffman_nodes+1)/2);
+	huffmanTree->allNodes = huffman_nodes;
 	// printf("Reconstruct huffman tree with node count %ld\n", nodeCount);
 	// fflush(stdout);
-	node root = reconstruct_HuffTree_from_bytes_anyStates(comp_data_pos+4, allNodes);
+	node root = reconstruct_HuffTree_from_bytes_anyStates(huffmanTree, comp_data_pos+4, huffmanTree->allNodes);
 
 	comp_data_pos += 4 + tree_size;
 	unsigned int * unpred_count = (unsigned int *) comp_data_pos;
@@ -829,7 +832,7 @@ void decompressDataSeries_float_1D_openmp(float** data, size_t r1, unsigned char
 
 	free(result_type);
 	free(unpred_offset);
-
+	SZ_ReleaseHuffman(huffmanTree);
 }
 
 void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, unsigned char* comp_data){
@@ -886,12 +889,12 @@ void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, un
 
 	unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);
 	comp_data_pos += 4;
-	allNodes = bytesToInt_bigEndian(comp_data_pos);
-	stateNum = allNodes/2;
-	SZ_Reset();
+	size_t huffman_nodes = bytesToInt_bigEndian(comp_data_pos);
+	HuffmanTree* huffmanTree = createHuffmanTree((huffman_nodes+1)/2);
+	huffmanTree->allNodes = huffman_nodes;
 	// printf("Reconstruct huffman tree with node count %ld\n", nodeCount);
 	// fflush(stdout);
-	node root = reconstruct_HuffTree_from_bytes_anyStates(comp_data_pos+4, allNodes);
+	node root = reconstruct_HuffTree_from_bytes_anyStates(huffmanTree, comp_data_pos+4, huffmanTree->allNodes);
 
 	comp_data_pos += 4 + tree_size;
 	unsigned int * unpred_count = (unsigned int *) comp_data_pos;
@@ -980,7 +983,7 @@ void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, un
 
 	free(result_type);
 	free(unpred_offset);
-
+	SZ_ReleaseHuffman(huffmanTree);
 }
 
 void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data){
@@ -1047,12 +1050,12 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 
 	unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);
 	comp_data_pos += 4;
-	allNodes = bytesToInt_bigEndian(comp_data_pos);
-	stateNum = allNodes/2;
-	SZ_Reset();
+	size_t huffman_nodes = bytesToInt_bigEndian(comp_data_pos);
+	HuffmanTree* huffmanTree = createHuffmanTree((huffman_nodes+1)/2);
+	huffmanTree->allNodes = huffman_nodes;
 	// printf("Reconstruct huffman tree with node count %ld\n", nodeCount);
 	// fflush(stdout);
-	node root = reconstruct_HuffTree_from_bytes_anyStates(comp_data_pos+4, allNodes);
+	node root = reconstruct_HuffTree_from_bytes_anyStates(huffmanTree, comp_data_pos+4, huffmanTree->allNodes);
 
 	comp_data_pos += 4 + tree_size;
 	unsigned int * unpred_count = (unsigned int *) comp_data_pos;
@@ -1154,14 +1157,14 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 
 	free(result_type);
 	free(unpred_offset);
-
+	SZ_ReleaseHuffman(huffmanTree);
 }
 
-void Huffman_init_openmp(int *s, size_t length, int thread_num){
+void Huffman_init_openmp(HuffmanTree* huffmanTree, int *s, size_t length, int thread_num){
 
 	size_t i;
-	size_t *freq = (size_t *)malloc(thread_num*allNodes*sizeof(size_t));
-	memset(freq, 0, thread_num*allNodes*sizeof(size_t));
+	size_t *freq = (size_t *)malloc(thread_num*huffmanTree->allNodes*sizeof(size_t));
+	memset(freq, 0, thread_num*huffmanTree->allNodes*sizeof(size_t));
 	// for(i = 0;i < length;i++) 
 	// {
 	// 	//index = 0;
@@ -1176,7 +1179,7 @@ void Huffman_init_openmp(int *s, size_t length, int thread_num){
 	for(int t=0; t<thread_num; t++){
 		int id = omp_get_thread_num();
 		int * s_pos = s + id * block_size;
-		size_t * freq_pos = freq + id * allNodes;
+		size_t * freq_pos = freq + id * huffmanTree->allNodes;
 		if(id < thread_num - 1){
 			for(size_t i=0; i<block_size; i++){
 				freq_pos[s_pos[i]] ++;
@@ -1188,22 +1191,22 @@ void Huffman_init_openmp(int *s, size_t length, int thread_num){
 			}
 		}
 	}
-	size_t * freq_pos = freq + allNodes;
+	size_t * freq_pos = freq + huffmanTree->allNodes;
 	for(int t=1; t<thread_num; t++){
-		for(i = 0; i<allNodes; i++){
+		for(i = 0; i<huffmanTree->allNodes; i++){
 			freq[i] += freq_pos[i];
 		}
-		freq_pos += allNodes;
+		freq_pos += huffmanTree->allNodes;
 	}
 
-	for (i = 0; i < allNodes; i++)
+	for (i = 0; i < huffmanTree->allNodes; i++)
 		if (freq[i]) 
-			qinsert(new_node(freq[i], i, 0, 0));
+			qinsert(huffmanTree, new_node(huffmanTree, freq[i], i, 0, 0));
  
-	while (qend > 2) 
-		qinsert(new_node(0, 0, qremove(), qremove()));
+	while (huffmanTree->qend > 2) 
+		qinsert(huffmanTree, new_node(huffmanTree, 0, 0, qremove(huffmanTree), qremove(huffmanTree)));
  
-	build_code(qq[1], 0, 0, 0);
+	build_code(huffmanTree, huffmanTree->qq[1], 0, 0, 0);
 	free(freq);
 }
 
