@@ -98,16 +98,16 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		
 		conf_params->quantization_intervals = 0;
 		exe_params->optQuantMode = 1;
-		conf_params->predThreshold = predThreshold = 0.99;
+		conf_params->predThreshold = 0.99;
 		conf_params->sampleDistance = 100;
 		
 		conf_params->szMode = SZ_BEST_COMPRESSION;
 		
 		conf_params->gzipMode = 1; //fast mode
 		conf_params->errorBoundMode = PSNR;
-		conf_params->psnr = psnr = 90;
+		conf_params->psnr = 90;
 		
-		conf_params->pw_relBoundRatio = pw_relBoundRatio = 1E-3;
+		conf_params->pw_relBoundRatio = 1E-3;
 		conf_params->segment_size = 36;
 		
 		conf_params->pwr_type = SZ_PWR_MIN_TYPE;
@@ -186,8 +186,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 			return SZ_NSCS;
 		}
 		
-		predThreshold = (float)iniparser_getdouble(ini, "PARAMETER:predThreshold", 0);
-		conf_params->predThreshold = predThreshold;
+		conf_params->predThreshold = (float)iniparser_getdouble(ini, "PARAMETER:predThreshold", 0);
 		conf_params->sampleDistance = (int)iniparser_getint(ini, "PARAMETER:sampleDistance", 0);
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:szMode", NULL);
@@ -265,14 +264,10 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 			return SZ_NSCS;
 		}
 		
-		absErrBound = (double)iniparser_getdouble(ini, "PARAMETER:absErrBound", 0);
-		conf_params->absErrBound = absErrBound;
-		relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:relBoundRatio", 0);
-		conf_params->relBoundRatio = relBoundRatio;
-		psnr = (double)iniparser_getdouble(ini, "PARAMETER:psnr", 0);
-		conf_params->psnr = psnr;
-		pw_relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:pw_relBoundRatio", 0);
-		conf_params->pw_relBoundRatio = pw_relBoundRatio;
+		conf_params->absErrBound = (double)iniparser_getdouble(ini, "PARAMETER:absErrBound", 0);
+		conf_params->relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:relBoundRatio", 0);
+		conf_params->psnr = (double)iniparser_getdouble(ini, "PARAMETER:psnr", 0);
+		conf_params->pw_relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:pw_relBoundRatio", 0);
 		conf_params->segment_size = (int)iniparser_getint(ini, "PARAMETER:segment_size", 0);
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:pwr_type", "MIN");
@@ -302,7 +297,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		pastri_par.bf[2] = (int)iniparser_getint(ini, "PARAMETER:basisFunction_2", 0);		
 		pastri_par.bf[3] = (int)iniparser_getint(ini, "PARAMETER:basisFunction_3", 0);
 		pastri_par.numBlocks = (int)iniparser_getint(ini, "PARAMETER:numBlocks", 0);		
-		absErrBound = pastri_par.originalEb = (double)iniparser_getdouble(ini, "PARAMETER:absErrBound", 1E-3);
+		conf_params->absErrBound = pastri_par.originalEb = (double)iniparser_getdouble(ini, "PARAMETER:absErrBound", 1E-3);
 	}
 	
     iniparser_freedict(ini);

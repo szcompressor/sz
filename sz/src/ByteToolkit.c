@@ -474,7 +474,7 @@ int extractBytes(unsigned char* byteArray, size_t k, int validLength)
 	
 	int i;
 	for(i = 0;i<byteNum;i++)
-		intBytes[SZ_SIZE_TYPE-byteNum+i] = byteArray[outIndex+i];
+		intBytes[exe_params->SZ_SIZE_TYPE-byteNum+i] = byteArray[outIndex+i];
 	int result = bytesToInt_bigEndian(intBytes);
 	int rightMovSteps = innerIndex +(8 - (innerIndex+validLength)%8)%8;
 	result = result << innerIndex;
@@ -810,7 +810,7 @@ void convertULongArrayToBytes(uint64_t* states, size_t stateLength, unsigned cha
 size_t bytesToSize(unsigned char* bytes)
 {
 	size_t result = 0;
-	if(SZ_SIZE_TYPE==4)	
+	if(exe_params->SZ_SIZE_TYPE==4)	
 		result = bytesToInt_bigEndian(bytes);//4		
 	else
 		result = bytesToLong_bigEndian(bytes);//8	
@@ -819,7 +819,7 @@ size_t bytesToSize(unsigned char* bytes)
 
 void sizeToBytes(unsigned char* outBytes, size_t size)
 {
-	if(SZ_SIZE_TYPE==4)
+	if(exe_params->SZ_SIZE_TYPE==4)
 		intToBytes_bigEndian(outBytes, size);//4
 	else
 		longToBytes_bigEndian(outBytes, size);//8
@@ -855,7 +855,7 @@ void convertSZParamsToBytes(sz_params* params, unsigned char* result)
     //sampleDistance; //2 bytes
     int16ToBytes_bigEndian(&result[1], params->sampleDistance);
     
-    //predThreshold;  // 2 bytes
+    //conf_params->predThreshold;  // 2 bytes
     short tmp2 = params->predThreshold * 10000;
     int16ToBytes_bigEndian(&result[3], tmp2);
      
@@ -939,7 +939,6 @@ sz_params* convertBytesToSZParams(unsigned char* bytes)
 	params->sampleDistance = bytesToInt16_bigEndian(&bytes[1]);
 	
 	params->predThreshold = 1.0*bytesToInt16_bigEndian(&bytes[3])/10000.0;
-
     
     params->dataType = bytes[5] & 0x07;
 

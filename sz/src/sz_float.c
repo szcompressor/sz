@@ -46,7 +46,7 @@ unsigned int optimize_intervals_float_1D(float *oriData, size_t dataLength, doub
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -100,7 +100,7 @@ unsigned int optimize_intervals_float_2D(float *oriData, size_t r1, size_t r2, d
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -199,7 +199,7 @@ unsigned int optimize_intervals_float_3D(float *oriData, size_t r1, size_t r2, s
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -293,7 +293,7 @@ unsigned int optimize_intervals_float_4D(float *oriData, size_t r1, size_t r2, s
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -467,14 +467,14 @@ unsigned char** newByteData, size_t *outSize)
 	int floatSize=sizeof(float);	
 	size_t k = 0, i;
 	tdps->isLossless = 1;
-	size_t totalByteLength = 3 + MetaDataByteLength + SZ_SIZE_TYPE + 1 + floatSize*dataLength;
+	size_t totalByteLength = 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + floatSize*dataLength;
 	*newByteData = (unsigned char*)malloc(totalByteLength);
 	
 	unsigned char dsLengthBytes[8];
 	for (i = 0; i < 3; i++)//3
 		(*newByteData)[k++] = versionNumber[i];
 
-	if(SZ_SIZE_TYPE==4)//1
+	if(exe_params->SZ_SIZE_TYPE==4)//1
 		(*newByteData)[k++] = 16; //00010000
 	else
 		(*newByteData)[k++] = 80;	//01010000: 01000000 indicates the SZ_SIZE_TYPE=8
@@ -483,14 +483,14 @@ unsigned char** newByteData, size_t *outSize)
 	k = k + MetaDataByteLength;	
 	
 	sizeToBytes(dsLengthBytes,dataLength); //SZ_SIZE_TYPE: 4 or 8	
-	for (i = 0; i < SZ_SIZE_TYPE; i++)
+	for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)
 		(*newByteData)[k++] = dsLengthBytes[i];
 		
 	if(exe_params->sysEndianType==BIG_ENDIAN_SYSTEM)
-		memcpy((*newByteData)+4+MetaDataByteLength+SZ_SIZE_TYPE, oriData, dataLength*floatSize);
+		memcpy((*newByteData)+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE, oriData, dataLength*floatSize);
 	else
 	{
-		unsigned char* p = (*newByteData)+4+MetaDataByteLength+SZ_SIZE_TYPE;
+		unsigned char* p = (*newByteData)+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE;
 		for(i=0;i<dataLength;i++,p+=floatSize)
 			floatToBytes(p, oriData[i]);
 	}	
@@ -1642,7 +1642,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	conf_params->errorBoundMode = errBoundMode;
 	if(errBoundMode==PW_REL)
 	{
-		pw_relBoundRatio = pwRelBoundRatio;	
+		conf_params->pw_relBoundRatio = pwRelBoundRatio;	
 		conf_params->pwr_type = pwrType;
 		if(pwrType==SZ_PWR_AVG_TYPE && r3 != 0 )
 		{
@@ -1662,7 +1662,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	if(conf_params->errorBoundMode==PSNR)
 	{
 		conf_params->errorBoundMode = ABS;
-		realPrecision = conf_params->absErrBound = computeABSErrBoundFromPSNR(psnr, (double)predThreshold, (double)valueRangeSize);
+		realPrecision = conf_params->absErrBound = computeABSErrBoundFromPSNR(conf_params->psnr, (double)conf_params->predThreshold, (double)valueRangeSize);
 		//printf("realPrecision=%lf\n", realPrecision);
 	}
 	else
@@ -1964,7 +1964,7 @@ unsigned int optimize_intervals_float_1D_subblock(float *oriData, double realPre
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -2014,7 +2014,7 @@ unsigned int optimize_intervals_float_2D_subblock(float *oriData, double realPre
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -2070,7 +2070,7 @@ unsigned int optimize_intervals_float_3D_subblock(float *oriData, double realPre
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -2131,7 +2131,7 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -3219,7 +3219,7 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 	// fflush(stdout);
 	// if(*max_freq < 0.15) *max_freq *= 2;
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -3586,7 +3586,7 @@ unsigned int optimize_intervals_float_2D_opt(float *oriData, size_t r1, size_t r
 	}
 
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -3628,7 +3628,7 @@ unsigned int optimize_intervals_float_1D_opt(float *oriData, size_t dataLength, 
 		data_pos += conf_params->sampleDistance;
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{

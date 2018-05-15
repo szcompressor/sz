@@ -231,7 +231,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if(inPath==NULL & cmpPath == NULL)
+	if((inPath==NULL) & (cmpPath == NULL))
 	{
 		printf("Error: you need to specify either a raw binary data file or a compressed data file as input\n");
 		usage();
@@ -269,6 +269,7 @@ int main(int argc, char* argv[])
 	}
 	if(isCompression == 1 && errBoundMode != NULL)
 	{
+		int errorBoundMode = 0;
 		if(strcmp(errBoundMode, "ABS")==0)
 			errorBoundMode = ABS;
 		else if(strcmp(errBoundMode, "REL")==0)
@@ -295,16 +296,16 @@ int main(int argc, char* argv[])
 	if(isCompression == 1)
 	{
 		if(absErrorBound != NULL)
-			conf_params->absErrBound = absErrBound = atof(absErrorBound);
+			conf_params->absErrBound = atof(absErrorBound);
 		
 		if(relErrorBound != NULL)
-			conf_params->relBoundRatio = relBoundRatio = atof(relErrorBound);
+			conf_params->relBoundRatio = atof(relErrorBound);
 	
 		if(pwrErrorBound != NULL)
-			conf_params->pw_relBoundRatio = pw_relBoundRatio = atof(pwrErrorBound);
+			conf_params->pw_relBoundRatio = atof(pwrErrorBound);
 	
 		if(psnr_ != NULL)
-			conf_params->psnr = psnr = atof(psnr_);
+			conf_params->psnr = atof(psnr_);
 
 		size_t outSize;	
 		if(dataType == 0) //single precision
@@ -377,7 +378,7 @@ int main(int argc, char* argv[])
 				str[4] = dimStr;
 				
 				char thrStr[100]; 
-				sprintf(thrStr, "SV Threshold = %f", absErrBound);
+				sprintf(thrStr, "SV Threshold = %f", conf_params->absErrBound);
 				str[7] = thrStr;
 
 				writeStrings(8, str, "parameter-raw.txt", &status);	
@@ -509,7 +510,6 @@ int main(int argc, char* argv[])
 				Max = ori_data[0];
 				Min = ori_data[0];
 				diffMax = fabs(data[0] - ori_data[0]);
-				size_t k = 0;
 				double sum1 = 0, sum2 = 0;
 				for (i = 0; i < nbEle; i++)
 				{
@@ -571,7 +571,7 @@ int main(int argc, char* argv[])
 		}
 		else //double-data
 		{
-			double *data;
+			double *data = NULL;
 			if(tucker)
 			{
 				const char* s = getenv("TUCKERMPI_PATH");
@@ -608,7 +608,7 @@ int main(int argc, char* argv[])
 				else if(r3==0)
 					sprintf(dimStr2, "Ending subscripts = %zu %zu", r2-1, r1-1);
 				else if(r4==0)
-					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu", r3-1, r2-1, r1-1);
+					sprintf(dimStr2, "Endi outDir[640],ng subscripts = %zu %zu %zu", r3-1, r2-1, r1-1);
 				else if(r5==0)
 					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu %zu", r4-1, r3-1, r2-1, r1-1);
 				else
@@ -685,7 +685,6 @@ int main(int argc, char* argv[])
 				diffMax = data[0]>ori_data[0]?data[0]-ori_data[0]:ori_data[0]-data[0];
 
 				//diffMax = fabs(data[0] - ori_data[0]);
-				size_t k = 0;
 				double sum1 = 0, sum2 = 0;
 
 				for (i = 0; i < nbEle; i++)
@@ -754,26 +753,23 @@ int main(int argc, char* argv[])
 			bytes = readByteData(cmpPath, &byteLength, &status);
 			
 		unsigned char* bytes2 = NULL;
-		long bytes2Len = 0;	
 		int isZlib = isZlibFormat(bytes[0], bytes[1]);
 		if(isZlib)
 		{
-			szMode = SZ_BEST_COMPRESSION;
-			size_t targetUncompressSize = 65536;
-			bytes2Len = zlib_uncompress65536bytes(bytes, (unsigned long)byteLength, &bytes2);	
-			
-			//printf("bytes2Len = %d\n", bytes2Len); 
+			conf_params->szMode = SZ_BEST_COMPRESSION;
+			//size_t targetUncompressSize = 65536;
+			zlib_uncompress65536bytes(bytes, (unsigned long)byteLength, &bytes2);	
 		}
 		else
 		{
-			szMode = SZ_BEST_SPEED;	
+			conf_params->szMode = SZ_BEST_SPEED;	
 			bytes2 = bytes;
 		}				
 			
 		sz_metadata* metadata = SZ_getMetadata(bytes2);
-		metadata->conf_params->szMode = szMode;
+		metadata->conf_params->szMode = conf_params->szMode;
 
-		if(metadata->versionNumber[0]==0 || metadata->conf_params->max_quant_intervals<0)
+		if(metadata->versionNumber[0]==0)
 		{
 			printf("Error: the compressed data file is likely wrong.\n");
 			usage();

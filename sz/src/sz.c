@@ -24,13 +24,7 @@
 //#include "CurveFillingCompressStorage.h"
 
 int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
-int SZ_SIZE_TYPE = 8;
-
-double absErrBound;
-double relBoundRatio;
-double psnr;
-double pw_relBoundRatio;
-float predThreshold = 0.98;
+//int SZ_SIZE_TYPE = 8;
 
 sz_params *conf_params = NULL;
 sz_exedata *exe_params = NULL;
@@ -54,7 +48,7 @@ int SZ_Init(const char *configFilePath)
 	if(loadFileResult==SZ_NSCS)
 		return SZ_NSCS;
 	
-	SZ_SIZE_TYPE = sizeof(size_t);
+	exe_params->SZ_SIZE_TYPE = sizeof(size_t);
 	return SZ_SCES;
 }
 
@@ -66,7 +60,7 @@ int SZ_Init_Params(sz_params *params)
 	if(*y==1) endianType = LITTLE_ENDIAN_SYSTEM;
 
 	exe_params->sysEndianType = endianType;
-	SZ_SIZE_TYPE = sizeof(size_t);
+	exe_params->SZ_SIZE_TYPE = sizeof(size_t);
 
 	// set default values
 	if(params->max_quant_intervals > 0) 
@@ -290,8 +284,8 @@ size_t e5, size_t e4, size_t e3, size_t e2, size_t e1)
 
 unsigned char *SZ_compress(int dataType, void *data, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {	
-	unsigned char *newByteData = SZ_compress_args(dataType, data, outSize, conf_params->errorBoundMode, absErrBound, relBoundRatio, 
-	pw_relBoundRatio, conf_params->pwr_type, r5, r4, r3, r2, r1);
+	unsigned char *newByteData = SZ_compress_args(dataType, data, outSize, conf_params->errorBoundMode, conf_params->absErrBound, conf_params->relBoundRatio, 
+	conf_params->pw_relBoundRatio, conf_params->pwr_type, r5, r4, r3, r2, r1);
 	return newByteData;
 }
 
@@ -517,7 +511,7 @@ size_t SZ_decompress_args(int dataType, unsigned char *bytes, size_t byteLength,
 
 sz_metadata* SZ_getMetadata(unsigned char* bytes)
 {
-	int index = 0, i, isConstant, isLossless, sizeType;
+	int index = 0, i, isConstant, isLossless;
 	size_t dataSeriesLength = 0;
 	int versions[3] = {0,0,0};
 	for (i = 0; i < 3; i++)
@@ -526,7 +520,7 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	isConstant = sameRByte & 0x01;
 	//conf_params->szMode = (sameRByte & 0x06)>>1;
 	isLossless = (sameRByte & 0x10)>>4;
-	SZ_SIZE_TYPE = sizeType = ((sameRByte & 0x40)>>6)==1?8:4;
+	exe_params->SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
 	
 	sz_params* params = convertBytesToSZParams(&(bytes[index]));
 	if(conf_params!=NULL)
@@ -537,7 +531,7 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	if(params->dataType!=SZ_FLOAT && params->dataType!= SZ_DOUBLE) //if this type is an Int type
 		index++; //jump to the dataLength info byte address
 	dataSeriesLength = bytesToSize(&(bytes[index]));// 4 or 8	
-	index += SZ_SIZE_TYPE;
+	index += exe_params->SZ_SIZE_TYPE;
 	index += 4; //max_quant_intervals
 	
 	sz_metadata* metadata = (sz_metadata*)malloc(sizeof(struct sz_metadata));
@@ -547,7 +541,7 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	metadata->versionNumber[2] = versions[2];
 	metadata->isConstant = isConstant;
 	metadata->isLossless = isLossless;
-	metadata->sizeType = sizeType;
+	metadata->sizeType = exe_params->SZ_SIZE_TYPE;
 	metadata->dataSeriesLength = dataSeriesLength;
 	
 	metadata->conf_params = conf_params;
@@ -559,12 +553,12 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 		if(metadata->conf_params->errorBoundMode >= PW_REL)
 		{
 			radExpoL = 1;
-			segmentL = SZ_SIZE_TYPE;
+			segmentL = exe_params->SZ_SIZE_TYPE;
 			pwrErrBoundBytesL = 4;
 		}
 		
-		int offset_typearray = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrErrBoundBytesL + 4 + 4 + 1 + 8 
-				+ SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE;
+		int offset_typearray = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrErrBoundBytesL + 4 + 4 + 1 + 8 
+				+ exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE;
 		size_t nodeCount = bytesToInt_bigEndian(bytes+offset_typearray);
 		defactoNBBins = (nodeCount+1)/2;
 	}

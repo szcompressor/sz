@@ -27,7 +27,7 @@
 void compute_segment_precisions_double_1D(double *oriData, size_t dataLength, double* pwrErrBound, unsigned char* pwrErrBoundBytes, double globalPrecision)
 {
 	size_t i = 0, j = 0, k = 0;
-	double realPrecision = oriData[0]!=0?fabs(pw_relBoundRatio*oriData[0]):pw_relBoundRatio; 
+	double realPrecision = oriData[0]!=0?fabs(conf_params->pw_relBoundRatio*oriData[0]):conf_params->pw_relBoundRatio; 
 	double approxPrecision;
 	unsigned char realPrecBytes[8];
 	double curPrecision;
@@ -44,7 +44,7 @@ void compute_segment_precisions_double_1D(double *oriData, size_t dataLength, do
 				realPrecision = sum/conf_params->segment_size;
 				sum = 0;			
 			}
-			realPrecision *= pw_relBoundRatio;
+			realPrecision *= conf_params->pw_relBoundRatio;
 			if(conf_params->errorBoundMode==ABS_AND_PW_REL||conf_params->errorBoundMode==REL_AND_PW_REL)
 				realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
 			else if(conf_params->errorBoundMode==ABS_OR_PW_REL||conf_params->errorBoundMode==REL_OR_PW_REL)
@@ -126,7 +126,7 @@ unsigned int optimize_intervals_double_1D_pwr(double *oriData, size_t dataLength
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -193,10 +193,10 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 						else
 							a = r1%edgeSize;
 					}
-					realPrecision = pw_relBoundRatio*statAbsValues[J]/(a*b);
+					realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J]/(a*b);
 				}
 				else
-					realPrecision = pw_relBoundRatio*statAbsValues[J];
+					realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J];
 
 				if(conf_params->errorBoundMode==ABS_AND_PW_REL||conf_params->errorBoundMode==REL_AND_PW_REL)
 					realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
@@ -256,10 +256,10 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 			a = edgeSize;
 		else
 			a = r1%edgeSize;
-		realPrecision = pw_relBoundRatio*statAbsValues[J]/(a*b);
+		realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J]/(a*b);
 	}
 	else
-		realPrecision = pw_relBoundRatio*statAbsValues[J];		
+		realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J];		
 
 	if(conf_params->errorBoundMode==ABS_AND_PW_REL||conf_params->errorBoundMode==REL_AND_PW_REL)
 		realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
@@ -315,7 +315,7 @@ unsigned int optimize_intervals_double_2D_pwr(double *oriData, size_t r1, size_t
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -364,7 +364,7 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 		ir = i*r23;		
 		if(i%edgeSize==0&&i>0)
 		{
-			realPrecision = pw_relBoundRatio*statAbsValues[J][K];
+			realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J][K];
 			doubleToBytes(realPrecBytes, realPrecision);
 			memset(&realPrecBytes[2], 0, 6);
 			approxPrecision = bytesToDouble(realPrecBytes);
@@ -384,7 +384,7 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 			jr = j*r3;
 			if((i%edgeSize==edgeSize-1 || i == r1-1)&&j%edgeSize==0&&j>0)
 			{
-				realPrecision = pw_relBoundRatio*statAbsValues[J][K];
+				realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J][K];
 				doubleToBytes(realPrecBytes, realPrecision);
 				memset(&realPrecBytes[2], 0, 6);
 				approxPrecision = bytesToDouble(realPrecBytes);
@@ -411,7 +411,7 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 				curValue = oriData[index];				
 				if((i%edgeSize==edgeSize-1 || i == r1-1)&&(j%edgeSize==edgeSize-1||j==r2-1)&&k%edgeSize==0&&k>0)
 				{
-					realPrecision = pw_relBoundRatio*statAbsValues[J][K];
+					realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J][K];
 					doubleToBytes(realPrecBytes, realPrecision);
 					memset(&realPrecBytes[2], 0, 6);
 					approxPrecision = bytesToDouble(realPrecBytes);
@@ -455,7 +455,7 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 		}
 	}	
 	
-	realPrecision = pw_relBoundRatio*statAbsValues[J][K];
+	realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J][K];
 	doubleToBytes(realPrecBytes, realPrecision);
 	memset(&realPrecBytes[2], 0, 6);
 	approxPrecision = bytesToDouble(realPrecBytes);
@@ -515,7 +515,7 @@ unsigned int optimize_intervals_double_3D_pwr(double *oriData, size_t r1, size_t
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = totalSampleSize*conf_params->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
@@ -709,15 +709,15 @@ size_t dataLength, size_t *outSize, double min, double max)
 	{
 		size_t k = 0, i;
 		tdps->isLossless = 1;
-		size_t totalByteLength = 3 + SZ_SIZE_TYPE + 1 + doubleSize*dataLength;
+		size_t totalByteLength = 3 + exe_params->SZ_SIZE_TYPE + 1 + doubleSize*dataLength;
 		*newByteData = (unsigned char*)malloc(totalByteLength);
 		
-		unsigned char dsLengthBytes[SZ_SIZE_TYPE];
+		unsigned char dsLengthBytes[exe_params->SZ_SIZE_TYPE];
 		intToBytes_bigEndian(dsLengthBytes, dataLength);//4
 		for (i = 0; i < 3; i++)//3
 			(*newByteData)[k++] = versionNumber[i];
 		
-		if(SZ_SIZE_TYPE==4)
+		if(exe_params->SZ_SIZE_TYPE==4)
 		{
 			(*newByteData)[k++] = 16;	//=00010000	
 		}
@@ -725,15 +725,15 @@ size_t dataLength, size_t *outSize, double min, double max)
 		{
 			(*newByteData)[k++] = 80;
 		}
-		for (i = 0; i < SZ_SIZE_TYPE; i++)//4 or 8
+		for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)//4 or 8
 			(*newByteData)[k++] = dsLengthBytes[i];
 
 		
 		if(exe_params->sysEndianType==BIG_ENDIAN_SYSTEM)
-			memcpy((*newByteData)+4+SZ_SIZE_TYPE, oriData, dataLength*doubleSize);
+			memcpy((*newByteData)+4+exe_params->SZ_SIZE_TYPE, oriData, dataLength*doubleSize);
 		else
 		{
-			unsigned char* p = (*newByteData)+4+SZ_SIZE_TYPE;
+			unsigned char* p = (*newByteData)+4+exe_params->SZ_SIZE_TYPE;
 			for(i=0;i<dataLength;i++,p+=doubleSize)
 				doubleToBytes(p, oriData[i]);
 		}

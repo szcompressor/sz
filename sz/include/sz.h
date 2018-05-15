@@ -224,22 +224,22 @@ typedef union lfloat
 typedef struct sz_params
 {
 	int dataType;
-	unsigned int max_quant_intervals;
-	unsigned int quantization_intervals;
+	unsigned int max_quant_intervals; //max number of quantization intervals for quantization
+	unsigned int quantization_intervals; 
 	unsigned int maxRangeRadius;
 	int dataEndianType; //*endian type of the data read from disk
-	int sol_ID;//x
+	int sol_ID;// it's always SZ, unless the setting is PASTRI compression mode (./configure --enable-pastri)
 	int sampleDistance; //2 bytes
 	float predThreshold;  // 2 bytes
 	int szMode; //* 0 (best speed) or 1 (better compression with Gzip)
 	int gzipMode; //* four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
 	int  errorBoundMode; //4bits (0.5byte), //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PSNR, or PW_REL, PSNR
-	double absErrBound;
-	double relBoundRatio;
-	double psnr;
-	double pw_relBoundRatio;
-	int segment_size;
-	int pwr_type;
+	double absErrBound; //absolute error bound
+	double relBoundRatio; //value range based relative error bound ratio
+	double psnr; //PSNR
+	double pw_relBoundRatio; //point-wise relative error bound
+	int segment_size; //only used for 2D/3D data compression with pw_relBoundRatio
+	int pwr_type; //only used for 2D/3D data compression with pw_relBoundRatio
 } sz_params;
 
 typedef struct sz_metadata
@@ -248,31 +248,23 @@ typedef struct sz_metadata
 	int isConstant; //only used for checking if the data are constant values by calling SZ_GetMetaData()
 	int isLossless; //only used for checking if the data compression was lossless, used only by calling SZ_GetMetaData()
 	int sizeType; //only used for checking whether the size type is "int" or "long" in the compression, used only by calling SZ_GetMetaData()
-	size_t dataSeriesLength;
-	int defactoNBBins;
-	struct sz_params* conf_params;
+	size_t dataSeriesLength; //# number of data points in the dataset
+	int defactoNBBins; //real number of quantization bins
+	struct sz_params* conf_params; //configuration parameters
 } sz_metadata;
 
 typedef struct sz_exedata
 {
 	char optQuantMode;	//opt Quantization (0: fixed ; 1: optimized)
     int sysEndianType; //*sysEndianType is actually set automatically.	
-	int intvCapacity;
-	int intvRadius;    
+	int intvCapacity; // the number of intervals for the linear-scaling quantization
+	int intvRadius;  // the number of intervals for the radius of the quantization range (intvRadius=intvCapacity/2)
+	int SZ_SIZE_TYPE; //the length (# bytes) of the size_t in the system at runtime //4 or 8: sizeof(size_t) 
 } sz_exedata;
 
 extern int versionNumber[4];
 
 //-------------------key global variables--------------
-extern double absErrBound;
-extern double relBoundRatio;
-extern double psnr;
-extern double pw_relBoundRatio;
-
-extern float predThreshold;
-
-extern int SZ_SIZE_TYPE; //4 or 8: sizeof(size_t) 
-
 extern sz_params *conf_params;
 extern sz_exedata *exe_params;
 //------------------------------------------------

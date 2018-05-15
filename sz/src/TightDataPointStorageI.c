@@ -126,7 +126,7 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 	convertDataTypeSizeCode(dataByteSizeCode); //in bytes
 	(*this)->isLossless = (sameRByte & 0x10)>>4;
 
-	SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
+	exe_params->SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
 	int errorBoundMode = ABS;
 	
 	sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
@@ -139,7 +139,7 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 		(*this)->exactByteSize = flatBytes[index++]; //1
 	
 	unsigned char dsLengthBytes[8];
-	for (i = 0; i < SZ_SIZE_TYPE; i++)
+	for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)
 		dsLengthBytes[i] = flatBytes[index++];
 	(*this)->dataSeriesLength = bytesToSize(dsLengthBytes);// ST
 	if((*this)->isLossless==1)
@@ -189,15 +189,15 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 		byteBuf[i] = flatBytes[index++];
 	(*this)->realPrecision = bytesToDouble(byteBuf);//8
 	
-	for (i = 0; i < SZ_SIZE_TYPE; i++)
+	for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)
 		byteBuf[i] = flatBytes[index++];
 	(*this)->typeArray_size = bytesToSize(byteBuf);// ST		
 
-	for (i = 0; i < SZ_SIZE_TYPE; i++)
+	for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)
 		byteBuf[i] = flatBytes[index++];
 	(*this)->exactDataNum = bytesToSize(byteBuf);// ST
 	
-	for (i = 0; i < SZ_SIZE_TYPE; i++)
+	for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)
 		byteBuf[i] = flatBytes[index++];
 	(*this)->exactDataBytes_size = bytesToSize(byteBuf);// ST		
 
@@ -288,7 +288,7 @@ void convertTDPStoBytes_int(TightDataPointStorageI* tdps, unsigned char* bytes, 
 	bytes[k++] = tdps->exactByteSize; //1 byte
 
 	sizeToBytes(byteBuffer, tdps->dataSeriesLength);
-	for(i = 0;i<SZ_SIZE_TYPE;i++)//ST: 4 or 8 bytes
+	for(i = 0;i<exe_params->SZ_SIZE_TYPE;i++)//ST: 4 or 8 bytes
 		bytes[k++] = byteBuffer[i];	
 	
 	intToBytes_bigEndian(byteBuffer, conf_params->max_quant_intervals);
@@ -308,15 +308,15 @@ void convertTDPStoBytes_int(TightDataPointStorageI* tdps, unsigned char* bytes, 
 		bytes[k++] = byteBuffer[i];			
 
 	sizeToBytes(byteBuffer, tdps->typeArray_size);
-	for(i = 0;i<SZ_SIZE_TYPE;i++)//ST
+	for(i = 0;i<exe_params->SZ_SIZE_TYPE;i++)//ST
 		bytes[k++] = byteBuffer[i];
 
 	sizeToBytes(byteBuffer, tdps->exactDataNum);
-	for(i = 0;i<SZ_SIZE_TYPE;i++)//ST
+	for(i = 0;i<exe_params->SZ_SIZE_TYPE;i++)//ST
 		bytes[k++] = byteBuffer[i];
 
 	sizeToBytes(byteBuffer, tdps->exactDataBytes_size);
-	for(i = 0;i<SZ_SIZE_TYPE;i++)//ST
+	for(i = 0;i<exe_params->SZ_SIZE_TYPE;i++)//ST
 		bytes[k++] = byteBuffer[i];
 
 	memcpy(&(bytes[k]), tdps->typeArray, tdps->typeArray_size);
@@ -332,7 +332,7 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 	size_t i, k = 0; 
 	unsigned char dsLengthBytes[8];
 	
-	if(SZ_SIZE_TYPE==4)
+	if(exe_params->SZ_SIZE_TYPE==4)
 		intToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//4
 	else
 		longToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//8
@@ -345,12 +345,12 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 	int dataTypeSizeCode = convertDataTypeSize(tdps->dataTypeSize);
 	sameByte = (unsigned char) (sameByte | dataTypeSizeCode);
 	
-	if(SZ_SIZE_TYPE==8)
+	if(exe_params->SZ_SIZE_TYPE==8)
 		sameByte = (unsigned char) (sameByte | 0x40); // 01000000, the 6th bit
 	
 	if(tdps->allSameData==1)
 	{
-		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + tdps->exactDataBytes_size;
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + tdps->exactDataBytes_size;
 		*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
 
 		for (i = 0; i < 3; i++)//3
@@ -360,7 +360,7 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 		convertSZParamsToBytes(conf_params, &((*bytes)[k]));
 		k = k + MetaDataByteLength;			
 		
-		for (i = 0; i < SZ_SIZE_TYPE; i++)
+		for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)
 			(*bytes)[k++] = dsLengthBytes[i];
 		
 		for (i = 0; i < tdps->exactDataBytes_size; i++)
@@ -376,8 +376,8 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 			exit(0);
 		}
 
-		size_t totalByteLength = 3 + 1 + MetaDataByteLength + 1 + SZ_SIZE_TYPE + 4 + 4 + 8 + 8
-				+ SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + 1 + exe_params->SZ_SIZE_TYPE + 4 + 4 + 8 + 8
+				+ exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE
 				+ tdps->typeArray_size + tdps->exactDataBytes_size;
 
 		*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
@@ -393,7 +393,7 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 	size_t i, k = 0; 
 	unsigned char dsLengthBytes[8];
 	
-	if(SZ_SIZE_TYPE==4)
+	if(exe_params->SZ_SIZE_TYPE==4)
 		intToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//4
 	else
 		longToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//8
@@ -402,12 +402,12 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 	sameByte = sameByte | (conf_params->szMode << 1);
 	if(tdps->isLossless)
 		sameByte = (unsigned char) (sameByte | 0x10);
-	if(SZ_SIZE_TYPE==8)
+	if(exe_params->SZ_SIZE_TYPE==8)
 		sameByte = (unsigned char) (sameByte | 0x40); // 01000000, the 6th bit
 		
 	if(tdps->allSameData==1)
 	{
-		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + tdps->exactDataBytes_size;
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + tdps->exactDataBytes_size;
 		//*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
 
 		for (i = 0; i < 3; i++)//3
@@ -417,7 +417,7 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 		convertSZParamsToBytes(conf_params, &(bytes[k]));
 		k = k + MetaDataByteLength;	
 				
-		for (i = 0; i < SZ_SIZE_TYPE; i++)//ST
+		for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)//ST
 			bytes[k++] = dsLengthBytes[i];		
 		for (i = 0; i < tdps->exactDataBytes_size; i++)
 			bytes[k++] = tdps->exactDataBytes[i];
@@ -432,8 +432,8 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 			exit(0);
 		}
 
-		size_t totalByteLength = 3 + 1 + MetaDataByteLength + SZ_SIZE_TYPE + 1 + 4 + 4 + 8 + 8
-				+ SZ_SIZE_TYPE + SZ_SIZE_TYPE + SZ_SIZE_TYPE  
+		size_t totalByteLength = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + 4 + 4 + 8 + 8
+				+ exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE  
 				+ tdps->typeArray_size + tdps->exactDataBytes_size;
 
 		convertTDPStoBytes_int(tdps, bytes, dsLengthBytes, sameByte);

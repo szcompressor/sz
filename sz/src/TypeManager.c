@@ -391,7 +391,7 @@ size_t convertIntArray2ByteArray_fast_dynamic2(unsigned char* timeStepType, unsi
 
 int computeBitNumRequired(size_t dataLength)
 {
-	if(SZ_SIZE_TYPE==4)
+	if(exe_params->SZ_SIZE_TYPE==4)
 		return 32 - numberOfLeadingZeros_Int(dataLength);
 	else
 		return 64 - numberOfLeadingZeros_Long(dataLength);

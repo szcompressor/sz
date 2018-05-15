@@ -584,7 +584,7 @@ int initRandomAccessBytes(unsigned char* raBytes)
         for (i = 0; i < 3; i++)//3
                 raBytes[k++] = versionNumber[i];
         int sameByte = 0x80; //indicating this is random-access mode
-        if(SZ_SIZE_TYPE==8)
+        if(exe_params->SZ_SIZE_TYPE==8)
                 sameByte = (unsigned char) (sameByte | 0x40); // 01000000, the 6th bit
         sameByte = sameByte | (conf_params->szMode << 1);
 
