@@ -291,6 +291,14 @@ void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, un
 
 
 void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data){
+	
+	if(conf_params==NULL)
+		conf_params = (sz_params*)malloc(sizeof(sz_params));
+	memset(conf_params, 0, sizeof(sz_params));
+	if(exe_params==NULL)
+		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
+	memset(exe_params, 0, sizeof(sz_exedata));	
+	
 	// printf("num_block_elements %d num_blocks %d\n", max_num_block_elements, num_blocks);
 	// fflush(stdout);
 	double elapsed_time = 0.0;
