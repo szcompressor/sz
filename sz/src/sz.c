@@ -23,25 +23,20 @@
 #include "Huffman.h"
 //#include "CurveFillingCompressStorage.h"
 
-unsigned int maxRangeRadius = 32768;
-
-int errorBoundMode = 0; //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PSNR, or PW_REL, PSNR
+int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
+int SZ_SIZE_TYPE = 8;
 
 double absErrBound;
 double relBoundRatio;
 double psnr;
 double pw_relBoundRatio;
-
-int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
-
 float predThreshold = 0.98;
-
-int SZ_SIZE_TYPE = 8;
-
-SZ_VarSet* sz_varset = NULL;
 
 sz_params *conf_params = NULL;
 sz_exedata *exe_params = NULL;
+
+/*sz_varset is not used in the single-snapshot data compression*/
+SZ_VarSet* sz_varset = NULL;
 
 //only for Pastri compressor
 #ifdef PASTRI
@@ -75,12 +70,12 @@ int SZ_Init_Params(sz_params *params)
 
 	// set default values
 	if(params->max_quant_intervals > 0) 
-		maxRangeRadius = params->max_quant_intervals/2;
+		conf_params->maxRangeRadius = params->max_quant_intervals/2;
 	else
-		params->max_quant_intervals = maxRangeRadius*2;
+		params->max_quant_intervals = conf_params->maxRangeRadius*2;
 
-	exe_params->intvCapacity = maxRangeRadius*2;
-	exe_params->intvRadius = maxRangeRadius;
+	exe_params->intvCapacity = conf_params->maxRangeRadius*2;
+	exe_params->intvRadius = conf_params->maxRangeRadius;
 
 	if(params->quantization_intervals>0)
 	{
@@ -295,7 +290,7 @@ size_t e5, size_t e4, size_t e3, size_t e2, size_t e1)
 
 unsigned char *SZ_compress(int dataType, void *data, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {	
-	unsigned char *newByteData = SZ_compress_args(dataType, data, outSize, errorBoundMode, absErrBound, relBoundRatio, 
+	unsigned char *newByteData = SZ_compress_args(dataType, data, outSize, conf_params->errorBoundMode, absErrBound, relBoundRatio, 
 	pw_relBoundRatio, conf_params->pwr_type, r5, r4, r3, r2, r1);
 	return newByteData;
 }
@@ -348,7 +343,6 @@ void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_
 	if(conf_params==NULL)
 		conf_params = (sz_params*)malloc(sizeof(sz_params));
 	memset(conf_params, 0, sizeof(sz_params));
-	
 	if(exe_params==NULL)
 		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
 	memset(exe_params, 0, sizeof(sz_exedata));

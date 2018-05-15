@@ -226,13 +226,14 @@ typedef struct sz_params
 	int dataType;
 	unsigned int max_quant_intervals;
 	unsigned int quantization_intervals;
+	unsigned int maxRangeRadius;
 	int dataEndianType; //*endian type of the data read from disk
 	int sol_ID;//x
 	int sampleDistance; //2 bytes
 	float predThreshold;  // 2 bytes
 	int szMode; //* 0 (best speed) or 1 (better compression with Gzip)
 	int gzipMode; //* four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
-	int  errorBoundMode; //4bits (0.5byte)
+	int  errorBoundMode; //4bits (0.5byte), //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PSNR, or PW_REL, PSNR
 	double absErrBound;
 	double relBoundRatio;
 	double psnr;
@@ -260,18 +261,13 @@ typedef struct sz_exedata
 	int intvRadius;    
 } sz_exedata;
 
-//-------------------global variables--------------
+extern int versionNumber[4];
 
-extern unsigned int maxRangeRadius;
-
-extern int errorBoundMode; //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PW_REL
-
+//-------------------key global variables--------------
 extern double absErrBound;
 extern double relBoundRatio;
 extern double psnr;
 extern double pw_relBoundRatio;
-
-extern int versionNumber[4];
 
 extern float predThreshold;
 
@@ -279,7 +275,6 @@ extern int SZ_SIZE_TYPE; //4 or 8: sizeof(size_t)
 
 extern sz_params *conf_params;
 extern sz_exedata *exe_params;
-
 //------------------------------------------------
 
 //for pastri 

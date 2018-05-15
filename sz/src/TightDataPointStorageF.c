@@ -116,7 +116,7 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 		byteBuf[i] = flatBytes[index++];
 	int max_quant_intervals = bytesToInt_bigEndian(byteBuf);// 4	
 
-	maxRangeRadius = max_quant_intervals/2;
+	conf_params->maxRangeRadius = max_quant_intervals/2;
 
 	if(errorBoundMode>=PW_REL)
 	{
@@ -277,7 +277,7 @@ void new_TightDataPointStorageF(TightDataPointStorageF **this,
 	
 	(*this)->isLossless = 0;
 	
-	if(errorBoundMode>=PW_REL)
+	if(conf_params->errorBoundMode>=PW_REL)
 		(*this)->pwrErrBoundBytes = pwrErrBoundBytes;
 	else
 		(*this)->pwrErrBoundBytes = NULL;
@@ -327,7 +327,7 @@ void new_TightDataPointStorageF2(TightDataPointStorageF **this,
 	
 	(*this)->isLossless = 0;
 	
-	if(errorBoundMode>=PW_REL)
+	if(conf_params->errorBoundMode>=PW_REL)
 		(*this)->pwrErrBoundBytes = pwrErrBoundBytes;
 	else
 		(*this)->pwrErrBoundBytes = NULL;
@@ -366,7 +366,7 @@ void convertTDPStoBytes_float(TightDataPointStorageF* tdps, unsigned char* bytes
 	for(i = 0;i<4;i++)//4
 		bytes[k++] = max_quant_intervals_Bytes[i];		
 	
-	if(errorBoundMode>=PW_REL)
+	if(conf_params->errorBoundMode>=PW_REL)
 	{
 		bytes[k++] = tdps->radExpo; //1 byte			
 		
@@ -411,7 +411,7 @@ void convertTDPStoBytes_float(TightDataPointStorageF* tdps, unsigned char* bytes
 
 	memcpy(&(bytes[k]), tdps->typeArray, tdps->typeArray_size);
 	k += tdps->typeArray_size;
-	if(errorBoundMode>=PW_REL)
+	if(conf_params->errorBoundMode>=PW_REL)
 	{
 		memcpy(&(bytes[k]), tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size);
 		k += tdps->pwrErrBoundBytes_size;
@@ -461,7 +461,7 @@ void convertTDPStoBytes_float_reserve(TightDataPointStorageF* tdps, unsigned cha
 	for(i = 0;i<4;i++)//4
 		bytes[k++] = max_quant_intervals_Bytes[i];
 
-	if(errorBoundMode>=PW_REL)
+	if(conf_params->errorBoundMode>=PW_REL)
 	{
 		bytes[k++] = tdps->radExpo; //1 byte			
 		
@@ -512,7 +512,7 @@ void convertTDPStoBytes_float_reserve(TightDataPointStorageF* tdps, unsigned cha
 	k += tdps->rtypeArray_size;
 	memcpy(&(bytes[k]), tdps->typeArray, tdps->typeArray_size);
 	k += tdps->typeArray_size;
-	if(errorBoundMode>=PW_REL)
+	if(conf_params->errorBoundMode>=PW_REL)
 	{
 		memcpy(&(bytes[k]), tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size);
 		k += tdps->pwrErrBoundBytes_size;
@@ -543,7 +543,7 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 	sameByte = sameByte | (conf_params->szMode << 1);
 	if(tdps->isLossless)
 		sameByte = (unsigned char) (sameByte | 0x10);
-	if(errorBoundMode>=PW_REL)
+	if(conf_params->errorBoundMode>=PW_REL)
 		sameByte = (unsigned char) (sameByte | 0x20); // 00100000, the 5th bit
 	if(SZ_SIZE_TYPE==8)
 		sameByte = (unsigned char) (sameByte | 0x40); // 01000000, the 6th bit
@@ -572,7 +572,7 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 	{
 		size_t residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;
 		size_t segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
-		if(errorBoundMode>=PW_REL)
+		if(conf_params->errorBoundMode>=PW_REL)
 		{			
 			segmentL = SZ_SIZE_TYPE;
 			radExpoL = 1;
@@ -594,7 +594,7 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 	{
 		size_t residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;		
 		size_t segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
-		if(errorBoundMode>=PW_REL)
+		if(conf_params->errorBoundMode>=PW_REL)
 		{
 			segmentL = SZ_SIZE_TYPE;
 			radExpoL = 1;
@@ -610,7 +610,7 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 		// denotes whether it is
 		// with "reserved value"
 		
-		if(errorBoundMode>=PW_REL)
+		if(conf_params->errorBoundMode>=PW_REL)
 			sameByte = (unsigned char) (sameByte | 0x10); // 00001000, the 5th bit
 
 		*bytes = (unsigned char*)malloc(sizeof(unsigned char)*totalByteLength);
@@ -635,7 +635,7 @@ void convertTDPStoFlatBytes_float_args(TightDataPointStorageF *tdps, unsigned ch
 	sameByte = sameByte | (conf_params->szMode << 1);
 	if(tdps->isLossless)
 		sameByte = (unsigned char) (sameByte | 0x10);
-	if(errorBoundMode>=PW_REL)
+	if(conf_params->errorBoundMode>=PW_REL)
 		sameByte = (unsigned char) (sameByte | 0x20); // 00100000, the 5th bit
 	if(SZ_SIZE_TYPE==8)
 		sameByte = (unsigned char) (sameByte | 0x40); // 01000000, the 6th bit
@@ -663,7 +663,7 @@ void convertTDPStoFlatBytes_float_args(TightDataPointStorageF *tdps, unsigned ch
 	{
 		size_t residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;
 		size_t segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
-		if(errorBoundMode>=PW_REL)
+		if(conf_params->errorBoundMode>=PW_REL)
 		{			
 			segmentL = SZ_SIZE_TYPE;
 			radExpoL = 1;
@@ -683,7 +683,7 @@ void convertTDPStoFlatBytes_float_args(TightDataPointStorageF *tdps, unsigned ch
 	{
 		size_t residualMidBitsLength = tdps->residualMidBits == NULL ? 0 : tdps->residualMidBits_size;
 		size_t segmentL = 0, radExpoL = 0, pwrBoundArrayL = 0;
-		if(errorBoundMode>=PW_REL)
+		if(conf_params->errorBoundMode>=PW_REL)
 		{
 			segmentL = SZ_SIZE_TYPE;
 			radExpoL = 1;
@@ -699,7 +699,7 @@ void convertTDPStoFlatBytes_float_args(TightDataPointStorageF *tdps, unsigned ch
 		// denotes whether it is
 		// with "reserved value"
 		
-		if(errorBoundMode>=PW_REL)
+		if(conf_params->errorBoundMode>=PW_REL)
 			sameByte = (unsigned char) (sameByte | 0x10); // 00001000, the 5th bit
 
 		convertTDPStoBytes_float_reserve(tdps, bytes, dsLengthBytes, sameByte);

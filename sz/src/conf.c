@@ -91,10 +91,10 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		conf_params->dataEndianType = LITTLE_ENDIAN_DATA;
 		conf_params->sol_ID = SZ;
 		conf_params->max_quant_intervals = 65536;
-		maxRangeRadius = conf_params->max_quant_intervals/2;
+		conf_params->maxRangeRadius = conf_params->max_quant_intervals/2;
 				
-		exe_params->intvCapacity = maxRangeRadius*2;
-		exe_params->intvRadius = maxRangeRadius;
+		exe_params->intvCapacity = conf_params->maxRangeRadius*2;
+		exe_params->intvRadius = conf_params->maxRangeRadius;
 		
 		conf_params->quantization_intervals = 0;
 		exe_params->optQuantMode = 1;
@@ -104,7 +104,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		conf_params->szMode = SZ_BEST_COMPRESSION;
 		
 		conf_params->gzipMode = 1; //fast mode
-		conf_params->errorBoundMode = errorBoundMode = PSNR;
+		conf_params->errorBoundMode = PSNR;
 		conf_params->psnr = psnr = 90;
 		
 		conf_params->pw_relBoundRatio = pw_relBoundRatio = 1E-3;
@@ -171,10 +171,10 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		}
 		else //==0
 		{
-			maxRangeRadius = max_quant_intervals/2;
+			conf_params->maxRangeRadius = max_quant_intervals/2;
 
-			exe_params->intvCapacity = maxRangeRadius*2;
-			exe_params->intvRadius = maxRangeRadius;
+			exe_params->intvCapacity = conf_params->maxRangeRadius*2;
+			exe_params->intvRadius = conf_params->maxRangeRadius;
 			
 			exe_params->optQuantMode = 1;
 		}
@@ -239,32 +239,31 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 			return SZ_NSCS;				
 		}
 		else if(strcmp(errBoundMode,"ABS")==0||strcmp(errBoundMode,"abs")==0)
-			errorBoundMode=ABS;
+			conf_params->errorBoundMode=ABS;
 		else if(strcmp(errBoundMode, "REL")==0||strcmp(errBoundMode,"rel")==0)
-			errorBoundMode=REL;
+			conf_params->errorBoundMode=REL;
 		else if(strcmp(errBoundMode, "ABS_AND_REL")==0||strcmp(errBoundMode, "abs_and_rel")==0)
-			errorBoundMode=ABS_AND_REL;
+			conf_params->errorBoundMode=ABS_AND_REL;
 		else if(strcmp(errBoundMode, "ABS_OR_REL")==0||strcmp(errBoundMode, "abs_or_rel")==0)
-			errorBoundMode=ABS_OR_REL;
+			conf_params->errorBoundMode=ABS_OR_REL;
 		else if(strcmp(errBoundMode, "PW_REL")==0||strcmp(errBoundMode, "pw_rel")==0)
-			errorBoundMode=PW_REL;
+			conf_params->errorBoundMode=PW_REL;
 		else if(strcmp(errBoundMode, "PSNR")==0||strcmp(errBoundMode, "psnr")==0)
-			errorBoundMode=PSNR;
+			conf_params->errorBoundMode=PSNR;
 		else if(strcmp(errBoundMode, "ABS_AND_PW_REL")==0||strcmp(errBoundMode, "abs_and_pw_rel")==0)
-			errorBoundMode=ABS_AND_PW_REL;
+			conf_params->errorBoundMode=ABS_AND_PW_REL;
 		else if(strcmp(errBoundMode, "ABS_OR_PW_REL")==0||strcmp(errBoundMode, "abs_or_pw_rel")==0)
-			errorBoundMode=ABS_OR_PW_REL;
+			conf_params->errorBoundMode=ABS_OR_PW_REL;
 		else if(strcmp(errBoundMode, "REL_AND_PW_REL")==0||strcmp(errBoundMode, "rel_and_pw_rel")==0)
-			errorBoundMode=REL_AND_PW_REL;
+			conf_params->errorBoundMode=REL_AND_PW_REL;
 		else if(strcmp(errBoundMode, "REL_OR_PW_REL")==0||strcmp(errBoundMode, "rel_or_pw_rel")==0)
-			errorBoundMode=REL_OR_PW_REL;
+			conf_params->errorBoundMode=REL_OR_PW_REL;
 		else
 		{
 			printf("[SZ] Error: Wrong error bound mode (please check sz.config file)\n");
 			iniparser_freedict(ini);
 			return SZ_NSCS;
 		}
-		conf_params->errorBoundMode = errorBoundMode;
 		
 		absErrBound = (double)iniparser_getdouble(ini, "PARAMETER:absErrBound", 0);
 		conf_params->absErrBound = absErrBound;

@@ -69,8 +69,8 @@ int main(int argc, char * argv[])
 	else
 	{
 		printf("Error: missing/unrecoganized data type: %s. \n", argv[1]);
-		printf("Test case: testint_decompress [datatype(-i8/-i16/-i32/-i64)] [config_file] [data_file]\n");
-		printf("Example: testint_decompress -i32 sz.config testdata/x86/testint32_8x8x8.dat.sz 8 8 8\n");
+		printf("Test case: testint_decompress [datatype(-i8/-i16/-i32/-i64)] [data_file]\n");
+		printf("Example: testint_decompress -i32 testdata/x86/testint32_8x8x8.dat.sz 8 8 8\n");
 		exit(0);		
 	}    
     

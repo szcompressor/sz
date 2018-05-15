@@ -45,9 +45,9 @@ void compute_segment_precisions_double_1D(double *oriData, size_t dataLength, do
 				sum = 0;			
 			}
 			realPrecision *= pw_relBoundRatio;
-			if(errorBoundMode==ABS_AND_PW_REL||errorBoundMode==REL_AND_PW_REL)
+			if(conf_params->errorBoundMode==ABS_AND_PW_REL||conf_params->errorBoundMode==REL_AND_PW_REL)
 				realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
-			else if(errorBoundMode==ABS_OR_PW_REL||errorBoundMode==REL_OR_PW_REL)
+			else if(conf_params->errorBoundMode==ABS_OR_PW_REL||conf_params->errorBoundMode==REL_OR_PW_REL)
 				realPrecision = realPrecision<globalPrecision?globalPrecision:realPrecision;
 				
 			doubleToBytes(realPrecBytes, realPrecision);
@@ -87,9 +87,9 @@ void compute_segment_precisions_double_1D(double *oriData, size_t dataLength, do
 		int size = dataLength%conf_params->segment_size==0?conf_params->segment_size:dataLength%conf_params->segment_size;
 		realPrecision = sum/size;		
 	}	
-	if(errorBoundMode==ABS_AND_PW_REL||errorBoundMode==REL_AND_PW_REL)
+	if(conf_params->errorBoundMode==ABS_AND_PW_REL||conf_params->errorBoundMode==REL_AND_PW_REL)
 		realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
-	else if(errorBoundMode==ABS_OR_PW_REL||errorBoundMode==REL_OR_PW_REL)
+	else if(conf_params->errorBoundMode==ABS_OR_PW_REL||conf_params->errorBoundMode==REL_OR_PW_REL)
 		realPrecision = realPrecision<globalPrecision?globalPrecision:realPrecision;	
 	doubleToBytes(realPrecBytes, realPrecision);
 	memset(&realPrecBytes[2], 0, 6);
@@ -107,8 +107,8 @@ unsigned int optimize_intervals_double_1D_pwr(double *oriData, size_t dataLength
 	double realPrecision = pwrErrBound[j++];	
 	unsigned long radiusIndex;
 	double pred_value = 0, pred_err;
-	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
-	memset(intervals, 0, maxRangeRadius*sizeof(int));
+	int *intervals = (int*)malloc(conf_params->maxRangeRadius*sizeof(int));
+	memset(intervals, 0, conf_params->maxRangeRadius*sizeof(int));
 	int totalSampleSize = dataLength/conf_params->sampleDistance;
 	for(i=2;i<dataLength;i++)
 	{
@@ -120,22 +120,22 @@ unsigned int optimize_intervals_double_1D_pwr(double *oriData, size_t dataLength
 			pred_value = oriData[i-1];
 			pred_err = fabs(pred_value - oriData[i]);
 			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
-			if(radiusIndex>=maxRangeRadius)
-				radiusIndex = maxRangeRadius - 1;			
+			if(radiusIndex>=conf_params->maxRangeRadius)
+				radiusIndex = conf_params->maxRangeRadius - 1;			
 			intervals[radiusIndex]++;
 		}
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
 	size_t sum = 0;
-	for(i=0;i<maxRangeRadius;i++)
+	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
 		sum += intervals[i];
 		if(sum>targetCount)
 			break;
 	}
-	if(i>=maxRangeRadius)
-		i = maxRangeRadius-1;
+	if(i>=conf_params->maxRangeRadius)
+		i = conf_params->maxRangeRadius-1;
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 	
@@ -198,9 +198,9 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 				else
 					realPrecision = pw_relBoundRatio*statAbsValues[J];
 
-				if(errorBoundMode==ABS_AND_PW_REL||errorBoundMode==REL_AND_PW_REL)
+				if(conf_params->errorBoundMode==ABS_AND_PW_REL||conf_params->errorBoundMode==REL_AND_PW_REL)
 					realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
-				else if(errorBoundMode==ABS_OR_PW_REL||errorBoundMode==REL_OR_PW_REL)
+				else if(conf_params->errorBoundMode==ABS_OR_PW_REL||conf_params->errorBoundMode==REL_OR_PW_REL)
 					realPrecision = realPrecision<globalPrecision?globalPrecision:realPrecision;
 					
 				doubleToBytes(realPrecBytes, realPrecision);
@@ -261,9 +261,9 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 	else
 		realPrecision = pw_relBoundRatio*statAbsValues[J];		
 
-	if(errorBoundMode==ABS_AND_PW_REL||errorBoundMode==REL_AND_PW_REL)
+	if(conf_params->errorBoundMode==ABS_AND_PW_REL||conf_params->errorBoundMode==REL_AND_PW_REL)
 		realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
-	else if(errorBoundMode==ABS_OR_PW_REL||errorBoundMode==REL_OR_PW_REL)
+	else if(conf_params->errorBoundMode==ABS_OR_PW_REL||conf_params->errorBoundMode==REL_OR_PW_REL)
 		realPrecision = realPrecision<globalPrecision?globalPrecision:realPrecision;
 		
 	doubleToBytes(realPrecBytes, realPrecision);
@@ -284,8 +284,8 @@ unsigned int optimize_intervals_double_2D_pwr(double *oriData, size_t r1, size_t
 	double realPrecision = pwrErrBound[0];	
 	unsigned long radiusIndex;
 	double pred_value = 0, pred_err;
-	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
-	memset(intervals, 0, maxRangeRadius*sizeof(int));
+	int *intervals = (int*)malloc(conf_params->maxRangeRadius*sizeof(int));
+	memset(intervals, 0, conf_params->maxRangeRadius*sizeof(int));
 	size_t totalSampleSize = (r1-1)*(r2-1)/conf_params->sampleDistance;
 	size_t ir2;
 	for(i=1;i<r1;i++)
@@ -308,8 +308,8 @@ unsigned int optimize_intervals_double_2D_pwr(double *oriData, size_t r1, size_t
 				pred_value = oriData[index-1] + oriData[index-r2] - oriData[index-r2-1];
 				pred_err = fabs(pred_value - oriData[index]);
 				radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
-				if(radiusIndex>=maxRangeRadius)
-					radiusIndex = maxRangeRadius - 1;
+				if(radiusIndex>=conf_params->maxRangeRadius)
+					radiusIndex = conf_params->maxRangeRadius - 1;
 				intervals[radiusIndex]++;
 			}			
 		}
@@ -317,14 +317,14 @@ unsigned int optimize_intervals_double_2D_pwr(double *oriData, size_t r1, size_t
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
 	size_t sum = 0;
-	for(i=0;i<maxRangeRadius;i++)
+	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
 		sum += intervals[i];
 		if(sum>targetCount)
 			break;
 	}
-	if(i>=maxRangeRadius)
-		i = maxRangeRadius-1;
+	if(i>=conf_params->maxRangeRadius)
+		i = conf_params->maxRangeRadius-1;
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 
@@ -332,7 +332,7 @@ unsigned int optimize_intervals_double_2D_pwr(double *oriData, size_t r1, size_t
 		powerOf2 = 32;
 
 	free(intervals);
-	//printf("maxRangeRadius = %d, accIntervals=%d, powerOf2=%d\n", maxRangeRadius, accIntervals, powerOf2);
+	//printf("conf_params->maxRangeRadius = %d, accIntervals=%d, powerOf2=%d\n", conf_params->maxRangeRadius, accIntervals, powerOf2);
 	return powerOf2;
 }
 
@@ -476,8 +476,8 @@ unsigned int optimize_intervals_double_3D_pwr(double *oriData, size_t r1, size_t
 	size_t r23=r2*r3;
 	size_t R23 = R2*R3;
 	double pred_value = 0, pred_err;
-	int *intervals = (int*)malloc(maxRangeRadius*sizeof(int));
-	memset(intervals, 0, maxRangeRadius*sizeof(int));
+	int *intervals = (int*)malloc(conf_params->maxRangeRadius*sizeof(int));
+	memset(intervals, 0, conf_params->maxRangeRadius*sizeof(int));
 	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)/conf_params->sampleDistance;
 	for(i=1;i<r1;i++)
 	{
@@ -507,8 +507,8 @@ unsigned int optimize_intervals_double_3D_pwr(double *oriData, size_t r1, size_t
 					- oriData[index-1-r23] - oriData[index-r3-1] - oriData[index-r3-r23] + oriData[index-r3-r23-1];
 					pred_err = fabs(pred_value - oriData[index]);
 					radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
-					if(radiusIndex>=maxRangeRadius)
-						radiusIndex = maxRangeRadius - 1;
+					if(radiusIndex>=conf_params->maxRangeRadius)
+						radiusIndex = conf_params->maxRangeRadius - 1;
 					intervals[radiusIndex]++;
 				}
 			}
@@ -517,14 +517,14 @@ unsigned int optimize_intervals_double_3D_pwr(double *oriData, size_t r1, size_t
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
 	size_t sum = 0;
-	for(i=0;i<maxRangeRadius;i++)
+	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
 		sum += intervals[i];
 		if(sum>targetCount)
 			break;
 	}
-	if(i>=maxRangeRadius)
-		i = maxRangeRadius-1;
+	if(i>=conf_params->maxRangeRadius)
+		i = conf_params->maxRangeRadius-1;
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 
@@ -1765,7 +1765,7 @@ void SZ_compress_args_double_NoCkRngeNoGzip_1D_pwrgroup(unsigned char** newByteD
 size_t dataLength, double absErrBound, double relBoundRatio, double pwrErrRatio, double valueRangeSize, double medianValue_f, size_t *outSize)
 {
         SZ_Reset();
-        TightDataPointStorageD* tdps = SZ_compress_double_1D_MDQ_pwrGroup(oriData, dataLength, errorBoundMode, 
+        TightDataPointStorageD* tdps = SZ_compress_double_1D_MDQ_pwrGroup(oriData, dataLength, conf_params->errorBoundMode, 
         absErrBound, relBoundRatio, pwrErrRatio, 
         valueRangeSize, medianValue_f);
 

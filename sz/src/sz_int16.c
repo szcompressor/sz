@@ -26,8 +26,8 @@ unsigned int optimize_intervals_int16_1D(int16_t *oriData, size_t dataLength, do
 {	
 	size_t i = 0, radiusIndex;
 	int64_t pred_value = 0, pred_err;
-	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
-	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
+	size_t *intervals = (size_t*)malloc(conf_params->maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, conf_params->maxRangeRadius*sizeof(size_t));
 	size_t totalSampleSize = dataLength/conf_params->sampleDistance;
 	for(i=2;i<dataLength;i++)
 	{
@@ -37,22 +37,22 @@ unsigned int optimize_intervals_int16_1D(int16_t *oriData, size_t dataLength, do
 			pred_value = oriData[i-1];
 			pred_err = llabs(pred_value - oriData[i]);
 			radiusIndex = (uint64_t)((pred_err/realPrecision+1)/2);
-			if(radiusIndex>=maxRangeRadius)
-				radiusIndex = maxRangeRadius - 1;			
+			if(radiusIndex>=conf_params->maxRangeRadius)
+				radiusIndex = conf_params->maxRangeRadius - 1;			
 			intervals[radiusIndex]++;
 		}
 	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
 	size_t sum = 0;
-	for(i=0;i<maxRangeRadius;i++)
+	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
 		sum += intervals[i];
 		if(sum>targetCount)
 			break;
 	}
-	if(i>=maxRangeRadius)
-		i = maxRangeRadius-1;
+	if(i>=conf_params->maxRangeRadius)
+		i = conf_params->maxRangeRadius-1;
 		
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
@@ -70,8 +70,8 @@ unsigned int optimize_intervals_int16_2D(int16_t *oriData, size_t r1, size_t r2,
 	size_t i,j, index;
 	size_t radiusIndex;
 	int64_t pred_value = 0, pred_err;
-	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
-	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
+	size_t *intervals = (size_t*)malloc(conf_params->maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, conf_params->maxRangeRadius*sizeof(size_t));
 	size_t totalSampleSize = (r1-1)*(r2-1)/conf_params->sampleDistance;
 	for(i=1;i<r1;i++)
 	{
@@ -83,8 +83,8 @@ unsigned int optimize_intervals_int16_2D(int16_t *oriData, size_t r1, size_t r2,
 				pred_value = oriData[index-1] + oriData[index-r2] - oriData[index-r2-1];
 				pred_err = llabs(pred_value - oriData[index]);
 				radiusIndex = (uint64_t)((pred_err/realPrecision+1)/2);
-				if(radiusIndex>=maxRangeRadius)
-					radiusIndex = maxRangeRadius - 1;
+				if(radiusIndex>=conf_params->maxRangeRadius)
+					radiusIndex = conf_params->maxRangeRadius - 1;
 				intervals[radiusIndex]++;
 			}			
 		}
@@ -92,14 +92,14 @@ unsigned int optimize_intervals_int16_2D(int16_t *oriData, size_t r1, size_t r2,
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
 	size_t sum = 0;
-	for(i=0;i<maxRangeRadius;i++)
+	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
 		sum += intervals[i];
 		if(sum>targetCount)
 			break;
 	}
-	if(i>=maxRangeRadius)
-		i = maxRangeRadius-1;
+	if(i>=conf_params->maxRangeRadius)
+		i = conf_params->maxRangeRadius-1;
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 
@@ -107,7 +107,7 @@ unsigned int optimize_intervals_int16_2D(int16_t *oriData, size_t r1, size_t r2,
 		powerOf2 = 32;
 
 	free(intervals);
-	//printf("maxRangeRadius = %d, accIntervals=%d, powerOf2=%d\n", maxRangeRadius, accIntervals, powerOf2);
+	//printf("conf_params->maxRangeRadius = %d, accIntervals=%d, powerOf2=%d\n", conf_params->maxRangeRadius, accIntervals, powerOf2);
 	return powerOf2;
 }
 
@@ -117,8 +117,8 @@ unsigned int optimize_intervals_int16_3D(int16_t *oriData, size_t r1, size_t r2,
 	size_t radiusIndex;
 	size_t r23=r2*r3;
 	int64_t pred_value = 0, pred_err;
-	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
-	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
+	size_t *intervals = (size_t*)malloc(conf_params->maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, conf_params->maxRangeRadius*sizeof(size_t));
 	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)/conf_params->sampleDistance;
 	for(i=1;i<r1;i++)
 	{
@@ -133,9 +133,9 @@ unsigned int optimize_intervals_int16_3D(int16_t *oriData, size_t r1, size_t r2,
 					- oriData[index-1-r23] - oriData[index-r3-1] - oriData[index-r3-r23] + oriData[index-r3-r23-1];
 					pred_err = llabs(pred_value - oriData[index]);
 					radiusIndex = (pred_err/realPrecision+1)/2;
-					if(radiusIndex>=maxRangeRadius)
+					if(radiusIndex>=conf_params->maxRangeRadius)
 					{
-						radiusIndex = maxRangeRadius - 1;
+						radiusIndex = conf_params->maxRangeRadius - 1;
 						//printf("radiusIndex=%d\n", radiusIndex);
 					}
 					intervals[radiusIndex]++;
@@ -146,14 +146,14 @@ unsigned int optimize_intervals_int16_3D(int16_t *oriData, size_t r1, size_t r2,
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
 	size_t sum = 0;
-	for(i=0;i<maxRangeRadius;i++)
+	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
 		sum += intervals[i];
 		if(sum>targetCount)
 			break;
 	}
-	if(i>=maxRangeRadius)
-		i = maxRangeRadius-1;
+	if(i>=conf_params->maxRangeRadius)
+		i = conf_params->maxRangeRadius-1;
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 
@@ -173,8 +173,8 @@ unsigned int optimize_intervals_int16_4D(int16_t *oriData, size_t r1, size_t r2,
 	size_t r234=r2*r3*r4;
 	size_t r34=r3*r4;
 	int64_t pred_value = 0, pred_err;
-	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
-	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
+	size_t *intervals = (size_t*)malloc(conf_params->maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, conf_params->maxRangeRadius*sizeof(size_t));
 	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)*(r4-1)/conf_params->sampleDistance;
 	for(i=1;i<r1;i++)
 	{
@@ -191,8 +191,8 @@ unsigned int optimize_intervals_int16_4D(int16_t *oriData, size_t r1, size_t r2,
 								- oriData[index-1-r34] - oriData[index-r4-1] - oriData[index-r4-r34] + oriData[index-r4-r34-1];
 						pred_err = llabs(pred_value - oriData[index]);
 						radiusIndex = (uint64_t)((pred_err/realPrecision+1)/2);
-						if(radiusIndex>=maxRangeRadius)
-							radiusIndex = maxRangeRadius - 1;
+						if(radiusIndex>=conf_params->maxRangeRadius)
+							radiusIndex = conf_params->maxRangeRadius - 1;
 						intervals[radiusIndex]++;
 					}
 				}
@@ -202,14 +202,14 @@ unsigned int optimize_intervals_int16_4D(int16_t *oriData, size_t r1, size_t r2,
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*predThreshold;
 	size_t sum = 0;
-	for(i=0;i<maxRangeRadius;i++)
+	for(i=0;i<conf_params->maxRangeRadius;i++)
 	{
 		sum += intervals[i];
 		if(sum>targetCount)
 			break;
 	}
-	if(i>=maxRangeRadius)
-		i = maxRangeRadius-1;
+	if(i>=conf_params->maxRangeRadius)
+		i = conf_params->maxRangeRadius-1;
 
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
@@ -1305,7 +1305,7 @@ int SZ_compress_args_int16(unsigned char** newByteData, int16_t *oriData,
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
-	errorBoundMode = errBoundMode;
+	conf_params->errorBoundMode = errBoundMode;
 	
 	if(errBoundMode>=PW_REL)
 	{
@@ -1320,9 +1320,9 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 	int16_t minValue = (int16_t)computeRangeSize_int(oriData, SZ_INT16, dataLength, &valueRangeSize);
 	double realPrecision = 0; 
 	
-	if(errorBoundMode==PSNR)
+	if(conf_params->errorBoundMode==PSNR)
 	{
-		errorBoundMode = conf_params->errorBoundMode = ABS;
+		conf_params->errorBoundMode = ABS;
 		realPrecision = conf_params->absErrBound = computeABSErrBoundFromPSNR(psnr, (double)predThreshold, (double)valueRangeSize);
 		//printf("realPrecision=%lf\n", realPrecision);
 	}

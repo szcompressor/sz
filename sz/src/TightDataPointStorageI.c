@@ -169,7 +169,7 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 		byteBuf[i] = flatBytes[index++];
 	int max_quant_intervals = bytesToInt_bigEndian(byteBuf);// 4	
 
-	maxRangeRadius = max_quant_intervals/2;
+	conf_params->maxRangeRadius = max_quant_intervals/2;
 
 	if(errorBoundMode>=PW_REL)
 	{
@@ -370,7 +370,7 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 	}
 	else 
 	{
-		if(errorBoundMode>=PW_REL)
+		if(conf_params->errorBoundMode>=PW_REL)
 		{			
 			printf("Error: errorBoundMode >= PW_REL!! can't be...\n");
 			exit(0);
@@ -426,7 +426,7 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 	}
 	else
 	{
-		if(errorBoundMode>=PW_REL)
+		if(conf_params->errorBoundMode>=PW_REL)
 		{			
 			printf("Error: errorBoundMode>=PW_REL!! can't be....\n");
 			exit(0);
