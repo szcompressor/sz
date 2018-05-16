@@ -1,9 +1,9 @@
 ##   COMPILERS
 CC	= gcc
 
-SZPATH =/home/sdi/Install/sz-1.4.12.3-install
+SZPATH =/home/sdi/Install/sz-1.4.13-install
 SZINC   = -I$(SZPATH)/include
-SZFLAGS = -L$(SZPATH)/lib -lSZ
+SZFLAGS = -L$(SZPATH)/lib -lSZ -lzlib
 
 #Please modify NETCDFPATH based on your own installation of netcdf
 NETCDFPATH	=/home/sdi/Install/netcdf-4.5.0-install
