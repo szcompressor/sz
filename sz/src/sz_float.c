@@ -25,6 +25,13 @@
 #include "zlib.h"
 #include "rw.h"
 
+unsigned char* SZ_skip_compress_float(float* data, size_t dataLength, size_t* outSize)
+{
+	*outSize = dataLength*sizeof(float);
+	unsigned char* out = (unsigned char*)malloc(dataLength*sizeof(float));
+	memcpy(out, data, dataLength*sizeof(float));
+	return out;
+}
 unsigned int optimize_intervals_float_1D(float *oriData, size_t dataLength, double realPrecision)
 {	
 	size_t i = 0, radiusIndex;
@@ -1653,6 +1660,13 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	}		
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
+	
+	if(dataLength <= MIN_NUM_OF_ELEMENTS)
+	{
+		*newByteData = SZ_skip_compress_float(oriData, dataLength, outSize);
+		return status;
+	}
+	
 	float valueRangeSize = 0, medianValue = 0;
 	
 	float min = computeRangeSize_float(oriData, dataLength, &valueRangeSize, &medianValue);

@@ -25,6 +25,14 @@
 #include "zlib.h"
 #include "rw.h"
 
+unsigned char* SZ_skip_compress_double(double* data, size_t dataLength, size_t* outSize)
+{
+	*outSize = dataLength*sizeof(double);
+	unsigned char* out = (unsigned char*)malloc(dataLength*sizeof(double));
+	memcpy(out, data, dataLength*sizeof(double));
+	return out;
+}
+
 void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue)
 {
 	short reqExpo = getPrecisionReqLength_double(realPrecision);
@@ -1405,6 +1413,13 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
+	
+	if(dataLength <= MIN_NUM_OF_ELEMENTS)
+	{
+		*newByteData = SZ_skip_compress_double(oriData, dataLength, outSize);
+		return status;
+	}
+	
 	double valueRangeSize = 0, medianValue = 0;
 	
 	double min = computeRangeSize_double(oriData, dataLength, &valueRangeSize, &medianValue);

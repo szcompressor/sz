@@ -14,6 +14,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+unsigned char* SZ_skip_compress_float(float* data, size_t dataLength, size_t* outSize);
 
 void computeReqLength_float(double realPrecision, short radExpo, int* reqLength, float* medianValue);
 

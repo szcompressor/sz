@@ -239,7 +239,7 @@ double getRealPrecision_double(double valueRangeSize, int errBoundMode, double a
 	else if(errBoundMode==ABS_OR_REL)
 		precision = max_d(absErrBound, relBoundRatio*valueRangeSize);
 	else if(errBoundMode==PW_REL)
-		precision = -1;
+		precision = 0;
 	else
 	{
 		printf("Error: error-bound-mode is incorrect!\n");
@@ -262,7 +262,7 @@ double getRealPrecision_float(float valueRangeSize, int errBoundMode, double abs
 	else if(errBoundMode==ABS_OR_REL)
 		precision = max_f(absErrBound, relBoundRatio*valueRangeSize);
 	else if(errBoundMode==PW_REL)
-		precision = -1;
+		precision = 0;
 	else
 	{
 		printf("Error: error-bound-mode is incorrect!\n");

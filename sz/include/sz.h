@@ -82,6 +82,8 @@ extern "C" {
 #define HZ 102
 #define SZ 101
 
+#define MIN_NUM_OF_ELEMENTS 20 //if the # elements <= 20, skip the compression
+
 #define ABS 0
 #define REL 1
 #define ABS_AND_REL 2

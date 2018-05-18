@@ -15,6 +15,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+unsigned char* SZ_skip_compress_double(double* data, size_t dataLength, size_t* outSize);
 
 void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue);
 unsigned int optimize_intervals_double_1D(double *oriData, size_t dataLength, double realPrecision);
