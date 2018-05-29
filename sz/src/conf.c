@@ -112,6 +112,8 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		conf_params->segment_size = 36;
 		
 		conf_params->pwr_type = SZ_PWR_MIN_TYPE;
+		
+		conf_params->snapshotCmprStep = 5;
 	
 		return SZ_SCES;
 	}
@@ -232,7 +234,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		}
 		
 		//TODO
-		conf_params->snapshotCmprStep = (int)iniparser_getint(ini, "PARAMETER:snapshotCmprStep", 0);
+		conf_params->snapshotCmprStep = (int)iniparser_getint(ini, "PARAMETER:snapshotCmprStep", 5);
 				
 		errBoundMode = iniparser_getstring(ini, "PARAMETER:errorBoundMode", NULL);
 		if(errBoundMode==NULL)
