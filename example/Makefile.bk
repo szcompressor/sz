@@ -2,8 +2,8 @@
 ##   Makefile to test SZ library.
 
 ##   PLEASE SET THIS VARIABLE BEFORE COMPILING
-#SZPATH		= /home/sdi/Install/sz-1.4.11-install
-SZPATH		= /tmp/sz-install
+SZPATH		= /home/sdi/Install/sz-1.4.13-install
+#SZPATH		= /tmp/sz-install
 GSLPATH = /usr/local/Cellar/gsl/2.4
 ##   COMPILERS
 CC		= gcc
@@ -22,8 +22,11 @@ NETCDFFLAG = -I$(NETCDFPATH)/include -lnetcdf
 
 
 ##   TARGETS
-all: 		testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress testfloat_batch_compress testdouble_batch_compress
+all: 		sz testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress
 #all: 		testdouble_compress_f testdouble_decompress_f testdouble_batch_compress_f
+
+changeDataSize2:	changeDataSize2.c
+	$(CC)  -O0 -g -o changeDataSize2 changeDataSize2.c $(SZFLAG)
 
 testint_compress:	testint_compress.c
 	$(CC)  -g -O0 -o testint_compress testint_compress.c $(SZFLAG)
@@ -32,10 +35,10 @@ testint_decompress:	testint_decompress.c
 	$(CC)  -g -O0 -o testint_decompress testint_decompress.c $(SZFLAG)
 
 testfloat_compress:	testfloat_compress.c
-	$(CC)  -g -O3 -o testfloat_compress testfloat_compress.c $(SZFLAG)
+	$(CC)  -g -O0 -o testfloat_compress testfloat_compress.c $(SZFLAG)
 
 testfloat_decompress:	testfloat_decompress.c
-	$(CC)  -g -O3 -o testfloat_decompress testfloat_decompress.c $(SZFLAG)
+	$(CC)  -g -O0 -o testfloat_decompress testfloat_decompress.c $(SZFLAG)
 
 testdouble_compress:	testdouble_compress.c
 	$(CC)  -g -O3 -o testdouble_compress testdouble_compress.c $(SZFLAG)
@@ -49,18 +52,9 @@ testdouble_compress_f:      testdouble_compress_f.f90
 testdouble_decompress_f:      testdouble_decompress_f.f90
 	$(FT)  -g -O3 -o testdouble_decompress_f testdouble_decompress_f.f90 $(SZFLAG)
 
-testdouble_batch_f:      testdouble_batch_f.f90
-	$(FT)  -g -O3 -o testdouble_batch_f testdouble_batch_f.f90 $(SZFLAG)
-
-testfloat_batch_compress:      testfloat_batch_compress.c
-	$(CC)  -g -O3 -o testfloat_batch_compress testfloat_batch_compress.c $(SZFLAG)
-
-testdouble_batch_compress:      testdouble_batch_compress.c
-	$(CC)  -g -O3 -o testdouble_batch_compress testdouble_batch_compress.c $(SZFLAG)
-
 sz:		sz.c
-	$(HDF5CC)  -g -O3 -o sz	sz.c $(GSLFLAG) $(NETCDFFLAG) $(SZFLAG)
+	$(CC)  -g -O0 -o sz	sz.c $(SZFLAG)
 
 clean:
-	rm -f test*_compress test*_decompress test*_compress_f test*_decompress_f testfloat_batch_compress testdouble_batch_compress_f sz
+	rm -f test*_compress test*_decompress test*_compress_f test*_decompress_f sz
 

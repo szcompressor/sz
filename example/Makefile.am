@@ -7,9 +7,9 @@ AM_CFLAGS += -fopenmp
 endif
 
 if FORTRAN
-bin_PROGRAMS=testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress sz testdouble_compress_f testdouble_decompress_f testfloat_CompDecomp_subblock testdouble_CompDecomp_subblock
+bin_PROGRAMS=testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress sz testdouble_compress_f testdouble_decompress_f
 else
-bin_PROGRAMS=testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress sz testfloat_CompDecomp_subblock testdouble_CompDecomp_subblock
+bin_PROGRAMS=testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress sz
 endif
 
 if TIMECMPR
@@ -38,10 +38,6 @@ testdouble_compress_f_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 testdouble_decompress_f_SOURCES=testdouble_decompress_f.f90
 testdouble_decompress_f_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 endif
-testfloat_CompDecomp_subblock_SOURCES=testfloat_CompDecomp_subblock.c
-testfloat_CompDecomp_subblock_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
-testdouble_CompDecomp_subblock_SOURCES=testdouble_CompDecomp_subblock.c
-testdouble_CompDecomp_subblock_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 if TIMECMPR
 testfloat_compress_ts_SOURCES=testfloat_compress_ts.c
 testfloat_compress_ts_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm

@@ -95,8 +95,6 @@ host_triplet = @host@
 @FORTRAN_FALSE@	testfloat_decompress$(EXEEXT) \
 @FORTRAN_FALSE@	testdouble_compress$(EXEEXT) \
 @FORTRAN_FALSE@	testdouble_decompress$(EXEEXT) sz$(EXEEXT) \
-@FORTRAN_FALSE@	testfloat_CompDecomp_subblock$(EXEEXT) \
-@FORTRAN_FALSE@	testdouble_CompDecomp_subblock$(EXEEXT) \
 @FORTRAN_FALSE@	$(am__EXEEXT_1)
 @FORTRAN_TRUE@bin_PROGRAMS = testint_compress$(EXEEXT) \
 @FORTRAN_TRUE@	testint_decompress$(EXEEXT) \
@@ -105,10 +103,7 @@ host_triplet = @host@
 @FORTRAN_TRUE@	testdouble_compress$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_decompress$(EXEEXT) sz$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_compress_f$(EXEEXT) \
-@FORTRAN_TRUE@	testdouble_decompress_f$(EXEEXT) \
-@FORTRAN_TRUE@	testfloat_CompDecomp_subblock$(EXEEXT) \
-@FORTRAN_TRUE@	testdouble_CompDecomp_subblock$(EXEEXT) \
-@FORTRAN_TRUE@	$(am__EXEEXT_1)
+@FORTRAN_TRUE@	testdouble_decompress_f$(EXEEXT) $(am__EXEEXT_1)
 @TIMECMPR_TRUE@am__append_2 = testfloat_compress_ts testfloat_decompress_ts testdouble_compress_ts testdouble_decompress_ts
 subdir = example
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -151,12 +146,6 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-am_testdouble_CompDecomp_subblock_OBJECTS =  \
-	testdouble_CompDecomp_subblock.$(OBJEXT)
-testdouble_CompDecomp_subblock_OBJECTS =  \
-	$(am_testdouble_CompDecomp_subblock_OBJECTS)
-testdouble_CompDecomp_subblock_DEPENDENCIES = ../sz/.libs/libSZ.a \
-	../zlib/.libs/libzlib.a
 am_testdouble_compress_OBJECTS = testdouble_compress.$(OBJEXT)
 testdouble_compress_OBJECTS = $(am_testdouble_compress_OBJECTS)
 testdouble_compress_DEPENDENCIES = ../sz/.libs/libSZ.a \
@@ -193,12 +182,6 @@ testdouble_decompress_ts_OBJECTS =  \
 	$(am_testdouble_decompress_ts_OBJECTS)
 @TIMECMPR_TRUE@testdouble_decompress_ts_DEPENDENCIES =  \
 @TIMECMPR_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a
-am_testfloat_CompDecomp_subblock_OBJECTS =  \
-	testfloat_CompDecomp_subblock.$(OBJEXT)
-testfloat_CompDecomp_subblock_OBJECTS =  \
-	$(am_testfloat_CompDecomp_subblock_OBJECTS)
-testfloat_CompDecomp_subblock_DEPENDENCIES = ../sz/.libs/libSZ.a \
-	../zlib/.libs/libzlib.a
 am_testfloat_compress_OBJECTS = testfloat_compress.$(OBJEXT)
 testfloat_compress_OBJECTS = $(am_testfloat_compress_OBJECTS)
 testfloat_compress_DEPENDENCIES = ../sz/.libs/libSZ.a \
@@ -277,27 +260,22 @@ AM_V_FCLD = $(am__v_FCLD_@AM_V@)
 am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
 am__v_FCLD_0 = @echo "  FCLD    " $@;
 am__v_FCLD_1 = 
-SOURCES = $(sz_SOURCES) $(testdouble_CompDecomp_subblock_SOURCES) \
-	$(testdouble_compress_SOURCES) \
+SOURCES = $(sz_SOURCES) $(testdouble_compress_SOURCES) \
 	$(testdouble_compress_f_SOURCES) \
 	$(testdouble_compress_ts_SOURCES) \
 	$(testdouble_decompress_SOURCES) \
 	$(testdouble_decompress_f_SOURCES) \
 	$(testdouble_decompress_ts_SOURCES) \
-	$(testfloat_CompDecomp_subblock_SOURCES) \
 	$(testfloat_compress_SOURCES) $(testfloat_compress_ts_SOURCES) \
 	$(testfloat_decompress_SOURCES) \
 	$(testfloat_decompress_ts_SOURCES) $(testint_compress_SOURCES) \
 	$(testint_decompress_SOURCES)
-DIST_SOURCES = $(am__sz_SOURCES_DIST) \
-	$(testdouble_CompDecomp_subblock_SOURCES) \
-	$(testdouble_compress_SOURCES) \
+DIST_SOURCES = $(am__sz_SOURCES_DIST) $(testdouble_compress_SOURCES) \
 	$(am__testdouble_compress_f_SOURCES_DIST) \
 	$(am__testdouble_compress_ts_SOURCES_DIST) \
 	$(testdouble_decompress_SOURCES) \
 	$(am__testdouble_decompress_f_SOURCES_DIST) \
 	$(am__testdouble_decompress_ts_SOURCES_DIST) \
-	$(testfloat_CompDecomp_subblock_SOURCES) \
 	$(testfloat_compress_SOURCES) \
 	$(am__testfloat_compress_ts_SOURCES_DIST) \
 	$(testfloat_decompress_SOURCES) \
@@ -481,10 +459,6 @@ testdouble_decompress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 @FORTRAN_TRUE@testdouble_compress_f_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 @FORTRAN_TRUE@testdouble_decompress_f_SOURCES = testdouble_decompress_f.f90
 @FORTRAN_TRUE@testdouble_decompress_f_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
-testfloat_CompDecomp_subblock_SOURCES = testfloat_CompDecomp_subblock.c
-testfloat_CompDecomp_subblock_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
-testdouble_CompDecomp_subblock_SOURCES = testdouble_CompDecomp_subblock.c
-testdouble_CompDecomp_subblock_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 @TIMECMPR_TRUE@testfloat_compress_ts_SOURCES = testfloat_compress_ts.c
 @TIMECMPR_TRUE@testfloat_compress_ts_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 @TIMECMPR_TRUE@testfloat_decompress_ts_SOURCES = testfloat_decompress_ts.c
@@ -588,10 +562,6 @@ sz$(EXEEXT): $(sz_OBJECTS) $(sz_DEPENDENCIES) $(EXTRA_sz_DEPENDENCIES)
 	@rm -f sz$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(sz_OBJECTS) $(sz_LDADD) $(LIBS)
 
-testdouble_CompDecomp_subblock$(EXEEXT): $(testdouble_CompDecomp_subblock_OBJECTS) $(testdouble_CompDecomp_subblock_DEPENDENCIES) $(EXTRA_testdouble_CompDecomp_subblock_DEPENDENCIES) 
-	@rm -f testdouble_CompDecomp_subblock$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(testdouble_CompDecomp_subblock_OBJECTS) $(testdouble_CompDecomp_subblock_LDADD) $(LIBS)
-
 testdouble_compress$(EXEEXT): $(testdouble_compress_OBJECTS) $(testdouble_compress_DEPENDENCIES) $(EXTRA_testdouble_compress_DEPENDENCIES) 
 	@rm -f testdouble_compress$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(testdouble_compress_OBJECTS) $(testdouble_compress_LDADD) $(LIBS)
@@ -615,10 +585,6 @@ testdouble_decompress_f$(EXEEXT): $(testdouble_decompress_f_OBJECTS) $(testdoubl
 testdouble_decompress_ts$(EXEEXT): $(testdouble_decompress_ts_OBJECTS) $(testdouble_decompress_ts_DEPENDENCIES) $(EXTRA_testdouble_decompress_ts_DEPENDENCIES) 
 	@rm -f testdouble_decompress_ts$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(testdouble_decompress_ts_OBJECTS) $(testdouble_decompress_ts_LDADD) $(LIBS)
-
-testfloat_CompDecomp_subblock$(EXEEXT): $(testfloat_CompDecomp_subblock_OBJECTS) $(testfloat_CompDecomp_subblock_DEPENDENCIES) $(EXTRA_testfloat_CompDecomp_subblock_DEPENDENCIES) 
-	@rm -f testfloat_CompDecomp_subblock$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(testfloat_CompDecomp_subblock_OBJECTS) $(testfloat_CompDecomp_subblock_LDADD) $(LIBS)
 
 testfloat_compress$(EXEEXT): $(testfloat_compress_OBJECTS) $(testfloat_compress_DEPENDENCIES) $(EXTRA_testfloat_compress_DEPENDENCIES) 
 	@rm -f testfloat_compress$(EXEEXT)
@@ -654,12 +620,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz_gsl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz_openmp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sz_pastri.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_CompDecomp_subblock.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_compress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_compress_ts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_decompress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdouble_decompress_ts.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testfloat_CompDecomp_subblock.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testfloat_compress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testfloat_compress_ts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testfloat_decompress.Po@am__quote@
