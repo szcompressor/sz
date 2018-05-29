@@ -15,7 +15,7 @@
 #include "sz.h"
 #include "Huffman.h"
 #include "szd_float_pwr.h"
-//#include "rw.h"
+#include "szd_float_ts.h"
 
 /**
  * 
@@ -36,16 +36,20 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 	if(cmpSize!=8+4+MetaDataByteLength && cmpSize!=8+8+MetaDataByteLength) //4,8 means two posibilities of SZ_SIZE_TYPE
 	{
 		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
-		if(isZlib)
-			conf_params->szMode = SZ_BEST_COMPRESSION;
-		else
-			conf_params->szMode = SZ_BEST_SPEED;		
+		if(conf_params->szMode!=SZ_TEMPORAL_COMPRESSION)
+		{
+			if(isZlib)
+				conf_params->szMode = SZ_BEST_COMPRESSION;
+			else
+				conf_params->szMode = SZ_BEST_SPEED;			
+		}
+		
 		if(conf_params->szMode==SZ_BEST_SPEED)
 		{
 			tmpSize = cmpSize;
 			szTmpBytes = cmpBytes;	
 		}
-		else if(conf_params->szMode==SZ_BEST_COMPRESSION || conf_params->szMode==SZ_DEFAULT_COMPRESSION)
+		else if(conf_params->szMode==SZ_BEST_COMPRESSION || conf_params->szMode==SZ_DEFAULT_COMPRESSION || conf_params->szMode==SZ_TEMPORAL_COMPRESSION)
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
@@ -141,7 +145,7 @@ void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, TightD
 	medianValue = tdps->medianValue;
 	
 	int type_;
-	for (i = 0; i < dataSeriesLength; i++) {
+	for (i = 0; i < dataSeriesLength; i++) {	
 		type_ = type[i];
 		switch (type_) {
 		case 0:
@@ -194,6 +198,10 @@ void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, TightD
 		}
 		//printf("%.30G\n",(*data)[i]);
 	}
+	
+	if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(float));
+	
 	free(leadNum);
 	free(type);
 	return;
@@ -1610,7 +1618,19 @@ void getSnapshotData_float_1D(float** data, size_t dataSeriesLength, TightDataPo
 	} else {
 		if (tdps->rtypeArray == NULL) {
 			if(errBoundMode < PW_REL)
-				decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
+			{
+#ifdef HAVE_TIMECMPR				
+				if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+				{
+					if(multisteps->compressionType == 0) //snapshot
+						decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
+					else
+						decompressDataSeries_float_1D_ts(data, dataSeriesLength, multisteps, tdps);					
+				}
+				else
+#endif				
+					decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
+			}
 			else 
 			{
 				//decompressDataSeries_float_1D_pwr(data, dataSeriesLength, tdps);
@@ -1663,9 +1683,24 @@ void getSnapshotData_float_2D(float** data, size_t r1, size_t r2, TightDataPoint
 	} else {
 		if (tdps->rtypeArray == NULL) {
 			if(errBoundMode < PW_REL)
-				decompressDataSeries_float_2D(data, r1, r2, tdps);
+			{
+#ifdef HAVE_TIMECMPR					
+				if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+				{
+					if(multisteps->compressionType == 0)
+						decompressDataSeries_float_2D(data, r1, r2, tdps);
+					else
+						decompressDataSeries_float_1D_ts(data, r1*r2, multisteps, tdps);					
+				}
+				else
+#endif
+					decompressDataSeries_float_2D(data, r1, r2, tdps);
+			}
 			else 
+			{
 				decompressDataSeries_float_2D_pwr(data, r1, r2, tdps);
+			}			
+
 			return;
 		} else {
 			*data = (float*)malloc(sizeof(float)*dataSeriesLength);
@@ -1713,9 +1748,24 @@ void getSnapshotData_float_3D(float** data, size_t r1, size_t r2, size_t r3, Tig
 	} else {
 		if (tdps->rtypeArray == NULL) {
 			if(errBoundMode < PW_REL)
-				decompressDataSeries_float_3D(data, r1, r2, r3, tdps);
+			{
+#ifdef HAVE_TIMECMPR					
+				if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+				{
+					if(multisteps->compressionType == 0)
+						decompressDataSeries_float_3D(data, r1, r2, r3, tdps);
+					else
+						decompressDataSeries_float_1D_ts(data, r1*r2*r3, multisteps, tdps);					
+				}
+				else
+#endif				
+					decompressDataSeries_float_3D(data, r1, r2, r3, tdps);
+			}
 			else 
+			{
 				decompressDataSeries_float_3D_pwr(data, r1, r2, r3, tdps);
+			}					
+			
 			return;
 		} else {
 			*data = (float*)malloc(sizeof(float)*dataSeriesLength);
@@ -1763,11 +1813,25 @@ void getSnapshotData_float_4D(float** data, size_t r1, size_t r2, size_t r3, siz
 	} else {
 		if (tdps->rtypeArray == NULL) {
 			if(errBoundMode < PW_REL)
-				decompressDataSeries_float_4D(data, r1, r2, r3, r4, tdps);
-			else
+			{
+#ifdef HAVE_TIMECMPR					
+				if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+				{
+					if(multisteps->compressionType == 0)
+						decompressDataSeries_float_4D(data, r1, r2, r3, r4, tdps);
+					else
+						decompressDataSeries_float_1D_ts(data, r1*r2*r3*r4, multisteps, tdps);					
+				}
+				else
+#endif				
+					decompressDataSeries_float_4D(data, r1, r2, r3, r4, tdps);
+			}
+			else 
+			{
 				decompressDataSeries_float_3D_pwr(data, r1*r2, r3, r4, tdps);
 				//ToDO
 				//decompressDataSeries_float_4D_pwr(data, r1, r2, r3, r4, tdps);
+			}					
 			return;
 		} else {
 			*data = (float*)malloc(sizeof(float)*dataSeriesLength);

@@ -79,9 +79,17 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 	}
 	
 	sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
+	int mode = conf_params->szMode;
+	int predictionMode = conf_params->predictionMode;
 	if(conf_params!=NULL)
 		free(conf_params);
 	conf_params = params;
+	if(mode==SZ_TEMPORAL_COMPRESSION)
+	{
+		conf_params->szMode = SZ_TEMPORAL_COMPRESSION;
+		conf_params->predictionMode = predictionMode;
+	}
+	
 	index += MetaDataByteLength;
 	
 	unsigned char dsLengthBytes[8];

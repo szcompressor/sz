@@ -408,6 +408,13 @@ short bytesToShort(unsigned char* bytes)
 	return buf.svalue;
 }
 
+void shortToBytes(unsigned char* b, short value)
+{
+	lint16 buf;
+	buf.svalue = value;
+	memcpy(b, buf.byte, 2);
+}
+
 int bytesToInt(unsigned char* bytes)
 {
 	lfloat buf;
@@ -918,6 +925,7 @@ sz_params* convertBytesToSZParams(unsigned char* bytes)
 	exe_params->optQuantMode = flag1 >> 7;
 	params->dataEndianType = (flag1 & 0x7f) >> 7;
 	exe_params->sysEndianType = (flag1 & 0x3f) >> 7;
+	
 	params->szMode = (flag1 & 0x1f) >> 7;
 	
 	int tmp = (flag1 & 0x0f) >> 6;

@@ -12,6 +12,10 @@ else
 bin_PROGRAMS=testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress sz testfloat_CompDecomp_subblock testdouble_CompDecomp_subblock
 endif
 
+if TIMECMPR
+bin_PROGRAMS += testfloat_compress_ts testfloat_decompress_ts testdouble_compress_ts testdouble_decompress_ts
+endif
+
 #if GSL
 #bin_PROGRAMS += sz_gsl
 #endif
@@ -38,6 +42,17 @@ testfloat_CompDecomp_subblock_SOURCES=testfloat_CompDecomp_subblock.c
 testfloat_CompDecomp_subblock_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
 testdouble_CompDecomp_subblock_SOURCES=testdouble_CompDecomp_subblock.c
 testdouble_CompDecomp_subblock_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+if TIMECMPR
+testfloat_compress_ts_SOURCES=testfloat_compress_ts.c
+testfloat_compress_ts_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+testfloat_decompress_ts_SOURCES=testfloat_decompress_ts.c
+testfloat_decompress_ts_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+testdouble_compress_ts_SOURCES=testdouble_compress_ts.c
+testdouble_compress_ts_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+testdouble_decompress_ts_SOURCES=testdouble_decompress_ts.c
+testdouble_decompress_ts_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+endif
+
 
 if PASTRI
 sz_SOURCES=sz_pastri.c

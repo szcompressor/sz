@@ -52,6 +52,8 @@
 #include "callZlib.h"
 #include "rw.h"
 #include "pastri.h"
+#include "sz_float_ts.h"
+#include "szd_float_ts.h"
 
 #ifdef _WIN32
 #define PATH_SEPARATOR ';'
@@ -81,6 +83,9 @@ extern "C" {
 #define PASTRI 103
 #define HZ 102
 #define SZ 101
+
+//prediction mode of temporal dimension based compression
+#define SZ_PREVIOUS_VALUE_ESTIMATE 0
 
 #define MIN_NUM_OF_ELEMENTS 20 //if the # elements <= 20, skip the compression
 
@@ -123,6 +128,7 @@ extern "C" {
 #define SZ_BEST_SPEED 0
 #define SZ_BEST_COMPRESSION 1
 #define SZ_DEFAULT_COMPRESSION 2
+#define SZ_TEMPORAL_COMPRESSION 3
 
 #define SZ_PWR_MIN_TYPE 0
 #define SZ_PWR_AVG_TYPE 1
@@ -143,6 +149,8 @@ extern "C" {
 #define GROUP_COUNT 16 //2^{16}=65536
 	
 #define MetaDataByteLength 20	
+	
+#define numOfBufferedSteps 1 //the number of time steps in the buffer	
 	
 //Note: the following setting should be consistent with stateNum in Huffman.h
 //#define intvCapacity 65536
@@ -181,8 +189,6 @@ extern "C" {
     if (0 != SPLIT_INDEX) {                                                  \
         EARLY_BLOCK_COUNT = EARLY_BLOCK_COUNT + 1;                           \
     }                                                                        \
-
-extern SZ_VarSet* sz_varset; //used only for batch-mode
 
 //typedef unsigned long unsigned long;
 //typedef unsigned int uint;
@@ -233,7 +239,7 @@ typedef struct sz_params
 	int sol_ID;// it's always SZ, unless the setting is PASTRI compression mode (./configure --enable-pastri)
 	int sampleDistance; //2 bytes
 	float predThreshold;  // 2 bytes
-	int szMode; //* 0 (best speed) or 1 (better compression with Gzip)
+	int szMode; //* 0 (best speed) or 1 (better compression with Gzip) or 3 temporal-dimension based compression
 	int gzipMode; //* four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
 	int  errorBoundMode; //4bits (0.5byte), //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PSNR, or PW_REL, PSNR
 	double absErrBound; //absolute error bound
@@ -242,6 +248,9 @@ typedef struct sz_params
 	double pw_relBoundRatio; //point-wise relative error bound
 	int segment_size; //only used for 2D/3D data compression with pw_relBoundRatio
 	int pwr_type; //only used for 2D/3D data compression with pw_relBoundRatio
+	
+	int snapshotCmprStep; //perform single-snapshot-based compression if time_step == snapshotCmprStep
+	int predictionMode;
 } sz_params;
 
 typedef struct sz_metadata
@@ -264,12 +273,24 @@ typedef struct sz_exedata
 	int SZ_SIZE_TYPE; //the length (# bytes) of the size_t in the system at runtime //4 or 8: sizeof(size_t) 
 } sz_exedata;
 
+/*We use a linked list to maintain time-step meta info for time-step based compression*/
+typedef struct sz_tsc_metainfo
+{
+	int totalNumOfSteps;
+	int currentStep;
+	char metadata_filename[256];
+	FILE *metadata_file;
+} sz_tsc_metadata;
+
 extern int versionNumber[4];
 
 //-------------------key global variables--------------
 extern sz_params *conf_params;
 extern sz_exedata *exe_params;
 //------------------------------------------------
+extern SZ_VarSet* sz_varset;
+extern sz_multisteps *multisteps; //compression based on multiple time steps (time-dimension based compression)
+extern sz_tsc_metadata *sz_tsc;
 
 //for pastri 
 #ifdef PASTRI
@@ -332,6 +353,15 @@ void filloutDimArray(size_t* dim, size_t r5, size_t r4, size_t r3, size_t r2, si
 size_t compute_total_batch_size();
 
 int isZlibFormat(unsigned char magic1, unsigned char magic2);
+
+void SZ_registerVar(char* varName, int dataType, void* data, 
+			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio, 
+			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
+int SZ_deregisterVar(char* varName);
+int SZ_deregisterAllVars();
+
+int SZ_compress_ts(unsigned char** newByteData, size_t *outSize);
+void SZ_decompress_ts(unsigned char *bytes, size_t byteLength);
 
 void SZ_Finalize();
 

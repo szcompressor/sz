@@ -46,6 +46,7 @@ unsigned char numberOfLeadingZeros_Long(long i);
 unsigned char getLeadingNumbers_Int(int v1, int v2);
 unsigned char getLeadingNumbers_Long(long v1, long v2);
 short bytesToShort(unsigned char* bytes);
+void shortToBytes(unsigned char* b, short value);
 int bytesToInt(unsigned char* bytes);
 long bytesToLong(unsigned char* bytes);
 float bytesToFloat(unsigned char* bytes);

@@ -8,7 +8,7 @@ AC_CONFIG_SRCDIR([sz/src/sz.c])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
-: ${CFLAGS=-O3 -std=c99}
+: ${CFLAGS=-O3 -std=c99 -Wall}
 AC_PROG_CC
 AC_PROG_FC
 AC_PROG_RANLIB
@@ -193,6 +193,20 @@ if test "$ok" = "yes"; then
         OPENMP_FLAGS="-DHAVE_OPENMP"
 fi
 AC_SUBST(OPENMP_FLAGS)
+
+##
+## TIME-based compression
+##
+
+AC_ARG_ENABLE(timecmpr, [  --enable-timecmpr            use TIMECMPR], ok=$enableval, ok=no)
+AM_CONDITIONAL([TIMECMPR], [test "x$enable_timecmpr" = "xyes"])
+
+if test "$ok" = "yes"; then
+        TIMECMPR_FLAGS="-DHAVE_TIMECMPR"
+fi
+
+AC_SUBST(TIMECMPR_FLAGS)
+
 
 ##
 ## PASTRI

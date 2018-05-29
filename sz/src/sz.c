@@ -21,6 +21,7 @@
 #include "zlib.h"
 #include "rw.h"
 #include "Huffman.h"
+#include "conf.h"
 //#include "CurveFillingCompressStorage.h"
 
 int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
@@ -29,8 +30,11 @@ int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 sz_params *conf_params = NULL;
 sz_exedata *exe_params = NULL;
 
+/*following global variables are desgined for time-series based compression*/
 /*sz_varset is not used in the single-snapshot data compression*/
 SZ_VarSet* sz_varset = NULL;
+sz_multisteps *multisteps = NULL;
+sz_tsc_metadata *sz_tsc = NULL;
 
 //only for Pastri compressor
 #ifdef PASTRI
@@ -49,6 +53,11 @@ int SZ_Init(const char *configFilePath)
 		return SZ_NSCS;
 	
 	exe_params->SZ_SIZE_TYPE = sizeof(size_t);
+	
+	if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+	{
+		initSZ_TSC();
+	}
 	return SZ_SCES;
 }
 
@@ -781,11 +790,203 @@ int isZlibFormat(unsigned char magic1, unsigned char magic2)
 	return 0;
 }
 
+void SZ_registerVar(char* varName, int dataType, void* data, 
+			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio, 
+			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
+{
+	if(sz_tsc==NULL)
+		initSZ_TSC();
+		
+	char str[256];
+	SZ_batchAddVar(varName, dataType, data, 
+			errBoundMode, absErrBound, relBoundRatio, pwRelBoundRatio, r5, r4, r3, r2, r1);
+	sprintf(str, "%d: %s : %zuX%zuX%zuX%zu%zu : %d : %f : %f : %f\n", sz_varset->count - 1, varName, r5, r4, r3, r2, r1, errBoundMode, absErrBound, relBoundRatio, pwRelBoundRatio);
+	fputs(str, sz_tsc->metadata_file);
+}
+
+int SZ_deregisterVar(char* varName)
+{
+	int state = SZ_batchDelVar(varName);
+	return state;
+}
+
+#ifdef HAVE_TIMECMPR
+int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
+{
+	conf_params->szMode = SZ_TEMPORAL_COMPRESSION;
+	conf_params->predictionMode = SZ_PREVIOUS_VALUE_ESTIMATE;
+	
+	SZ_VarSet* vset = sz_varset;
+	size_t *outSize_ = (size_t*)malloc(sizeof(size_t)*vset->count);
+	memset(outSize_, 0, sizeof(size_t)*vset->count);
+	unsigned char** compressBuffer = (unsigned char**)malloc(vset->count*sizeof(unsigned char*));//to store compressed bytes
+	
+	char *metadata_str = (char*)malloc(vset->count*256);
+	memset(metadata_str, 0, vset->count*256);
+	sprintf(metadata_str, "step %d", sz_tsc->currentStep);
+	
+	int i = 0, totalSize = 0;
+	for(i=0;i<vset->count;i++)
+	{
+		SZ_Variable* v = vset->header->next;
+		multisteps = v->multisteps; //assign the v's multisteps to the global variable 'multisteps', which will be used in the following compression.
+
+		if(v->dataType==SZ_FLOAT)
+		{
+			SZ_compress_args_float(&(compressBuffer[i]), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &outSize_[i], v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio, 0);
+		}
+		else if(v->dataType==SZ_DOUBLE)
+		{
+			SZ_compress_args_double(&(compressBuffer[i]), (double*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &outSize_[i], v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio, 0);
+		}
+		sprintf(metadata_str, "%s:%d,%d,%zu", metadata_str, i, multisteps->lastSnapshotStep, outSize_[i]);
+		
+		totalSize += outSize_[i];
+		v->compressType = multisteps->compressionType;
+		v = v->next;
+	}
+	
+	sprintf(metadata_str, "%s\n", metadata_str);
+	fputs(metadata_str, sz_tsc->metadata_file);
+	free(metadata_str);
+	
+	//sizeof(int)==current time step; 2*sizeof(char)+sizeof(size_t)=={compressionType + datatype + compression_data_size}; 
+	//sizeof(char)==# variables
+	*outSize = sizeof(int) + sizeof(unsigned short) + totalSize + vset->count*(2*sizeof(unsigned char)+sizeof(size_t));
+	*newByteData = (unsigned char*)malloc(*outSize); 
+	unsigned char* p = *newByteData;
+
+	intToBytes_bigEndian(p, sz_tsc->currentStep);
+	p+=4;
+	shortToBytes(p, vset->count);
+	p+=2;
+	
+	for(i=0;i<vset->count;i++)
+	{
+		SZ_Variable* v = vset->header->next;
+	
+		*p = (unsigned char)v->compressType; //1 byte
+		p++;
+		*p = (unsigned char)v->dataType; //1 byte
+		p++;
+		sizeToBytes(p, outSize_[i]); //size_t
+		p += sizeof(size_t);
+		//sizeToBytes(p, v->r5); //size_t
+		//p += sizeof(size_t);
+		//sizeToBytes(p, v->r4); //size_t
+		//p += sizeof(size_t);
+		//sizeToBytes(p, v->r3); //size_t
+		//p += sizeof(size_t);
+		//sizeToBytes(p, v->r2); //size_t
+		//p += sizeof(size_t);
+		//sizeToBytes(p, v->r1); //size_t
+		//p += sizeof(size_t);								
+		memcpy(p, compressBuffer[i], outSize_[i]); //outSize_[i]
+		p += outSize_[i];
+	}
+
+	sz_tsc->currentStep ++;	
+	free(outSize_);
+	
+	return SZ_SCES;
+}
+
+void SZ_decompress_ts(unsigned char *bytes, size_t byteLength)
+{
+	if(conf_params==NULL)
+		conf_params = (sz_params*)malloc(sizeof(sz_params));
+	memset(conf_params, 0, sizeof(sz_params));
+	conf_params->szMode = SZ_TEMPORAL_COMPRESSION;
+	conf_params->predictionMode = SZ_PREVIOUS_VALUE_ESTIMATE;
+	
+	if(exe_params==NULL)
+		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
+	memset(exe_params, 0, sizeof(sz_exedata));
+	
+	int x = 1;
+	char *y = (char*)&x;
+	if(*y==1)
+		exe_params->sysEndianType = LITTLE_ENDIAN_SYSTEM;
+	else //=0
+		exe_params->sysEndianType = BIG_ENDIAN_SYSTEM;
+	
+	int i = 0;
+	size_t r5 = 0, r4 = 0, r3 = 0, r2 = 0, r1 = 0;
+	unsigned char* q = bytes;
+	sz_tsc->currentStep = bytesToInt_bigEndian(q); 
+	q += 4;
+	unsigned short nbVars = (unsigned short)bytesToShort(q);
+	q += 2;
+	
+	if(nbVars != sz_varset->count)
+	{
+		printf("Error: the number of variables in the compressed data file is inconsistent with the registered # variables.\n");
+		printf("Specifically, nbVars = %d, sz_varset->count = %d\n", nbVars, sz_varset->count);
+		return;
+	}
+	
+	float *newFloatData = NULL;
+	double *newDoubleData = NULL;	
+	
+	SZ_Variable* p = sz_varset->header->next; // p is pointed to the first variable.
+	for(i=0;i<sz_varset->count;i++)
+	{
+		multisteps = p->multisteps;
+		r5 = p->r5;
+		r4 = p->r4;
+		r3 = p->r3;
+		r2 = p->r2;
+		r1 = p->r1;
+		size_t dataLen = computeDataLength(r5, r4, r3, r2, r1);		
+		multisteps->compressionType = *(q++);
+		unsigned char dataType = *(q++);
+		size_t cmpSize = bytesToSize(q);
+		q += sizeof(size_t);
+		unsigned char* cmpBytes = q;
+		switch(dataType)
+		{
+		case SZ_FLOAT:
+				SZ_decompress_args_float(&newFloatData, r5, r4, r3, r2, r1, cmpBytes, cmpSize);
+				memcpy(p->data, newFloatData, dataLen*sizeof(float));
+				free(newFloatData);
+				break;
+		case SZ_DOUBLE:
+				SZ_decompress_args_double(&newDoubleData, r5, r4, r3, r2, r1, cmpBytes, cmpSize);
+				memcpy(p->data, newDoubleData, dataLen*sizeof(double));
+				free(newDoubleData);
+				break;
+		default:
+				printf("Error: data type cannot be the types other than SZ_FLOAT or SZ_DOUBLE\n");
+				return;	
+		}
+		
+		q += cmpSize;
+		p = p->next;
+	}
+}
+#endif
+
+
 void SZ_Finalize()
 {
-	//if(sz_varset!=NULL)
-	//	free_VarSet();
+#ifdef HAVE_TIMECMPR		
+	if(sz_varset!=NULL)
+		SZ_freeVarSet(SZ_MAINTAIN_VAR_DATA);
+#endif
 
 	if(conf_params!=NULL)
+	{
 		free(conf_params);
+		conf_params = NULL;
+	}
+	if(exe_params!=NULL)
+	{
+		free(exe_params);
+		exe_params = NULL;
+	}
+	
+#ifdef HAVE_TIMECMPR	
+	if(sz_tsc!=NULL && sz_tsc->metadata_file!=NULL)
+		fclose(sz_tsc->metadata_file);
+#endif
 }

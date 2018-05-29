@@ -21,6 +21,7 @@ void updateQuantizationInfo(int quant_intervals);
 int SZ_ReadConf(const char* sz_cfgFile);
 int SZ_LoadConf(const char* sz_cfgFile);
 int checkVersion(char* version);
+void initSZ_TSC();
 unsigned int roundUpToPowerOf2(unsigned int base);
 double computeABSErrBoundFromPSNR(double psnr, double threshold, double value_range);
 

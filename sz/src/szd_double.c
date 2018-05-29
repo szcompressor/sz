@@ -15,7 +15,7 @@
 #include "sz.h"
 #include "Huffman.h"
 #include "szd_double_pwr.h"
-//#include "rw.h"
+#include "szd_double_ts.h"
 
 int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, unsigned char* cmpBytes, size_t cmpSize)
 {
@@ -1607,7 +1607,19 @@ void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightData
 	} else {
 		if (tdps->rtypeArray == NULL) {
 			if(errBoundMode < PW_REL)
-				decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
+			{
+#ifdef HAVE_TIMECMPR				
+				if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+				{
+					if(multisteps->compressionType == 0) //snapshot
+						decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
+					else
+						decompressDataSeries_double_1D_ts(data, dataSeriesLength, multisteps, tdps);					
+				}
+				else
+#endif								
+					decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
+			}
 			else 
 			{
 				//decompressDataSeries_double_1D_pwr(data, dataSeriesLength, tdps);
@@ -1660,7 +1672,19 @@ void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPoi
 	} else {
 		if (tdps->rtypeArray == NULL) {
 			if(errBoundMode < PW_REL)
-				decompressDataSeries_double_2D(data, r1, r2, tdps);
+			{
+#ifdef HAVE_TIMECMPR				
+				if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+				{
+					if(multisteps->compressionType == 0) //snapshot
+						decompressDataSeries_double_2D(data, r1, r2, tdps);
+					else
+						decompressDataSeries_double_1D_ts(data, dataSeriesLength, multisteps, tdps);					
+				}
+				else
+#endif						
+					decompressDataSeries_double_2D(data, r1, r2, tdps);
+			}
 			else 
 				decompressDataSeries_double_2D_pwr(data, r1, r2, tdps);
 			return;
@@ -1710,7 +1734,19 @@ void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, T
 	} else {
 		if (tdps->rtypeArray == NULL) {
 			if(errBoundMode < PW_REL)
-				decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
+			{
+#ifdef HAVE_TIMECMPR				
+				if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+				{
+					if(multisteps->compressionType == 0) //snapshot
+						decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
+					else
+						decompressDataSeries_double_1D_ts(data, dataSeriesLength, multisteps, tdps);					
+				}
+				else
+#endif						
+					decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
+			}
 			else 
 				decompressDataSeries_double_3D_pwr(data, r1, r2, r3, tdps);
 			return;

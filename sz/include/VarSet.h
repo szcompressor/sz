@@ -15,6 +15,16 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+
+typedef struct sz_multisteps
+{
+	char compressionType;
+	int predictionMode;
+	int lastSnapshotStep; //the previous snapshot step
+	unsigned int currentStep; //current time step of the execution/simulation
+	void* hist_data; //historical data in past time steps
+} sz_multisteps;
+
 typedef struct SZ_Variable
 {
 	char* varName;
@@ -30,6 +40,7 @@ typedef struct SZ_Variable
 	double relBoundRatio;
 	double pwRelBoundRatio;
 	void* data;
+	sz_multisteps *multisteps;
 	unsigned char* compressedBytes;
 	size_t compressedSize;
 	struct SZ_Variable* next;
@@ -37,7 +48,7 @@ typedef struct SZ_Variable
 
 typedef struct SZ_VarSet
 {
-	int count;
+	unsigned short count;
 	struct SZ_Variable *header;
 	struct SZ_Variable *lastVar;
 } SZ_VarSet;
@@ -46,7 +57,7 @@ void free_Variable_keepOriginalData(SZ_Variable* v);
 void free_Variable_keepCompressedBytes(SZ_Variable* v);
 void free_Variable_all(SZ_Variable* v);
 void SZ_batchAddVar(char* varName, int dataType, void* data, 
-			int errBoundMode, double absErrBound, double relBoundRatio,
+			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio,
 			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 int SZ_batchDelVar_vset(SZ_VarSet* vset, char* varName);
 int SZ_batchDelVar(char* varName);
@@ -56,6 +67,8 @@ void* SZ_getVarData(char* varName, size_t *r5, size_t *r4, size_t *r3, size_t *r
 
 void free_VarSet_vset(SZ_VarSet *vset, int mode);
 void SZ_freeVarSet(int mode);
+
+void free_multisteps(sz_multisteps* multisteps);
 
 #ifdef __cplusplus
 }

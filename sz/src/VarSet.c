@@ -33,7 +33,8 @@ void free_Variable_keepCompressedBytes(SZ_Variable* v)
 		free(v->varName);
 	if(v->data!=NULL)
 		free(v->data);
-	
+	if(v->multisteps!=NULL)
+		free_multisteps(v->multisteps);	
 	free(v);
 }
 
@@ -45,12 +46,13 @@ void free_Variable_all(SZ_Variable* v)
 		free(v->data);
 	if(v->compressedBytes!=NULL)
 		free(v->compressedBytes);
-	
+	if(v->multisteps!=NULL)
+		free_multisteps(v->multisteps);
 	free(v);
 }
 
 void SZ_batchAddVar(char* varName, int dataType, void* data, 
-			int errBoundMode, double absErrBound, double relBoundRatio,
+			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio, 
 			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {	
 	if(sz_varset==NULL)
@@ -77,7 +79,23 @@ void SZ_batchAddVar(char* varName, int dataType, void* data,
 	var->errBoundMode = errBoundMode;
 	var->absErrBound = absErrBound;
 	var->relBoundRatio = relBoundRatio;
+	var->pwRelBoundRatio = pwRelBoundRatio;
 	var->data = data;
+	
+	var->multisteps = (sz_multisteps*)malloc(sizeof(sz_multisteps));
+	memset(var->multisteps, 0, sizeof(sz_multisteps));
+	
+	size_t dataLen = computeDataLength(r5, r4, r3, r2, r1);
+	if(dataType==SZ_FLOAT)
+	{
+		var->multisteps->hist_data = (float*)malloc(sizeof(float)*dataLen);
+		memset(var->multisteps->hist_data, 0, sizeof(float)*dataLen);
+	}
+	else if(dataType==SZ_DOUBLE)
+	{
+		var->multisteps->hist_data = (double*)malloc(sizeof(double)*dataLen);
+		memset(var->multisteps->hist_data, 0, sizeof(double)*dataLen);
+	}
 	var->compressedBytes = NULL;
 	var->next = NULL;
 	
@@ -94,7 +112,7 @@ int SZ_batchDelVar(char* varName)
 
 int SZ_batchDelVar_vset(SZ_VarSet* vset, char* varName)
 {
-	int delSuccess = 1;
+	int delSuccess = SZ_NSCS;
 	SZ_Variable* p = vset->header;
 	SZ_Variable* q = p->next;
 	while(q != NULL)
@@ -105,7 +123,7 @@ int SZ_batchDelVar_vset(SZ_VarSet* vset, char* varName)
 			p->next = q->next;
 			free_Variable_all(q);
 			vset->count --;
-			delSuccess = 0;
+			delSuccess = SZ_SCES;
 			break;
 		}
 		p = p->next;
@@ -169,4 +187,11 @@ void free_VarSet_vset(SZ_VarSet *vset, int mode)
 	}
 	free(sz_varset->header);
 	free(vset);
+}
+
+void free_multisteps(sz_multisteps* multisteps)
+{
+	if(multisteps->hist_data!=NULL)
+		free(multisteps->hist_data);
+	free(multisteps);
 }

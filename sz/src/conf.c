@@ -104,6 +104,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		conf_params->szMode = SZ_BEST_COMPRESSION;
 		
 		conf_params->gzipMode = 1; //fast mode
+		
 		conf_params->errorBoundMode = PSNR;
 		conf_params->psnr = 90;
 		
@@ -229,6 +230,9 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 			printf("[SZ] Error: Wrong gzip Mode (please check sz.config file)\n");
 			return SZ_NSCS;
 		}
+		
+		//TODO
+		conf_params->snapshotCmprStep = (int)iniparser_getint(ini, "PARAMETER:snapshotCmprStep", 0);
 				
 		errBoundMode = iniparser_getstring(ini, "PARAMETER:errorBoundMode", NULL);
 		if(errBoundMode==NULL)
@@ -331,6 +335,20 @@ int checkVersion(char* version)
 		if(version[i]!=versionNumber[i])
 			return 0;
 	return 1;
+}
+
+void initSZ_TSC()
+{
+	sz_tsc = (sz_tsc_metadata*)malloc(sizeof(sz_tsc_metadata));
+	memset(sz_tsc, 0, sizeof(sz_tsc_metadata));
+	sprintf(sz_tsc->metadata_filename, "sz_tsc_metainfo.txt");
+	sz_tsc->metadata_file = fopen(sz_tsc->metadata_filename, "wb");
+	if (sz_tsc->metadata_file == NULL)
+	{
+		printf("Failed to open sz_tsc_metainfo.txt file for writing metainfo.\n");
+		exit(1);
+	}
+	fputs("#metadata of the time-step based compression\n", sz_tsc->metadata_file);	
 }
 
 /*double fabs(double value)
