@@ -1221,7 +1221,7 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 	memset(preBytes, 0, 4);
 
 	size_t curByteIndex = 0;
-	int reqLength, reqBytesLength, resiBitsLength, resiBits; 
+	int reqLength, reqBytesLength = 0, resiBitsLength = 0, resiBits; 
 	unsigned char leadingNum;	
 	float medianValue, exactData, curValue, predValue;
 	

@@ -1219,7 +1219,7 @@ void decompressDataSeries_double_1D_pwrgroup(double** data, size_t dataSeriesLen
 	memset(preBytes, 0, 8);
 
 	size_t curByteIndex = 0;
-	int reqLength, reqBytesLength, resiBitsLength, resiBits; 
+	int reqLength, reqBytesLength = 0, resiBitsLength = 0, resiBits; 
 	unsigned char leadingNum;	
 	double medianValue, exactData, curValue, predValue;
 	
