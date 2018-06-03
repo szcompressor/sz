@@ -304,7 +304,7 @@ int main(int argc, char* argv[])
 			usage();
 			exit(0);
 		}
-		conf_params->errorBoundMode = errorBoundMode;
+		confparams_cpr->errorBoundMode = errorBoundMode;
 	}
 	
 	char outputFilePath[256];	
@@ -312,16 +312,16 @@ int main(int argc, char* argv[])
 	if(isCompression == 1)
 	{
 		if(absErrorBound != NULL)
-			conf_params->absErrBound = atof(absErrorBound);
+			confparams_cpr->absErrBound = atof(absErrorBound);
 		
 		if(relErrorBound != NULL)
-			conf_params->relBoundRatio = atof(relErrorBound);
+			confparams_cpr->relBoundRatio = atof(relErrorBound);
 	
 		if(pwrErrorBound != NULL)
-			conf_params->pw_relBoundRatio = atof(pwrErrorBound);
+			confparams_cpr->pw_relBoundRatio = atof(pwrErrorBound);
 	
 		if(psnr_ != NULL)
-			conf_params->psnr = atof(psnr_);
+			confparams_cpr->psnr = atof(psnr_);
 
 		size_t outSize;	
 		if(dataType == 0) //single precision
@@ -351,19 +351,19 @@ int main(int argc, char* argv[])
 					r3 = r5*r4*r3;
 				else if(r4>0)
 					r3 = r4*r3;
-				if(conf_params->errorBoundMode!=ABS)
+				if(confparams_cpr->errorBoundMode!=ABS)
 				{
-					printf("Error: current version supports only absolute error bound (errorBoundMode=%d)\n", conf_params->errorBoundMode);
+					printf("Error: current version supports only absolute error bound (errorBoundMode=%d)\n", confparams_cpr->errorBoundMode);
 					exit(0);
 				}
 				
 				cost_start_omp();
 				if(r2==0)
-					bytes = SZ_compress_float_1D_MDQ_openmp(data, r1, conf_params->absErrBound, &outSize);
+					bytes = SZ_compress_float_1D_MDQ_openmp(data, r1, confparams_cpr->absErrBound, &outSize);
 				else if(r3==0)
-					bytes = SZ_compress_float_2D_MDQ_openmp(data, r2, r1, conf_params->absErrBound, &outSize);
+					bytes = SZ_compress_float_2D_MDQ_openmp(data, r2, r1, confparams_cpr->absErrBound, &outSize);
 				else //3d
-					bytes = SZ_compress_float_3D_MDQ_openmp(data, r3, r2, r1, conf_params->absErrBound, &outSize);
+					bytes = SZ_compress_float_3D_MDQ_openmp(data, r3, r2, r1, confparams_cpr->absErrBound, &outSize);
 				printf("outSize=%zu\n", outSize);
 				cost_end_omp();	
 			}
@@ -420,7 +420,7 @@ int main(int argc, char* argv[])
 				str[4] = dimStr;
 				
 				char thrStr[100]; 
-				sprintf(thrStr, "SV Threshold = %f", conf_params->absErrBound);
+				sprintf(thrStr, "SV Threshold = %f", confparams_cpr->absErrBound);
 				str[7] = thrStr;
 
 				writeStrings(8, str, "parameter-raw.txt", &status);	
@@ -819,21 +819,22 @@ int main(int argc, char* argv[])
 		if(bytes==NULL)
 			bytes = readByteData(cmpPath, &byteLength, &status);
 			
+		int szMode = 0;
 		unsigned char* bytes2 = NULL;
 		int isZlib = isZlibFormat(bytes[0], bytes[1]);
 		if(isZlib)
 		{
-			conf_params->szMode = SZ_BEST_COMPRESSION;
+			szMode = SZ_BEST_COMPRESSION;
 			zlib_uncompress65536bytes(bytes, (unsigned long)byteLength, &bytes2);	
 		}
 		else
 		{
-			conf_params->szMode = SZ_BEST_SPEED;	
+			szMode = SZ_BEST_SPEED;	
 			bytes2 = bytes;
 		}				
 			
 		sz_metadata* metadata = SZ_getMetadata(bytes2);
-		metadata->conf_params->szMode = conf_params->szMode;
+		metadata->conf_params->szMode = szMode;
 
 		if(metadata->versionNumber[0]==0 || metadata->conf_params->max_quant_intervals<0)
 		{
@@ -861,4 +862,5 @@ int main(int argc, char* argv[])
 	}
 	
 	free(bytes);
+	SZ_Finalize();	
 }

@@ -26,32 +26,32 @@ unsigned int optimize_intervals_float_1D_ts(float *oriData, size_t dataLength, f
 {	
 	size_t i = 0, radiusIndex;
 	float pred_value = 0, pred_err;
-	size_t *intervals = (size_t*)malloc(conf_params->maxRangeRadius*sizeof(size_t));
-	memset(intervals, 0, conf_params->maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = dataLength/conf_params->sampleDistance;
+	size_t *intervals = (size_t*)malloc(confparams_cpr->maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, confparams_cpr->maxRangeRadius*sizeof(size_t));
+	size_t totalSampleSize = dataLength/confparams_cpr->sampleDistance;
 	for(i=2;i<dataLength;i++)
 	{
-		if(i%conf_params->sampleDistance==0)
+		if(i%confparams_cpr->sampleDistance==0)
 		{
 			pred_value = preData[i];
 			pred_err = fabs(pred_value - oriData[i]);
 			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
-			if(radiusIndex>=conf_params->maxRangeRadius)
-				radiusIndex = conf_params->maxRangeRadius - 1;			
+			if(radiusIndex>=confparams_cpr->maxRangeRadius)
+				radiusIndex = confparams_cpr->maxRangeRadius - 1;			
 			intervals[radiusIndex]++;
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*conf_params->predThreshold;
+	size_t targetCount = totalSampleSize*confparams_cpr->predThreshold;
 	size_t sum = 0;
-	for(i=0;i<conf_params->maxRangeRadius;i++)
+	for(i=0;i<confparams_cpr->maxRangeRadius;i++)
 	{
 		sum += intervals[i];
 		if(sum>targetCount)
 			break;
 	}
-	if(i>=conf_params->maxRangeRadius)
-		i = conf_params->maxRangeRadius-1;
+	if(i>=confparams_cpr->maxRangeRadius)
+		i = confparams_cpr->maxRangeRadius-1;
 		
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);

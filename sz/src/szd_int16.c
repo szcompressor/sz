@@ -36,15 +36,15 @@ int SZ_decompress_args_int16(int16_t** newData, size_t r5, size_t r4, size_t r3,
 	{
 		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
 		if(isZlib)
-			conf_params->szMode = SZ_BEST_COMPRESSION;
+			confparams_dec->szMode = SZ_BEST_COMPRESSION;
 		else
-			conf_params->szMode = SZ_BEST_SPEED;		
-		if(conf_params->szMode==SZ_BEST_SPEED)
+			confparams_dec->szMode = SZ_BEST_SPEED;		
+		if(confparams_dec->szMode==SZ_BEST_SPEED)
 		{
 			tmpSize = cmpSize;
 			szTmpBytes = cmpBytes;	
 		}
-		else if(conf_params->szMode==SZ_BEST_COMPRESSION || conf_params->szMode==SZ_DEFAULT_COMPRESSION)
+		else if(confparams_dec->szMode==SZ_BEST_COMPRESSION || confparams_dec->szMode==SZ_DEFAULT_COMPRESSION)
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
@@ -55,7 +55,7 @@ int SZ_decompress_args_int16(int16_t** newData, size_t r5, size_t r4, size_t r3,
 		}
 		else
 		{
-			printf("Wrong value of conf_params->szMode in the double compressed bytes.\n");
+			printf("Wrong value of confparams_dec->szMode in the double compressed bytes.\n");
 			status = SZ_MERR;
 			return status;
 		}	
@@ -71,7 +71,7 @@ int SZ_decompress_args_int16(int16_t** newData, size_t r5, size_t r4, size_t r3,
 	if(tdps->isLossless)
 	{
 		*newData = (int16_t*)malloc(intSize*dataLength);
-		if(exe_params->sysEndianType==BIG_ENDIAN_SYSTEM)
+		if(sysEndianType==BIG_ENDIAN_SYSTEM)
 		{
 			memcpy(*newData, szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE, dataLength*intSize);
 		}
@@ -99,7 +99,7 @@ int SZ_decompress_args_int16(int16_t** newData, size_t r5, size_t r4, size_t r3,
 		status = SZ_DERR;
 	}
 	free_TightDataPointStorageI2(tdps);
-	if(conf_params->szMode!=SZ_BEST_SPEED && cmpSize!=4+sizeof(int16_t)+exe_params->SZ_SIZE_TYPE+MetaDataByteLength)
+	if(confparams_dec->szMode!=SZ_BEST_SPEED && cmpSize!=4+sizeof(int16_t)+exe_params->SZ_SIZE_TYPE+MetaDataByteLength)
 		free(szTmpBytes);
 	return status;
 }

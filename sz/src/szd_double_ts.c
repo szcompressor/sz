@@ -98,7 +98,7 @@ void decompressDataSeries_double_1D_ts(double** data, size_t dataSeriesLength, s
 			break;
 		default:
 			//predValue = (*data)[i-1];
-			if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+			if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				predValue = lastSnapshotData[i];
 			(*data)[i] = predValue + (type_-exe_params->intvRadius)*interval;
 			break;

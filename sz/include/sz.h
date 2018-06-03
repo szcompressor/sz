@@ -78,7 +78,7 @@ extern "C" {
 #define SZ_VER_MAJOR 1
 #define SZ_VER_MINOR 4
 #define SZ_VER_BUILD 13
-#define SZ_VER_REVISION 2
+#define SZ_VER_REVISION 4
 
 #define PASTRI 103
 #define HZ 102
@@ -235,7 +235,6 @@ typedef struct sz_params
 	unsigned int max_quant_intervals; //max number of quantization intervals for quantization
 	unsigned int quantization_intervals; 
 	unsigned int maxRangeRadius;
-	int dataEndianType; //*endian type of the data read from disk
 	int sol_ID;// it's always SZ, unless the setting is PASTRI compression mode (./configure --enable-pastri)
 	int sampleDistance; //2 bytes
 	float predThreshold;  // 2 bytes
@@ -266,8 +265,7 @@ typedef struct sz_metadata
 
 typedef struct sz_exedata
 {
-	char optQuantMode;	//opt Quantization (0: fixed ; 1: optimized)
-    int sysEndianType; //*sysEndianType is actually set automatically.	
+	char optQuantMode;	//opt Quantization (0: fixed ; 1: optimized)	
 	int intvCapacity; // the number of intervals for the linear-scaling quantization
 	int intvRadius;  // the number of intervals for the radius of the quantization range (intvRadius=intvCapacity/2)
 	int SZ_SIZE_TYPE; //the length (# bytes) of the size_t in the system at runtime //4 or 8: sizeof(size_t) 
@@ -285,7 +283,11 @@ typedef struct sz_tsc_metainfo
 extern int versionNumber[4];
 
 //-------------------key global variables--------------
-extern sz_params *conf_params;
+extern int dataEndianType; //*endian type of the data read from disk
+extern int sysEndianType; //*sysEndianType is actually set automatically.
+
+extern sz_params *confparams_cpr;
+extern sz_params *confparams_dec;
 extern sz_exedata *exe_params;
 //------------------------------------------------
 extern SZ_VarSet* sz_varset;
@@ -340,6 +342,8 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 int SZ_compress_rev_args2(int dataType, void *data, void *reservedValue, unsigned char* compressed_bytes, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 unsigned char *SZ_compress_rev(int dataType, void *data, void *reservedValue, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
+
+void SZ_Create_ParamsExe(sz_params** conf_params, sz_exedata** exe_params);
 
 void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 size_t SZ_decompress_args(int dataType, unsigned char *bytes, size_t byteLength, void* decompressed_array, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);

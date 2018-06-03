@@ -586,11 +586,11 @@ int initRandomAccessBytes(unsigned char* raBytes)
         int sameByte = 0x80; //indicating this is random-access mode
         if(exe_params->SZ_SIZE_TYPE==8)
                 sameByte = (unsigned char) (sameByte | 0x40); // 01000000, the 6th bit
-        sameByte = sameByte | (conf_params->szMode << 1);
+        sameByte = sameByte | (confparams_cpr->szMode << 1);
 
         raBytes[k++] = sameByte;
 
-        convertSZParamsToBytes(conf_params, &(raBytes[k]));
+        convertSZParamsToBytes(confparams_cpr, &(raBytes[k]));
         k = k + MetaDataByteLength;
 
         return k;

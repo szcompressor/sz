@@ -27,7 +27,13 @@
 int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
 //int SZ_SIZE_TYPE = 8;
 
-sz_params *conf_params = NULL;
+int dataEndianType = LITTLE_ENDIAN_DATA; //*endian type of the data read from disk
+int sysEndianType; //*sysEndianType is actually set automatically.
+
+//the confparams should be separate between compression and decopmression, in case of mutual-affection when calling compression/decompression alternatively
+sz_params *confparams_cpr = NULL; //used for compression
+sz_params *confparams_dec = NULL; //used for decompression 
+
 sz_exedata *exe_params = NULL;
 
 /*following global variables are desgined for time-series based compression*/
@@ -54,7 +60,7 @@ int SZ_Init(const char *configFilePath)
 	
 	exe_params->SZ_SIZE_TYPE = sizeof(size_t);
 	
-	if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 	{
 		initSZ_TSC();
 	}
@@ -68,17 +74,17 @@ int SZ_Init_Params(sz_params *params)
 	int endianType = BIG_ENDIAN_SYSTEM;
 	if(*y==1) endianType = LITTLE_ENDIAN_SYSTEM;
 
-	exe_params->sysEndianType = endianType;
+	sysEndianType = endianType;
 	exe_params->SZ_SIZE_TYPE = sizeof(size_t);
 
 	// set default values
 	if(params->max_quant_intervals > 0) 
-		conf_params->maxRangeRadius = params->max_quant_intervals/2;
+		params->maxRangeRadius = params->max_quant_intervals/2;
 	else
-		params->max_quant_intervals = conf_params->maxRangeRadius*2;
+		params->max_quant_intervals = params->maxRangeRadius*2;
 
-	exe_params->intvCapacity = conf_params->maxRangeRadius*2;
-	exe_params->intvRadius = conf_params->maxRangeRadius;
+	exe_params->intvCapacity = params->maxRangeRadius*2;
+	exe_params->intvRadius = params->maxRangeRadius;
 
 	if(params->quantization_intervals>0)
 	{
@@ -95,8 +101,8 @@ int SZ_Init_Params(sz_params *params)
 		return SZ_NSCS;
 	}
 
-	conf_params = (sz_params*)malloc(sizeof(sz_params));
-	memcpy(conf_params, params, sizeof(sz_params));	
+	confparams_cpr = (sz_params*)malloc(sizeof(sz_params));
+	memcpy(confparams_cpr, params, sizeof(sz_params));	
 
 	return SZ_SCES;
 }
@@ -175,7 +181,7 @@ unsigned char* SZ_compress_args(int dataType, void *data, size_t *outSize, int e
 double relBoundRatio, double pwrBoundRatio, int pwrType, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
 	//TODO
-	conf_params->dataType = dataType;
+	confparams_cpr->dataType = dataType;
 	if(dataType==SZ_FLOAT)
 	{
 		unsigned char *newByteData = NULL;
@@ -263,7 +269,7 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1,
 size_t s5, size_t s4, size_t s3, size_t s2, size_t s1,
 size_t e5, size_t e4, size_t e3, size_t e2, size_t e1)
 {
-	conf_params->dataType = dataType;
+	confparams_cpr->dataType = dataType;
 	if(dataType==SZ_FLOAT)
 	{
 		SZ_compress_args_float_subblock(compressed_bytes, (float *)data, 
@@ -293,8 +299,8 @@ size_t e5, size_t e4, size_t e3, size_t e2, size_t e1)
 
 unsigned char *SZ_compress(int dataType, void *data, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {	
-	unsigned char *newByteData = SZ_compress_args(dataType, data, outSize, conf_params->errorBoundMode, conf_params->absErrBound, conf_params->relBoundRatio, 
-	conf_params->pw_relBoundRatio, conf_params->pwr_type, r5, r4, r3, r2, r1);
+	unsigned char *newByteData = SZ_compress_args(dataType, data, outSize, confparams_cpr->errorBoundMode, confparams_cpr->absErrBound, confparams_cpr->relBoundRatio, 
+	confparams_cpr->pw_relBoundRatio, confparams_cpr->pwr_type, r5, r4, r3, r2, r1);
 	return newByteData;
 }
 
@@ -324,7 +330,7 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 int SZ_compress_rev_args2(int dataType, void *data, void *reservedValue, unsigned char* compressed_bytes, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
-	conf_params->dataType = dataType;
+	confparams_cpr->dataType = dataType;
 	unsigned char* bytes = SZ_compress_rev_args(dataType, data, reservedValue, outSize, errBoundMode, absErrBound, relBoundRatio, r5, r4, r3, r2, r1);
 	memcpy(compressed_bytes, bytes, *outSize);
 	free(bytes); //free(bytes) is removed , because of dump error at MIRA system (PPC architecture), fixed?
@@ -343,9 +349,9 @@ unsigned char *SZ_compress_rev(int dataType, void *data, void *reservedValue, si
 
 void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
-	if(conf_params==NULL)
-		conf_params = (sz_params*)malloc(sizeof(sz_params));
-	memset(conf_params, 0, sizeof(sz_params));
+	if(confparams_dec==NULL)
+		confparams_dec = (sz_params*)malloc(sizeof(sz_params));
+	memset(confparams_dec, 0, sizeof(sz_params));
 	if(exe_params==NULL)
 		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
 	memset(exe_params, 0, sizeof(sz_exedata));
@@ -353,9 +359,9 @@ void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_
 	int x = 1;
 	char *y = (char*)&x;
 	if(*y==1)
-		exe_params->sysEndianType = LITTLE_ENDIAN_SYSTEM;
+		sysEndianType = LITTLE_ENDIAN_SYSTEM;
 	else //=0
-		exe_params->sysEndianType = BIG_ENDIAN_SYSTEM;
+		sysEndianType = BIG_ENDIAN_SYSTEM;
 	
 	if(dataType == SZ_FLOAT)
 	{
@@ -527,14 +533,14 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 		versions[i] = bytes[index++]; //3
 	unsigned char sameRByte = bytes[index++]; //1
 	isConstant = sameRByte & 0x01;
-	//conf_params->szMode = (sameRByte & 0x06)>>1;
+	//confparams_dec->szMode = (sameRByte & 0x06)>>1;
 	isLossless = (sameRByte & 0x10)>>4;
 	exe_params->SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
 	
 	sz_params* params = convertBytesToSZParams(&(bytes[index]));
-	if(conf_params!=NULL)
-		free(conf_params);
-	conf_params = params;	
+	if(confparams_dec!=NULL)
+		free(confparams_dec);
+	confparams_dec = params;	
 	index += MetaDataByteLength;
 	
 	if(params->dataType!=SZ_FLOAT && params->dataType!= SZ_DOUBLE) //if this type is an Int type
@@ -553,7 +559,7 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	metadata->sizeType = exe_params->SZ_SIZE_TYPE;
 	metadata->dataSeriesLength = dataSeriesLength;
 	
-	metadata->conf_params = conf_params;
+	metadata->conf_params = confparams_dec;
 	
 	int defactoNBBins = 0; //real # bins
 	if(isConstant==0 && isLossless==0)
@@ -633,8 +639,8 @@ void SZ_printMetadata(sz_metadata* metadata)
 		printf("max_quant_intervals:            \t - %d\n", params->max_quant_intervals);		
 	}
 	
-	printf("dataEndianType (prior raw data):\t %s\n", params->dataEndianType==1?"BIG_ENDIAN":"LITTLE_ENDIAN");
-	printf("sysEndianType (at compression): \t %s\n", exe_params->sysEndianType==1?"BIG_ENDIAN":"LITTLE_ENDIAN");
+	printf("dataEndianType (prior raw data):\t %s\n", dataEndianType==BIG_ENDIAN_DATA?"BIG_ENDIAN":"LITTLE_ENDIAN");
+	printf("sysEndianType (at compression): \t %s\n", sysEndianType==1?"BIG_ENDIAN":"LITTLE_ENDIAN");
 	printf("sampleDistance:                 \t %d\n", params->sampleDistance);
 	printf("predThreshold:                  \t %f\n", params->predThreshold);
 	switch(params->szMode)
@@ -813,8 +819,8 @@ int SZ_deregisterVar(char* varName)
 #ifdef HAVE_TIMECMPR
 int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
 {
-	conf_params->szMode = SZ_TEMPORAL_COMPRESSION;
-	conf_params->predictionMode = SZ_PREVIOUS_VALUE_ESTIMATE;
+	confparams_cpr->szMode = SZ_TEMPORAL_COMPRESSION;
+	confparams_cpr->predictionMode = SZ_PREVIOUS_VALUE_ESTIMATE;
 	
 	SZ_VarSet* vset = sz_varset;
 	size_t *outSize_ = (size_t*)malloc(sizeof(size_t)*vset->count);
@@ -893,11 +899,11 @@ int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
 
 void SZ_decompress_ts(unsigned char *bytes, size_t byteLength)
 {
-	if(conf_params==NULL)
-		conf_params = (sz_params*)malloc(sizeof(sz_params));
-	memset(conf_params, 0, sizeof(sz_params));
-	conf_params->szMode = SZ_TEMPORAL_COMPRESSION;
-	conf_params->predictionMode = SZ_PREVIOUS_VALUE_ESTIMATE;
+	if(confparams_dec==NULL)
+		confparams_dec = (sz_params*)malloc(sizeof(sz_params));
+	memset(confparams_dec, 0, sizeof(sz_params));
+	confparams_dec->szMode = SZ_TEMPORAL_COMPRESSION;
+	confparams_dec->predictionMode = SZ_PREVIOUS_VALUE_ESTIMATE;
 	
 	if(exe_params==NULL)
 		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
@@ -906,9 +912,9 @@ void SZ_decompress_ts(unsigned char *bytes, size_t byteLength)
 	int x = 1;
 	char *y = (char*)&x;
 	if(*y==1)
-		exe_params->sysEndianType = LITTLE_ENDIAN_SYSTEM;
+		sysEndianType = LITTLE_ENDIAN_SYSTEM;
 	else //=0
-		exe_params->sysEndianType = BIG_ENDIAN_SYSTEM;
+		sysEndianType = BIG_ENDIAN_SYSTEM;
 	
 	int i = 0;
 	size_t r5 = 0, r4 = 0, r3 = 0, r2 = 0, r1 = 0;
@@ -974,11 +980,16 @@ void SZ_Finalize()
 		SZ_freeVarSet(SZ_MAINTAIN_VAR_DATA);
 #endif
 
-	if(conf_params!=NULL)
+	if(confparams_dec!=NULL)
 	{
-		free(conf_params);
-		conf_params = NULL;
+		free(confparams_dec);
+		confparams_dec = NULL;
 	}
+	if(confparams_cpr!=NULL)
+	{
+		free(confparams_cpr);
+		confparams_cpr = NULL;
+	}	
 	if(exe_params!=NULL)
 	{
 		free(exe_params);

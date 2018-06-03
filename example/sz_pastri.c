@@ -257,9 +257,9 @@ int main(int argc, char* argv[])
 	if(compressorString!=NULL)
 	{
 		if(strcmp(compressorString, "SZ")==0)
-			conf_params->sol_ID = SZ;
+			confparams_cpr->sol_ID = SZ;
 		else if(strcmp(compressorString, "PASTRI")==0)
-			conf_params->sol_ID = PASTRI;
+			confparams_cpr->sol_ID = PASTRI;
 		else
 		{
 			printf("Error: unrecognized compressor!\n");
@@ -269,7 +269,7 @@ int main(int argc, char* argv[])
 	
 	if(printMeta == 0)
 	{
-		if(conf_params->sol_ID == SZ)
+		if(confparams_cpr->sol_ID == SZ)
 			if ((r1==0) && (r2==0) && (r3==0) && (r4==0) && (r5==0))
 			{
 				printf ("Error: please specify dimensions.\n");
@@ -312,7 +312,7 @@ int main(int argc, char* argv[])
 			usage();
 			exit(0);
 		}
-		conf_params->errorBoundMode = errorBoundMode;
+		confparams_cpr->errorBoundMode = errorBoundMode;
 	}
 	
 	char outputFilePath[256];	
@@ -321,19 +321,19 @@ int main(int argc, char* argv[])
 	{
 		if(absErrorBound != NULL)
 		{
-			if(conf_params->sol_ID == SZ)
-				conf_params->absErrBound = atof(absErrorBound);
-			else if(conf_params->sol_ID == PASTRI)
-				pastri_par.originalEb = atof(absErrorBound);
+			if(confparams_cpr->sol_ID == SZ)
+				confparams_cpr->absErrBound = atof(absErrorBound);
+			else if(confparams_cpr->sol_ID == PASTRI)
+				confparams_cpr.originalEb = atof(absErrorBound);
 		}
 		if(relErrorBound != NULL)
-			conf_params->relBoundRatio = atof(relErrorBound);
+			confparams_cpr->relBoundRatio = atof(relErrorBound);
 	
 		if(pwrErrorBound != NULL)
-			conf_params->pw_relBoundRatio = atof(pwrErrorBound);
+			confparams_cpr->pw_relBoundRatio = atof(pwrErrorBound);
 	
 		if(psnr_ != NULL)
-			conf_params->psnr = atof(psnr_);
+			confparams_cpr->psnr = atof(psnr_);
 
 		size_t outSize;	
 		if(dataType == 0) //single precision
@@ -352,9 +352,9 @@ int main(int argc, char* argv[])
 				exit(0);
 			}
 			cost_start();	
-			if(conf_params->sol_ID == SZ)
+			if(confparams_cpr->sol_ID == SZ)
 				bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
-			else if(conf_params->sol_ID == PASTRI)
+			else if(confparams_cpr->sol_ID == PASTRI)
 			{
 				pastri_par.dataSize = 4;
 				SZ_pastriPreprocessParameters(&pastri_par);
@@ -413,7 +413,7 @@ int main(int argc, char* argv[])
 				str[4] = dimStr;
 				
 				char thrStr[100]; 
-				sprintf(thrStr, "SV Threshold = %f", conf_params->absErrBound);
+				sprintf(thrStr, "SV Threshold = %f", confparams_cpr->absErrBound);
 				str[7] = thrStr;
 
 				writeStrings(8, str, "parameter-raw.txt", &status);	
@@ -437,9 +437,9 @@ int main(int argc, char* argv[])
 					exit(0);
 				}
 				cost_start();
-				if(conf_params->sol_ID == SZ)
+				if(confparams_cpr->sol_ID == SZ)
 					bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
-				else if(conf_params->sol_ID == PASTRI)
+				else if(confparams_cpr->sol_ID == PASTRI)
 				{
 					pastri_par.dataSize = 8;
 					SZ_pastriPreprocessParameters(&pastri_par);
@@ -515,9 +515,9 @@ int main(int argc, char* argv[])
 			}
 			cost_start();
 			float *data = NULL;
-			if(conf_params->sol_ID == SZ)
+			if(confparams_cpr->sol_ID == SZ)
 				data = SZ_decompress(SZ_FLOAT, bytes, byteLength, r5, r4, r3, r2, r1);			
-			else if(conf_params->sol_ID == PASTRI)
+			else if(confparams_cpr->sol_ID == PASTRI)
 			{
 				SZ_pastriDecompressBatch(bytes, &pastri_par, (unsigned char **)&data, &nbEle);
 				nbEle=nbEle/4;
@@ -685,9 +685,9 @@ int main(int argc, char* argv[])
 				}
 				cost_start();
 
-				if(conf_params->sol_ID == SZ)
+				if(confparams_cpr->sol_ID == SZ)
 					data = SZ_decompress(SZ_DOUBLE, bytes, byteLength, r5, r4, r3, r2, r1);			
-				else if(conf_params->sol_ID == PASTRI)
+				else if(confparams_cpr->sol_ID == PASTRI)
 				{
 					SZ_pastriDecompressBatch(bytes, &pastri_par, (unsigned char**)&data, &nbEle);
 					nbEle=nbEle/8;
@@ -805,23 +805,24 @@ int main(int argc, char* argv[])
 		if(bytes==NULL)
 			bytes = readByteData(cmpPath, &byteLength, &status);
 			
+		int szMode = 0;
 		unsigned char* bytes2 = NULL;
 		int isZlib = isZlibFormat(bytes[0], bytes[1]);
 		if(isZlib)
 		{
-			conf_params->szMode = SZ_BEST_COMPRESSION;
+			szMode = SZ_BEST_COMPRESSION;
 			zlib_uncompress65536bytes(bytes, (unsigned long)byteLength, &bytes2);	
 			
 			//printf("bytes2Len = %d\n", bytes2Len); 
 		}
 		else
 		{
-			conf_params->szMode = SZ_BEST_SPEED;	
+			szMode = SZ_BEST_SPEED;	
 			bytes2 = bytes;
 		}				
 			
 		sz_metadata* metadata = SZ_getMetadata(bytes2);
-		metadata->conf_params->szMode = conf_params->szMode;
+		metadata->conf_params->szMode = szMode;
 
 		if(metadata->versionNumber[0]==0 || metadata->conf_params->max_quant_intervals<0)
 		{
@@ -849,4 +850,5 @@ int main(int argc, char* argv[])
 	}
 	
 	free(bytes);
+	SZ_Finalize();	
 }

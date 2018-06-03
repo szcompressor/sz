@@ -30,16 +30,19 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 	if(cmpSize!=12+4+MetaDataByteLength && cmpSize!=12+8+MetaDataByteLength)
 	{
 		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
-		if(isZlib)
-			conf_params->szMode = SZ_BEST_COMPRESSION;
-		else
-			conf_params->szMode = SZ_BEST_SPEED;		
-		if(conf_params->szMode==SZ_BEST_SPEED)
+		if(confparams_dec->szMode!=SZ_TEMPORAL_COMPRESSION)
+		{
+			if(isZlib)
+				confparams_dec->szMode = SZ_BEST_COMPRESSION;
+			else
+				confparams_dec->szMode = SZ_BEST_SPEED;			
+		}
+		if(confparams_dec->szMode==SZ_BEST_SPEED)
 		{
 			tmpSize = cmpSize;
 			szTmpBytes = cmpBytes;	
 		}	
-		else if(conf_params->szMode==SZ_BEST_COMPRESSION || conf_params->szMode==SZ_DEFAULT_COMPRESSION)
+		else if(confparams_dec->szMode==SZ_BEST_COMPRESSION || confparams_dec->szMode==SZ_DEFAULT_COMPRESSION || confparams_dec->szMode==SZ_TEMPORAL_COMPRESSION)
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 			
@@ -50,7 +53,7 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 		}
 		else
 		{
-			printf("Wrong value of conf_params->szMode in the double compressed bytes.\n");
+			printf("Wrong value of confparams_dec->szMode in the double compressed bytes.\n");
 			status = SZ_MERR;
 			return status;
 		}	
@@ -66,7 +69,7 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 	if(tdps->isLossless)
 	{
 		*newData = (double*)malloc(doubleSize*dataLength);
-		if(exe_params->sysEndianType==BIG_ENDIAN_SYSTEM)
+		if(sysEndianType==BIG_ENDIAN_SYSTEM)
 		{
 			memcpy(*newData, szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE, dataLength*doubleSize);
 		}
@@ -94,7 +97,7 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 		status = SZ_DERR;
 	}
 	free_TightDataPointStorageD2(tdps);
-	if(conf_params->szMode!=SZ_BEST_SPEED && cmpSize!=12+MetaDataByteLength+exe_params->SZ_SIZE_TYPE)
+	if(confparams_dec->szMode!=SZ_BEST_SPEED && cmpSize!=12+MetaDataByteLength+exe_params->SZ_SIZE_TYPE)
 		free(szTmpBytes);	
 	return status;
 }
@@ -186,6 +189,12 @@ void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, Tigh
 		}
 		//printf("%.30G\n",(*data)[i]);
 	}
+	
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+#endif	
+	
 	free(leadNum);
 	free(type);
 	return;
@@ -495,6 +504,11 @@ void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDa
 			}
 		}
 	}
+
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+#endif	
 
 	free(leadNum);
 	free(type);
@@ -1034,6 +1048,11 @@ void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t 
 			}
 		}
 	}
+
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+#endif	
 
 	free(leadNum);
 	free(type);
@@ -1591,6 +1610,12 @@ void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t 
 		}
 	}
 
+//I didn't implement time-based compression for 4D actually. 
+//#ifdef HAVE_TIMECMPR	
+//	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+//		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+//#endif	
+
 	free(leadNum);
 	free(type);
 	return;
@@ -1609,7 +1634,7 @@ void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightData
 			if(errBoundMode < PW_REL)
 			{
 #ifdef HAVE_TIMECMPR				
-				if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(multisteps->compressionType == 0) //snapshot
 						decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
@@ -1674,7 +1699,7 @@ void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPoi
 			if(errBoundMode < PW_REL)
 			{
 #ifdef HAVE_TIMECMPR				
-				if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(multisteps->compressionType == 0) //snapshot
 						decompressDataSeries_double_2D(data, r1, r2, tdps);
@@ -1736,7 +1761,7 @@ void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, T
 			if(errBoundMode < PW_REL)
 			{
 #ifdef HAVE_TIMECMPR				
-				if(conf_params->szMode == SZ_TEMPORAL_COMPRESSION)
+				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(multisteps->compressionType == 0) //snapshot
 						decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
@@ -1796,11 +1821,25 @@ void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, s
 	} else {
 		if (tdps->rtypeArray == NULL) {
 			if(errBoundMode < PW_REL)
-				decompressDataSeries_double_4D(data, r1, r2, r3, r4, tdps);
-			else
+			{
+#ifdef HAVE_TIMECMPR					
+				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+				{
+					if(multisteps->compressionType == 0)
+						decompressDataSeries_double_4D(data, r1, r2, r3, r4, tdps);
+					else
+						decompressDataSeries_double_1D_ts(data, r1*r2*r3*r4, multisteps, tdps);					
+				}
+				else
+#endif				
+					decompressDataSeries_double_4D(data, r1, r2, r3, r4, tdps);
+			}
+			else 
+			{
 				decompressDataSeries_double_3D_pwr(data, r1*r2, r3, r4, tdps);
-				//ToDo
+				//ToDO
 				//decompressDataSeries_double_4D_pwr(data, r1, r2, r3, r4, tdps);
+			}					
 			return;
 		} else {
 			*data = (double*)malloc(sizeof(double)*dataSeriesLength);

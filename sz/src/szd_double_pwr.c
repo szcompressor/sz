@@ -1203,10 +1203,10 @@ void decompressDataSeries_double_1D_pwrgroup(double** data, size_t dataSeriesLen
 	
 	//note that the groupID values here are [1,2,3,....,18] or [-1,-2,...,-18]
 	
-	double* groupErrorBounds = generateGroupErrBounds(conf_params->errorBoundMode, realPrecision, conf_params->pw_relBoundRatio);
+	double* groupErrorBounds = generateGroupErrBounds(confparams_dec->errorBoundMode, realPrecision, confparams_dec->pw_relBoundRatio);
 	exe_params->intvRadius = generateGroupMaxIntervalCount(groupErrorBounds);
 		
-	size_t nbBins = (size_t)(1/conf_params->pw_relBoundRatio + 0.5);
+	size_t nbBins = (size_t)(1/confparams_dec->pw_relBoundRatio + 0.5);
 	if(nbBins%2==1)
 		nbBins++;
 	exe_params->intvRadius = nbBins;

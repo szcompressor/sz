@@ -292,9 +292,9 @@ void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, un
 
 void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data){
 	
-	if(conf_params==NULL)
-		conf_params = (sz_params*)malloc(sizeof(sz_params));
-	memset(conf_params, 0, sizeof(sz_params));
+	if(confparams_dec==NULL)
+		confparams_dec = (sz_params*)malloc(sizeof(sz_params));
+	memset(confparams_dec, 0, sizeof(sz_params));
 	if(exe_params==NULL)
 		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
 	memset(exe_params, 0, sizeof(sz_exedata));	

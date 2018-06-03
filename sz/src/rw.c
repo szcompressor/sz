@@ -158,7 +158,7 @@ unsigned char *readByteData(char *srcFilePath, size_t *byteLength, int *status)
 double *readDoubleData(char *srcFilePath, size_t *nbEle, int *status)
 {
 	int state = SZ_SCES;
-	if(conf_params->dataEndianType==exe_params->sysEndianType)
+	if(dataEndianType==sysEndianType)
 	{
 		double *daBuf = readDoubleData_systemEndian(srcFilePath, nbEle,&state);
 		*status = state;
@@ -203,7 +203,7 @@ int8_t *readInt8Data(char *srcFilePath, size_t *nbEle, int *status)
 int16_t *readInt16Data(char *srcFilePath, size_t *nbEle, int *status)
 {
 	int state = SZ_SCES;
-	if(conf_params->dataEndianType==exe_params->sysEndianType)
+	if(dataEndianType==sysEndianType)
 	{
 		int16_t *daBuf = readInt16Data_systemEndian(srcFilePath, nbEle, &state);
 		*status = state;
@@ -239,7 +239,7 @@ int16_t *readInt16Data(char *srcFilePath, size_t *nbEle, int *status)
 uint16_t *readUInt16Data(char *srcFilePath, size_t *nbEle, int *status)
 {
 	int state = SZ_SCES;
-	if(conf_params->dataEndianType==exe_params->sysEndianType)
+	if(dataEndianType==sysEndianType)
 	{
 		uint16_t *daBuf = readUInt16Data_systemEndian(srcFilePath, nbEle, &state);
 		*status = state;
@@ -275,7 +275,7 @@ uint16_t *readUInt16Data(char *srcFilePath, size_t *nbEle, int *status)
 int32_t *readInt32Data(char *srcFilePath, size_t *nbEle, int *status)
 {
 	int state = SZ_SCES;
-	if(conf_params->dataEndianType==exe_params->sysEndianType)
+	if(dataEndianType==sysEndianType)
 	{
 		int32_t *daBuf = readInt32Data_systemEndian(srcFilePath, nbEle, &state);
 		*status = state;
@@ -311,7 +311,7 @@ int32_t *readInt32Data(char *srcFilePath, size_t *nbEle, int *status)
 uint32_t *readUInt32Data(char *srcFilePath, size_t *nbEle, int *status)
 {
 	int state = SZ_SCES;
-	if(conf_params->dataEndianType==exe_params->sysEndianType)
+	if(dataEndianType==sysEndianType)
 	{
 		uint32_t *daBuf = readUInt32Data_systemEndian(srcFilePath, nbEle, &state);
 		*status = state;
@@ -347,7 +347,7 @@ uint32_t *readUInt32Data(char *srcFilePath, size_t *nbEle, int *status)
 int64_t *readInt64Data(char *srcFilePath, size_t *nbEle, int *status)
 {
 	int state = SZ_SCES;
-	if(conf_params->dataEndianType==exe_params->sysEndianType)
+	if(dataEndianType==sysEndianType)
 	{
 		int64_t *daBuf = readInt64Data_systemEndian(srcFilePath, nbEle, &state);
 		*status = state;
@@ -383,7 +383,7 @@ int64_t *readInt64Data(char *srcFilePath, size_t *nbEle, int *status)
 uint64_t *readUInt64Data(char *srcFilePath, size_t *nbEle, int *status)
 {
 	int state = SZ_SCES;
-	if(conf_params->dataEndianType==exe_params->sysEndianType)
+	if(dataEndianType==sysEndianType)
 	{
 		uint64_t *daBuf = readUInt64Data_systemEndian(srcFilePath, nbEle, &state);
 		*status = state;
@@ -420,7 +420,7 @@ uint64_t *readUInt64Data(char *srcFilePath, size_t *nbEle, int *status)
 float *readFloatData(char *srcFilePath, size_t *nbEle, int *status)
 {
 	int state = SZ_SCES;
-	if(conf_params->dataEndianType==exe_params->sysEndianType)
+	if(dataEndianType==sysEndianType)
 	{
 		float *daBuf = readFloatData_systemEndian(srcFilePath, nbEle, &state);
 		*status = state;

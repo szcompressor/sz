@@ -130,9 +130,9 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 	int errorBoundMode = ABS;
 	
 	sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
-	if(conf_params!=NULL)
-		free(conf_params);
-	conf_params = params;
+	if(confparams_dec!=NULL)
+		free(confparams_dec);
+	confparams_dec = params;
 	index += MetaDataByteLength; //20	
 	
 	if(same==0)
@@ -169,7 +169,7 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 		byteBuf[i] = flatBytes[index++];
 	int max_quant_intervals = bytesToInt_bigEndian(byteBuf);// 4	
 
-	conf_params->maxRangeRadius = max_quant_intervals/2;
+	confparams_dec->maxRangeRadius = max_quant_intervals/2;
 
 	if(errorBoundMode>=PW_REL)
 	{
@@ -282,7 +282,7 @@ void convertTDPStoBytes_int(TightDataPointStorageI* tdps, unsigned char* bytes, 
 		bytes[k++] = versionNumber[i];
 	bytes[k++] = sameByte;	//1	byte
 	
-	convertSZParamsToBytes(conf_params, &(bytes[k]));
+	convertSZParamsToBytes(confparams_cpr, &(bytes[k]));
 	k = k + MetaDataByteLength;	
 		
 	bytes[k++] = tdps->exactByteSize; //1 byte
@@ -291,7 +291,7 @@ void convertTDPStoBytes_int(TightDataPointStorageI* tdps, unsigned char* bytes, 
 	for(i = 0;i<exe_params->SZ_SIZE_TYPE;i++)//ST: 4 or 8 bytes
 		bytes[k++] = byteBuffer[i];	
 	
-	intToBytes_bigEndian(byteBuffer, conf_params->max_quant_intervals);
+	intToBytes_bigEndian(byteBuffer, confparams_cpr->max_quant_intervals);
 	for(i = 0;i<4;i++)//4
 		bytes[k++] = byteBuffer[i];
 	
@@ -338,7 +338,7 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 		longToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//8
 
 	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
-	sameByte = sameByte | (conf_params->szMode << 1);
+	sameByte = sameByte | (confparams_cpr->szMode << 1);
 	if(tdps->isLossless)
 		sameByte = (unsigned char) (sameByte | 0x10);
 	
@@ -357,7 +357,7 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 			(*bytes)[k++] = versionNumber[i];
 		(*bytes)[k++] = sameByte;//1
 		
-		convertSZParamsToBytes(conf_params, &((*bytes)[k]));
+		convertSZParamsToBytes(confparams_cpr, &((*bytes)[k]));
 		k = k + MetaDataByteLength;			
 		
 		for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)
@@ -370,7 +370,7 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 	}
 	else 
 	{
-		if(conf_params->errorBoundMode>=PW_REL)
+		if(confparams_cpr->errorBoundMode>=PW_REL)
 		{			
 			printf("Error: errorBoundMode >= PW_REL!! can't be...\n");
 			exit(0);
@@ -399,7 +399,7 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 		longToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//8
 		
 	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
-	sameByte = sameByte | (conf_params->szMode << 1);
+	sameByte = sameByte | (confparams_cpr->szMode << 1);
 	if(tdps->isLossless)
 		sameByte = (unsigned char) (sameByte | 0x10);
 	if(exe_params->SZ_SIZE_TYPE==8)
@@ -414,7 +414,7 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 			bytes[k++] = versionNumber[i];
 		bytes[k++] = sameByte;//1
 		
-		convertSZParamsToBytes(conf_params, &(bytes[k]));
+		convertSZParamsToBytes(confparams_cpr, &(bytes[k]));
 		k = k + MetaDataByteLength;	
 				
 		for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)//ST
@@ -426,7 +426,7 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 	}
 	else
 	{
-		if(conf_params->errorBoundMode>=PW_REL)
+		if(confparams_cpr->errorBoundMode>=PW_REL)
 		{			
 			printf("Error: errorBoundMode>=PW_REL!! can't be....\n");
 			exit(0);

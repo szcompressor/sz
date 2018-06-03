@@ -288,7 +288,7 @@ int main(int argc, char* argv[])
 			usage();
 			exit(0);
 		}
-		conf_params->errorBoundMode = errorBoundMode;
+		confparams_cpr->errorBoundMode = errorBoundMode;
 	}
 	
 	char outputFilePath[256];	
@@ -296,16 +296,16 @@ int main(int argc, char* argv[])
 	if(isCompression == 1)
 	{
 		if(absErrorBound != NULL)
-			conf_params->absErrBound = atof(absErrorBound);
+			confparams_cpr->absErrBound = atof(absErrorBound);
 		
 		if(relErrorBound != NULL)
-			conf_params->relBoundRatio = atof(relErrorBound);
+			confparams_cpr->relBoundRatio = atof(relErrorBound);
 	
 		if(pwrErrorBound != NULL)
-			conf_params->pw_relBoundRatio = atof(pwrErrorBound);
+			confparams_cpr->pw_relBoundRatio = atof(pwrErrorBound);
 	
 		if(psnr_ != NULL)
-			conf_params->psnr = atof(psnr_);
+			confparams_cpr->psnr = atof(psnr_);
 
 		size_t outSize;	
 		if(dataType == 0) //single precision
@@ -378,7 +378,7 @@ int main(int argc, char* argv[])
 				str[4] = dimStr;
 				
 				char thrStr[100]; 
-				sprintf(thrStr, "SV Threshold = %f", conf_params->absErrBound);
+				sprintf(thrStr, "SV Threshold = %f", confparams_cpr->absErrBound);
 				str[7] = thrStr;
 
 				writeStrings(8, str, "parameter-raw.txt", &status);	
@@ -752,22 +752,23 @@ int main(int argc, char* argv[])
 		if(bytes==NULL)
 			bytes = readByteData(cmpPath, &byteLength, &status);
 			
+		int szMode = 0;
 		unsigned char* bytes2 = NULL;
 		int isZlib = isZlibFormat(bytes[0], bytes[1]);
 		if(isZlib)
 		{
-			conf_params->szMode = SZ_BEST_COMPRESSION;
+			szMode = SZ_BEST_COMPRESSION;
 			//size_t targetUncompressSize = 65536;
 			zlib_uncompress65536bytes(bytes, (unsigned long)byteLength, &bytes2);	
 		}
 		else
 		{
-			conf_params->szMode = SZ_BEST_SPEED;	
+			szMode = SZ_BEST_SPEED;	
 			bytes2 = bytes;
 		}				
 			
 		sz_metadata* metadata = SZ_getMetadata(bytes2);
-		metadata->conf_params->szMode = conf_params->szMode;
+		metadata->conf_params->szMode = szMode;
 
 		if(metadata->versionNumber[0]==0)
 		{
@@ -795,4 +796,6 @@ int main(int argc, char* argv[])
 	}
 	
 	free(bytes);
+	
+	SZ_Finalize();
 }

@@ -203,7 +203,7 @@ inline void intToBytes_bigEndian(unsigned char *b, unsigned int num)
 	b[3] = (unsigned char)(num);	
 	
 	//note: num >> xxx already considered endian_type...
-//if(conf_params->dataEndianType==LITTLE_ENDIAN_DATA)
+//if(dataEndianType==LITTLE_ENDIAN_DATA)
 //		symTransform_4bytes(*b); //change to BIG_ENDIAN_DATA
 }
 
@@ -285,7 +285,7 @@ inline void longToBytes_bigEndian(unsigned char *b, unsigned long num)
 	b[5] = (unsigned char)(num>>16);
 	b[6] = (unsigned char)(num>>8);
 	b[7] = (unsigned char)(num);
-//	if(conf_params->dataEndianType==LITTLE_ENDIAN_DATA)
+//	if(dataEndianType==LITTLE_ENDIAN_DATA)
 //		symTransform_8bytes(*b);
 }
 
@@ -434,7 +434,7 @@ float bytesToFloat(unsigned char* bytes)
 {
 	lfloat buf;
 	memcpy(buf.byte, bytes, 4);
-	if(exe_params->sysEndianType==LITTLE_ENDIAN_SYSTEM)
+	if(sysEndianType==LITTLE_ENDIAN_SYSTEM)
 		symTransform_4bytes(buf.byte);	
 	return buf.value;
 }
@@ -444,7 +444,7 @@ void floatToBytes(unsigned char *b, float num)
 	lfloat buf;
 	buf.value = num;
 	memcpy(b, buf.byte, 4);
-	if(exe_params->sysEndianType==LITTLE_ENDIAN_SYSTEM)
+	if(sysEndianType==LITTLE_ENDIAN_SYSTEM)
 		symTransform_4bytes(b);		
 }
 
@@ -453,7 +453,7 @@ double bytesToDouble(unsigned char* bytes)
 {
 	ldouble buf;
 	memcpy(buf.byte, bytes, 8);
-	if(exe_params->sysEndianType==LITTLE_ENDIAN_SYSTEM)
+	if(sysEndianType==LITTLE_ENDIAN_SYSTEM)
 		symTransform_8bytes(buf.byte);
 	return buf.value;
 }
@@ -463,7 +463,7 @@ void doubleToBytes(unsigned char *b, double num)
 	ldouble buf;
 	buf.value = num;
 	memcpy(b, buf.byte, 8);
-	if(exe_params->sysEndianType==LITTLE_ENDIAN_SYSTEM)
+	if(sysEndianType==LITTLE_ENDIAN_SYSTEM)
 		symTransform_8bytes(b);
 }
 
@@ -578,7 +578,7 @@ short* convertByteDataToShortArray(unsigned char* bytes, size_t byteLength)
 	lint16 ls;
 	size_t i, stateLength = byteLength/2;
 	short* states = (short*)malloc(stateLength*sizeof(short));
-	if(exe_params->sysEndianType==conf_params->dataEndianType)
+	if(sysEndianType==dataEndianType)
 	{	
 		for(i=0;i<stateLength;i++)
 		{
@@ -604,7 +604,7 @@ unsigned short* convertByteDataToUShortArray(unsigned char* bytes, size_t byteLe
 	lint16 ls;
 	size_t i, stateLength = byteLength/2;
 	unsigned short* states = (unsigned short*)malloc(stateLength*sizeof(unsigned short));
-	if(exe_params->sysEndianType==conf_params->dataEndianType)
+	if(sysEndianType==dataEndianType)
 	{	
 		for(i=0;i<stateLength;i++)
 		{
@@ -629,7 +629,7 @@ void convertShortArrayToBytes(short* states, size_t stateLength, unsigned char* 
 {
 	lint16 ls;
 	size_t i;
-	if(exe_params->sysEndianType==conf_params->dataEndianType)
+	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)
 		{
@@ -653,7 +653,7 @@ void convertUShortArrayToBytes(unsigned short* states, size_t stateLength, unsig
 {
 	lint16 ls;
 	size_t i;
-	if(exe_params->sysEndianType==conf_params->dataEndianType)
+	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)
 		{
@@ -678,7 +678,7 @@ void convertIntArrayToBytes(int* states, size_t stateLength, unsigned char* byte
 	lint32 ls;
 	size_t index = 0;
 	size_t i;
-	if(exe_params->sysEndianType==conf_params->dataEndianType)
+	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)
 		{
@@ -709,7 +709,7 @@ void convertUIntArrayToBytes(unsigned int* states, size_t stateLength, unsigned 
 	lint32 ls;
 	size_t index = 0;
 	size_t i;
-	if(exe_params->sysEndianType==conf_params->dataEndianType)
+	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)
 		{
@@ -740,7 +740,7 @@ void convertLongArrayToBytes(int64_t* states, size_t stateLength, unsigned char*
 	lint64 ls;
 	size_t index = 0;
 	size_t i;
-	if(exe_params->sysEndianType==conf_params->dataEndianType)
+	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)
 		{
@@ -779,7 +779,7 @@ void convertULongArrayToBytes(uint64_t* states, size_t stateLength, unsigned cha
 	lint64 ls;
 	size_t index = 0;
 	size_t i;
-	if(exe_params->sysEndianType==conf_params->dataEndianType)
+	if(sysEndianType==dataEndianType)
 	{
 		for(i=0;i<stateLength;i++)
 		{
@@ -836,10 +836,10 @@ void convertSZParamsToBytes(sz_params* params, unsigned char* result)
 {
 	//unsigned char* result = (unsigned char*)malloc(16);
 	unsigned char buf;
-	//flag1: exe_params->optQuantMode(1bit), conf_params->dataEndianType(1bit), exe_params->sysEndianType(1bit), conf_params->szMode (1bit), conf_params->gzipMode (2bits), pwrType (2bits)
+	//flag1: exe_params->optQuantMode(1bit), dataEndianType(1bit), sysEndianType(1bit), conf_params->szMode (1bit), conf_params->gzipMode (2bits), pwrType (2bits)
 	buf = exe_params->optQuantMode;
-	buf = (buf << 1) | params->dataEndianType;
-	buf = (buf << 1) | exe_params->sysEndianType;
+	buf = (buf << 1) | dataEndianType;
+	buf = (buf << 1) | sysEndianType;
 	buf = (buf << 1) | params->szMode;
 	
 	int tmp = 0;
@@ -923,8 +923,8 @@ sz_params* convertBytesToSZParams(unsigned char* bytes)
 	sz_params* params = (sz_params*)malloc(sizeof(struct sz_params));
 	unsigned char flag1 = bytes[0];
 	exe_params->optQuantMode = flag1 >> 7;
-	params->dataEndianType = (flag1 & 0x7f) >> 7;
-	exe_params->sysEndianType = (flag1 & 0x3f) >> 7;
+	dataEndianType = (flag1 & 0x7f) >> 7;
+	sysEndianType = (flag1 & 0x3f) >> 7;
 	
 	params->szMode = (flag1 & 0x1f) >> 7;
 	

@@ -81,7 +81,7 @@ unsigned long zlib_compress2(unsigned char* data, unsigned long dataLength, unsi
 
     //err = deflateInit(&stream, level); //default  windowBits == 15.
     int windowBits = 14; //8-15
-    if(conf_params->szMode==SZ_BEST_COMPRESSION)
+    if(confparams_cpr->szMode==SZ_BEST_COMPRESSION)
 		windowBits = 15;
 	
     err = deflateInit2(&stream, level, Z_DEFLATED, windowBits, DEF_MEM_LEVEL,
@@ -122,7 +122,7 @@ unsigned long zlib_compress3(unsigned char* data, unsigned long dataLength, unsi
 
     //err = deflateInit(&stream, level); //default  windowBits == 15.
     int windowBits = 14; //8-15
-    if(conf_params->szMode==SZ_BEST_COMPRESSION)
+    if(confparams_cpr->szMode==SZ_BEST_COMPRESSION)
 		windowBits = 15;
 
     err = deflateInit2(&stream, level, Z_DEFLATED, windowBits, DEF_MEM_LEVEL,
@@ -151,7 +151,7 @@ unsigned long zlib_compress4(unsigned char* data, unsigned long dataLength, unsi
     c_stream.opaque = (voidpf)0;
 
     int windowBits = 14; //8-15
-    if(conf_params->szMode==SZ_BEST_COMPRESSION)
+    if(confparams_cpr->szMode==SZ_BEST_COMPRESSION)
 		windowBits = 15;
     
     err = deflateInit2(&c_stream, level, Z_DEFLATED, windowBits, DEF_MEM_LEVEL,

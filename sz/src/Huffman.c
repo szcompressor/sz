@@ -390,7 +390,7 @@ unsigned int convert_HuffTree_to_bytes_anyStates(HuffmanTree* huffmanTree, int n
 
 		unsigned int totalSize = 1+3*nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned int);	
 		*out = (unsigned char*)malloc(totalSize*sizeof(unsigned char));
-		(*out)[0] = (unsigned char)exe_params->sysEndianType;
+		(*out)[0] = (unsigned char)sysEndianType;
 		memcpy(*out+1, L, nodeCount*sizeof(unsigned char));
 		memcpy((*out)+1+nodeCount*sizeof(unsigned char),R,nodeCount*sizeof(unsigned char));
 		memcpy((*out)+1+2*nodeCount*sizeof(unsigned char),C,nodeCount*sizeof(unsigned int));
@@ -415,7 +415,7 @@ unsigned int convert_HuffTree_to_bytes_anyStates(HuffmanTree* huffmanTree, int n
 		pad_tree_ushort(huffmanTree,L,R,C,t,0,huffmanTree->qq[1]);
 		unsigned int totalSize = 1+2*nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned char) + nodeCount*sizeof(unsigned int);
 		*out = (unsigned char*)malloc(totalSize);
-		(*out)[0] = (unsigned char)exe_params->sysEndianType;		
+		(*out)[0] = (unsigned char)sysEndianType;		
 		memcpy(*out+1, L, nodeCount*sizeof(unsigned short));
 		memcpy((*out)+1+nodeCount*sizeof(unsigned short),R,nodeCount*sizeof(unsigned short));
 		memcpy((*out)+1+2*nodeCount*sizeof(unsigned short),C,nodeCount*sizeof(unsigned int));
@@ -444,7 +444,7 @@ unsigned int convert_HuffTree_to_bytes_anyStates(HuffmanTree* huffmanTree, int n
 		
 		unsigned int totalSize = 1+3*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned char);
 		*out = (unsigned char*)malloc(totalSize);
-		(*out)[0] = (unsigned char)exe_params->sysEndianType;
+		(*out)[0] = (unsigned char)sysEndianType;
 		memcpy(*out+1, L, nodeCount*sizeof(unsigned int));
 		memcpy((*out)+1+nodeCount*sizeof(unsigned int),R,nodeCount*sizeof(unsigned int));
 		memcpy((*out)+1+2*nodeCount*sizeof(unsigned int),C,nodeCount*sizeof(unsigned int));
@@ -540,7 +540,7 @@ node reconstruct_HuffTree_from_bytes_anyStates(HuffmanTree *huffmanTree, unsigne
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
 		memset(t, 0, nodeCount*sizeof(unsigned char));
 		unsigned char cmpSysEndianType = bytes[0];
-		if(cmpSysEndianType!=(unsigned char)exe_params->sysEndianType)
+		if(cmpSysEndianType!=(unsigned char)sysEndianType)
 		{
 			unsigned char* p = (unsigned char*)(bytes+1+2*nodeCount*sizeof(unsigned char));
 			size_t i = 0, size = nodeCount*sizeof(unsigned int);
@@ -578,7 +578,7 @@ node reconstruct_HuffTree_from_bytes_anyStates(HuffmanTree *huffmanTree, unsigne
 		memset(t, 0, nodeCount*sizeof(unsigned char));	
 				
 		unsigned char cmpSysEndianType = bytes[0];	
-		if(cmpSysEndianType!=(unsigned char)exe_params->sysEndianType)
+		if(cmpSysEndianType!=(unsigned char)sysEndianType)
 		{
 			unsigned char* p = (unsigned char*)(bytes+1);
 			size_t i = 0, size = 3*nodeCount*sizeof(unsigned int);
@@ -618,7 +618,7 @@ node reconstruct_HuffTree_from_bytes_anyStates(HuffmanTree *huffmanTree, unsigne
 		unsigned char* t = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
 		memset(t, 0, nodeCount*sizeof(unsigned char));
 		unsigned char cmpSysEndianType = bytes[0];
-		if(cmpSysEndianType!=(unsigned char)exe_params->sysEndianType)
+		if(cmpSysEndianType!=(unsigned char)sysEndianType)
 		{
 			unsigned char* p = (unsigned char*)(bytes+1);
 			size_t i = 0, size = 3*nodeCount*sizeof(unsigned int);

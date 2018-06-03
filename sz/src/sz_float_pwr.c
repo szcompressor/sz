@@ -27,7 +27,7 @@
 void compute_segment_precisions_float_1D(float *oriData, size_t dataLength, float* pwrErrBound, unsigned char* pwrErrBoundBytes, double globalPrecision)
 {
 	size_t i = 0, j = 0, k = 0;
-	float realPrecision = oriData[0]!=0?fabs(conf_params->pw_relBoundRatio*oriData[0]):conf_params->pw_relBoundRatio; 
+	float realPrecision = oriData[0]!=0?fabs(confparams_cpr->pw_relBoundRatio*oriData[0]):confparams_cpr->pw_relBoundRatio; 
 	float approxPrecision;
 	unsigned char realPrecBytes[4];
 	float curPrecision;
@@ -36,19 +36,19 @@ void compute_segment_precisions_float_1D(float *oriData, size_t dataLength, floa
 	for(i=0;i<dataLength;i++)
 	{
 		curValue = oriData[i];
-		if(i%conf_params->segment_size==0&&i>0)
+		if(i%confparams_cpr->segment_size==0&&i>0)
 		{
 			//get two first bytes of the realPrecision
-			if(conf_params->pwr_type==SZ_PWR_AVG_TYPE)
+			if(confparams_cpr->pwr_type==SZ_PWR_AVG_TYPE)
 			{
-				realPrecision = sum/conf_params->segment_size;
+				realPrecision = sum/confparams_cpr->segment_size;
 				sum = 0;			
 			}
-			realPrecision *= conf_params->pw_relBoundRatio;
+			realPrecision *= confparams_cpr->pw_relBoundRatio;
 			
-			if(conf_params->errorBoundMode==ABS_AND_PW_REL||conf_params->errorBoundMode==REL_AND_PW_REL)
+			if(confparams_cpr->errorBoundMode==ABS_AND_PW_REL||confparams_cpr->errorBoundMode==REL_AND_PW_REL)
 				realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
-			else if(conf_params->errorBoundMode==ABS_OR_PW_REL||conf_params->errorBoundMode==REL_OR_PW_REL)
+			else if(confparams_cpr->errorBoundMode==ABS_OR_PW_REL||confparams_cpr->errorBoundMode==REL_OR_PW_REL)
 				realPrecision = realPrecision<globalPrecision?globalPrecision:realPrecision;
 				
 			floatToBytes(realPrecBytes, realPrecision);
@@ -67,7 +67,7 @@ void compute_segment_precisions_float_1D(float *oriData, size_t dataLength, floa
 		{
 			curPrecision = fabs(curValue);
 			
-			switch(conf_params->pwr_type)
+			switch(confparams_cpr->pwr_type)
 			{
 			case SZ_PWR_MIN_TYPE: 
 				if(realPrecision>curPrecision)
@@ -83,14 +83,14 @@ void compute_segment_precisions_float_1D(float *oriData, size_t dataLength, floa
 			}
 		}
 	}
-	if(conf_params->pwr_type==SZ_PWR_AVG_TYPE)
+	if(confparams_cpr->pwr_type==SZ_PWR_AVG_TYPE)
 	{
-		int size = dataLength%conf_params->segment_size==0?conf_params->segment_size:dataLength%conf_params->segment_size;
+		int size = dataLength%confparams_cpr->segment_size==0?confparams_cpr->segment_size:dataLength%confparams_cpr->segment_size;
 		realPrecision = sum/size;		
 	}	
-	if(conf_params->errorBoundMode==ABS_AND_PW_REL||conf_params->errorBoundMode==REL_AND_PW_REL)
+	if(confparams_cpr->errorBoundMode==ABS_AND_PW_REL||confparams_cpr->errorBoundMode==REL_AND_PW_REL)
 		realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
-	else if(conf_params->errorBoundMode==ABS_OR_PW_REL||conf_params->errorBoundMode==REL_OR_PW_REL)
+	else if(confparams_cpr->errorBoundMode==ABS_OR_PW_REL||confparams_cpr->errorBoundMode==REL_OR_PW_REL)
 		realPrecision = realPrecision<globalPrecision?globalPrecision:realPrecision;	
 	floatToBytes(realPrecBytes, realPrecision);
 	realPrecBytes[2] = realPrecBytes[3] = 0;
@@ -108,35 +108,35 @@ unsigned int optimize_intervals_float_1D_pwr(float *oriData, size_t dataLength, 
 	float realPrecision = pwrErrBound[j++];	
 	unsigned long radiusIndex;
 	float pred_value = 0, pred_err;
-	int *intervals = (int*)malloc(conf_params->maxRangeRadius*sizeof(int));
-	memset(intervals, 0, conf_params->maxRangeRadius*sizeof(int));
-	int totalSampleSize = dataLength/conf_params->sampleDistance;
+	int *intervals = (int*)malloc(confparams_cpr->maxRangeRadius*sizeof(int));
+	memset(intervals, 0, confparams_cpr->maxRangeRadius*sizeof(int));
+	int totalSampleSize = dataLength/confparams_cpr->sampleDistance;
 	for(i=2;i<dataLength;i++)
 	{
-		if(i%conf_params->segment_size==0)
+		if(i%confparams_cpr->segment_size==0)
 			realPrecision = pwrErrBound[j++];
-		if(i%conf_params->sampleDistance==0)
+		if(i%confparams_cpr->sampleDistance==0)
 		{
 			//pred_value = 2*oriData[i-1] - oriData[i-2];
 			pred_value = oriData[i-1];
 			pred_err = fabs(pred_value - oriData[i]);
 			radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
-			if(radiusIndex>=conf_params->maxRangeRadius)
-				radiusIndex = conf_params->maxRangeRadius - 1;			
+			if(radiusIndex>=confparams_cpr->maxRangeRadius)
+				radiusIndex = confparams_cpr->maxRangeRadius - 1;			
 			intervals[radiusIndex]++;
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*conf_params->predThreshold;
+	size_t targetCount = totalSampleSize*confparams_cpr->predThreshold;
 	size_t sum = 0;
-	for(i=0;i<conf_params->maxRangeRadius;i++)
+	for(i=0;i<confparams_cpr->maxRangeRadius;i++)
 	{
 		sum += intervals[i];
 		if(sum>targetCount)
 			break;
 	}
-	if(i>=conf_params->maxRangeRadius)
-		i = conf_params->maxRangeRadius-1;
+	if(i>=confparams_cpr->maxRangeRadius)
+		i = confparams_cpr->maxRangeRadius-1;
 
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
@@ -163,9 +163,9 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 	float min = fabs(Min)<fabs(Max)?fabs(Min):fabs(Max);
 	for(i=0;i<R2;i++)
 	{
-		if(conf_params->pwr_type == SZ_PWR_MIN_TYPE)
+		if(confparams_cpr->pwr_type == SZ_PWR_MIN_TYPE)
 			statAbsValues[i] = max;
-		else if(conf_params->pwr_type == SZ_PWR_MAX_TYPE)
+		else if(confparams_cpr->pwr_type == SZ_PWR_MAX_TYPE)
 			statAbsValues[i] = min;
 		else
 			statAbsValues[i] = 0; //for SZ_PWR_AVG_TYPE
@@ -178,7 +178,7 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 			curValue = oriData[index];				
 			if(((i%edgeSize==edgeSize-1 || i==r1-1) &&j%edgeSize==0&&j>0) || (i%edgeSize==0&&j==0&&i>0))
 			{
-				if(conf_params->pwr_type==SZ_PWR_AVG_TYPE)
+				if(confparams_cpr->pwr_type==SZ_PWR_AVG_TYPE)
 				{
 					int a = edgeSize, b = edgeSize;
 					if(j==0)
@@ -195,14 +195,14 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 						else
 							a = r1%edgeSize;
 					}
-					realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J]/(a*b);
+					realPrecision = confparams_cpr->pw_relBoundRatio*statAbsValues[J]/(a*b);
 				}
 				else
-					realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J];
+					realPrecision = confparams_cpr->pw_relBoundRatio*statAbsValues[J];
 
-				if(conf_params->errorBoundMode==ABS_AND_PW_REL||conf_params->errorBoundMode==REL_AND_PW_REL)
+				if(confparams_cpr->errorBoundMode==ABS_AND_PW_REL||confparams_cpr->errorBoundMode==REL_AND_PW_REL)
 					realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
-				else if(conf_params->errorBoundMode==ABS_OR_PW_REL||conf_params->errorBoundMode==REL_OR_PW_REL)
+				else if(confparams_cpr->errorBoundMode==ABS_OR_PW_REL||confparams_cpr->errorBoundMode==REL_OR_PW_REL)
 					realPrecision = realPrecision<globalPrecision?globalPrecision:realPrecision;
 					
 				floatToBytes(realPrecBytes, realPrecision);
@@ -214,9 +214,9 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 				pwrErrBoundBytes[k++] = realPrecBytes[0];
 				pwrErrBoundBytes[k++] = realPrecBytes[1];	
 				
-				if(conf_params->pwr_type == SZ_PWR_MIN_TYPE)
+				if(confparams_cpr->pwr_type == SZ_PWR_MIN_TYPE)
 					statAbsValues[J] = max;
-				else if(conf_params->pwr_type == SZ_PWR_MAX_TYPE)
+				else if(confparams_cpr->pwr_type == SZ_PWR_MAX_TYPE)
 					statAbsValues[J] = min;
 				else
 					statAbsValues[J] = 0; //for SZ_PWR_AVG_TYPE	
@@ -229,7 +229,7 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 			{
 				curAbsValue = fabs(curValue);
 				
-				switch(conf_params->pwr_type)
+				switch(confparams_cpr->pwr_type)
 				{
 				case SZ_PWR_MIN_TYPE: 
 					if(statAbsValues[J]>curAbsValue)
@@ -247,7 +247,7 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 		}
 	}
 		
-	if(conf_params->pwr_type==SZ_PWR_AVG_TYPE)
+	if(confparams_cpr->pwr_type==SZ_PWR_AVG_TYPE)
 	{
 		int a = edgeSize, b = edgeSize;
 		if(r2%edgeSize==0) 
@@ -258,14 +258,14 @@ size_t r1, size_t r2, size_t R2, size_t edgeSize, unsigned char* pwrErrBoundByte
 			a = edgeSize;
 		else
 			a = r1%edgeSize;
-		realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J]/(a*b);
+		realPrecision = confparams_cpr->pw_relBoundRatio*statAbsValues[J]/(a*b);
 	}
 	else
-		realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J];		
+		realPrecision = confparams_cpr->pw_relBoundRatio*statAbsValues[J];		
 
-	if(conf_params->errorBoundMode==ABS_AND_PW_REL||conf_params->errorBoundMode==REL_AND_PW_REL)
+	if(confparams_cpr->errorBoundMode==ABS_AND_PW_REL||confparams_cpr->errorBoundMode==REL_AND_PW_REL)
 		realPrecision = realPrecision<globalPrecision?realPrecision:globalPrecision; 
-	else if(conf_params->errorBoundMode==ABS_OR_PW_REL||conf_params->errorBoundMode==REL_OR_PW_REL)
+	else if(confparams_cpr->errorBoundMode==ABS_OR_PW_REL||confparams_cpr->errorBoundMode==REL_OR_PW_REL)
 		realPrecision = realPrecision<globalPrecision?globalPrecision:realPrecision;
 		
 	floatToBytes(realPrecBytes, realPrecision);
@@ -286,9 +286,9 @@ unsigned int optimize_intervals_float_2D_pwr(float *oriData, size_t r1, size_t r
 	float realPrecision = pwrErrBound[0];	
 	unsigned long radiusIndex;
 	float pred_value = 0, pred_err;
-	int *intervals = (int*)malloc(conf_params->maxRangeRadius*sizeof(int));
-	memset(intervals, 0, conf_params->maxRangeRadius*sizeof(int));
-	size_t totalSampleSize = (r1-1)*(r2-1)/conf_params->sampleDistance;
+	int *intervals = (int*)malloc(confparams_cpr->maxRangeRadius*sizeof(int));
+	memset(intervals, 0, confparams_cpr->maxRangeRadius*sizeof(int));
+	size_t totalSampleSize = (r1-1)*(r2-1)/confparams_cpr->sampleDistance;
 	size_t ir2;
 	for(i=1;i<r1;i++)
 	{
@@ -304,29 +304,29 @@ unsigned int optimize_intervals_float_2D_pwr(float *oriData, size_t r1, size_t r
 			if(j%edgeSize==0)
 				J++;
 				
-			if((i+j)%conf_params->sampleDistance==0)
+			if((i+j)%confparams_cpr->sampleDistance==0)
 			{
 				realPrecision = pwrErrBound[I*R2+J];
 				pred_value = oriData[index-1] + oriData[index-r2] - oriData[index-r2-1];
 				pred_err = fabs(pred_value - oriData[index]);
 				radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
-				if(radiusIndex>=conf_params->maxRangeRadius)
-					radiusIndex = conf_params->maxRangeRadius - 1;
+				if(radiusIndex>=confparams_cpr->maxRangeRadius)
+					radiusIndex = confparams_cpr->maxRangeRadius - 1;
 				intervals[radiusIndex]++;
 			}			
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*conf_params->predThreshold;
+	size_t targetCount = totalSampleSize*confparams_cpr->predThreshold;
 	size_t sum = 0;
-	for(i=0;i<conf_params->maxRangeRadius;i++)
+	for(i=0;i<confparams_cpr->maxRangeRadius;i++)
 	{
 		sum += intervals[i];
 		if(sum>targetCount)
 			break;
 	}
-	if(i>=conf_params->maxRangeRadius)
-		i = conf_params->maxRangeRadius-1;
+	if(i>=confparams_cpr->maxRangeRadius)
+		i = confparams_cpr->maxRangeRadius-1;
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 
@@ -334,7 +334,7 @@ unsigned int optimize_intervals_float_2D_pwr(float *oriData, size_t r1, size_t r
 		powerOf2 = 32;
 
 	free(intervals);
-	//printf("conf_params->maxRangeRadius = %d, accIntervals=%d, powerOf2=%d\n", conf_params->maxRangeRadius, accIntervals, powerOf2);
+	//printf("confparams_cpr->maxRangeRadius = %d, accIntervals=%d, powerOf2=%d\n", confparams_cpr->maxRangeRadius, accIntervals, powerOf2);
 	return powerOf2;
 }
 
@@ -355,9 +355,9 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 	for(i=0;i<R2;i++)
 		for(j=0;j<R3;j++)
 		{
-			if(conf_params->pwr_type == SZ_PWR_MIN_TYPE)
+			if(confparams_cpr->pwr_type == SZ_PWR_MIN_TYPE)
 				statAbsValues[i][j] = max;
-			else if(conf_params->pwr_type == SZ_PWR_MAX_TYPE)
+			else if(confparams_cpr->pwr_type == SZ_PWR_MAX_TYPE)
 				statAbsValues[i][j] = min;
 			else
 				statAbsValues[i][j] = 0;
@@ -367,7 +367,7 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 		ir = i*r23;		
 		if(i%edgeSize==0&&i>0)
 		{
-			realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J][K];
+			realPrecision = confparams_cpr->pw_relBoundRatio*statAbsValues[J][K];
 			floatToBytes(realPrecBytes, realPrecision);
 			memset(&realPrecBytes[2], 0, 2);
 			approxPrecision = bytesToFloat(realPrecBytes);
@@ -377,9 +377,9 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 			//printf("q=%d, i=%d, j=%d, k=%d\n",q,i,j,k);
 			pwrErrBoundBytes[q++] = realPrecBytes[0];
 			pwrErrBoundBytes[q++] = realPrecBytes[1];
-			if(conf_params->pwr_type == SZ_PWR_MIN_TYPE)
+			if(confparams_cpr->pwr_type == SZ_PWR_MIN_TYPE)
 				statAbsValues[J][K] = max;
-			else if(conf_params->pwr_type == SZ_PWR_MAX_TYPE)
+			else if(confparams_cpr->pwr_type == SZ_PWR_MAX_TYPE)
 				statAbsValues[J][K] = min;
 			
 		}		
@@ -388,7 +388,7 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 			jr = j*r3;
 			if((i%edgeSize==edgeSize-1 || i == r1-1)&&j%edgeSize==0&&j>0)
 			{
-				realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J][K];
+				realPrecision = confparams_cpr->pw_relBoundRatio*statAbsValues[J][K];
 				floatToBytes(realPrecBytes, realPrecision);
 				memset(&realPrecBytes[2], 0, 2);
 				approxPrecision = bytesToFloat(realPrecBytes);
@@ -398,9 +398,9 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 				//printf("q=%d, i=%d, j=%d, k=%d\n",q,i,j,k);
 				pwrErrBoundBytes[q++] = realPrecBytes[0];
 				pwrErrBoundBytes[q++] = realPrecBytes[1];
-				if(conf_params->pwr_type == SZ_PWR_MIN_TYPE)
+				if(confparams_cpr->pwr_type == SZ_PWR_MIN_TYPE)
 					statAbsValues[J][K] = max;
-				else if(conf_params->pwr_type == SZ_PWR_MAX_TYPE)
+				else if(confparams_cpr->pwr_type == SZ_PWR_MAX_TYPE)
 					statAbsValues[J][K] = min;			
 			}
 			
@@ -415,7 +415,7 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 				curValue = oriData[index];				
 				if((i%edgeSize==edgeSize-1 || i == r1-1)&&(j%edgeSize==edgeSize-1||j==r2-1)&&k%edgeSize==0&&k>0)
 				{
-					realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J][K];
+					realPrecision = confparams_cpr->pw_relBoundRatio*statAbsValues[J][K];
 					floatToBytes(realPrecBytes, realPrecision);
 					memset(&realPrecBytes[2], 0, 2);
 					approxPrecision = bytesToFloat(realPrecBytes);
@@ -426,9 +426,9 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 					pwrErrBoundBytes[q++] = realPrecBytes[0];
 					pwrErrBoundBytes[q++] = realPrecBytes[1];
 					
-					if(conf_params->pwr_type == SZ_PWR_MIN_TYPE)
+					if(confparams_cpr->pwr_type == SZ_PWR_MIN_TYPE)
 						statAbsValues[J][K] = max;
-					else if(conf_params->pwr_type == SZ_PWR_MAX_TYPE)
+					else if(confparams_cpr->pwr_type == SZ_PWR_MAX_TYPE)
 						statAbsValues[J][K] = min;	
 				}	
 
@@ -440,14 +440,14 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 				if(curValue!=0)
 				{
 					curAbsValue = fabs(curValue);
-					if(conf_params->pwr_type == SZ_PWR_MIN_TYPE)
+					if(confparams_cpr->pwr_type == SZ_PWR_MIN_TYPE)
 					{
 						if(statAbsValues[J][K]>curAbsValue)
 						{
 							statAbsValues[J][K] = curAbsValue;
 						}
 					}
-					else if(conf_params->pwr_type == SZ_PWR_MAX_TYPE)
+					else if(confparams_cpr->pwr_type == SZ_PWR_MAX_TYPE)
 					{
 						if(statAbsValues[J][K]<curAbsValue)
 						{
@@ -459,7 +459,7 @@ size_t r1, size_t r2, size_t r3, size_t R2, size_t R3, size_t edgeSize, unsigned
 		}
 	}	
 	
-	realPrecision = conf_params->pw_relBoundRatio*statAbsValues[J][K];
+	realPrecision = confparams_cpr->pw_relBoundRatio*statAbsValues[J][K];
 	floatToBytes(realPrecBytes, realPrecision);
 	realPrecBytes[2] = realPrecBytes[3] = 0;
 	approxPrecision = bytesToFloat(realPrecBytes);
@@ -480,9 +480,9 @@ unsigned int optimize_intervals_float_3D_pwr(float *oriData, size_t r1, size_t r
 	size_t r23=r2*r3;
 	size_t R23 = R2*R3;
 	float pred_value = 0, pred_err;
-	int *intervals = (int*)malloc(conf_params->maxRangeRadius*sizeof(int));
-	memset(intervals, 0, conf_params->maxRangeRadius*sizeof(int));
-	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)/conf_params->sampleDistance;
+	int *intervals = (int*)malloc(confparams_cpr->maxRangeRadius*sizeof(int));
+	memset(intervals, 0, confparams_cpr->maxRangeRadius*sizeof(int));
+	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)/confparams_cpr->sampleDistance;
 	for(i=1;i<r1;i++)
 	{
 		ir = i*r23;
@@ -504,31 +504,31 @@ unsigned int optimize_intervals_float_3D_pwr(float *oriData, size_t r1, size_t r
 				index = ir+jr+k;
 				if(k%edgeSize==0)
 					K++;		
-				if((i+j+k)%conf_params->sampleDistance==0)
+				if((i+j+k)%confparams_cpr->sampleDistance==0)
 				{
 					realPrecision = pwrErrBound[I*R23+J*R2+K];					
 					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23] 
 					- oriData[index-1-r23] - oriData[index-r3-1] - oriData[index-r3-r23] + oriData[index-r3-r23-1];
 					pred_err = fabs(pred_value - oriData[index]);
 					radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
-					if(radiusIndex>=conf_params->maxRangeRadius)
-						radiusIndex = conf_params->maxRangeRadius - 1;
+					if(radiusIndex>=confparams_cpr->maxRangeRadius)
+						radiusIndex = confparams_cpr->maxRangeRadius - 1;
 					intervals[radiusIndex]++;
 				}
 			}
 		}
 	}
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*conf_params->predThreshold;
+	size_t targetCount = totalSampleSize*confparams_cpr->predThreshold;
 	size_t sum = 0;
-	for(i=0;i<conf_params->maxRangeRadius;i++)
+	for(i=0;i<confparams_cpr->maxRangeRadius;i++)
 	{
 		sum += intervals[i];
 		if(sum>targetCount)
 			break;
 	}
-	if(i>=conf_params->maxRangeRadius)
-		i = conf_params->maxRangeRadius-1;
+	if(i>=confparams_cpr->maxRangeRadius)
+		i = confparams_cpr->maxRangeRadius-1;
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 
@@ -544,7 +544,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr(unsigned char** newByteData, f
 size_t dataLength, size_t *outSize, float min, float max)
 {
 	SZ_Reset();	
-	size_t pwrLength = dataLength%conf_params->segment_size==0?dataLength/conf_params->segment_size:dataLength/conf_params->segment_size+1;
+	size_t pwrLength = dataLength%confparams_cpr->segment_size==0?dataLength/confparams_cpr->segment_size:dataLength/confparams_cpr->segment_size+1;
 	float* pwrErrBound = (float*)malloc(sizeof(float)*pwrLength);
 	size_t pwrErrBoundBytes_size = sizeof(unsigned char)*pwrLength*2;
 	unsigned char* pwrErrBoundBytes = (unsigned char*)malloc(pwrErrBoundBytes_size);
@@ -628,7 +628,7 @@ size_t dataLength, size_t *outSize, float min, float max)
 	for(i=2;i<dataLength;i++)
 	{
 		curData = spaceFillingValue[i];
-		if(i%conf_params->segment_size==0)
+		if(i%confparams_cpr->segment_size==0)
 		{
 			realPrecision = pwrErrBound[j++];
 			checkRadius = (exe_params->intvCapacity-1)*realPrecision;
@@ -733,7 +733,7 @@ size_t dataLength, size_t *outSize, float min, float max)
 			(*newByteData)[k++] = dsLengthBytes[i];
 
 		
-		if(exe_params->sysEndianType==BIG_ENDIAN_SYSTEM)
+		if(sysEndianType==BIG_ENDIAN_SYSTEM)
 			memcpy((*newByteData)+4+exe_params->SZ_SIZE_TYPE, oriData, dataLength*floatSize);
 		else
 		{
@@ -757,7 +757,7 @@ size_t *outSize, float min, float max)
 {
 	SZ_Reset();	
 	size_t dataLength=r1*r2;
-	int blockEdgeSize = computeBlockEdgeSize_2D(conf_params->segment_size);
+	int blockEdgeSize = computeBlockEdgeSize_2D(confparams_cpr->segment_size);
 	size_t R1 = 1+(r1-1)/blockEdgeSize;
 	size_t R2 = 1+(r2-1)/blockEdgeSize;
 	float* pwrErrBound = (float*)malloc(sizeof(float)*R1*R2);
@@ -1028,7 +1028,7 @@ size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 	SZ_Reset();	
 	size_t dataLength=r1*r2*r3;
 	
-	int blockEdgeSize = computeBlockEdgeSize_3D(conf_params->segment_size);
+	int blockEdgeSize = computeBlockEdgeSize_3D(confparams_cpr->segment_size);
 	size_t R1 = 1+(r1-1)/blockEdgeSize;
 	size_t R2 = 1+(r2-1)/blockEdgeSize;
 	size_t R3 = 1+(r3-1)/blockEdgeSize;
@@ -1774,7 +1774,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwrgroup(unsigned char** newByteDa
 size_t dataLength, double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSize, float medianValue_f, size_t *outSize)
 {
         SZ_Reset();
-        TightDataPointStorageF* tdps = SZ_compress_float_1D_MDQ_pwrGroup(oriData, dataLength, conf_params->errorBoundMode, 
+        TightDataPointStorageF* tdps = SZ_compress_float_1D_MDQ_pwrGroup(oriData, dataLength, confparams_cpr->errorBoundMode, 
         absErrBound, relBoundRatio, pwrErrRatio, 
         valueRangeSize, medianValue_f);
 
