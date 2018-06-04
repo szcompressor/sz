@@ -131,4 +131,6 @@ SZ 1.4.12: (1) Support thresholding-based strategy for 1D data compression based
 SZ 1.4.12.1: (1) Fix the bug tha segmentation fault may happen when the error bound is greater than the value range size. 
 SZ 1.4.13.0: Support openMP
 SZ 1.4.13.1: Integrate PaSTRI algorithm into SZ for GAMESS two-electron integral data compression.
-SZ 1.4.13.2: Clean the code by putting all the global variables into two data structures (conf_params and exe_params) and change Huffman tree encoder from global state to local state in order to support thread-safe feature. 
+SZ 1.4.13.2: Clean the code by putting all the global variables into two data structures (conf_params and exe_params) and change Huffman tree encoder from global state to local state in order to support thread-safe feature.
+SZ 1.4.13.3: Support the time-based compression for 1D array
+SZ 1.4.13.4: Support the time-based compression for 1D,2D, and 3D array (use --enable-timecmpr to switch it on). SZ 1.4.13.0/1/2/3/ has a bug when doing compression/decompression alternatively in the same progress. SZ 1.4.13.4 fixed it.
