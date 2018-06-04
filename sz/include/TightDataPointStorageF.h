@@ -73,7 +73,7 @@ void new_TightDataPointStorageF(TightDataPointStorageF **self,
  * This function is designed for first-version of the point-wise relative error bound (developed by Sheng Di for TPDS18 paper)
  * 
  * */
-void new_TightDataPointStorageF2(TightDataPointStorageF **this,
+void new_TightDataPointStorageF2(TightDataPointStorageF **self,
 		size_t dataSeriesLength, size_t exactDataNum, 
 		int* type, unsigned char* exactMidBytes, size_t exactMidBytes_size,
 		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....

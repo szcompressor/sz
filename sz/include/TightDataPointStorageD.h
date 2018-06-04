@@ -66,7 +66,7 @@ void new_TightDataPointStorageD(TightDataPointStorageD **self,
 		double realPrecision, double medianValue, char reqLength, unsigned int intervals, 
 		unsigned char* pwrErrBoundBytes, size_t pwrErrBoundBytes_size, unsigned char radExpo);
 
-void new_TightDataPointStorageD2(TightDataPointStorageD **this, 
+void new_TightDataPointStorageD2(TightDataPointStorageD **self, 
 		size_t dataSeriesLength, size_t exactDataNum, 
 		int* type, unsigned char* exactMidBytes, size_t exactMidBytes_size,
 		unsigned char* leadNumIntArray,  //leadNumIntArray contains readable numbers....
