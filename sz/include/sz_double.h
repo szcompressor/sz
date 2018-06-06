@@ -50,7 +50,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio)
 
 int SZ_compress_args_double(unsigned char** newByteData, double *oriData, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
-int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio, int pwrType);
+int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio);
 
 void SZ_compress_args_double_NoCkRnge_1D_subblock(unsigned char* compressedBytes, double *oriData, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d,
 size_t r1, size_t s1, size_t e1);

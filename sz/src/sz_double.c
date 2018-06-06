@@ -1549,14 +1549,14 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio)
 
 int SZ_compress_args_double(unsigned char** newByteData, double *oriData, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
-int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio, int pwrType)
+int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio)
 {
 	confparams_cpr->errorBoundMode = errBoundMode;
 	if(errBoundMode==PW_REL)
 	{
 		confparams_cpr->pw_relBoundRatio = pwRelBoundRatio;	
-		confparams_cpr->pwr_type = pwrType;
-		if(pwrType==SZ_PWR_AVG_TYPE && r3 != 0 )
+		//confparams_cpr->pwr_type = SZ_PWR_MIN_TYPE;
+		if(confparams_cpr->pwr_type==SZ_PWR_AVG_TYPE && r3 != 0 )
 		{
 			printf("Error: Current version doesn't support 3D data compression with point-wise relative error bound being based on pwrType=AVG\n");
 			exit(0);

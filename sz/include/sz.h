@@ -78,7 +78,7 @@ extern "C" {
 #define SZ_VER_MAJOR 1
 #define SZ_VER_MINOR 4
 #define SZ_VER_BUILD 13
-#define SZ_VER_REVISION 4
+#define SZ_VER_REVISION 5
 
 #define PASTRI 103
 #define HZ 102
@@ -325,10 +325,10 @@ size_t *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio);
 unsigned char *SZ_compress(int dataType, void *data, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
 unsigned char* SZ_compress_args(int dataType, void *data, size_t *outSize, int errBoundMode, double absErrBound, 
-double relBoundRatio, double pwrBoundRatio, int pwrType, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
+double relBoundRatio, double pwrBoundRatio, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
 int SZ_compress_args2(int dataType, void *data, unsigned char* compressed_bytes, size_t *outSize, 
-int errBoundMode, double absErrBound, double relBoundRatio, double pwrBoundRatio, int pwrType, 
+int errBoundMode, double absErrBound, double relBoundRatio, double pwrBoundRatio, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
 int SZ_compress_args3(int dataType, void *data, unsigned char* compressed_bytes, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 

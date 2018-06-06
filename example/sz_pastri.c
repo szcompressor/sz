@@ -324,7 +324,7 @@ int main(int argc, char* argv[])
 			if(confparams_cpr->sol_ID == SZ)
 				confparams_cpr->absErrBound = atof(absErrorBound);
 			else if(confparams_cpr->sol_ID == PASTRI)
-				confparams_cpr.originalEb = atof(absErrorBound);
+				pastri_par.originalEb = atof(absErrorBound);
 		}
 		if(relErrorBound != NULL)
 			confparams_cpr->relBoundRatio = atof(relErrorBound);
