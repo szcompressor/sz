@@ -1514,13 +1514,7 @@ void compressGroupIDArray_float(char* groupID, TightDataPointStorageF* tdps)
 		lastGroupIDValue = curGroupIDValue;
 	}
 	
-/*	for(i=0;i<dataLength;i++)
-	{
-		if(standGroupID[i]<0)
-			printf("Error: i=%zu, standGroupID[i]=%d\n", i, standGroupID[i]);
-	}*/
-	
-	unsigned char* out = (unsigned char*)malloc(sizeof(unsigned char)*dataLength);
+	unsigned char* out = NULL;
 	size_t outSize;
 	
 	HuffmanTree* huffmanTree = SZ_Reset();

@@ -1506,7 +1506,7 @@ void compressGroupIDArray_double(char* groupID, TightDataPointStorageD* tdps)
 		lastGroupIDValue = curGroupIDValue;
 	}
 	
-	unsigned char* out = (unsigned char*)malloc(sizeof(unsigned char)*dataLength);
+	unsigned char* out = NULL;
 	size_t outSize;
 	
 	HuffmanTree* huffmanTree = SZ_Reset();
