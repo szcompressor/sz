@@ -86,6 +86,7 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 	if(confparams_dec!=NULL)
 		free(confparams_dec);
 	confparams_dec = params;
+	confparams_dec->szMode = mode;
 	if(mode==SZ_TEMPORAL_COMPRESSION)
 	{
 		confparams_dec->szMode = SZ_TEMPORAL_COMPRESSION;

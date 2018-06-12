@@ -539,7 +539,6 @@ unsigned int optimize_intervals_double_3D_pwr(double *oriData, size_t r1, size_t
 void SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr(unsigned char** newByteData, double *oriData, double globalPrecision, 
 size_t dataLength, size_t *outSize, double min, double max)
 {
-	SZ_Reset();	
 	size_t pwrLength = dataLength%confparams_cpr->segment_size==0?dataLength/confparams_cpr->segment_size:dataLength/confparams_cpr->segment_size+1;
 	double* pwrErrBound = (double*)malloc(sizeof(double)*pwrLength);
 	size_t pwrErrBoundBytes_size = sizeof(unsigned char)*pwrLength*2;
@@ -757,7 +756,6 @@ size_t dataLength, size_t *outSize, double min, double max)
 void SZ_compress_args_double_NoCkRngeNoGzip_2D_pwr(unsigned char** newByteData, double *oriData, double globalPrecision, size_t r1, size_t r2,
 size_t *outSize, double min, double max)
 {
-	SZ_Reset();	
 	size_t dataLength=r1*r2;
 	int blockEdgeSize = computeBlockEdgeSize_2D(confparams_cpr->segment_size);
 	size_t R1 = 1+(r1-1)/blockEdgeSize;
@@ -1025,7 +1023,6 @@ size_t *outSize, double min, double max)
 void SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, double *oriData, double globalPrecision, 
 size_t r1, size_t r2, size_t r3, size_t *outSize, double min, double max)
 {
-	SZ_Reset();	
 	size_t dataLength=r1*r2*r3;
 	
 	int blockEdgeSize = computeBlockEdgeSize_3D(confparams_cpr->segment_size);
@@ -1764,7 +1761,6 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, double valueRangeS
 void SZ_compress_args_double_NoCkRngeNoGzip_1D_pwrgroup(unsigned char** newByteData, double *oriData,
 size_t dataLength, double absErrBound, double relBoundRatio, double pwrErrRatio, double valueRangeSize, double medianValue_f, size_t *outSize)
 {
-        SZ_Reset();
         TightDataPointStorageD* tdps = SZ_compress_double_1D_MDQ_pwrGroup(oriData, dataLength, confparams_cpr->errorBoundMode, 
         absErrBound, relBoundRatio, pwrErrRatio, 
         valueRangeSize, medianValue_f);

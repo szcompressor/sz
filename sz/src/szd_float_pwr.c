@@ -1347,5 +1347,6 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 	free(posFlags);
 	free(negFlags);
 	free(groupErrorBounds);
+	free(groupID);
 }
 #pragma GCC diagnostic pop

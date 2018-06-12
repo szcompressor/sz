@@ -543,7 +543,6 @@ unsigned int optimize_intervals_float_3D_pwr(float *oriData, size_t r1, size_t r
 void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr(unsigned char** newByteData, float *oriData, double globalPrecision, 
 size_t dataLength, size_t *outSize, float min, float max)
 {
-	SZ_Reset();	
 	size_t pwrLength = dataLength%confparams_cpr->segment_size==0?dataLength/confparams_cpr->segment_size:dataLength/confparams_cpr->segment_size+1;
 	float* pwrErrBound = (float*)malloc(sizeof(float)*pwrLength);
 	size_t pwrErrBoundBytes_size = sizeof(unsigned char)*pwrLength*2;
@@ -755,7 +754,6 @@ size_t dataLength, size_t *outSize, float min, float max)
 void SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr(unsigned char** newByteData, float *oriData, double globalPrecision, size_t r1, size_t r2, 
 size_t *outSize, float min, float max)
 {
-	SZ_Reset();	
 	size_t dataLength=r1*r2;
 	int blockEdgeSize = computeBlockEdgeSize_2D(confparams_cpr->segment_size);
 	size_t R1 = 1+(r1-1)/blockEdgeSize;
@@ -1025,7 +1023,6 @@ size_t *outSize, float min, float max)
 void SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr(unsigned char** newByteData, float *oriData, double globalPrecision, 
 size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max)
 {
-	SZ_Reset();	
 	size_t dataLength=r1*r2*r3;
 	
 	int blockEdgeSize = computeBlockEdgeSize_3D(confparams_cpr->segment_size);
@@ -1503,7 +1500,6 @@ void createRangeGroups_float(float** posGroups, float** negGroups, int** posFlag
 
 void compressGroupIDArray_float(char* groupID, TightDataPointStorageF* tdps)
 {
-	SZ_Reset(); //reset the huffman tree
 	size_t dataLength = tdps->dataSeriesLength;
 	int* standGroupID = (int*)malloc(dataLength*sizeof(int));
 
@@ -1517,6 +1513,12 @@ void compressGroupIDArray_float(char* groupID, TightDataPointStorageF* tdps)
 		standGroupID[i] = (curGroupIDValue - lastGroupIDValue) + offset; 
 		lastGroupIDValue = curGroupIDValue;
 	}
+	
+/*	for(i=0;i<dataLength;i++)
+	{
+		if(standGroupID[i]<0)
+			printf("Error: i=%zu, standGroupID[i]=%d\n", i, standGroupID[i]);
+	}*/
 	
 	unsigned char* out = (unsigned char*)malloc(sizeof(unsigned char)*dataLength);
 	size_t outSize;
@@ -1773,7 +1775,6 @@ double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSi
 void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwrgroup(unsigned char** newByteData, float *oriData,
 size_t dataLength, double absErrBound, double relBoundRatio, double pwrErrRatio, float valueRangeSize, float medianValue_f, size_t *outSize)
 {
-        SZ_Reset();
         TightDataPointStorageF* tdps = SZ_compress_float_1D_MDQ_pwrGroup(oriData, dataLength, confparams_cpr->errorBoundMode, 
         absErrBound, relBoundRatio, pwrErrRatio, 
         valueRangeSize, medianValue_f);
