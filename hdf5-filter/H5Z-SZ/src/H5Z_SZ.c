@@ -70,28 +70,28 @@ sz_params* H5Z_SZ_Init_Default()
 	herr_t ret = H5Zregister(H5Z_SZ);	
 	
 	sz_params* conf_params = (sz_params *)malloc(sizeof(sz_params));
-	conf_params->quantization_intervals = 0;
-	conf_params->max_quant_intervals = 65536;
-    conf_params->dataEndianType = LITTLE_ENDIAN_DATA;
-    conf_params->sol_ID = SZ;
-    conf_params->layers = 1;
-    conf_params->sampleDistance = 100;
-    conf_params->predThreshold = 0.99;
-    conf_params->offset = 0;
-    conf_params->szMode = SZ_BEST_COMPRESSION;
-    conf_params->gzipMode = 1; //best speed
-    conf_params->errorBoundMode = REL; //details about errorBoundMode can be found in sz.config
-    conf_params->absErrBound = 1E-4;
-    conf_params->relBoundRatio = 1E-3;
-    conf_params->pw_relBoundRatio = 1E-4;
-    conf_params->segment_size = 32;
-    conf_params->pwr_type = SZ_PWR_AVG_TYPE;	
+	confparams_cpr->quantization_intervals = 0;
+	confparams_cpr->max_quant_intervals = 65536;
+    dataEndianType = LITTLE_ENDIAN_DATA;
+    confparams_cpr->sol_ID = SZ;
+    //confparams_cpr->layers = 1;
+    confparams_cpr->sampleDistance = 100;
+    confparams_cpr->predThreshold = 0.99;
+    //confparams_cpr->offset = 0;
+    confparams_cpr->szMode = SZ_BEST_COMPRESSION;
+    confparams_cpr->gzipMode = 1; //best speed
+    confparams_cpr->errorBoundMode = REL; //details about errorBoundMode can be found in sz.config
+    confparams_cpr->absErrBound = 1E-4;
+    confparams_cpr->relBoundRatio = 1E-3;
+    confparams_cpr->pw_relBoundRatio = 1E-4;
+    confparams_cpr->segment_size = 32;
+    confparams_cpr->pwr_type = SZ_PWR_AVG_TYPE;	
 	
 	int status = SZ_Init_Params(conf_params);
 	if(status == SZ_NSCS || ret < 0)
 		return NULL;
 	else
-		return conf_params;
+		return confparams_cpr;
 }
 
 int H5Z_SZ_Finalize()
@@ -202,7 +202,7 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 {
 	//printf("start in H5Z_sz_set_local\n");
 	size_t r5=0,r4=0,r3=0,r2=0,r1=0, dsize;
-	static char const *_funcname_ = "H5Z_sz_set_local";
+	static char const *_funcname_ = "H5Z_zfp_set_local";
 	int i, ndims, ndims_used = 0;	
 	hsize_t dims[H5S_MAX_RANK], dims_used[5] = {0,0,0,0,0};	
 	herr_t retval = 0;
