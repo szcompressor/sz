@@ -107,6 +107,7 @@ int H5Z_SZ_Finalize()
  * */
 void SZ_cdArrayToMetaData(size_t cd_nelmts, const unsigned int cd_values[], int* dimSize, int* dataType, size_t* r5, size_t* r4, size_t* r3, size_t* r2, size_t* r1)
 {
+	//printf("cd_nelmts=%zu\n", cd_nelmts); 
 	assert(cd_nelmts >= 4);
 	unsigned char bytes[8];	
 	*dimSize = cd_values[0];
@@ -148,6 +149,7 @@ void SZ_cdArrayToMetaData(size_t cd_nelmts, const unsigned int cd_values[], int*
 		*r2 = cd_values[5];
 		*r1 = cd_values[6];		
 	}
+	//printf("r5=%zu, r4=%zu, r3=%zu, r2=%zu, r1=%zu\n", *r5, *r4, *r3, *r2, *r1);	
 }
 
 /**
@@ -202,7 +204,7 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 {
 	//printf("start in H5Z_sz_set_local\n");
 	size_t r5=0,r4=0,r3=0,r2=0,r1=0, dsize;
-	static char const *_funcname_ = "H5Z_zfp_set_local";
+	static char const *_funcname_ = "H5Z_sz_set_local";
 	int i, ndims, ndims_used = 0;	
 	hsize_t dims[H5S_MAX_RANK], dims_used[5] = {0,0,0,0,0};	
 	herr_t retval = 0;
@@ -229,6 +231,8 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 		dims_used[ndims_used] = dims[i];
 		ndims_used++;
 	}
+	
+	//printf("dclass=%d, H5T_FLOAT=%d, H5T_INTEGER=%d\n", dclass, H5T_FLOAT, H5T_INTEGER);
 	
 	if (dclass == H5T_FLOAT)
 		dataType = dsize==4? SZ_FLOAT: SZ_DOUBLE;
@@ -275,6 +279,7 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 	}
 	else
 	{
+		//printf("Error: dclass...\n");
 		H5Z_SZ_PUSH_AND_GOTO(H5E_PLINE, H5E_BADTYPE, 0, "datatype class must be H5T_FLOAT or H5T_INTEGER");
 	}
 	
@@ -328,6 +333,10 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 	
 	size_t r1 = 0, r2 = 0, r3 = 0, r4 = 0, r5 = 0;
 	int dimSize = 0, dataType = 0;
+	
+	if(cd_nelmts==0) //this is special data such as string, which should not be treated as values.
+		return nbytes;
+	
 	SZ_cdArrayToMetaData(cd_nelmts, cd_values, &dimSize, &dataType, &r5, &r4, &r3, &r2, &r1);
 	
 /*	int i=0;
