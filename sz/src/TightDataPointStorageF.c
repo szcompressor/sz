@@ -721,7 +721,7 @@ void convertTDPStoFlatBytes_float_args(TightDataPointStorageF *tdps, unsigned ch
  * to free the memory used in the compression
  * */
 void free_TightDataPointStorageF(TightDataPointStorageF *tdps)
-{			
+{
 	if(tdps->rtypeArray!=NULL)
 		free(tdps->rtypeArray);
 	if(tdps->typeArray!=NULL)

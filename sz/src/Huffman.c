@@ -651,23 +651,26 @@ node reconstruct_HuffTree_from_bytes_anyStates(HuffmanTree *huffmanTree, unsigne
 
 void encode_withTree(HuffmanTree* huffmanTree, int *s, size_t length, unsigned char **out, size_t *outSize)
 {
-	size_t i, nodeCount = 0;
+	size_t i; 
+	int nodeCount = 0;
 	unsigned char *treeBytes, buffer[4];
 	
 	init(huffmanTree, s, length);
 	for (i = 0; i < huffmanTree->stateNum; i++)
-		if (huffmanTree->code[i]) nodeCount++;
+		if (huffmanTree->code[i]) nodeCount++; 
 	nodeCount = nodeCount*2-1;
 	unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(huffmanTree,nodeCount, &treeBytes);
 	//printf("treeByteSize=%d\n", treeByteSize);
 	*out = (unsigned char*)malloc(length*sizeof(int)+treeByteSize);
 	intToBytes_bigEndian(buffer, nodeCount);
 	memcpy(*out, buffer, 4);
-	memcpy(*out+4, treeBytes, treeByteSize);
+	intToBytes_bigEndian(buffer, huffmanTree->stateNum/2); //real number of intervals
+	memcpy(*out+4, buffer, 4);
+	memcpy(*out+8, treeBytes, treeByteSize);
 	free(treeBytes);
 	size_t enCodeSize = 0;
-	encode(huffmanTree, s, length, *out+4+treeByteSize, &enCodeSize);
-	*outSize = 4+treeByteSize+enCodeSize;
+	encode(huffmanTree, s, length, *out+8+treeByteSize, &enCodeSize);
+	*outSize = 8+treeByteSize+enCodeSize;
 	
 	//unsigned short state[length];
 	//decode(*out+4+treeByteSize, enCodeSize, qqq[0], state);
@@ -682,7 +685,7 @@ void decode_withTree(HuffmanTree* huffmanTree, unsigned char *s, size_t targetLe
 {
 	size_t encodeStartIndex;
 	size_t nodeCount = bytesToInt_bigEndian(s);
-	node root = reconstruct_HuffTree_from_bytes_anyStates(huffmanTree,s+4, nodeCount);
+	node root = reconstruct_HuffTree_from_bytes_anyStates(huffmanTree,s+8, nodeCount);
 	
 	//sdi: Debug
 /*	build_code(root, 0, 0, 0);
@@ -701,7 +704,7 @@ void decode_withTree(HuffmanTree* huffmanTree, unsigned char *s, size_t targetLe
 		encodeStartIndex = 1+2*nodeCount*sizeof(unsigned short)+nodeCount*sizeof(unsigned char)+nodeCount*sizeof(unsigned int);
 	else
 		encodeStartIndex = 1+3*nodeCount*sizeof(unsigned int)+nodeCount*sizeof(unsigned char);
-	decode(s+4+encodeStartIndex, targetLength, root, out);
+	decode(s+8+encodeStartIndex, targetLength, root, out);
 }
 
 void SZ_ReleaseHuffman(HuffmanTree* huffmanTree)

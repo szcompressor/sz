@@ -535,6 +535,11 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	isConstant = sameRByte & 0x01;
 	//confparams_dec->szMode = (sameRByte & 0x06)>>1;
 	isLossless = (sameRByte & 0x10)>>4;
+	if(exe_params==NULL)
+	{
+		exe_params = (sz_exedata *)malloc(sizeof(struct sz_exedata));
+		memset(exe_params, 0, sizeof(struct sz_exedata));
+	}
 	exe_params->SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
 	
 	sz_params* params = convertBytesToSZParams(&(bytes[index]));
@@ -572,10 +577,9 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 			pwrErrBoundBytesL = 4;
 		}
 		
-		int offset_typearray = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrErrBoundBytesL + 4 + 4 + 1 + 8 
-				+ exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE;
-		size_t nodeCount = bytesToInt_bigEndian(bytes+offset_typearray);
-		defactoNBBins = (nodeCount+1)/2;
+		int offset_typearray = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrErrBoundBytesL + 4 + (4 + params->dataType*4) + 1 + 8 
+				+ exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + 4;
+		defactoNBBins = bytesToInt_bigEndian(bytes+offset_typearray);
 	}
 	
 	metadata->defactoNBBins = defactoNBBins;
