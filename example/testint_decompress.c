@@ -444,8 +444,8 @@ void assessDeCompressionData(int dataType, char* zipFilePath, void* decompressed
     double psnr = 20*log10(range)-10*log10(mse);
     double nrmse = sqrt(mse)/range;
 
-    printf ("Min=%ld, Max=%ld, range=%f\n", Min, Max, range);
-    printf ("Max absolute error = %ld\n", diffMax);
+    printf ("Min=%lld, Max=%lld, range=%f\n", Min, Max, range);
+    printf ("Max absolute error = %lld\n", diffMax);
     printf ("Max relative error = %f\n", ((float)diffMax)/(Max-Min));
     printf ("Max pw relative error = %f\n", maxpw_relerr);
     printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
