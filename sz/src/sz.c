@@ -36,6 +36,8 @@ sz_params *confparams_dec = NULL; //used for decompression
 
 sz_exedata *exe_params = NULL;
 
+int sz_with_regression = SZ_WITH_LINEAR_REGRESSION; //SZ_NO_REGRESSION
+
 /*following global variables are desgined for time-series based compression*/
 /*sz_varset is not used in the single-snapshot data compression*/
 SZ_VarSet* sz_varset = NULL;

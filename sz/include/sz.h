@@ -74,11 +74,11 @@ extern "C" {
 //typedef long int64_t;
 //typedef unsigned long uint64_t;
 
-#define SZ_VERNUM 0x0140
-#define SZ_VER_MAJOR 1
-#define SZ_VER_MINOR 4
-#define SZ_VER_BUILD 13
-#define SZ_VER_REVISION 5
+#define SZ_VERNUM 0x0200
+#define SZ_VER_MAJOR 2
+#define SZ_VER_MINOR 0
+#define SZ_VER_BUILD 0
+#define SZ_VER_REVISION 0
 
 #define PASTRI 103
 #define HZ 102
@@ -129,6 +129,9 @@ extern "C" {
 #define SZ_BEST_COMPRESSION 1
 #define SZ_DEFAULT_COMPRESSION 2
 #define SZ_TEMPORAL_COMPRESSION 3
+
+#define SZ_NO_REGRESSION 0
+#define SZ_WITH_LINEAR_REGRESSION 1
 
 #define SZ_PWR_MIN_TYPE 0
 #define SZ_PWR_AVG_TYPE 1
@@ -289,6 +292,8 @@ extern int sysEndianType; //*sysEndianType is actually set automatically.
 extern sz_params *confparams_cpr;
 extern sz_params *confparams_dec;
 extern sz_exedata *exe_params;
+extern int sz_with_regression;
+
 //------------------------------------------------
 extern SZ_VarSet* sz_varset;
 extern sz_multisteps *multisteps; //compression based on multiple time steps (time-dimension based compression)

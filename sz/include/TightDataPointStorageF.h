@@ -34,6 +34,8 @@ typedef struct TightDataPointStorageF
 	unsigned char* rtypeArray;
 	size_t rtypeArray_size;
 	
+	float minLogValue;
+
 	unsigned char* typeArray; //its size is dataSeriesLength/4 (or xxx/4+1) 
 	size_t typeArray_size;
 	
@@ -54,6 +56,9 @@ typedef struct TightDataPointStorageF
 	
 	unsigned char* pwrErrBoundBytes;
 	int pwrErrBoundBytes_size;
+	
+	unsigned char* raBytes;
+	size_t raBytes_size;
 	
 } TightDataPointStorageF;
 

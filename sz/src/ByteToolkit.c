@@ -430,7 +430,7 @@ long bytesToLong(unsigned char* bytes)
 }
 
 //the byte to input is in the big-endian format
-float bytesToFloat(unsigned char* bytes)
+inline float bytesToFloat(unsigned char* bytes)
 {
 	lfloat buf;
 	memcpy(buf.byte, bytes, 4);
@@ -439,7 +439,7 @@ float bytesToFloat(unsigned char* bytes)
 	return buf.value;
 }
 
-void floatToBytes(unsigned char *b, float num)
+inline void floatToBytes(unsigned char *b, float num)
 {
 	lfloat buf;
 	buf.value = num;
@@ -449,7 +449,7 @@ void floatToBytes(unsigned char *b, float num)
 }
 
 //the byte to input is in the big-endian format
-double bytesToDouble(unsigned char* bytes)
+inline double bytesToDouble(unsigned char* bytes)
 {
 	ldouble buf;
 	memcpy(buf.byte, bytes, 8);
@@ -458,7 +458,7 @@ double bytesToDouble(unsigned char* bytes)
 	return buf.value;
 }
 
-void doubleToBytes(unsigned char *b, double num)
+inline void doubleToBytes(unsigned char *b, double num)
 {
 	ldouble buf;
 	buf.value = num;
@@ -507,7 +507,7 @@ int extractBytes(unsigned char* byteArray, size_t k, int validLength)
 	return result;
 }
 
-int getMaskRightCode(int m) {
+inline int getMaskRightCode(int m) {
 	switch (m) {
 	case 1:
 		return 0x01;
@@ -530,16 +530,16 @@ int getMaskRightCode(int m) {
 	}
 }
 
-int getLeftMovingCode(int kMod8)
+inline int getLeftMovingCode(int kMod8)
 {
 	return getMaskRightCode(8 - kMod8);
 }
 
-int getRightMovingSteps(int kMod8, int resiBitLength) {
+inline int getRightMovingSteps(int kMod8, int resiBitLength) {
 	return 8 - kMod8 - resiBitLength;
 }
 
-int getRightMovingCode(int kMod8, int resiBitLength)
+inline int getRightMovingCode(int kMod8, int resiBitLength)
 {
 	int rightMovingSteps = 8 - kMod8 - resiBitLength;
 	if(rightMovingSteps < 0)
@@ -814,7 +814,7 @@ void convertULongArrayToBytes(uint64_t* states, size_t stateLength, unsigned cha
 }
 
 
-size_t bytesToSize(unsigned char* bytes)
+inline size_t bytesToSize(unsigned char* bytes)
 {
 	size_t result = 0;
 	if(exe_params->SZ_SIZE_TYPE==4)	
@@ -824,7 +824,7 @@ size_t bytesToSize(unsigned char* bytes)
 	return result;
 }
 
-void sizeToBytes(unsigned char* outBytes, size_t size)
+inline void sizeToBytes(unsigned char* outBytes, size_t size)
 {
 	if(exe_params->SZ_SIZE_TYPE==4)
 		intToBytes_bigEndian(outBytes, size);//4

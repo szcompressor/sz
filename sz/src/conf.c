@@ -114,6 +114,8 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		confparams_cpr->pwr_type = SZ_PWR_MIN_TYPE;
 		
 		confparams_cpr->snapshotCmprStep = 5;
+		
+		sz_with_regression = SZ_WITH_LINEAR_REGRESSION;
 	
 		return SZ_SCES;
 	}
@@ -211,6 +213,11 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 			iniparser_freedict(ini);
 			return SZ_NSCS;	
 		}
+		modeBuf = iniparser_getstring(ini, "PARAMETER:withLinearRegression", "YES");
+		if(strcmp(modeBuf, "YES")==0 || strcmp(modeBuf, "yes")==0)
+			sz_with_regression = SZ_WITH_LINEAR_REGRESSION;
+		else
+			sz_with_regression = SZ_NO_REGRESSION;
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:gzipMode", NULL);
 		if(modeBuf==NULL)
