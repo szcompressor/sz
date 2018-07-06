@@ -812,7 +812,7 @@ int reqLength, int reqBytesLength, int resiBitsLength, double medianValue)
 	return midArraySize;
 }
 
-void decompressExactDataArray_double(unsigned char* leadNum, unsigned char* exactMidBytes, unsigned char* residualMidBits, size_t nbEle, int reqLength, float medianValue, float** decData)
+void decompressExactDataArray_double(unsigned char* leadNum, unsigned char* exactMidBytes, unsigned char* residualMidBits, size_t nbEle, int reqLength, double medianValue, double** decData)
 {
 	*decData = (double*)malloc(nbEle*sizeof(double));
 	size_t i = 0, j = 0, k = 0, l = 0, p = 0, curByteIndex = 0;

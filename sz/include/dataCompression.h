@@ -87,7 +87,7 @@ int generateLossyCoefficients_double(double* oriData, double precision, size_t n
 int compressExactDataArray_double(double* oriData, double precision, size_t nbEle, unsigned char** leadArray, unsigned char** midArray, unsigned char** resiArray, 
 int reqLength, int reqBytesLength, int resiBitsLength, double medianValue);
 
-void decompressExactDataArray_double(unsigned char* leadNum, unsigned char* exactMidBytes, unsigned char* residualMidBits, size_t nbEle, int reqLength, float medianValue, float** decData);
+void decompressExactDataArray_double(unsigned char* leadNum, unsigned char* exactMidBytes, unsigned char* residualMidBits, size_t nbEle, int reqLength, double medianValue, double** decData);
 
 #ifdef __cplusplus
 }
