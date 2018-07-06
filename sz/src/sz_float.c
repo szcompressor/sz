@@ -3389,7 +3389,7 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(confparams_cpr->maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, confparams_cpr->maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = 0;//(r1-1)*(r2-1)*(r3-1)/confparams_cpr->sampleDistance;
+	size_t totalSampleSize = 0;
 
 	size_t offset_count = confparams_cpr->sampleDistance - 2; // count r3 offset
 	size_t offset_count_2;
@@ -3404,11 +3404,8 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 		if(radiusIndex>=confparams_cpr->maxRangeRadius)
 		{
 			radiusIndex = confparams_cpr->maxRangeRadius - 1;
-			//printf("radiusIndex=%d\n", radiusIndex);
 		}
 		intervals[radiusIndex]++;
-		// printf("TEST: %ld, i: %ld\tj: %ld\tk: %ld\n", data_pos - oriData);
-		// fflush(stdout);
 		offset_count += confparams_cpr->sampleDistance;
 		if(offset_count >= r3){
 			n2_count ++;
@@ -3424,9 +3421,6 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 		}
 		else data_pos += confparams_cpr->sampleDistance;
 	}	
-	// printf("sample_count: %ld\n", sample_count);
-	// fflush(stdout);
-	// if(*max_freq < 0.15) *max_freq *= 2;
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*confparams_cpr->predThreshold;
 	size_t sum = 0;
@@ -3444,7 +3438,6 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 	if(powerOf2<32)
 		powerOf2 = 32;
 	free(intervals);
-	//printf("targetCount=%d, sum=%d, totalSampleSize=%d, ratio=%f, accIntervals=%d, powerOf2=%d\n", targetCount, sum, totalSampleSize, (double)sum/(double)totalSampleSize, accIntervals, powerOf2);
 	return powerOf2;
 }
 
@@ -3764,10 +3757,7 @@ unsigned int optimize_intervals_float_2D_opt(float *oriData, size_t r1, size_t r
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(confparams_cpr->maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, confparams_cpr->maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = 0;//(r1-1)*(r2-1)/confparams_cpr->sampleDistance;
-
-	//float max = oriData[0];
-	//float min = oriData[0];
+	size_t totalSampleSize = 0;
 
 	size_t offset_count = confparams_cpr->sampleDistance - 1; // count r2 offset
 	size_t offset_count_2;
@@ -3826,7 +3816,6 @@ unsigned int optimize_intervals_float_1D_opt(float *oriData, size_t dataLength, 
 	float * data_pos = oriData + 2;
 	while(data_pos - oriData < dataLength){
 		totalSampleSize++;
-		//pred_value = 2*data_pos[-1] - data_pos[-2];
 		pred_value = data_pos[-1];
 		pred_err = fabs(pred_value - *data_pos);
 		radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
@@ -3855,7 +3844,6 @@ unsigned int optimize_intervals_float_1D_opt(float *oriData, size_t dataLength, 
 		powerOf2 = 32;
 	
 	free(intervals);
-	//printf("accIntervals=%d, powerOf2=%d\n", accIntervals, powerOf2);
 	return powerOf2;
 }
 
@@ -4081,7 +4069,6 @@ unsigned int optimize_intervals_float_2D_with_freq_and_dense_pos(float *oriData,
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = (r1-1)*(r2-1)/sampleDistance;
 
 	float mean_diff;
 	ptrdiff_t freq_index;
@@ -4123,10 +4110,10 @@ unsigned int optimize_intervals_float_2D_with_freq_and_dense_pos(float *oriData,
 		else data_pos += sampleDistance;
 		sample_count ++;
 	}
-	*max_freq = freq_count * 1.0/ totalSampleSize;
+	*max_freq = freq_count * 1.0/ sample_count;
 
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = sample_count*predThreshold;
 	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -4156,7 +4143,7 @@ unsigned int optimize_intervals_float_2D_with_freq_and_dense_pos(float *oriData,
 		freq_pos ++;
 	}
 	*dense_pos = mean + realPrecision * (ptrdiff_t)(max_index + 1 - radius);
-	*mean_freq = max_sum * 1.0 / totalSampleSize;
+	*mean_freq = max_sum * 1.0 / sample_count;
 
 	free(freq_intervals);
 	free(intervals);
@@ -4177,7 +4164,6 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 	{
 		quantization_intervals = optimize_intervals_float_2D_with_freq_and_dense_pos(oriData, r1, r2, realPrecision, &dense_pos, &sz_sample_correct_freq, &mean_flush_freq);
 		if(mean_flush_freq > 0.5 || mean_flush_freq > sz_sample_correct_freq) use_mean = 1;
-		// printf("number of bins: %d\tcorrect_freq: %.4f\tmean_flush_freq: %.4f\n", quantization_intervals, sz_sample_correct_freq, mean_flush_freq);
 		updateQuantizationInfo(quantization_intervals);
 	}	
 	else{
@@ -4289,7 +4275,6 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 			}
 		}
 		if(mean_count > 0) mean = sum / mean_count;
-		printf("%.4f value will be flushed to %.4f\n", mean_count * 1.0/num_elements, mean);
 	}
 
 	reg_params_pos = reg_pred_params;
@@ -4911,24 +4896,23 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 	result_pos += exe_params->SZ_SIZE_TYPE;
 	
 	intToBytes_bigEndian(result_pos, block_size);
-	result_pos += 4;
+	result_pos += sizeof(int);
 	doubleToBytes(result_pos, realPrecision);
-	
-	result_pos += 8;
+	result_pos += sizeof(double);
 	intToBytes_bigEndian(result_pos, quantization_intervals);
-	result_pos += 4;
+	result_pos += sizeof(int);
 	intToBytes_bigEndian(result_pos, treeByteSize);
-	result_pos += 4;
+	result_pos += sizeof(int);
 	intToBytes_bigEndian(result_pos, nodeCount);
-	result_pos += 4;
+	result_pos += sizeof(int);
 	memcpy(result_pos, treeBytes, treeByteSize);
 	result_pos += treeByteSize;
 	free(treeBytes);
 
 	memcpy(result_pos, &use_mean, sizeof(unsigned char));
-	result_pos += 1;
+	result_pos += sizeof(unsigned char);
 	memcpy(result_pos, &mean, sizeof(float));
-	result_pos += 4;
+	result_pos += sizeof(float);
 
 	size_t indicator_size = convertIntArray2ByteArray_fast_1b_to_result(indicator, num_blocks, result_pos);
 	result_pos += indicator_size;
@@ -5071,7 +5055,7 @@ unsigned int optimize_intervals_float_3D_with_freq_and_dense_pos(float *oriData,
 	}
 	if(mean_count > 0) mean /= mean_count;
 	size_t range = 8192;
-	size_t radius = range/2;
+	size_t radius = 4096;
 	size_t * freq_intervals = (size_t *) malloc(range*sizeof(size_t));
 	memset(freq_intervals, 0, range*sizeof(size_t));
 
@@ -5085,7 +5069,6 @@ unsigned int optimize_intervals_float_3D_with_freq_and_dense_pos(float *oriData,
 	float pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(maxRangeRadius*sizeof(size_t));
 	memset(intervals, 0, maxRangeRadius*sizeof(size_t));
-	size_t totalSampleSize = (r1-1)*(r2-1)*(r3-1)/sampleDistance;
 
 	float mean_diff;
 	ptrdiff_t freq_index;
@@ -5136,10 +5119,10 @@ unsigned int optimize_intervals_float_3D_with_freq_and_dense_pos(float *oriData,
 		else data_pos += sampleDistance;
 		sample_count ++;
 	}	
-	*max_freq = freq_count * 1.0/ totalSampleSize;
+	*max_freq = freq_count * 1.0/ sample_count;
 
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*predThreshold;
+	size_t targetCount = sample_count*predThreshold;
 	size_t sum = 0;
 	for(i=0;i<maxRangeRadius;i++)
 	{
@@ -5168,7 +5151,7 @@ unsigned int optimize_intervals_float_3D_with_freq_and_dense_pos(float *oriData,
 		freq_pos ++;
 	}
 	*dense_pos = mean + realPrecision * (ptrdiff_t)(max_index + 1 - radius);
-	*mean_freq = max_sum * 1.0 / totalSampleSize;
+	*mean_freq = max_sum * 1.0 / sample_count;
 
 	free(freq_intervals);
 	free(intervals);
@@ -6006,23 +5989,23 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 	result_pos += exe_params->SZ_SIZE_TYPE;
 
 	intToBytes_bigEndian(result_pos, block_size);
-	result_pos += 4;
+	result_pos += sizeof(int);
 	doubleToBytes(result_pos, realPrecision);
-	result_pos += 8;
+	result_pos += sizeof(double);
 	intToBytes_bigEndian(result_pos, quantization_intervals);
-	result_pos += 4;
+	result_pos += sizeof(int);
 	intToBytes_bigEndian(result_pos, treeByteSize);
-	result_pos += 4;
+	result_pos += sizeof(int);
 	intToBytes_bigEndian(result_pos, nodeCount);
-	result_pos += 4;
+	result_pos += sizeof(int);
 	memcpy(result_pos, treeBytes, treeByteSize);
 	result_pos += treeByteSize;
 	free(treeBytes);
 
 	memcpy(result_pos, &use_mean, sizeof(unsigned char));
-	result_pos += 1;
+	result_pos += sizeof(unsigned char);
 	memcpy(result_pos, &mean, sizeof(float));
-	result_pos += 4;
+	result_pos += sizeof(float);
 	size_t indicator_size = convertIntArray2ByteArray_fast_1b_to_result(indicator, num_blocks, result_pos);
 	result_pos += indicator_size;
 	

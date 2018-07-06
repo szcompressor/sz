@@ -2206,7 +2206,7 @@ void decompressDataSeries_float_2D_nonblocked_with_blocked_regression(float** da
 	unsigned char * comp_data_pos = comp_data;
 
 	size_t block_size = bytesToInt_bigEndian(comp_data_pos);
-	comp_data_pos += 4;
+	comp_data_pos += sizeof(int);
 	// calculate block dims
 	size_t num_x, num_y;
 	SZ_COMPUTE_3D_NUMBER_OF_BLOCKS(r1, num_x, block_size);
@@ -2221,14 +2221,14 @@ void decompressDataSeries_float_2D_nonblocked_with_blocked_regression(float** da
 	size_t num_blocks = num_x * num_y;
 
 	double realPrecision = bytesToDouble(comp_data_pos);
-	comp_data_pos += 8;
+	comp_data_pos += sizeof(double);
 	unsigned int intervals = bytesToInt_bigEndian(comp_data_pos);
-	comp_data_pos += 4;
+	comp_data_pos += sizeof(int);
 
 	updateQuantizationInfo(intervals);
 
 	unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);
-	comp_data_pos += 4;
+	comp_data_pos += sizeof(int);
 
 	int stateNum = 2*intervals;
 	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
@@ -2236,14 +2236,14 @@ void decompressDataSeries_float_2D_nonblocked_with_blocked_regression(float** da
 	int nodeCount = bytesToInt_bigEndian(comp_data_pos);
 	
 	node root = reconstruct_HuffTree_from_bytes_anyStates(huffmanTree,comp_data_pos+4, nodeCount);
-	comp_data_pos += 4 + tree_size;
+	comp_data_pos += sizeof(int) + tree_size;
 
 	float mean;
 	unsigned char use_mean;
 	memcpy(&use_mean, comp_data_pos, sizeof(unsigned char));
-	comp_data_pos += 1;
+	comp_data_pos += sizeof(unsigned char);
 	memcpy(&mean, comp_data_pos, sizeof(float));
-	comp_data_pos += 4;
+	comp_data_pos += sizeof(int);
 	size_t reg_count = 0;
 
 	unsigned char * indicator;
@@ -2554,7 +2554,7 @@ void decompressDataSeries_float_3D_nonblocked_with_blocked_regression(float** da
 	unsigned char * comp_data_pos = comp_data;
 
 	size_t block_size = bytesToInt_bigEndian(comp_data_pos);
-	comp_data_pos += 4;
+	comp_data_pos += sizeof(int);
 	// calculate block dims
 	size_t num_x, num_y, num_z;
 	SZ_COMPUTE_3D_NUMBER_OF_BLOCKS(r1, num_x, block_size);
@@ -2571,29 +2571,28 @@ void decompressDataSeries_float_3D_nonblocked_with_blocked_regression(float** da
 	size_t num_blocks = num_x * num_y * num_z;
 
 	double realPrecision = bytesToDouble(comp_data_pos);
-	comp_data_pos += 8;
+	comp_data_pos += sizeof(double);
 	unsigned int intervals = bytesToInt_bigEndian(comp_data_pos);
-	comp_data_pos += 4;
+	comp_data_pos += sizeof(int);
 
 	updateQuantizationInfo(intervals);
 
 	unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);
-	comp_data_pos += 4;
+	comp_data_pos += sizeof(int);
 	
 	int stateNum = 2*intervals;
 	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);	
 	
 	int nodeCount = bytesToInt_bigEndian(comp_data_pos);
-
 	node root = reconstruct_HuffTree_from_bytes_anyStates(huffmanTree,comp_data_pos+4, nodeCount);
-	comp_data_pos += 4 + tree_size;
+	comp_data_pos += sizeof(int) + tree_size;
 
 	float mean;
 	unsigned char use_mean;
 	memcpy(&use_mean, comp_data_pos, sizeof(unsigned char));
-	comp_data_pos += 1;
+	comp_data_pos += sizeof(unsigned char);
 	memcpy(&mean, comp_data_pos, sizeof(float));
-	comp_data_pos += 4;
+	comp_data_pos += sizeof(float);
 	size_t reg_count = 0;
 
 	unsigned char * indicator;
