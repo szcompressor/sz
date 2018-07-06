@@ -90,7 +90,7 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 	}
 	else 
 	{
-		if(tdps->raBytes_size > 0) //random access mode, v2.0
+		if(tdps->raBytes_size > 0) //v2.0
 		{
 			if (dim == 1)
 				getSnapshotData_float_1D(newData,r1,tdps, errBoundMode);
@@ -2243,7 +2243,7 @@ void decompressDataSeries_float_2D_nonblocked_with_blocked_regression(float** da
 	memcpy(&use_mean, comp_data_pos, sizeof(unsigned char));
 	comp_data_pos += sizeof(unsigned char);
 	memcpy(&mean, comp_data_pos, sizeof(float));
-	comp_data_pos += sizeof(int);
+	comp_data_pos += sizeof(float);
 	size_t reg_count = 0;
 
 	unsigned char * indicator;

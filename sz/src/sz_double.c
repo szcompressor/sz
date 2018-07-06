@@ -1623,7 +1623,12 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_2D(&tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
 #endif
-					SZ_compress_args_double_NoCkRngeNoGzip_2D(&tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+				{	
+					if(sz_with_regression == SZ_NO_REGRESSION)
+						SZ_compress_args_double_NoCkRngeNoGzip_2D(&tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+					else 
+						tmpByteData = SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize);		
+				}
 		}
 		else
 		if (r4==0)
@@ -1636,7 +1641,14 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
 #endif
-					SZ_compress_args_double_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+				{
+					if(sz_with_regression == SZ_NO_REGRESSION)
+						SZ_compress_args_double_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+					else 
+						tmpByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize);
+				}
+					
+					
 		}
 		else
 		if (r5==0)
@@ -1648,8 +1660,14 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)			
 					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_4D(&tmpByteData, oriData, r4, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
-#endif
-					SZ_compress_args_double_NoCkRngeNoGzip_4D(&tmpByteData, oriData, r4, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+#endif	
+				{
+					if(sz_with_regression == SZ_NO_REGRESSION)
+						SZ_compress_args_double_NoCkRngeNoGzip_4D(&tmpByteData, oriData, r4, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+					else 
+						tmpByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r4*r3, r2, r1, realPrecision, &tmpOutSize);								
+				}
+		
 		}
 		else
 		{

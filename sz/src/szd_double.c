@@ -80,22 +80,45 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 				(*newData)[i] = bytesToDouble(p);
 		}		
 	}
-	else if (dim == 1)
-		getSnapshotData_double_1D(newData,r1,tdps, errBoundMode);
-	else
-	if (dim == 2)
-		getSnapshotData_double_2D(newData,r2,r1,tdps, errBoundMode);
-	else
-	if (dim == 3)
-		getSnapshotData_double_3D(newData,r3,r2,r1,tdps, errBoundMode);
-	else
-	if (dim == 4)
-		getSnapshotData_double_4D(newData,r4,r3,r2,r1,tdps, errBoundMode);
-	else
+	else 
 	{
-		printf("Error: currently support only at most 4 dimensions!\n");
-		status = SZ_DERR;
-	}
+		if(tdps->raBytes_size > 0) //v2.0
+		{
+			if (dim == 1)
+				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode);
+			else if(dim == 2)
+				decompressDataSeries_double_2D_nonblocked_with_blocked_regression(newData, r2, r1, tdps->raBytes);
+			else if(dim == 3)
+				decompressDataSeries_double_3D_nonblocked_with_blocked_regression(newData, r3, r2, r1, tdps->raBytes);
+			else if(dim == 4)
+				decompressDataSeries_double_3D_nonblocked_with_blocked_regression(newData, r4*r3, r2, r1, tdps->raBytes);
+			else
+			{
+				printf("Error: currently support only at most 4 dimensions!\n");
+				status = SZ_DERR;
+			}	
+		}
+		else //1.4.13
+		{
+			if (dim == 1)
+				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode);
+			else
+			if (dim == 2)
+				getSnapshotData_double_2D(newData,r2,r1,tdps, errBoundMode);
+			else
+			if (dim == 3)
+				getSnapshotData_double_3D(newData,r3,r2,r1,tdps, errBoundMode);
+			else
+			if (dim == 4)
+				getSnapshotData_double_4D(newData,r4,r3,r2,r1,tdps, errBoundMode);			
+			else
+			{
+				printf("Error: currently support only at most 4 dimensions!\n");
+				status = SZ_DERR;
+			}			
+		}
+	}	
+
 	free_TightDataPointStorageD2(tdps);
 	if(confparams_dec->szMode!=SZ_BEST_SPEED && cmpSize!=12+MetaDataByteLength+exe_params->SZ_SIZE_TYPE)
 		free(szTmpBytes);	
@@ -1922,7 +1945,7 @@ void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** 
 	memcpy(&use_mean, comp_data_pos, sizeof(unsigned char));
 	comp_data_pos += sizeof(unsigned char);
 	memcpy(&mean, comp_data_pos, sizeof(double));
-	comp_data_pos += sizeof(int);
+	comp_data_pos += sizeof(double);
 	size_t reg_count = 0;
 
 	unsigned char * indicator;
