@@ -1873,3 +1873,2401 @@ void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, s
 		}
 	}
 }
+
+
+void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, unsigned char* comp_data){
+
+	size_t dim0_offset = r2;
+	size_t num_elements = r1 * r2;
+
+	*data = (double*)malloc(sizeof(double)*num_elements);
+
+	unsigned char * comp_data_pos = comp_data;
+
+	size_t block_size = bytesToInt_bigEndian(comp_data_pos);
+	comp_data_pos += sizeof(int);
+	// calculate block dims
+	size_t num_x, num_y;
+	SZ_COMPUTE_3D_NUMBER_OF_BLOCKS(r1, num_x, block_size);
+	SZ_COMPUTE_3D_NUMBER_OF_BLOCKS(r2, num_y, block_size);
+
+	size_t split_index_x, split_index_y;
+	size_t early_blockcount_x, early_blockcount_y;
+	size_t late_blockcount_x, late_blockcount_y;
+	SZ_COMPUTE_BLOCKCOUNT(r1, num_x, split_index_x, early_blockcount_x, late_blockcount_x);
+	SZ_COMPUTE_BLOCKCOUNT(r2, num_y, split_index_y, early_blockcount_y, late_blockcount_y);
+
+	size_t num_blocks = num_x * num_y;
+
+	double realPrecision = bytesToDouble(comp_data_pos);
+	comp_data_pos += sizeof(double);
+	unsigned int intervals = bytesToInt_bigEndian(comp_data_pos);
+	comp_data_pos += sizeof(int);
+
+	updateQuantizationInfo(intervals);
+
+	unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);
+	comp_data_pos += sizeof(int);
+
+	int stateNum = 2*intervals;
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
+	
+	int nodeCount = bytesToInt_bigEndian(comp_data_pos);
+	
+	node root = reconstruct_HuffTree_from_bytes_anyStates(huffmanTree,comp_data_pos+4, nodeCount);
+	comp_data_pos += sizeof(int) + tree_size;
+
+	double mean;
+	unsigned char use_mean;
+	memcpy(&use_mean, comp_data_pos, sizeof(unsigned char));
+	comp_data_pos += sizeof(unsigned char);
+	memcpy(&mean, comp_data_pos, sizeof(double));
+	comp_data_pos += sizeof(int);
+	size_t reg_count = 0;
+
+	unsigned char * indicator;
+	size_t indicator_bitlength = (num_blocks - 1)/8 + 1;
+	convertByteArray2IntArray_fast_1b(num_blocks, comp_data_pos, indicator_bitlength, &indicator);
+	comp_data_pos += indicator_bitlength;
+	for(size_t i=0; i<num_blocks; i++){
+		if(!indicator[i]) reg_count ++;
+	}
+	//printf("reg_count: %ld\n", reg_count);
+
+	double* dec_a = NULL, *dec_b = NULL, *dec_c = NULL;
+	if(reg_count > 0){
+		double * medians = (double *) comp_data_pos;
+		double medianValue_a = *medians;
+		double medianValue_b = *(medians + 1);
+		double medianValue_c = *(medians + 2);
+		comp_data_pos += 3 * sizeof(double);
+
+		int * reqLength = (int *) comp_data_pos;
+		int reqLength_a = *reqLength;
+		int reqLength_b = *(reqLength + 1);
+		int reqLength_c = *(reqLength + 2);
+		comp_data_pos += 3 * sizeof(int);
+		
+		//reconstruct leading_number array in the form of meaningful integers....
+		size_t leadNumArray_size = (reg_count-1)/4+1;
+		
+		unsigned char* leadNum_a = NULL, *leadNum_b = NULL, *leadNum_c = NULL;
+		
+		unsigned char* leadNumArray = comp_data_pos;
+		convertByteArray2IntArray_fast_2b(reg_count, leadNumArray, leadNumArray_size, &leadNum_a);
+		comp_data_pos += leadNumArray_size;
+		
+		leadNumArray = comp_data_pos;
+		convertByteArray2IntArray_fast_2b(reg_count, leadNumArray, leadNumArray_size, &leadNum_b);
+		comp_data_pos += leadNumArray_size;
+		
+		leadNumArray = comp_data_pos;
+		convertByteArray2IntArray_fast_2b(reg_count, leadNumArray, leadNumArray_size, &leadNum_c);	
+		comp_data_pos += leadNumArray_size;
+				
+		//reconstruct mid bytes...
+		size_t * mid_byte_size_a = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* exactMidBytes_a = comp_data_pos;
+		comp_data_pos += *mid_byte_size_a;
+		
+		size_t * mid_byte_size_b = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* exactMidBytes_b = comp_data_pos;	
+		comp_data_pos += *mid_byte_size_b;	
+		
+		size_t * mid_byte_size_c = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* exactMidBytes_c = comp_data_pos;	
+		comp_data_pos += *mid_byte_size_c;			
+		
+		//reconstruct the residualMidBits		
+		size_t * resiMidBites_a_size = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* residualMidBits_a = comp_data_pos;
+		comp_data_pos += *resiMidBites_a_size;
+
+		size_t * resiMidBites_b_size = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* residualMidBits_b = comp_data_pos;
+		comp_data_pos += *resiMidBites_b_size;
+		
+		size_t * resiMidBites_c_size = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* residualMidBits_c = comp_data_pos;
+		comp_data_pos += *resiMidBites_c_size;
+				
+		//perform the decompression using the reconstructed leadNum, exactMidBytes and residualMidBits....
+		decompressExactDataArray_double(leadNum_a, exactMidBytes_a, residualMidBits_a, reg_count, reqLength_a, medianValue_a, &dec_a);
+		decompressExactDataArray_double(leadNum_b, exactMidBytes_b, residualMidBits_b, reg_count, reqLength_b, medianValue_b, &dec_b);
+		decompressExactDataArray_double(leadNum_c, exactMidBytes_c, residualMidBits_c, reg_count, reqLength_c, medianValue_c, &dec_c);
+		free(leadNum_a);
+		free(leadNum_b);
+		free(leadNum_c);
+		
+	}
+	size_t total_unpred;
+	memcpy(&total_unpred, comp_data_pos, sizeof(size_t));
+	comp_data_pos += sizeof(size_t);
+	double * unpred_data = (double *) comp_data_pos;
+	comp_data_pos += total_unpred * sizeof(double);
+
+	int * result_type = (int *) malloc(num_elements * sizeof(int));
+	decode(comp_data_pos, num_elements, root, result_type);
+	SZ_ReleaseHuffman(huffmanTree);
+	
+	int intvRadius = exe_params->intvRadius;
+	
+	int * type;
+
+	double * data_pos = *data;
+	size_t offset_x, offset_y;
+	size_t current_blockcount_x, current_blockcount_y;
+	size_t cur_unpred_count;
+
+	double * dec_a_pos = dec_a;
+	double * dec_b_pos = dec_b;
+	double * dec_c_pos = dec_c;
+	unsigned char * indicator_pos = indicator;
+	if(use_mean){
+		type = result_type;
+		for(size_t i=0; i<num_x; i++){
+			for(size_t j=0; j<num_y; j++){
+				offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
+				offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
+				data_pos = *data + offset_x * dim0_offset + offset_y;
+
+				current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
+				current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
+
+				size_t current_block_elements = current_blockcount_x * current_blockcount_y;
+				if(*indicator_pos){
+					// decompress by SZ
+
+					double * block_data_pos = data_pos;
+					double pred;
+					size_t index = 0;
+					int type_;
+					// d11 is current data
+					size_t unpredictable_count = 0;
+					double d00, d01, d10;
+					for(size_t ii=0; ii<current_blockcount_x; ii++){
+						for(size_t jj=0; jj<current_blockcount_y; jj++){
+							type_ = type[index];
+							if(type_ == intvRadius){
+								*block_data_pos = mean;
+							}
+							else if(type_ == 0){
+								*block_data_pos = unpred_data[unpredictable_count ++];
+							}
+							else{
+								d00 = d01 = d10 = 1;
+								if(i == 0 && ii == 0){
+									d00 = d01 = 0;
+								}
+								if(j == 0 && jj == 0){
+									d00 = d10 = 0;
+								}
+								if(d00){
+									d00 = block_data_pos[- dim0_offset - 1];
+								}
+								if(d01){
+									d01 = block_data_pos[- dim0_offset];
+								}
+								if(d10){
+									d10 = block_data_pos[- 1];
+								}
+								if(type_ < intvRadius) type_ += 1;
+								pred = d10 + d01 - d00;
+								*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+							}
+							index ++;
+							block_data_pos ++;
+						}
+						block_data_pos += dim0_offset - current_blockcount_y;
+					}
+					cur_unpred_count = unpredictable_count;
+				}
+				else{
+					// decompress by regression
+					{
+						double * block_data_pos = data_pos;
+						double pred;
+						int type_;
+						size_t index = 0;
+						size_t unpredictable_count = 0;
+						for(size_t ii=0; ii<current_blockcount_x; ii++){
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								type_ = type[index];
+								if (type_ != 0){
+									pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0];
+									*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+								}
+								else{
+									*block_data_pos = unpred_data[unpredictable_count ++];
+								}
+
+								index ++;	
+								block_data_pos ++;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+
+					dec_a_pos ++, dec_b_pos ++, dec_c_pos ++;
+				}
+
+				type += current_block_elements;
+				indicator_pos ++;
+				unpred_data += cur_unpred_count;
+			}
+		}
+	}
+	else{
+		type = result_type;
+		for(size_t i=0; i<num_x; i++){
+			for(size_t j=0; j<num_y; j++){
+				offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
+				offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
+				data_pos = *data + offset_x * dim0_offset + offset_y;
+
+				current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
+				current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
+
+				size_t current_block_elements = current_blockcount_x * current_blockcount_y;
+				if(*indicator_pos){
+					// decompress by SZ
+					
+					double * block_data_pos = data_pos;
+					double pred;
+					size_t index = 0;
+					int type_;
+					// d11 is current data
+					size_t unpredictable_count = 0;
+					double d00, d01, d10;
+					for(size_t ii=0; ii<current_blockcount_x; ii++){
+						for(size_t jj=0; jj<current_blockcount_y; jj++){
+							type_ = type[index];
+							if(type_ == 0){
+								*block_data_pos = unpred_data[unpredictable_count ++];
+							}
+							else{
+								d00 = d01 = d10 = 1;
+								if(i == 0 && ii == 0){
+									d00 = d01 = 0;
+								}
+								if(j == 0 && jj == 0){
+									d00 = d10 = 0;
+								}
+								if(d00){
+									d00 = block_data_pos[- dim0_offset - 1];
+								}
+								if(d01){
+									d01 = block_data_pos[- dim0_offset];
+								}
+								if(d10){
+									d10 = block_data_pos[- 1];
+								}
+								pred = d10 + d01 - d00;
+								*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+							}
+							index ++;
+							block_data_pos ++;
+						}
+						block_data_pos += dim0_offset - current_blockcount_y;
+					}
+					cur_unpred_count = unpredictable_count;
+				}
+				else{
+					// decompress by regression
+					{
+						double * block_data_pos = data_pos;
+						double pred;
+						int type_;
+						size_t index = 0;
+						size_t unpredictable_count = 0;
+						for(size_t ii=0; ii<current_blockcount_x; ii++){
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								type_ = type[index];
+								if (type_ != 0){
+									pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0];
+									*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+								}
+								else{
+									*block_data_pos = unpred_data[unpredictable_count ++];
+								}
+								index ++;	
+								block_data_pos ++;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					dec_a_pos ++, dec_b_pos ++, dec_c_pos ++;
+				}
+
+				type += current_block_elements;
+				indicator_pos ++;
+				unpred_data += cur_unpred_count;
+			}
+		}
+	}
+	if(NULL != dec_a) free(dec_a);
+	if(NULL != dec_b) free(dec_b);
+	if(NULL != dec_c) free(dec_c);
+
+	free(indicator);
+	free(result_type);
+}
+
+
+void decompressDataSeries_double_3D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data){
+
+	size_t dim0_offset = r2 * r3;
+	size_t dim1_offset = r3;
+	size_t num_elements = r1 * r2 * r3;
+
+	*data = (double*)malloc(sizeof(double)*num_elements);
+
+	unsigned char * comp_data_pos = comp_data;
+
+	size_t block_size = bytesToInt_bigEndian(comp_data_pos);
+	comp_data_pos += sizeof(int);
+	// calculate block dims
+	size_t num_x, num_y, num_z;
+	SZ_COMPUTE_3D_NUMBER_OF_BLOCKS(r1, num_x, block_size);
+	SZ_COMPUTE_3D_NUMBER_OF_BLOCKS(r2, num_y, block_size);
+	SZ_COMPUTE_3D_NUMBER_OF_BLOCKS(r3, num_z, block_size);
+
+	size_t split_index_x, split_index_y, split_index_z;
+	size_t early_blockcount_x, early_blockcount_y, early_blockcount_z;
+	size_t late_blockcount_x, late_blockcount_y, late_blockcount_z;
+	SZ_COMPUTE_BLOCKCOUNT(r1, num_x, split_index_x, early_blockcount_x, late_blockcount_x);
+	SZ_COMPUTE_BLOCKCOUNT(r2, num_y, split_index_y, early_blockcount_y, late_blockcount_y);
+	SZ_COMPUTE_BLOCKCOUNT(r3, num_z, split_index_z, early_blockcount_z, late_blockcount_z);
+
+	size_t num_blocks = num_x * num_y * num_z;
+
+	double realPrecision = bytesToDouble(comp_data_pos);
+	comp_data_pos += sizeof(double);
+	unsigned int intervals = bytesToInt_bigEndian(comp_data_pos);
+	comp_data_pos += sizeof(int);
+
+	updateQuantizationInfo(intervals);
+
+	unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);
+	comp_data_pos += sizeof(int);
+	
+	int stateNum = 2*intervals;
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);	
+	
+	int nodeCount = bytesToInt_bigEndian(comp_data_pos);
+	node root = reconstruct_HuffTree_from_bytes_anyStates(huffmanTree,comp_data_pos+4, nodeCount);
+	comp_data_pos += sizeof(int) + tree_size;
+
+	double mean;
+	unsigned char use_mean;
+	memcpy(&use_mean, comp_data_pos, sizeof(unsigned char));
+	comp_data_pos += sizeof(unsigned char);
+	memcpy(&mean, comp_data_pos, sizeof(double));
+	comp_data_pos += sizeof(double);
+	size_t reg_count = 0;
+
+	unsigned char * indicator;
+	size_t indicator_bitlength = (num_blocks - 1)/8 + 1;
+	convertByteArray2IntArray_fast_1b(num_blocks, comp_data_pos, indicator_bitlength, &indicator);
+	comp_data_pos += indicator_bitlength;
+	for(size_t i=0; i<num_blocks; i++){
+		if(!indicator[i]) reg_count ++;
+	}
+	double* dec_a = NULL, *dec_b = NULL, *dec_c = NULL, *dec_d = NULL;
+	if(reg_count > 0){
+		double * medians = (double *) comp_data_pos;
+		double medianValue_a = *medians;
+		double medianValue_b = *(medians + 1);
+		double medianValue_c = *(medians + 2);
+		double medianValue_d = *(medians + 3);
+		comp_data_pos += 4 * sizeof(double);
+
+		int * reqLength = (int *) comp_data_pos;
+		int reqLength_a = *reqLength;
+		int reqLength_b = *(reqLength + 1);
+		int reqLength_c = *(reqLength + 2);
+		int reqLength_d = *(reqLength + 3);
+		comp_data_pos += 4 * sizeof(int);
+		
+		//reconstruct leading_number array in the form of meaningful integers....
+		size_t leadNumArray_size = (reg_count-1)/4+1;
+		
+		unsigned char* leadNum_a = NULL, *leadNum_b = NULL, *leadNum_c = NULL, *leadNum_d = NULL;
+		
+		unsigned char* leadNumArray = comp_data_pos;
+		convertByteArray2IntArray_fast_2b(reg_count, leadNumArray, leadNumArray_size, &leadNum_a);
+		comp_data_pos += leadNumArray_size;
+		
+		leadNumArray = comp_data_pos;
+		convertByteArray2IntArray_fast_2b(reg_count, leadNumArray, leadNumArray_size, &leadNum_b);
+		comp_data_pos += leadNumArray_size;
+		
+		leadNumArray = comp_data_pos;
+		convertByteArray2IntArray_fast_2b(reg_count, leadNumArray, leadNumArray_size, &leadNum_c);	
+		comp_data_pos += leadNumArray_size;
+		
+		leadNumArray = comp_data_pos;
+		convertByteArray2IntArray_fast_2b(reg_count, leadNumArray, leadNumArray_size, &leadNum_d);			
+		comp_data_pos += leadNumArray_size;
+		
+		//reconstruct mid bytes...
+		size_t * mid_byte_size_a = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* exactMidBytes_a = comp_data_pos;
+		comp_data_pos += *mid_byte_size_a;
+		
+		size_t * mid_byte_size_b = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* exactMidBytes_b = comp_data_pos;	
+		comp_data_pos += *mid_byte_size_b;	
+		
+		size_t * mid_byte_size_c = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* exactMidBytes_c = comp_data_pos;	
+		comp_data_pos += *mid_byte_size_c;			
+		
+		size_t * mid_byte_size_d = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* exactMidBytes_d = comp_data_pos;	
+		comp_data_pos += *mid_byte_size_d;			
+
+		//reconstruct the residualMidBits		
+		size_t * resiMidBites_a_size = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* residualMidBits_a = comp_data_pos;
+		comp_data_pos += *resiMidBites_a_size;
+
+		size_t * resiMidBites_b_size = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* residualMidBits_b = comp_data_pos;
+		comp_data_pos += *resiMidBites_b_size;
+		
+		size_t * resiMidBites_c_size = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* residualMidBits_c = comp_data_pos;
+		comp_data_pos += *resiMidBites_c_size;
+		
+		size_t * resiMidBites_d_size = (size_t *) comp_data_pos;
+		comp_data_pos += sizeof(size_t);
+		unsigned char* residualMidBits_d = comp_data_pos;
+		comp_data_pos += *resiMidBites_d_size;				
+		
+		//perform the decompression using the reconstructed leadNum, exactMidBytes and residualMidBits....
+		decompressExactDataArray_double(leadNum_a, exactMidBytes_a, residualMidBits_a, reg_count, reqLength_a, medianValue_a, &dec_a);
+		decompressExactDataArray_double(leadNum_b, exactMidBytes_b, residualMidBits_b, reg_count, reqLength_b, medianValue_b, &dec_b);
+		decompressExactDataArray_double(leadNum_c, exactMidBytes_c, residualMidBits_c, reg_count, reqLength_c, medianValue_c, &dec_c);
+		decompressExactDataArray_double(leadNum_d, exactMidBytes_d, residualMidBits_d, reg_count, reqLength_d, medianValue_d, &dec_d);
+
+		free(leadNum_a);
+		free(leadNum_b);
+		free(leadNum_c);
+		free(leadNum_d);				
+		
+	}
+
+	size_t total_unpred;
+	memcpy(&total_unpred, comp_data_pos, sizeof(size_t));
+	comp_data_pos += sizeof(size_t);
+	double * unpred_data = (double *) comp_data_pos;
+	comp_data_pos += total_unpred * sizeof(double);
+
+	int * result_type = (int *) malloc(num_elements * sizeof(int));
+	decode(comp_data_pos, num_elements, root, result_type);
+	SZ_ReleaseHuffman(huffmanTree);
+	
+	int intvRadius = exe_params->intvRadius;
+	
+	int * type;
+	double * data_pos = *data;
+	size_t offset_x, offset_y, offset_z;
+	size_t current_blockcount_x, current_blockcount_y, current_blockcount_z;
+	size_t cur_unpred_count;
+	double * dec_a_pos = dec_a;
+	double * dec_b_pos = dec_b;
+	double * dec_c_pos = dec_c;
+	double * dec_d_pos = dec_d;
+	unsigned char * indicator_pos = indicator;
+	if(use_mean){
+		type = result_type;
+		// i == 0
+		{
+			// j == 0
+			{
+				// k == 0
+				{
+					data_pos = *data;
+
+					current_blockcount_x = early_blockcount_x;
+					current_blockcount_y = early_blockcount_y;
+					current_blockcount_z = early_blockcount_z;
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						// ii == 0
+						{
+							// jj == 0
+							{
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = 0;
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] - block_data_pos[- dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;						
+						}
+						for(size_t ii=1; ii<current_blockcount_x; ii++){
+							// jj == 0
+							{
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- dim0_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				} // end k == 0
+				// i == 0 j == 0 k != 0
+				for(size_t k=1; k<num_z; k++){
+					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+					data_pos = *data + offset_z;
+
+					current_blockcount_x = early_blockcount_x;
+					current_blockcount_y = early_blockcount_y;
+					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
+
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						// ii == 0
+						{
+							// jj == 0
+							{
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] - block_data_pos[- dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						for(size_t ii=1; ii<current_blockcount_x; ii++){
+							// jj == 0
+							{
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				}
+			}// end j==0
+			for(size_t j=1; j<num_y; j++){
+				// k == 0
+				{
+					offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
+					data_pos = *data + offset_y * dim1_offset;
+
+					current_blockcount_x = early_blockcount_x;
+					current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
+					current_blockcount_z = early_blockcount_z;
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						// ii == 0
+						{
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] - block_data_pos[- dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						for(size_t ii=1; ii<current_blockcount_x; ii++){
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				} // end k == 0
+				for(size_t k=1; k<num_z; k++){
+					offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
+					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+					data_pos = *data + offset_y * dim1_offset + offset_z;
+
+					current_blockcount_x = early_blockcount_x;
+					current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
+					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
+
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						// ii == 0
+						{
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] - block_data_pos[- dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						for(size_t ii=1; ii<current_blockcount_x; ii++){
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				}
+			}
+		} // end i==0
+		for(size_t i=1; i<num_x; i++){
+			// j == 0
+			{
+				// k == 0
+				{
+					offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
+					data_pos = *data + offset_x * dim0_offset;
+
+					current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
+					current_blockcount_y = early_blockcount_y;
+					current_blockcount_z = early_blockcount_z;
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						for(size_t ii=0; ii<current_blockcount_x; ii++){
+							// jj == 0
+							{
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- dim0_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				} // end k == 0
+				for(size_t k=1; k<num_z; k++){
+					offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
+					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+					data_pos = *data + offset_x * dim0_offset + offset_z;
+
+					current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
+					current_blockcount_y = early_blockcount_y;
+					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						for(size_t ii=0; ii<current_blockcount_x; ii++){
+							// jj == 0
+							{
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				}
+			}// end j = 0
+			for(size_t j=1; j<num_y; j++){
+				// k == 0
+				{
+					offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
+					offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
+					data_pos = *data + offset_x * dim0_offset + offset_y * dim1_offset;
+
+					current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
+					current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
+					current_blockcount_z = early_blockcount_z;
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						for(size_t ii=0; ii<current_blockcount_x; ii++){
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						// reg_params += 4;
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				} // end k == 0
+				for(size_t k=1; k<num_z; k++){
+					offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
+					offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
+					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+					data_pos = *data + offset_x * dim0_offset + offset_y * dim1_offset + offset_z;
+
+					current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
+					current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
+					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
+
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						for(size_t ii=0; ii<current_blockcount_x; ii++){
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == intvRadius){
+										*block_data_pos = mean;
+									}
+									else if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										if(type_ < intvRadius) type_ += 1;
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				}
+			}
+		}
+	}
+	else{
+		type = result_type;
+		// i == 0
+		{
+			// j == 0
+			{
+				// k == 0
+				{
+					data_pos = *data;
+
+					current_blockcount_x = early_blockcount_x;
+					current_blockcount_y = early_blockcount_y;
+					current_blockcount_z = early_blockcount_z;
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						// ii == 0
+						{
+							// jj == 0
+							{
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = 0;
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] - block_data_pos[- dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;						
+						}
+						for(size_t ii=1; ii<current_blockcount_x; ii++){
+							// jj == 0
+							{
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- dim0_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				} // end k == 0
+				// i == 0 j == 0 k != 0
+				for(size_t k=1; k<num_z; k++){
+					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+					data_pos = *data + offset_z;
+
+					current_blockcount_x = early_blockcount_x;
+					current_blockcount_y = early_blockcount_y;
+					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
+
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						// ii == 0
+						{
+							// jj == 0
+							{
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] - block_data_pos[- dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						for(size_t ii=1; ii<current_blockcount_x; ii++){
+							// jj == 0
+							{
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				}
+			}// end j==0
+			for(size_t j=1; j<num_y; j++){
+				// k == 0
+				{
+					offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
+					data_pos = *data + offset_y * dim1_offset;
+
+					current_blockcount_x = early_blockcount_x;
+					current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
+					current_blockcount_z = early_blockcount_z;
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						// ii == 0
+						{
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] - block_data_pos[- dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						for(size_t ii=1; ii<current_blockcount_x; ii++){
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				} // end k == 0
+				for(size_t k=1; k<num_z; k++){
+					offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
+					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+					data_pos = *data + offset_y * dim1_offset + offset_z;
+
+					current_blockcount_x = early_blockcount_x;
+					current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
+					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
+
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						// ii == 0
+						{
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] - block_data_pos[- dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						for(size_t ii=1; ii<current_blockcount_x; ii++){
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				}
+			}
+		} // end i==0
+		for(size_t i=1; i<num_x; i++){
+			// j == 0
+			{
+				// k == 0
+				{
+					offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
+					data_pos = *data + offset_x * dim0_offset;
+
+					current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
+					current_blockcount_y = early_blockcount_y;
+					current_blockcount_z = early_blockcount_z;
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						for(size_t ii=0; ii<current_blockcount_x; ii++){
+							// jj == 0
+							{
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- dim0_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				} // end k == 0
+				for(size_t k=1; k<num_z; k++){
+					offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
+					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+					data_pos = *data + offset_x * dim0_offset + offset_z;
+
+					current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
+					current_blockcount_y = early_blockcount_y;
+					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
+
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						for(size_t ii=0; ii<current_blockcount_x; ii++){
+							// jj == 0
+							{
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							for(size_t jj=1; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				}
+			}// end j = 0
+			for(size_t j=1; j<num_y; j++){
+				// k == 0
+				{
+					offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
+					offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
+					data_pos = *data + offset_x * dim0_offset + offset_y * dim1_offset;
+
+					current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
+					current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
+					current_blockcount_z = early_blockcount_z;
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						for(size_t ii=0; ii<current_blockcount_x; ii++){
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								{
+									// kk == 0
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim0_offset - dim1_offset];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								for(size_t kk=1; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				} // end k == 0
+				for(size_t k=1; k<num_z; k++){
+					offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
+					offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
+					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+					data_pos = *data + offset_x * dim0_offset + offset_y * dim1_offset + offset_z;
+
+					current_blockcount_x = (i < split_index_x) ? early_blockcount_x : late_blockcount_x;
+					current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
+					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
+
+					size_t current_block_elements = current_blockcount_x * current_blockcount_y * current_blockcount_z;
+					if(*indicator_pos){
+						// decompress by SZ
+						double * block_data_pos = data_pos;
+						double pred;
+						size_t index = 0;
+						int type_;
+						size_t unpredictable_count = 0;
+						for(size_t ii=0; ii<current_blockcount_x; ii++){
+							for(size_t jj=0; jj<current_blockcount_y; jj++){
+								for(size_t kk=0; kk<current_blockcount_z; kk++){
+									type_ = type[index];
+									if(type_ == 0){
+										*block_data_pos = unpred_data[unpredictable_count ++];
+									}
+									else{
+										pred = block_data_pos[- 1] + block_data_pos[- dim1_offset] + block_data_pos[- dim0_offset] - block_data_pos[- dim1_offset - 1] - block_data_pos[- dim0_offset - 1] - block_data_pos[- dim0_offset - dim1_offset] + block_data_pos[- dim0_offset - dim1_offset - 1];
+										*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+									}
+									index ++;
+									block_data_pos ++;
+								}
+								block_data_pos += dim1_offset - current_blockcount_z;
+							}
+							block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+						}
+						cur_unpred_count = unpredictable_count;
+					}
+					else{
+						// decompress by regression
+						{
+							double * block_data_pos = data_pos;
+							double pred;
+							int type_;
+							size_t index = 0;
+							size_t unpredictable_count = 0;
+							for(size_t ii=0; ii<current_blockcount_x; ii++){
+								for(size_t jj=0; jj<current_blockcount_y; jj++){
+									for(size_t kk=0; kk<current_blockcount_z; kk++){
+										type_ = type[index];
+										if (type_ != 0){
+											pred = dec_a_pos[0] * ii + dec_b_pos[0] * jj + dec_c_pos[0] * kk + dec_d_pos[0];
+											*block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
+										}
+										else{
+											*block_data_pos = unpred_data[unpredictable_count ++];
+										}
+										index ++;	
+										block_data_pos ++;
+									}
+									block_data_pos += dim1_offset - current_blockcount_z;
+								}
+								block_data_pos += dim0_offset - current_blockcount_y * dim1_offset;
+							}
+							cur_unpred_count = unpredictable_count;
+						}
+						dec_a_pos ++, dec_b_pos ++, dec_c_pos ++, dec_d_pos ++;
+					}
+
+					indicator_pos ++;
+					type += current_block_elements;
+					unpred_data += cur_unpred_count;
+				}
+			}
+		}
+	}
+	if(NULL != dec_a) free(dec_a);
+	if(NULL != dec_b) free(dec_b);
+	if(NULL != dec_c) free(dec_c);
+	if(NULL != dec_d) free(dec_d);
+
+	free(indicator);
+	free(result_type);
+}

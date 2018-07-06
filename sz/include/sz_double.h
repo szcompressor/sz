@@ -75,6 +75,12 @@ size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, siz
 TightDataPointStorageD* SZ_compress_double_4D_MDQ_subblock(double *oriData, double realPrecision, double valueRangeSize, double medianValue_d,
 size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, size_t s4, size_t e1, size_t e2, size_t e3, size_t e4);
 
+unsigned int optimize_intervals_double_2D_with_freq_and_dense_pos(double *oriData, size_t r1, size_t r2, double realPrecision, double * dense_pos, double * max_freq, double * mean_freq);
+unsigned int optimize_intervals_double_3D_with_freq_and_dense_pos(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, double * dense_pos, double * max_freq, double * mean_freq);
+unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(double *oriData, size_t r1, size_t r2, double realPrecision, size_t * comp_size);
+unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t * comp_size);
+
+
 #ifdef __cplusplus
 }
 #endif
