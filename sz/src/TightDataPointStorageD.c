@@ -46,6 +46,10 @@ void new_TightDataPointStorageD_Empty(TightDataPointStorageD **this)
 	(*this)->segment_size = 0;
 	(*this)->pwrErrBoundBytes = NULL;
 	(*this)->pwrErrBoundBytes_size = 0;
+	
+	(*this)->raBytes = NULL;
+	(*this)->raBytes_size = 0;
+
 }
 
 int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsigned char* flatBytes, size_t flatBytesLength)
@@ -94,6 +98,8 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 	}
 	index += MetaDataByteLength;
 
+	int isRandomAccess = (sameRByte >> 7) & 0x01;
+
 	unsigned char dsLengthBytes[8];
 	for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)
 		dsLengthBytes[i] = flatBytes[index++];
@@ -120,6 +126,13 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 	}
 	else
 		(*this)->allSameData = 0;
+		
+	if(isRandomAccess == 1)
+	{
+		(*this)->raBytes_size = flatBytesLength - 3 - 1 - MetaDataByteLength;
+		(*this)->raBytes = &(flatBytes[index]);
+		return errorBoundMode;
+	}					
 		
 	int rtype_ = sameRByte & 0x08; //1000		
 

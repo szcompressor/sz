@@ -595,6 +595,8 @@ int initRandomAccessBytes(unsigned char* raBytes)
 
         return k;
 }
+
+//The following functions are float-precision version of dealing with the unpredictable data points 
 int generateLossyCoefficients_float(float* oriData, double precision, size_t nbEle, int* reqBytesLength, int* resiBitsLength, float* medianValue, float* decData)
 {
 	float valueRangeSize;
@@ -732,3 +734,138 @@ void decompressExactDataArray_float(unsigned char* leadNum, unsigned char* exact
 	}	
 }
 
+//double-precision version of dealing with unpredictable data points in sz 2.0
+int generateLossyCoefficients_double(double* oriData, double precision, size_t nbEle, int* reqBytesLength, int* resiBitsLength, double* medianValue, double* decData)
+{
+	double valueRangeSize;
+	
+	computeRangeSize_double(oriData, nbEle, &valueRangeSize, medianValue);
+	short radExpo = getExponent_double(valueRangeSize/2);
+	
+	int reqLength;
+	computeReqLength_double(precision, radExpo, &reqLength, medianValue);
+	
+	*reqBytesLength = reqLength/8;
+	*resiBitsLength = reqLength%8;
+	
+	size_t i = 0;
+	for(i = 0;i < nbEle;i++)
+	{
+		double normValue = oriData[i] - *medianValue;
+
+		ldouble ldBuf;
+		ldBuf.value = normValue;
+				
+		int ignBytesLength = 64 - reqLength;
+		if(ignBytesLength<0)
+			ignBytesLength = 0;
+			
+		ldBuf.lvalue = (ldBuf.lvalue >> ignBytesLength) << ignBytesLength;
+		
+		decData[i] = ldBuf.value + *medianValue;
+	}
+	return reqLength;
+}	
+		
+/**
+ * @param double* oriData: inplace argument (input / output)
+ * 
+ * */		
+int compressExactDataArray_double(double* oriData, double precision, size_t nbEle, unsigned char** leadArray, unsigned char** midArray, unsigned char** resiArray, 
+int reqLength, int reqBytesLength, int resiBitsLength, double medianValue)
+{
+	//allocate memory for coefficient compression arrays
+	DynamicIntArray *exactLeadNumArray;
+	new_DIA(&exactLeadNumArray, DynArrayInitLen);	
+	DynamicByteArray *exactMidByteArray;
+	new_DBA(&exactMidByteArray, DynArrayInitLen);
+	DynamicIntArray *resiBitArray;
+	new_DIA(&resiBitArray, DynArrayInitLen);
+	unsigned char preDataBytes[8] = {0,0,0,0,0,0,0,0};	
+
+	//allocate memory for vce and lce
+	DoubleValueCompressElement *vce = (DoubleValueCompressElement*)malloc(sizeof(DoubleValueCompressElement));
+	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));	
+
+	size_t i = 0;
+	for(i = 0;i < nbEle;i++)
+	{
+		compressSingleDoubleValue(vce, oriData[i], precision, medianValue, reqLength, reqBytesLength, resiBitsLength);
+		updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+		memcpy(preDataBytes,vce->curBytes,8);
+		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+		oriData[i] = vce->data;
+	}
+	convertDIAtoInts(exactLeadNumArray, leadArray);
+	convertDBAtoBytes(exactMidByteArray,midArray);
+	convertDIAtoInts(resiBitArray, resiArray);
+
+	size_t midArraySize = exactMidByteArray->size;
+	
+	free(vce);
+	free(lce);
+	
+	free_DIA(exactLeadNumArray);
+	free_DBA(exactMidByteArray);
+	free_DIA(resiBitArray);
+	
+	return midArraySize;
+}
+
+void decompressExactDataArray_double(unsigned char* leadNum, unsigned char* exactMidBytes, unsigned char* residualMidBits, size_t nbEle, int reqLength, float medianValue, float** decData)
+{
+	*decData = (double*)malloc(nbEle*sizeof(double));
+	size_t i = 0, j = 0, k = 0, l = 0, p = 0, curByteIndex = 0;
+	double exactData = 0;
+	unsigned char preBytes[8] = {0,0,0,0,0,0,0,0};
+	unsigned char curBytes[8];
+	int resiBits; 
+	unsigned char leadingNum;		
+	
+	int reqBytesLength = reqLength/8;
+	int resiBitsLength = reqLength%8;
+	
+	for(i = 0; i<nbEle;i++)
+	{
+		// compute resiBits
+		resiBits = 0;
+		if (resiBitsLength != 0) {
+			int kMod8 = k % 8;
+			int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+			if (rightMovSteps > 0) {
+				int code = getRightMovingCode(kMod8, resiBitsLength);
+				resiBits = (residualMidBits[p] & code) >> rightMovSteps;
+			} else if (rightMovSteps < 0) {
+				int code1 = getLeftMovingCode(kMod8);
+				int code2 = getRightMovingCode(kMod8, resiBitsLength);
+				int leftMovSteps = -rightMovSteps;
+				rightMovSteps = 8 - leftMovSteps;
+				resiBits = (residualMidBits[p] & code1) << leftMovSteps;
+				p++;
+				resiBits = resiBits
+						| ((residualMidBits[p] & code2) >> rightMovSteps);
+			} else // rightMovSteps == 0
+			{
+				int code = getRightMovingCode(kMod8, resiBitsLength);
+				resiBits = (residualMidBits[p] & code);
+				p++;
+			}
+			k += resiBitsLength;
+		}
+
+		// recover the exact data	
+		memset(curBytes, 0, 8);
+		leadingNum = leadNum[l++];
+		memcpy(curBytes, preBytes, leadingNum);
+		for (j = leadingNum; j < reqBytesLength; j++)
+			curBytes[j] = exactMidBytes[curByteIndex++];
+		if (resiBitsLength != 0) {
+			unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+			curBytes[reqBytesLength] = resiByte;
+		}
+
+		exactData = bytesToDouble(curBytes);
+		(*decData)[i] = exactData + medianValue;
+		memcpy(preBytes,curBytes,8);
+	}
+}
