@@ -79,7 +79,7 @@ int main(int argc, char * argv[])
     size_t outSize; 
     ZC_DataProperty* dataProperty = ZC_startCmpr(varName, ZC_DOUBLE, data, r5, r4, r3, r2, r1);
    
-    unsigned char *bytes = SZ_compress_args(SZ_DOUBLE, data, &outSize, errboundmode, absErrBound, absErrBound, absErrBound, 0, r5, r4, r3, r2, r1);
+    unsigned char *bytes = SZ_compress_args(SZ_DOUBLE, data, &outSize, errboundmode, absErrBound, absErrBound, absErrBound, r5, r4, r3, r2, r1);
     //unsigned char *bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
     ZC_CompareData* compareResult = ZC_endCmpr(dataProperty, solName, outSize);
     //writeByteData(bytes, outSize, outputFilePath, &status);
