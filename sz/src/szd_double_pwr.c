@@ -1347,4 +1347,77 @@ void decompressDataSeries_double_1D_pwrgroup(double** data, size_t dataSeriesLen
 	free(groupErrorBounds);
 	free(groupID);
 }
+
+void decompressDataSeries_double_1D_pwr_pre_log(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps) {
+
+	decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
+	double threshold = tdps->minLogValue;
+	if(tdps->pwrErrBoundBytes_size > 0){
+		unsigned char * signs;
+		unsigned long tmpSize = zlib_uncompress5(tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+			else (*data)[i] = exp2((*data)[i]);
+			if(signs[i]) (*data)[i] = -((*data)[i]);
+		}
+		free(signs);
+	}
+	else{
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+			else (*data)[i] = exp2((*data)[i]);
+		}
+	}
+
+}
+
+void decompressDataSeries_double_2D_pwr_pre_log(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps) {
+
+	size_t dataSeriesLength = r1 * r2;
+	decompressDataSeries_double_2D(data, r1, r2, tdps);
+	double threshold = tdps->minLogValue;
+	if(tdps->pwrErrBoundBytes_size > 0){
+		unsigned char * signs;
+		unsigned long tmpSize = zlib_uncompress5(tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+			else (*data)[i] = exp2((*data)[i]);
+			if(signs[i]) (*data)[i] = -((*data)[i]);
+		}
+		free(signs);
+	}
+	else{
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+			else (*data)[i] = exp2((*data)[i]);
+		}
+	}
+}
+
+void decompressDataSeries_double_3D_pwr_pre_log(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps) {
+
+	size_t dataSeriesLength = r1 * r2 * r3;
+	decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
+	double threshold = tdps->minLogValue;
+	if(tdps->pwrErrBoundBytes_size > 0){
+		unsigned char * signs;
+		unsigned long tmpSize = zlib_uncompress5(tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+			else (*data)[i] = exp2((*data)[i]);
+			if(signs[i]) (*data)[i] = -((*data)[i]);
+		}
+		free(signs);
+	}
+	else{
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+			else (*data)[i] = exp2((*data)[i]);
+		}
+	}
+}
+
 #pragma GCC diagnostic pop

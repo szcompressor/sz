@@ -1780,3 +1780,184 @@ size_t dataLength, double absErrBound, double relBoundRatio, double pwrErrRatio,
 
         free_TightDataPointStorageF(tdps);
 }
+
+#include <stdbool.h>
+
+void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log(unsigned char** newByteData, float *oriData, double pwrErrRatio, size_t dataLength, size_t *outSize, float min, float max){
+
+	float * log_data = (float *) malloc(dataLength * sizeof(float));
+	float threshold = fabs(min) > fabs(max) ? fabs(min) : fabs(max);
+
+	unsigned char * signs = (unsigned char *) malloc(dataLength);
+	memset(signs, 0, dataLength);
+	// preprocess
+	float max_abs_log_data = fabs(log2(threshold));
+	float min_log_data = log2(fabs(oriData[0]));
+	bool positive = true;
+	for(size_t i=0; i<dataLength; i++){
+		if(oriData[i] < 0){
+			signs[i] = 1;
+			log_data[i] = -oriData[i];
+			positive = false;
+		}
+		else
+			log_data[i] = oriData[i];
+		if(log_data[i] > 0){
+			log_data[i] = log2(log_data[i]);
+			if(log_data[i] > max_abs_log_data) max_abs_log_data = log_data[i];
+			if(log_data[i] < min_log_data) min_log_data = log_data[i];
+		}
+	}
+
+	float valueRangeSize, medianValue_f;
+	computeRangeSize_float(log_data, dataLength, &valueRangeSize, &medianValue_f);	
+	if(fabs(min_log_data) > max_abs_log_data) max_abs_log_data = fabs(min_log_data);
+	double realPrecision = log2(1.0 + pwrErrRatio) - max_abs_log_data * 1.2e-7;
+	for(size_t i=0; i<dataLength; i++){
+		if(oriData[i] == 0){
+			log_data[i] = min_log_data - 2.0001*realPrecision;
+		}
+	}
+
+    TightDataPointStorageF* tdps = SZ_compress_float_1D_MDQ(log_data, dataLength, realPrecision, valueRangeSize, medianValue_f);
+    tdps->minLogValue = min_log_data - 1.0001*realPrecision;
+    free(log_data);
+    if(!positive){
+	    unsigned char * comp_signs;
+		// compress signs
+		unsigned long signSize = zlib_compress5(signs, dataLength, &comp_signs, 1);
+		tdps->pwrErrBoundBytes = comp_signs;
+		tdps->pwrErrBoundBytes_size = signSize;
+	}
+	else{
+		tdps->pwrErrBoundBytes = NULL;
+		tdps->pwrErrBoundBytes_size = 0;
+	}
+	free(signs);
+
+    convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
+    if(*outSize>dataLength*sizeof(float))
+            SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
+
+    free_TightDataPointStorageF(tdps);
+}
+
+void SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr_pre_log(unsigned char** newByteData, float *oriData, double pwrErrRatio, size_t r1, size_t r2, size_t *outSize, float min, float max){
+
+	size_t dataLength = r1 * r2;
+	float * log_data = (float *) malloc(dataLength * sizeof(float));
+	float threshold = fabs(min) > fabs(max) ? fabs(min) : fabs(max);
+
+	unsigned char * signs = (unsigned char *) malloc(dataLength);
+	memset(signs, 0, dataLength);
+	// preprocess
+	float max_abs_log_data = fabs(log2(threshold));
+	float min_log_data = log2(fabs(oriData[0]));
+	bool positive = true;
+	for(size_t i=0; i<dataLength; i++){
+		if(oriData[i] < 0){
+			signs[i] = 1;
+			log_data[i] = -oriData[i];
+			positive = false;
+		}
+		else
+			log_data[i] = oriData[i];
+		if(log_data[i] > 0){
+			log_data[i] = log2(log_data[i]);
+			if(log_data[i] > max_abs_log_data) max_abs_log_data = log_data[i];
+			if(log_data[i] < min_log_data) min_log_data = log_data[i];
+		}
+	}
+
+	float valueRangeSize, medianValue_f;
+	computeRangeSize_float(log_data, dataLength, &valueRangeSize, &medianValue_f);	
+	if(fabs(min_log_data) > max_abs_log_data) max_abs_log_data = fabs(min_log_data);
+	double realPrecision = log2(1.0 + pwrErrRatio) - max_abs_log_data * 1.2e-7;
+	for(size_t i=0; i<dataLength; i++){
+		if(oriData[i] == 0){
+			log_data[i] = min_log_data - 2.0001*realPrecision;
+		}
+	}
+
+    TightDataPointStorageF* tdps = SZ_compress_float_2D_MDQ(log_data, r1, r2, realPrecision, valueRangeSize, medianValue_f);
+    tdps->minLogValue = min_log_data - 1.0001*realPrecision;
+    free(log_data);
+    if(!positive){
+	    unsigned char * comp_signs;
+		// compress signs
+		unsigned long signSize = zlib_compress5(signs, dataLength, &comp_signs, 1);
+		tdps->pwrErrBoundBytes = comp_signs;
+		tdps->pwrErrBoundBytes_size = signSize;
+	}
+	else{
+		tdps->pwrErrBoundBytes = NULL;
+		tdps->pwrErrBoundBytes_size = 0;
+	}
+	free(signs);
+
+    convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
+    if(*outSize>dataLength*sizeof(float))
+            SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
+
+    free_TightDataPointStorageF(tdps);
+}
+
+void SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr_pre_log(unsigned char** newByteData, float *oriData, double pwrErrRatio, size_t r1, size_t r2, size_t r3, size_t *outSize, float min, float max){
+
+	size_t dataLength = r1 * r2 * r3;
+	float * log_data = (float *) malloc(dataLength * sizeof(float));
+	float threshold = fabs(min) > fabs(max) ? fabs(min) : fabs(max);
+
+	unsigned char * signs = (unsigned char *) malloc(dataLength);
+	memset(signs, 0, dataLength);
+	// preprocess
+	float max_abs_log_data = fabs(log2(threshold));
+	float min_log_data = log2(fabs(oriData[0]));
+	bool positive = true;
+	for(size_t i=0; i<dataLength; i++){
+		if(oriData[i] < 0){
+			signs[i] = 1;
+			log_data[i] = -oriData[i];
+			positive = false;
+		}
+		else
+			log_data[i] = oriData[i];
+		if(log_data[i] > 0){
+			log_data[i] = log2(log_data[i]);
+			if(log_data[i] > max_abs_log_data) max_abs_log_data = log_data[i];
+			if(log_data[i] < min_log_data) min_log_data = log_data[i];
+		}
+	}
+
+	float valueRangeSize, medianValue_f;
+	computeRangeSize_float(log_data, dataLength, &valueRangeSize, &medianValue_f);	
+	if(fabs(min_log_data) > max_abs_log_data) max_abs_log_data = fabs(min_log_data);
+	double realPrecision = log2(1.0 + pwrErrRatio) - max_abs_log_data * 1.2e-7;
+	for(size_t i=0; i<dataLength; i++){
+		if(oriData[i] == 0){
+			log_data[i] = min_log_data - 2.0001*realPrecision;
+		}
+	}
+
+    TightDataPointStorageF* tdps = SZ_compress_float_3D_MDQ(log_data, r1, r2, r3, realPrecision, valueRangeSize, medianValue_f);
+    tdps->minLogValue = min_log_data - 1.0001*realPrecision;
+    free(log_data);
+    if(!positive){
+	    unsigned char * comp_signs;
+		// compress signs
+		unsigned long signSize = zlib_compress5(signs, dataLength, &comp_signs, 1);
+		tdps->pwrErrBoundBytes = comp_signs;
+		tdps->pwrErrBoundBytes_size = signSize;
+	}
+	else{
+		tdps->pwrErrBoundBytes = NULL;
+		tdps->pwrErrBoundBytes_size = 0;
+	}
+	free(signs);
+
+    convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
+    if(*outSize>dataLength*sizeof(float))
+            SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
+
+    free_TightDataPointStorageF(tdps);
+}
