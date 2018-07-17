@@ -1516,8 +1516,8 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio)
 		{
 			if(errBoundMode>=PW_REL)
 			{
-				//SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr(newByteData, oriData, realPrecision, r1, outSize, min, max);
-				SZ_compress_args_double_NoCkRngeNoGzip_1D_pwrgroup(newByteData, oriData, r1, absErr_Bound, relBoundRatio, pwrErrRatio, valueRangeSize, medianValue, outSize);				
+				SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr(newByteData, oriData, pwrErrRatio, r1, outSize, min, max);
+				//SZ_compress_args_double_NoCkRngeNoGzip_1D_pwrgroup(newByteData, oriData, r1, absErr_Bound, relBoundRatio, pwrErrRatio, valueRangeSize, medianValue, outSize);				
 			}
 			else
 				SZ_compress_args_double_NoCkRngeNoGzip_1D(newByteData, oriData, r1, realPrecision, outSize, valueRangeSize, medianValue);
@@ -1600,13 +1600,12 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
 			{
-				//SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr(&tmpByteData, oriData, realPrecision, r1, &tmpOutSize, min, max);
-				SZ_compress_args_double_NoCkRngeNoGzip_1D_pwrgroup(&tmpByteData, oriData, r1, absErr_Bound, relBoundRatio, pwRelBoundRatio, 
-				valueRangeSize, medianValue, &tmpOutSize);
+				SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r1, &tmpOutSize, min, max);
+				//SZ_compress_args_double_NoCkRngeNoGzip_1D_pwrgroup(&tmpByteData, oriData, r1, absErr_Bound, relBoundRatio, pwRelBoundRatio, valueRangeSize, medianValue, &tmpOutSize);
 			}
 			else
 #ifdef HAVE_TIMECMPR
-				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)			
+				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
 #endif
@@ -1616,7 +1615,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		if (r3==0)
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
-				SZ_compress_args_double_NoCkRngeNoGzip_2D_pwr(&tmpByteData, oriData, realPrecision, r2, r1, &tmpOutSize, min, max);
+				SZ_compress_args_double_NoCkRngeNoGzip_2D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r2, r1, &tmpOutSize, min, max);
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)			
@@ -1634,7 +1633,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		if (r4==0)
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
-				SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(&tmpByteData, oriData, realPrecision, r3, r2, r1, &tmpOutSize, min, max);
+				SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r3, r2, r1, &tmpOutSize, min, max);
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
@@ -1654,7 +1653,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		if (r5==0)
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
-				SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr(&tmpByteData, oriData, realPrecision, r4*r3, r2, r1, &tmpOutSize, min, max);
+				SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r4*r3, r2, r1, &tmpOutSize, min, max);
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)			

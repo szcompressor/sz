@@ -1786,7 +1786,6 @@ size_t dataLength, double absErrBound, double relBoundRatio, double pwrErrRatio,
 void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log(unsigned char** newByteData, float *oriData, double pwrErrRatio, size_t dataLength, size_t *outSize, float min, float max){
 
 	float * log_data = (float *) malloc(dataLength * sizeof(float));
-	float threshold = fabs(min) > fabs(max) ? fabs(min) : fabs(max);
 
 	unsigned char * signs = (unsigned char *) malloc(dataLength);
 	memset(signs, 0, dataLength);
@@ -1849,7 +1848,6 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr_pre_log(unsigned char** newByt
 
 	size_t dataLength = r1 * r2;
 	float * log_data = (float *) malloc(dataLength * sizeof(float));
-	float threshold = fabs(min) > fabs(max) ? fabs(min) : fabs(max);
 
 	unsigned char * signs = (unsigned char *) malloc(dataLength);
 	memset(signs, 0, dataLength);
@@ -1912,7 +1910,6 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr_pre_log(unsigned char** newByt
 
 	size_t dataLength = r1 * r2 * r3;
 	float * log_data = (float *) malloc(dataLength * sizeof(float));
-	float threshold = fabs(min) > fabs(max) ? fabs(min) : fabs(max);
 
 	unsigned char * signs = (unsigned char *) malloc(dataLength);
 	memset(signs, 0, dataLength);

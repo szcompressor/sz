@@ -1670,8 +1670,8 @@ void getSnapshotData_float_1D(float** data, size_t dataSeriesLength, TightDataPo
 			}
 			else 
 			{
-				//decompressDataSeries_float_1D_pwr(data, dataSeriesLength, tdps);
-				decompressDataSeries_float_1D_pwrgroup(data, dataSeriesLength, tdps);
+				decompressDataSeries_float_1D_pwr_pre_log(data, dataSeriesLength, tdps);
+				//decompressDataSeries_float_1D_pwrgroup(data, dataSeriesLength, tdps);
 			}
 			return;
 		} else {
@@ -1694,7 +1694,8 @@ void getSnapshotData_float_1D(float** data, size_t dataSeriesLength, TightDataPo
 			if(errBoundMode < PW_REL)
 				decompressDataSeries_float_1D(&decmpData, dataSeriesLength, tdps);
 			else 
-				decompressDataSeries_float_1D_pwr(&decmpData, dataSeriesLength, tdps);
+				//decompressDataSeries_float_1D_pwr(&decmpData, dataSeriesLength, tdps);
+				decompressDataSeries_float_1D_pwr_pre_log(&decmpData, dataSeriesLength, tdps);
 			// insert the decompressed data
 			size_t k = 0;
 			for (i = 0; i < dataSeriesLength; i++) {
@@ -1735,7 +1736,8 @@ void getSnapshotData_float_2D(float** data, size_t r1, size_t r2, TightDataPoint
 			}
 			else 
 			{
-				decompressDataSeries_float_2D_pwr(data, r1, r2, tdps);
+				//decompressDataSeries_float_2D_pwr(data, r1, r2, tdps);
+				decompressDataSeries_float_2D_pwr_pre_log(data, r1, r2, tdps);
 			}			
 
 			return;
@@ -1759,7 +1761,8 @@ void getSnapshotData_float_2D(float** data, size_t r1, size_t r2, TightDataPoint
 			if(errBoundMode < PW_REL)
 				decompressDataSeries_float_2D(&decmpData, r1, r2, tdps);
 			else 
-				decompressDataSeries_float_2D_pwr(&decmpData, r1, r2, tdps);
+				//decompressDataSeries_float_2D_pwr(&decmpData, r1, r2, tdps);
+				decompressDataSeries_float_2D_pwr_pre_log(&decmpData, r1, r2, tdps);
 			// insert the decompressed data
 			size_t k = 0;
 			for (i = 0; i < dataSeriesLength; i++) {
@@ -1800,7 +1803,8 @@ void getSnapshotData_float_3D(float** data, size_t r1, size_t r2, size_t r3, Tig
 			}
 			else 
 			{
-				decompressDataSeries_float_3D_pwr(data, r1, r2, r3, tdps);
+				//decompressDataSeries_float_3D_pwr(data, r1, r2, r3, tdps);
+				decompressDataSeries_float_3D_pwr_pre_log(data, r1, r2, r3, tdps);
 			}					
 			
 			return;
@@ -1824,7 +1828,8 @@ void getSnapshotData_float_3D(float** data, size_t r1, size_t r2, size_t r3, Tig
 			if(errBoundMode < PW_REL)
 				decompressDataSeries_float_3D(&decmpData, r1, r2, r3, tdps);
 			else 
-				decompressDataSeries_float_3D_pwr(&decmpData, r1, r2, r3, tdps);
+				//decompressDataSeries_float_3D_pwr(&decmpData, r1, r2, r3, tdps);
+				decompressDataSeries_float_3D_pwr_pre_log(&decmpData, r1, r2, r3, tdps);
 			// insert the decompressed data
 			size_t k = 0;
 			for (i = 0; i < dataSeriesLength; i++) {
@@ -1865,7 +1870,8 @@ void getSnapshotData_float_4D(float** data, size_t r1, size_t r2, size_t r3, siz
 			}
 			else 
 			{
-				decompressDataSeries_float_3D_pwr(data, r1*r2, r3, r4, tdps);
+				//decompressDataSeries_float_3D_pwr(data, r1*r2, r3, r4, tdps);
+				decompressDataSeries_float_3D_pwr_pre_log(data, r1*r2, r3, r4, tdps);
 				//ToDO
 				//decompressDataSeries_float_4D_pwr(data, r1, r2, r3, r4, tdps);
 			}					
@@ -1887,7 +1893,8 @@ void getSnapshotData_float_4D(float** data, size_t r1, size_t r2, size_t r3, siz
 			if(errBoundMode < PW_REL)
 				decompressDataSeries_float_4D(&decmpData, r1, r2, r3, r4, tdps);
 			else
-				decompressDataSeries_float_3D_pwr(&decmpData, r1*r2, r3, r4, tdps);
+				//decompressDataSeries_float_3D_pwr(&decmpData, r1*r2, r3, r4, tdps);
+				decompressDataSeries_float_3D_pwr_pre_log(&decmpData, r1*r2, r3, r4, tdps);
 				//ToDO
 				//decompressDataSeries_float_4D_pwr(&decompData, r1, r2, r3, r4, tdps);
 			// insert the decompressed data
