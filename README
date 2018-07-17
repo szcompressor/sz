@@ -1,4 +1,4 @@
---------SZ (version 1.4.12): Error-bounded Lossy Compressor for HPC Data--------
+--------SZ (version 2.0.0): Error-bounded Lossy Compressor for HPC Data--------
  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
        See COPYRIGHT in top-level directory.
 
@@ -135,3 +135,4 @@ SZ 1.4.13.2: Clean the code by putting all the global variables into two data st
 SZ 1.4.13.3: Support the time-based compression for 1D array
 SZ 1.4.13.4: Support the time-based compression for 1D,2D, and 3D array (use --enable-timecmpr to switch it on). SZ 1.4.13.0/1/2/3/ has a bug when doing compression/decompression alternatively in the same progress. SZ 1.4.13.4 fixed it.
 SZ 1.4.13.5: remove the pwrType in SZ_compress_args() interface, because of uselessness of pwrType setting in the new design of point-wise relative error based compression in the later version of SZ.
+SZ 2.0.0.0: Significantly improve the compression quality for the high-compression cases (i.e., improve the PSNR for the cases with high compression ratios)
