@@ -596,7 +596,7 @@ int main(int argc, char* argv[])
 					if (Min > ori_data[i]) Min = ori_data[i];
 					
 					float err = fabs(data[i] - ori_data[i]);
-					if(ori_data[i]!=0 && fabs(ori_data[i])>1)
+					if(ori_data[i]!=0)
 					{
 						relerr = err/fabs(ori_data[i]);
 						if(maxpw_relerr<relerr)
