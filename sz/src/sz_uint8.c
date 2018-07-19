@@ -21,6 +21,7 @@
 #include "rw.h"
 #include "TightDataPointStorageI.h"
 #include "sz_uint8.h"
+#include "utility.h"
 
 unsigned int optimize_intervals_uint8_1D(uint8_t *oriData, size_t dataLength, double realPrecision)
 {	
@@ -1370,7 +1371,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 		}
 		else if(confparams_cpr->szMode==SZ_BEST_COMPRESSION || confparams_cpr->szMode==SZ_DEFAULT_COMPRESSION)
 		{
-			*outSize = zlib_compress5(tmpByteData, tmpOutSize, newByteData, confparams_cpr->gzipMode);
+			*outSize = sz_lossless_compress(GZIP_COMPRESSOR, confparams_cpr->gzipMode, tmpByteData, tmpOutSize, newByteData);
 			free(tmpByteData);
 		}
 		else

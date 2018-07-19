@@ -16,6 +16,7 @@
 #include "Huffman.h"
 #include "szd_float_pwr.h"
 #include "szd_float_ts.h"
+#include "utility.h"
 
 /**
  * 
@@ -53,7 +54,7 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
-			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
+			tmpSize = sz_lossless_decompress(GZIP_COMPRESSOR, cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
 			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 			//memcpy(szTmpBytes, tmpBytes, tmpSize);
 			//free(tmpBytes); //release useless memory		

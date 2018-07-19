@@ -54,6 +54,7 @@
 #include "pastri.h"
 #include "sz_float_ts.h"
 #include "szd_float_ts.h"
+#include "utility.h"
 
 #ifdef _WIN32
 #define PATH_SEPARATOR ';'
@@ -77,7 +78,7 @@ extern "C" {
 #define SZ_VERNUM 0x0200
 #define SZ_VER_MAJOR 2
 #define SZ_VER_MINOR 0
-#define SZ_VER_BUILD 1
+#define SZ_VER_BUILD 0
 #define SZ_VER_REVISION 0
 
 #define PASTRI 103
@@ -154,6 +155,10 @@ extern "C" {
 #define MetaDataByteLength 20	
 	
 #define numOfBufferedSteps 1 //the number of time steps in the buffer	
+
+
+#define GZIP_COMPRESSOR 0 //i.e., ZLIB_COMPRSSOR
+#define ZSTD_COMPRESSOR 1
 	
 //Note: the following setting should be consistent with stateNum in Huffman.h
 //#define intvCapacity 65536
@@ -239,6 +244,7 @@ typedef struct sz_params
 	unsigned int quantization_intervals; 
 	unsigned int maxRangeRadius;
 	int sol_ID;// it's always SZ, unless the setting is PASTRI compression mode (./configure --enable-pastri)
+	int losslessCompressor;
 	int sampleDistance; //2 bytes
 	float predThreshold;  // 2 bytes
 	int szMode; //* 0 (best speed) or 1 (better compression with Gzip) or 3 temporal-dimension based compression
@@ -281,6 +287,10 @@ typedef struct sz_tsc_metainfo
 	int currentStep;
 	char metadata_filename[256];
 	FILE *metadata_file;
+	unsigned char* bit_array; //sihuan added
+	size_t intersect_size; //sihuan added
+	int64_t* hist_index; //sihuan added: prestep index 
+
 } sz_tsc_metadata;
 
 extern int versionNumber[4];

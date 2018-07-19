@@ -13,6 +13,7 @@
 #include "TightDataPointStorageD.h"
 #include "sz.h"
 #include "Huffman.h"
+#include "utility.h"
 //#include "rw.h"
 
 #pragma GCC diagnostic push
@@ -1354,7 +1355,7 @@ void decompressDataSeries_double_1D_pwr_pre_log(double** data, size_t dataSeries
 	double threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;
-		zlib_uncompress5(tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+		sz_lossless_decompress(GZIP_COMPRESSOR, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
 
 		for(size_t i=0; i<dataSeriesLength; i++){
 			if((*data)[i] < threshold) (*data)[i] = 0;
@@ -1379,7 +1380,7 @@ void decompressDataSeries_double_2D_pwr_pre_log(double** data, size_t r1, size_t
 	double threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;
-		zlib_uncompress5(tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+		sz_lossless_decompress(GZIP_COMPRESSOR, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
 
 		for(size_t i=0; i<dataSeriesLength; i++){
 			if((*data)[i] < threshold) (*data)[i] = 0;
@@ -1403,7 +1404,7 @@ void decompressDataSeries_double_3D_pwr_pre_log(double** data, size_t r1, size_t
 	double threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;
-		zlib_uncompress5(tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+		sz_lossless_decompress(GZIP_COMPRESSOR, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
 
 		for(size_t i=0; i<dataSeriesLength; i++){
 			if((*data)[i] < threshold) (*data)[i] = 0;

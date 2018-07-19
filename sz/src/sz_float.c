@@ -25,6 +25,7 @@
 #include "zlib.h"
 #include "rw.h"
 #include "sz_float_ts.h"
+#include "utility.h"
 
 unsigned char* SZ_skip_compress_float(float* data, size_t dataLength, size_t* outSize)
 {
@@ -1934,7 +1935,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		}
 		else if(confparams_cpr->szMode==SZ_BEST_COMPRESSION || confparams_cpr->szMode==SZ_DEFAULT_COMPRESSION || confparams_cpr->szMode==SZ_TEMPORAL_COMPRESSION)
 		{
-			*outSize = zlib_compress5(tmpByteData, tmpOutSize, newByteData, confparams_cpr->gzipMode);
+			*outSize = sz_lossless_compress(GZIP_COMPRESSOR, confparams_cpr->gzipMode, tmpByteData, tmpOutSize, newByteData);
 			free(tmpByteData);
 		}
 		else

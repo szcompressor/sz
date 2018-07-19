@@ -23,6 +23,7 @@
 #include "sz_float_pwr.h"
 #include "zlib.h"
 #include "rw.h"
+#include "utility.h"
 
 void compute_segment_precisions_float_1D(float *oriData, size_t dataLength, float* pwrErrBound, unsigned char* pwrErrBoundBytes, double globalPrecision)
 {
@@ -1827,7 +1828,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log(unsigned char** newByt
     if(!positive){
 	    unsigned char * comp_signs;
 		// compress signs
-		unsigned long signSize = zlib_compress5(signs, dataLength, &comp_signs, 1);
+		unsigned long signSize = sz_lossless_compress(GZIP_COMPRESSOR, 1, signs, dataLength, &comp_signs);
 		tdps->pwrErrBoundBytes = comp_signs;
 		tdps->pwrErrBoundBytes_size = signSize;
 	}
@@ -1889,7 +1890,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr_pre_log(unsigned char** newByt
     if(!positive){
 	    unsigned char * comp_signs;
 		// compress signs
-		unsigned long signSize = zlib_compress5(signs, dataLength, &comp_signs, 1);
+		unsigned long signSize = sz_lossless_compress(GZIP_COMPRESSOR, 1, signs, dataLength, &comp_signs);
 		tdps->pwrErrBoundBytes = comp_signs;
 		tdps->pwrErrBoundBytes_size = signSize;
 	}
@@ -1951,7 +1952,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr_pre_log(unsigned char** newByt
     if(!positive){
 	    unsigned char * comp_signs;
 		// compress signs
-		unsigned long signSize = zlib_compress5(signs, dataLength, &comp_signs, 1);
+		unsigned long signSize = sz_lossless_compress(GZIP_COMPRESSOR, 1, signs, dataLength, &comp_signs);
 		tdps->pwrErrBoundBytes = comp_signs;
 		tdps->pwrErrBoundBytes_size = signSize;
 	}
