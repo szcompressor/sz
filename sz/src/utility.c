@@ -159,7 +159,7 @@ unsigned long sz_lossless_compress(int losslessCompressor, int level, unsigned c
 	switch(losslessCompressor)
 	{
 	case GZIP_COMPRESSOR:
-		zlib_compress5(data, dataLength, compressBytes, level);
+		outSize = zlib_compress5(data, dataLength, compressBytes, level);
 		break;
 	case ZSTD_COMPRESSOR:
 		break;
