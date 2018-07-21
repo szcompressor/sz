@@ -46,7 +46,7 @@ include_HEADERS=include/CompressElement.h include/DynamicDoubleArray.h include/r
 		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/sz_omp.h
 
 lib_LTLIBRARIES=libSZ.la
-libSZ_la_CFLAGS=-I./include -I../zlib -I/../zstd/
+libSZ_la_CFLAGS=-I./include -I../zlib -I../zstd/ 
 if TIMECMPR
 libSZ_la_CFLAGS+=-DHAVE_TIMECMPR
 endif

@@ -512,7 +512,7 @@ AUTOMAKE_OPTIONS = foreign
 
 @FORTRAN_FALSE@lib_LTLIBRARIES = libSZ.la
 @FORTRAN_TRUE@lib_LTLIBRARIES = libSZ.la
-@FORTRAN_FALSE@libSZ_la_CFLAGS = -I./include -I../zlib -I/../zstd/ \
+@FORTRAN_FALSE@libSZ_la_CFLAGS = -I./include -I../zlib -I../zstd/ \
 @FORTRAN_FALSE@	$(am__append_3) $(am__append_4)
 @FORTRAN_TRUE@libSZ_la_CFLAGS = -I./include -I../zlib/ -I../zstd/ \
 @FORTRAN_TRUE@	$(am__append_1) $(am__append_2) $(am__append_3) \
