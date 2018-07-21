@@ -27,6 +27,23 @@
     } \
 }
 
+int isZlibFormat(unsigned char magic1, unsigned char magic2)
+{
+	if(magic1==104&&magic2==5) //DC+BS
+		return 1;
+	if(magic1==104&&magic2==129) //DC+DC
+		return 1;
+	if(magic1==104&&magic2==222) //DC+BC
+		return 1;
+	if(magic1==120&&magic2==1) //BC+BS
+		return 1;
+	if(magic1==120&&magic2==156) //BC+DC
+		return 1;
+	if(magic1==120&&magic2==218) //BC+BS
+		return 1;
+	return 0;
+}
+
 /*zlib_compress() is only valid for median-size data compression. */
 unsigned long zlib_compress(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level)
 {	

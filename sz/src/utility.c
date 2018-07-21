@@ -14,7 +14,7 @@
 #include "utility.h"
 #include "sz.h"
 #include "callZlib.h"
-
+#include "zstd.h"
 
 int compare_struct(const void* obj1, const void* obj2){
 	struct sort_ast_particle * srt1 = (struct sort_ast_particle*)obj1;
@@ -153,18 +153,37 @@ float calculate_delta_t(size_t size){
 	return denom/div;
 }
 
+int is_lossless_compressed_data(unsigned char* compressedBytes, size_t cmpSize)
+{
+	int frameContentSize = ZSTD_getFrameContentSize(compressedBytes, cmpSize);
+	if(frameContentSize != ZSTD_CONTENTSIZE_ERROR)
+		return ZSTD_COMPRESSOR;
+	
+	int flag = isZlibFormat(compressedBytes[0], compressedBytes[1]);
+	if(flag)
+		return GZIP_COMPRESSOR;
+
+	printf("Error: Unrecognized lossless compressor\n");
+
+	return -1;
+}
+
 unsigned long sz_lossless_compress(int losslessCompressor, int level, unsigned char* data, unsigned long dataLength, unsigned char** compressBytes)
 {
 	unsigned long outSize = 0; 
+	int estimatedCompressedSize = 0;
 	switch(losslessCompressor)
 	{
 	case GZIP_COMPRESSOR:
 		outSize = zlib_compress5(data, dataLength, compressBytes, level);
 		break;
 	case ZSTD_COMPRESSOR:
+		estimatedCompressedSize = dataLength*1.2;
+		*compressBytes = (unsigned char*)malloc(estimatedCompressedSize);
+		outSize = ZSTD_compress(*compressBytes, estimatedCompressedSize, data, dataLength, 3); //default setting of level is 3
 		break;
 	default:
-		printf("Error: Unrecognized lossless compressor\n");
+		printf("Error: Unrecognized lossless compressor in sz_lossless_compress()\n");
 	}
 	return outSize;
 }
@@ -178,9 +197,12 @@ unsigned long sz_lossless_decompress(int losslessCompressor, unsigned char* comp
 		outSize = zlib_uncompress5(compressBytes, cmpSize, oriData, targetOriSize);
 		break;
 	case ZSTD_COMPRESSOR:
+		*oriData = (unsigned char*)malloc(targetOriSize);
+		ZSTD_decompress(*oriData, targetOriSize, compressBytes, cmpSize);
+		outSize = targetOriSize;
 		break;
 	default:
-		printf("Error: Unrecognized lossless compressor\n");
+		printf("Error: Unrecognized lossless compressor in sz_lossless_decompress()\n");
 	}
 	return outSize;
 }
@@ -194,6 +216,10 @@ unsigned long sz_lossless_decompress65536bytes(int losslessCompressor, unsigned 
 		outSize = zlib_uncompress65536bytes(compressBytes, cmpSize, oriData);
 		break;
 	case ZSTD_COMPRESSOR:
+		*oriData = (unsigned char*)malloc(65536);
+		memset(*oriData, 0, 65536);
+		ZSTD_decompress(*oriData, 65536, compressBytes, cmpSize);	//the first 32768 bytes should be exact the same.
+		outSize = 65536;
 		break;
 	default:
 		printf("Error: Unrecognized lossless compressor\n");

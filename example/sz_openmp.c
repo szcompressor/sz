@@ -841,6 +841,7 @@ int main(int argc, char* argv[])
 			printf("Error: the compressed data file is likely wrong.\n");
 			usage();
 			free(metadata->conf_params);
+			confparams_dec = NULL;
 			free(metadata);
 			exit(0);
 		}

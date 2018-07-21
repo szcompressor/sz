@@ -884,6 +884,7 @@ int main(int argc, char* argv[])
 		}
 		SZ_printMetadata(metadata);
 		free(metadata->conf_params);
+		confparams_dec = NULL;
 		free(metadata);
 		
 		if(isZlib)

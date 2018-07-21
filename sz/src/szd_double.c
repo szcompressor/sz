@@ -30,10 +30,10 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 	unsigned char* szTmpBytes;
 	if(cmpSize!=12+4+MetaDataByteLength && cmpSize!=12+8+MetaDataByteLength)
 	{
-		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
+		confparams_dec->losslessCompressor = is_lossless_compressed_data(cmpBytes, cmpSize);
 		if(confparams_dec->szMode!=SZ_TEMPORAL_COMPRESSION)
 		{
-			if(isZlib)
+			if(confparams_dec->losslessCompressor!=-1)
 				confparams_dec->szMode = SZ_BEST_COMPRESSION;
 			else
 				confparams_dec->szMode = SZ_BEST_SPEED;			
@@ -47,7 +47,7 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 		{
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 			
-			tmpSize = sz_lossless_decompress(GZIP_COMPRESSOR, cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE);			
+			tmpSize = sz_lossless_decompress(confparams_dec->losslessCompressor, cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE);			
 			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 			//memcpy(szTmpBytes, tmpBytes, tmpSize);
 			//free(tmpBytes); //release useless memory		

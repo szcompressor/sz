@@ -102,7 +102,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		confparams_cpr->sampleDistance = 100;
 		
 		confparams_cpr->szMode = SZ_BEST_COMPRESSION;
-		confparams_cpr->losslessCompressor = GZIP_COMPRESSOR;
+		confparams_cpr->losslessCompressor = ZSTD_COMPRESSOR; //other option: GZIP_COMPRESSOR;
 		
 		confparams_cpr->gzipMode = 1; //fast mode
 		
@@ -219,9 +219,9 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:losslessCompressor", "GZIP_COMPRESSOR");
 		if(strcmp(modeBuf, "GZIP_COMPRESSOR")==0)
-			confparams_cpr->szMode = GZIP_COMPRESSOR;
+			confparams_cpr->losslessCompressor = GZIP_COMPRESSOR;
 		else if(strcmp(modeBuf, "ZSTD_COMPRESSOR")==0)
-			confparams_cpr->szMode = ZSTD_COMPRESSOR;
+			confparams_cpr->losslessCompressor = ZSTD_COMPRESSOR;
 		else
 		{
 			printf("[SZ] Error: Wrong losslessCompressor setting (please check sz.config file)\n");\

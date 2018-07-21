@@ -131,17 +131,20 @@ sz_OBJECTS = $(am_sz_OBJECTS)
 am__DEPENDENCIES_1 =
 @GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@sz_DEPENDENCIES =  \
 @GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@	../sz/.libs/libSZ.a \
-@GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@	../zlib/.libs/libzlib.a
+@GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@	../zlib/.libs/libzlib.a \
+@GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@	../zstd/.libs/libzstd.a
 @GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@sz_DEPENDENCIES =  \
 @GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@	../sz/.libs/libSZ.a \
-@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@	../zlib/.libs/libzlib.a
+@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@	../zlib/.libs/libzlib.a \
+@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@	../zstd/.libs/libzstd.a
 @GSL_TRUE@@PASTRI_FALSE@sz_DEPENDENCIES = ../sz/.libs/libSZ.a \
 @GSL_TRUE@@PASTRI_FALSE@	../zlib/.libs/libzlib.a \
+@GSL_TRUE@@PASTRI_FALSE@	../zstd/.libs/libzstd.a \
 @GSL_TRUE@@PASTRI_FALSE@	$(am__DEPENDENCIES_1) \
 @GSL_TRUE@@PASTRI_FALSE@	$(am__DEPENDENCIES_1) \
 @GSL_TRUE@@PASTRI_FALSE@	$(am__DEPENDENCIES_1)
 @PASTRI_TRUE@sz_DEPENDENCIES = ../sz/.libs/libSZ.a \
-@PASTRI_TRUE@	../zlib/.libs/libzlib.a
+@PASTRI_TRUE@	../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -149,23 +152,25 @@ am__v_lt_1 =
 am_testdouble_compress_OBJECTS = testdouble_compress.$(OBJEXT)
 testdouble_compress_OBJECTS = $(am_testdouble_compress_OBJECTS)
 testdouble_compress_DEPENDENCIES = ../sz/.libs/libSZ.a \
-	../zlib/.libs/libzlib.a
+	../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a
 am__testdouble_compress_f_SOURCES_DIST = testdouble_compress_f.f90
 @FORTRAN_TRUE@am_testdouble_compress_f_OBJECTS =  \
 @FORTRAN_TRUE@	testdouble_compress_f.$(OBJEXT)
 testdouble_compress_f_OBJECTS = $(am_testdouble_compress_f_OBJECTS)
 @FORTRAN_TRUE@testdouble_compress_f_DEPENDENCIES =  \
-@FORTRAN_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a
+@FORTRAN_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a \
+@FORTRAN_TRUE@	../zstd/.libs/libzstd.a
 am__testdouble_compress_ts_SOURCES_DIST = testdouble_compress_ts.c
 @TIMECMPR_TRUE@am_testdouble_compress_ts_OBJECTS =  \
 @TIMECMPR_TRUE@	testdouble_compress_ts.$(OBJEXT)
 testdouble_compress_ts_OBJECTS = $(am_testdouble_compress_ts_OBJECTS)
 @TIMECMPR_TRUE@testdouble_compress_ts_DEPENDENCIES =  \
-@TIMECMPR_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a
+@TIMECMPR_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a \
+@TIMECMPR_TRUE@	../zstd/.libs/libzstd.a
 am_testdouble_decompress_OBJECTS = testdouble_decompress.$(OBJEXT)
 testdouble_decompress_OBJECTS = $(am_testdouble_decompress_OBJECTS)
 testdouble_decompress_DEPENDENCIES = ../sz/.libs/libSZ.a \
-	../zlib/.libs/libzlib.a
+	../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a
 am__testdouble_decompress_f_SOURCES_DIST =  \
 	testdouble_decompress_f.f90
 @FORTRAN_TRUE@am_testdouble_decompress_f_OBJECTS =  \
@@ -173,7 +178,8 @@ am__testdouble_decompress_f_SOURCES_DIST =  \
 testdouble_decompress_f_OBJECTS =  \
 	$(am_testdouble_decompress_f_OBJECTS)
 @FORTRAN_TRUE@testdouble_decompress_f_DEPENDENCIES =  \
-@FORTRAN_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a
+@FORTRAN_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a \
+@FORTRAN_TRUE@	../zstd/.libs/libzstd.a
 am__testdouble_decompress_ts_SOURCES_DIST =  \
 	testdouble_decompress_ts.c
 @TIMECMPR_TRUE@am_testdouble_decompress_ts_OBJECTS =  \
@@ -181,36 +187,39 @@ am__testdouble_decompress_ts_SOURCES_DIST =  \
 testdouble_decompress_ts_OBJECTS =  \
 	$(am_testdouble_decompress_ts_OBJECTS)
 @TIMECMPR_TRUE@testdouble_decompress_ts_DEPENDENCIES =  \
-@TIMECMPR_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a
+@TIMECMPR_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a \
+@TIMECMPR_TRUE@	../zstd/.libs/libzstd.a
 am_testfloat_compress_OBJECTS = testfloat_compress.$(OBJEXT)
 testfloat_compress_OBJECTS = $(am_testfloat_compress_OBJECTS)
 testfloat_compress_DEPENDENCIES = ../sz/.libs/libSZ.a \
-	../zlib/.libs/libzlib.a
+	../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a
 am__testfloat_compress_ts_SOURCES_DIST = testfloat_compress_ts.c
 @TIMECMPR_TRUE@am_testfloat_compress_ts_OBJECTS =  \
 @TIMECMPR_TRUE@	testfloat_compress_ts.$(OBJEXT)
 testfloat_compress_ts_OBJECTS = $(am_testfloat_compress_ts_OBJECTS)
 @TIMECMPR_TRUE@testfloat_compress_ts_DEPENDENCIES =  \
-@TIMECMPR_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a
+@TIMECMPR_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a \
+@TIMECMPR_TRUE@	../zstd/.libs/libzstd.a
 am_testfloat_decompress_OBJECTS = testfloat_decompress.$(OBJEXT)
 testfloat_decompress_OBJECTS = $(am_testfloat_decompress_OBJECTS)
 testfloat_decompress_DEPENDENCIES = ../sz/.libs/libSZ.a \
-	../zlib/.libs/libzlib.a
+	../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a
 am__testfloat_decompress_ts_SOURCES_DIST = testfloat_decompress_ts.c
 @TIMECMPR_TRUE@am_testfloat_decompress_ts_OBJECTS =  \
 @TIMECMPR_TRUE@	testfloat_decompress_ts.$(OBJEXT)
 testfloat_decompress_ts_OBJECTS =  \
 	$(am_testfloat_decompress_ts_OBJECTS)
 @TIMECMPR_TRUE@testfloat_decompress_ts_DEPENDENCIES =  \
-@TIMECMPR_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a
+@TIMECMPR_TRUE@	../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a \
+@TIMECMPR_TRUE@	../zstd/.libs/libzstd.a
 am_testint_compress_OBJECTS = testint_compress.$(OBJEXT)
 testint_compress_OBJECTS = $(am_testint_compress_OBJECTS)
 testint_compress_DEPENDENCIES = ../sz/.libs/libSZ.a \
-	../zlib/.libs/libzlib.a
+	../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a
 am_testint_decompress_OBJECTS = testint_decompress.$(OBJEXT)
 testint_decompress_OBJECTS = $(am_testint_decompress_OBJECTS)
 testint_decompress_DEPENDENCIES = ../sz/.libs/libSZ.a \
-	../zlib/.libs/libzlib.a
+	../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -436,45 +445,45 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
-AM_CFLAGS = -I../sz/include -I../zlib $(GSL_CFLAGS) $(GSL_STATIC) \
-	$(am__append_1)
-AM_FCFLAGS = -I../sz/include -I../sz -I../zlib $(GSL_CFLAGS) $(GSL_STATIC)
+AM_CFLAGS = -I../sz/include -I../zlib -I../zstd $(GSL_CFLAGS) \
+	$(GSL_STATIC) $(am__append_1)
+AM_FCFLAGS = -I../sz/include -I../sz -I../zlib -I../zstd $(GSL_CFLAGS) $(GSL_STATIC)
 
 #if GSL
 #bin_PROGRAMS += sz_gsl
 #endif
 testint_compress_SOURCES = testint_compress.c
-testint_compress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+testint_compress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 testint_decompress_SOURCES = testint_decompress.c
-testint_decompress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+testint_decompress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 testfloat_compress_SOURCES = testfloat_compress.c
-testfloat_compress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+testfloat_compress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 testfloat_decompress_SOURCES = testfloat_decompress.c
-testfloat_decompress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+testfloat_decompress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 testdouble_compress_SOURCES = testdouble_compress.c
-testdouble_compress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+testdouble_compress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 testdouble_decompress_SOURCES = testdouble_decompress.c
-testdouble_decompress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+testdouble_decompress_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 @FORTRAN_TRUE@testdouble_compress_f_SOURCES = testdouble_compress_f.f90
-@FORTRAN_TRUE@testdouble_compress_f_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@FORTRAN_TRUE@testdouble_compress_f_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 @FORTRAN_TRUE@testdouble_decompress_f_SOURCES = testdouble_decompress_f.f90
-@FORTRAN_TRUE@testdouble_decompress_f_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@FORTRAN_TRUE@testdouble_decompress_f_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 @TIMECMPR_TRUE@testfloat_compress_ts_SOURCES = testfloat_compress_ts.c
-@TIMECMPR_TRUE@testfloat_compress_ts_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@TIMECMPR_TRUE@testfloat_compress_ts_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 @TIMECMPR_TRUE@testfloat_decompress_ts_SOURCES = testfloat_decompress_ts.c
-@TIMECMPR_TRUE@testfloat_decompress_ts_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@TIMECMPR_TRUE@testfloat_decompress_ts_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 @TIMECMPR_TRUE@testdouble_compress_ts_SOURCES = testdouble_compress_ts.c
-@TIMECMPR_TRUE@testdouble_compress_ts_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@TIMECMPR_TRUE@testdouble_compress_ts_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 @TIMECMPR_TRUE@testdouble_decompress_ts_SOURCES = testdouble_decompress_ts.c
-@TIMECMPR_TRUE@testdouble_decompress_ts_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@TIMECMPR_TRUE@testdouble_decompress_ts_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 @GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@sz_SOURCES = sz.c
 @GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@sz_SOURCES = sz_openmp.c
 @GSL_TRUE@@PASTRI_FALSE@sz_SOURCES = sz_gsl.c
 @PASTRI_TRUE@sz_SOURCES = sz_pastri.c
-@GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
-@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
-@GSL_TRUE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB) -lm
-@PASTRI_TRUE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a -lm
+@GSL_FALSE@@OPENMP_FALSE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
+@GSL_FALSE@@OPENMP_TRUE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
+@GSL_TRUE@@PASTRI_FALSE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a $(GSL_LIBS) $(GSL_HDR) $(GSL_LIB) -lm
+@PASTRI_TRUE@sz_LDADD = ../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 all: all-am
 
 .SUFFIXES:

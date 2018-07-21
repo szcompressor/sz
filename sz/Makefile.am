@@ -14,7 +14,7 @@ include_HEADERS=include/CompressElement.h include/DynamicDoubleArray.h include/r
 		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/sz_omp.h sz.mod rw.mod
 
 lib_LTLIBRARIES=libSZ.la
-libSZ_la_CFLAGS=-I./include -I../zlib/
+libSZ_la_CFLAGS=-I./include -I../zlib/ -I../zstd/
 if TIMECMPR
 libSZ_la_CFLAGS+=-DHAVE_TIMECMPR
 endif
@@ -22,7 +22,7 @@ if OPENMP
 libSZ_la_CFLAGS+=-fopenmp
 endif
 libSZ_la_LDFLAGS = -version-info  1:4:0
-libSZ_la_LIDADD=../zlib/.libs/libzlib.a
+libSZ_la_LIDADD=../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a
 libSZ_la_SOURCES=src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c src/iniparser.c src/szf.c \
 		src/CompressElement.c src/DynamicByteArray.c src/rw.c src/utility.c\
 		src/TightDataPointStorageI.c src/TightDataPointStorageD.c src/TightDataPointStorageF.c \
@@ -46,7 +46,7 @@ include_HEADERS=include/CompressElement.h include/DynamicDoubleArray.h include/r
 		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/sz_omp.h
 
 lib_LTLIBRARIES=libSZ.la
-libSZ_la_CFLAGS=-I./include -I../zlib
+libSZ_la_CFLAGS=-I./include -I../zlib -I/../zstd/
 if TIMECMPR
 libSZ_la_CFLAGS+=-DHAVE_TIMECMPR
 endif
@@ -54,7 +54,7 @@ if OPENMP
 libSZ_la_CFLAGS+=-fopenmp
 endif
 libSZ_la_LDFLAGS = -version-info  1:4:0
-libSZ_la_LIDADD=../zlib/.libs/libzlib.a
+libSZ_la_LIDADD=../zlib/.libs/libzlib.a ../zlib/.libs/libzstd.a
 libSZ_la_SOURCES=src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c src/iniparser.c\
 		src/CompressElement.c src/DynamicByteArray.c src/rw.c src/utility.c\
 		src/TightDataPointStorageI.c src/TightDataPointStorageD.c src/TightDataPointStorageF.c \

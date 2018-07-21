@@ -1,2 +1,2 @@
 AUTOMAKE_OPTIONS=foreign
-SUBDIRS = zlib sz example
+SUBDIRS = zlib zstd sz example

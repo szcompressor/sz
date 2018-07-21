@@ -754,12 +754,11 @@ int main(int argc, char* argv[])
 			
 		int szMode = 0;
 		unsigned char* bytes2 = NULL;
-		int isZlib = isZlibFormat(bytes[0], bytes[1]);
-		if(isZlib)
+		int losslessCompressor = is_lossless_compressed_data(bytes, byteLength);
+		if(losslessCompressor!=-1)
 		{
 			szMode = SZ_BEST_COMPRESSION;
-			//size_t targetUncompressSize = 65536;
-			zlib_uncompress65536bytes(bytes, (unsigned long)byteLength, &bytes2);	
+			sz_lossless_decompress65536bytes(losslessCompressor, bytes, (unsigned long)byteLength, &bytes2);	
 		}
 		else
 		{
@@ -780,9 +779,10 @@ int main(int argc, char* argv[])
 		}
 		SZ_printMetadata(metadata);
 		free(metadata->conf_params);
+		confparams_dec = NULL;
 		free(metadata);
 		
-		if(isZlib)
+		if(losslessCompressor!=-1)
 			free(bytes2);
 	}
 	else 

@@ -1828,7 +1828,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log(unsigned char** newByt
     if(!positive){
 	    unsigned char * comp_signs;
 		// compress signs
-		unsigned long signSize = sz_lossless_compress(GZIP_COMPRESSOR, 1, signs, dataLength, &comp_signs);
+		unsigned long signSize = sz_lossless_compress(confparams_cpr->losslessCompressor, 1, signs, dataLength, &comp_signs);
 		tdps->pwrErrBoundBytes = comp_signs;
 		tdps->pwrErrBoundBytes_size = signSize;
 	}
@@ -1890,7 +1890,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr_pre_log(unsigned char** newByt
     if(!positive){
 	    unsigned char * comp_signs;
 		// compress signs
-		unsigned long signSize = sz_lossless_compress(GZIP_COMPRESSOR, 1, signs, dataLength, &comp_signs);
+		unsigned long signSize = sz_lossless_compress(confparams_cpr->losslessCompressor, 1, signs, dataLength, &comp_signs);
 		tdps->pwrErrBoundBytes = comp_signs;
 		tdps->pwrErrBoundBytes_size = signSize;
 	}
@@ -1952,7 +1952,7 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr_pre_log(unsigned char** newByt
     if(!positive){
 	    unsigned char * comp_signs;
 		// compress signs
-		unsigned long signSize = sz_lossless_compress(GZIP_COMPRESSOR, 1, signs, dataLength, &comp_signs);
+		unsigned long signSize = sz_lossless_compress(confparams_cpr->losslessCompressor, 1, signs, dataLength, &comp_signs);
 		tdps->pwrErrBoundBytes = comp_signs;
 		tdps->pwrErrBoundBytes_size = signSize;
 	}

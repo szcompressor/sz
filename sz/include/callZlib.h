@@ -19,6 +19,8 @@ extern "C" {
 
 #include <stdio.h>
 
+int isZlibFormat(unsigned char magic1, unsigned char magic2);
+
 //callZlib.c
 unsigned long zlib_compress(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level);
 unsigned long zlib_compress2(unsigned char* data, unsigned long dataLength, unsigned char** compressBytes, int level);

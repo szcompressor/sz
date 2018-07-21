@@ -78,7 +78,7 @@ extern "C" {
 #define SZ_VERNUM 0x0200
 #define SZ_VER_MAJOR 2
 #define SZ_VER_MINOR 0
-#define SZ_VER_BUILD 0
+#define SZ_VER_BUILD 2
 #define SZ_VER_REVISION 0
 
 #define PASTRI 103
@@ -370,8 +370,6 @@ void SZ_printMetadata(sz_metadata* metadata);
 void filloutDimArray(size_t* dim, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
 size_t compute_total_batch_size();
-
-int isZlibFormat(unsigned char magic1, unsigned char magic2);
 
 void SZ_registerVar(char* varName, int dataType, void* data, 
 			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio, 

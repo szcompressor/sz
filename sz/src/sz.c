@@ -786,23 +786,6 @@ size_t compute_total_batch_size()
 	return totalSize;
 }
 
-int isZlibFormat(unsigned char magic1, unsigned char magic2)
-{
-	if(magic1==104&&magic2==5) //DC+BS
-		return 1;
-	if(magic1==104&&magic2==129) //DC+DC
-		return 1;
-	if(magic1==104&&magic2==222) //DC+BC
-		return 1;
-	if(magic1==120&&magic2==1) //BC+BS
-		return 1;
-	if(magic1==120&&magic2==156) //BC+DC
-		return 1;
-	if(magic1==120&&magic2==218) //BC+BS
-		return 1;
-	return 0;
-}
-
 void SZ_registerVar(char* varName, int dataType, void* data, 
 			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio, 
 			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)

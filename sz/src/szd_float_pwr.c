@@ -1357,7 +1357,7 @@ void decompressDataSeries_float_1D_pwr_pre_log(float** data, size_t dataSeriesLe
 	float threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;
-		sz_lossless_decompress(GZIP_COMPRESSOR, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+		sz_lossless_decompress(confparams_dec->losslessCompressor, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
 		for(size_t i=0; i<dataSeriesLength; i++){
 			if((*data)[i] < threshold) (*data)[i] = 0;
 			else (*data)[i] = exp2((*data)[i]);
@@ -1381,7 +1381,7 @@ void decompressDataSeries_float_2D_pwr_pre_log(float** data, size_t r1, size_t r
 	float threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;
-		sz_lossless_decompress(GZIP_COMPRESSOR, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+		sz_lossless_decompress(confparams_dec->losslessCompressor, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
 		for(size_t i=0; i<dataSeriesLength; i++){
 			if((*data)[i] < threshold) (*data)[i] = 0;
 			else (*data)[i] = exp2((*data)[i]);
@@ -1405,7 +1405,7 @@ void decompressDataSeries_float_3D_pwr_pre_log(float** data, size_t r1, size_t r
 	float threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;
-		sz_lossless_decompress(GZIP_COMPRESSOR, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+		sz_lossless_decompress(confparams_dec->losslessCompressor, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
 		for(size_t i=0; i<dataSeriesLength; i++){
 			if((*data)[i] < threshold) (*data)[i] = 0;
 			else (*data)[i] = exp2((*data)[i]);

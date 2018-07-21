@@ -1371,7 +1371,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 		}
 		else if(confparams_cpr->szMode==SZ_BEST_COMPRESSION || confparams_cpr->szMode==SZ_DEFAULT_COMPRESSION)
 		{
-			*outSize = sz_lossless_compress(GZIP_COMPRESSOR, confparams_cpr->gzipMode, tmpByteData, tmpOutSize, newByteData);
+			*outSize = sz_lossless_compress(confparams_cpr->losslessCompressor, confparams_cpr->gzipMode, tmpByteData, tmpOutSize, newByteData);
 			free(tmpByteData);
 		}
 		else

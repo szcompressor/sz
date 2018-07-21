@@ -31,6 +31,7 @@ void write_reordered_tofile(SZ_VarSet* curVar, size_t dataLen);
 //sihuan added: write the reordered input to files for further decompression validation
 float calculate_delta_t(size_t size);//sihuan added
 
+int is_lossless_compressed_data(unsigned char* compressedBytes, size_t cmpSize);
 unsigned long sz_lossless_compress(int losslessCompressor, int level, unsigned char* data, unsigned long dataLength, unsigned char** compressBytes);
 unsigned long sz_lossless_decompress(int losslessCompressor, unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize);
 unsigned long sz_lossless_decompress65536bytes(int losslessCompressor, unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData);
