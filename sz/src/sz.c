@@ -72,36 +72,12 @@ int SZ_Init(const char *configFilePath)
 
 int SZ_Init_Params(sz_params *params)
 {
-	int x = 1;
-	char *y = (char*)&x;
-	int endianType = BIG_ENDIAN_SYSTEM;
-	if(*y==1) endianType = LITTLE_ENDIAN_SYSTEM;
+	SZ_Init(NULL);
 
-	confparams_cpr = (sz_params*)malloc(sizeof(sz_params));
-	memcpy(confparams_cpr, params, sizeof(sz_params));	
-    exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
-    memcpy(exe_params, params, sizeof(sz_exedata));	
+	memcpy(confparams_cpr, params, sizeof(sz_params));
 
-	sysEndianType = endianType;
-	exe_params->SZ_SIZE_TYPE = sizeof(size_t);
-
-	// set default values
-	if(params->max_quant_intervals > 0) 
-		params->maxRangeRadius = params->max_quant_intervals/2;
-	else
-		params->max_quant_intervals = params->maxRangeRadius*2;
-
-	exe_params->intvCapacity = params->maxRangeRadius*2;
-	exe_params->intvRadius = params->maxRangeRadius;
-
-	if(params->quantization_intervals>0)
-	{
-		updateQuantizationInfo(params->quantization_intervals);
-		exe_params->optQuantMode = 0;
-	}
-	else
-		exe_params->optQuantMode = 1;
-
+	if(confparams_cpr->losslessCompressor!=GZIP_COMPRESSOR && confparams_cpr->losslessCompressor!=ZSTD_COMPRESSOR)
+		confparams_cpr->losslessCompressor = ZSTD_COMPRESSOR;
 
 	if(params->quantization_intervals%2!=0)
 	{

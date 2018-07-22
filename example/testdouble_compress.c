@@ -66,16 +66,16 @@ int main(int argc, char * argv[])
 
     /*sz_params sz;
     sz.sol_ID = SZ;
-    sz.sampleDistance = 50;
+    sz.sampleDistance = 100;
     sz.quantization_intervals = 0;
     sz.max_quant_intervals = 65536;
     sz.predThreshold = 0.98;
-    sz.szMode = SZ_DEFAULT_COMPRESSION;
+    sz.szMode = SZ_BEST_COMPRESSION;
+    sz.losslessCompressor = ZSTD_COMPMRSSOR;
     sz.gzipMode = 1;
     sz.errorBoundMode = REL;
     sz.absErrBound = 1E-6;
     sz.relBoundRatio = 1E-5;
-    sz.pwr_type = 0;
 
     SZ_Init_Params(&sz);*/
 
