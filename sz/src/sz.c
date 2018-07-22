@@ -77,6 +77,11 @@ int SZ_Init_Params(sz_params *params)
 	int endianType = BIG_ENDIAN_SYSTEM;
 	if(*y==1) endianType = LITTLE_ENDIAN_SYSTEM;
 
+	confparams_cpr = (sz_params*)malloc(sizeof(sz_params));
+	memcpy(confparams_cpr, params, sizeof(sz_params));	
+    exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
+    memcpy(exe_params, params, sizeof(sz_exedata));	
+
 	sysEndianType = endianType;
 	exe_params->SZ_SIZE_TYPE = sizeof(size_t);
 
@@ -103,9 +108,6 @@ int SZ_Init_Params(sz_params *params)
 		printf("Error: quantization_intervals must be an even number!\n");
 		return SZ_NSCS;
 	}
-
-	confparams_cpr = (sz_params*)malloc(sizeof(sz_params));
-	memcpy(confparams_cpr, params, sizeof(sz_params));	
 
 	return SZ_SCES;
 }
