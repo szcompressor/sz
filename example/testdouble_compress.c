@@ -65,13 +65,14 @@ int main(int argc, char * argv[])
     status = SZ_Init(cfgFile);
 
     /*sz_params sz;
+    memset(&sz, 0, sizeof(sz_params));
     sz.sol_ID = SZ;
     sz.sampleDistance = 100;
     sz.quantization_intervals = 0;
     sz.max_quant_intervals = 65536;
     sz.predThreshold = 0.98;
     sz.szMode = SZ_BEST_COMPRESSION;
-    sz.losslessCompressor = ZSTD_COMPMRSSOR;
+    sz.losslessCompressor = ZSTD_COMPRESSOR;
     sz.gzipMode = 1;
     sz.errorBoundMode = REL;
     sz.absErrBound = 1E-6;

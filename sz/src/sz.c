@@ -74,10 +74,13 @@ int SZ_Init_Params(sz_params *params)
 {
 	SZ_Init(NULL);
 
-	memcpy(confparams_cpr, params, sizeof(sz_params));
+	if(params->losslessCompressor!=GZIP_COMPRESSOR && params->losslessCompressor!=ZSTD_COMPRESSOR)
+		params->losslessCompressor = ZSTD_COMPRESSOR;
 
-	if(confparams_cpr->losslessCompressor!=GZIP_COMPRESSOR && confparams_cpr->losslessCompressor!=ZSTD_COMPRESSOR)
-		confparams_cpr->losslessCompressor = ZSTD_COMPRESSOR;
+	if(params->max_quant_intervals > 0)
+		params->maxRangeRadius = params->max_quant_intervals/2;
+		
+	memcpy(confparams_cpr, params, sizeof(sz_params));
 
 	if(params->quantization_intervals%2!=0)
 	{
