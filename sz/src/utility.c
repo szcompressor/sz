@@ -163,9 +163,7 @@ int is_lossless_compressed_data(unsigned char* compressedBytes, size_t cmpSize)
 	if(flag)
 		return GZIP_COMPRESSOR;
 
-	printf("Error: Unrecognized lossless compressor\n");
-
-	return -1;
+	return -1; //fast mode (without GZIP or ZSTD)
 }
 
 unsigned long sz_lossless_compress(int losslessCompressor, int level, unsigned char* data, unsigned long dataLength, unsigned char** compressBytes)
