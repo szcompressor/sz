@@ -10,13 +10,18 @@ This document simply introduces how to install and use the SZ compressor. More d
 
 ===========Installation==========
 ---------------------------------
-configure --prefix=[INSTALL_DIR]
+
+Installation way 1:
+./configure --prefix=[INSTALL_DIR]
 (Please use --enable-fortran if you need Fortran interface)
-
 make
-
 make install
 
+Installation way 2:
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX:PATH=[INSTALL_DIR]
+make
+make install
 
 Then, you'll find all the executables in [INSTALL_DIR]/bin and .a and .so libraries in [INSTALL_DIR]/lib
 
