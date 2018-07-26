@@ -84,10 +84,13 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 	sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
 	int mode = confparams_dec->szMode;
 	int predictionMode = confparams_dec->predictionMode;
+	int losslessCompressor = confparams_dec->losslessCompressor;
 	if(confparams_dec!=NULL)
 		free(confparams_dec);
 	confparams_dec = params;
 	confparams_dec->szMode = mode;
+	confparams_dec->losslessCompressor = losslessCompressor;
+
 	if(mode==SZ_TEMPORAL_COMPRESSION)
 	{
 		confparams_dec->szMode = SZ_TEMPORAL_COMPRESSION;
