@@ -49,11 +49,11 @@ all: 		$(LIB)/$(SHARED) $(LIB)/$(STATIC)
 
 $(OBJ)/%.o:	$(SRC)/%.c
 		@mkdir -p $(OBJ)
-		$(CC) -c -fPIC -g -O0 -I./include $(HDF5FLAGS) $(SZFLAGS) $< -o $@
+		$(CC) -c -fPIC -g -O3 -I./include $(HDF5FLAGS) $(SZFLAGS) $< -o $@
 		
 $(LIB)/$(SHARED):	$(OBJS)
 		@mkdir -p $(LIB)
-		$(CC) -shared -o $(LIB)/$(SHARED) $(OBJS) $(SZFLAGS) -lc -lSZ -lzlib
+		$(CC) -O3 -shared -o $(LIB)/$(SHARED) $(OBJS) $(SZFLAGS) -lc -lSZ -lzlib -lzstd
 
 $(LIB)/$(STATIC):	$(OBJS)
 		@mkdir -p $(LIB)
