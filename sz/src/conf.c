@@ -217,7 +217,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 			return SZ_NSCS;	
 		}
 		
-		modeBuf = iniparser_getstring(ini, "PARAMETER:losslessCompressor", "GZIP_COMPRESSOR");
+		modeBuf = iniparser_getstring(ini, "PARAMETER:losslessCompressor", "ZSTD_COMPRESSOR");
 		if(strcmp(modeBuf, "GZIP_COMPRESSOR")==0)
 			confparams_cpr->losslessCompressor = GZIP_COMPRESSOR;
 		else if(strcmp(modeBuf, "ZSTD_COMPRESSOR")==0)
