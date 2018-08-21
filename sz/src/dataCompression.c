@@ -66,14 +66,14 @@ long computeRangeSize_int(void* oriData, int dataType, size_t size, int64_t* val
 	else if(dataType == SZ_UINT32)
 	{
 		unsigned int* data = (unsigned int*)oriData;
-		int data_; 
+		unsigned int data_; 
 		min = data[0], max = min;
 		computeMinMax(data);
 	}
 	else if(dataType == SZ_INT32)
 	{
 		int* data = (int*)oriData;
-		unsigned int data_; 
+		int data_; 
 		min = data[0], max = min;
 		computeMinMax(data);
 	}
