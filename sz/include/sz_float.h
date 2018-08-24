@@ -134,6 +134,7 @@ unsigned int optimize_intervals_float_3D_with_freq_and_dense_pos(float *oriData,
 
 unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(float *oriData, size_t r1, size_t r2, double realPrecision, size_t * comp_size);
 unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t * comp_size);
+unsigned char * SZ_compress_float_3D_MDQ_random_access_with_blocked_regression(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t * comp_size);
 
 #ifdef __cplusplus
 }

@@ -34,6 +34,7 @@ size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t d
 
 void decompressDataSeries_float_2D_nonblocked_with_blocked_regression(float** data, size_t r1, size_t r2, unsigned char* comp_data);
 void decompressDataSeries_float_3D_nonblocked_with_blocked_regression(float** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data);
+void decompressDataSeries_float_3D_random_access_with_blocked_regression(float** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data);
 
 #ifdef __cplusplus
 }
