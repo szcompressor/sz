@@ -169,7 +169,7 @@ int is_lossless_compressed_data(unsigned char* compressedBytes, size_t cmpSize)
 unsigned long sz_lossless_compress(int losslessCompressor, int level, unsigned char* data, unsigned long dataLength, unsigned char** compressBytes)
 {
 	unsigned long outSize = 0; 
-	int estimatedCompressedSize = 0;
+	size_t estimatedCompressedSize = 0;
 	switch(losslessCompressor)
 	{
 	case GZIP_COMPRESSOR:
