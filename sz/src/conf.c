@@ -103,8 +103,10 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		
 		confparams_cpr->szMode = SZ_BEST_COMPRESSION;
 		confparams_cpr->losslessCompressor = ZSTD_COMPRESSOR; //other option: GZIP_COMPRESSOR;
-		
-		confparams_cpr->gzipMode = 1; //fast mode
+		if(confparams_cpr->losslessCompressor==ZSTD_COMPRESSOR)
+			confparams_cpr->gzipMode = 3; //fast mode
+		else
+			confparams_cpr->gzipMode = 1; //high speed mode
 		
 		confparams_cpr->errorBoundMode = PSNR;
 		confparams_cpr->psnr = 90;
@@ -236,7 +238,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		else
 			sz_with_regression = SZ_NO_REGRESSION;
 		
-		modeBuf = iniparser_getstring(ini, "PARAMETER:gzipMode", NULL);
+		modeBuf = iniparser_getstring(ini, "PARAMETER:gzipMode", "Gzip_BEST_SPEED");
 		if(modeBuf==NULL)
 		{
 			printf("[SZ] Error: Null Gzip mode setting (please check sz.config file)\n");
@@ -256,6 +258,29 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 			printf("[SZ] Error: Wrong gzip Mode (please check sz.config file)\n");
 			return SZ_NSCS;
 		}
+		
+		modeBuf = iniparser_getstring(ini, "PARAMETER:zstdMode", "Zstd_HIGH_SPEED");		
+		if(modeBuf==NULL)
+		{
+			printf("[SZ] Error: Null Zstd mode setting (please check sz.config file)\n");
+			iniparser_freedict(ini);
+			return SZ_NSCS;					
+		}		
+		else if(strcmp(modeBuf, "Zstd_BEST_SPEED")==0)
+			confparams_cpr->gzipMode = 1;
+		else if(strcmp(modeBuf, "Zstd_HIGH_SPEED")==0)
+			confparams_cpr->gzipMode = 3;
+		else if(strcmp(modeBuf, "Zstd_HIGH_COMPRESSION")==0)
+			confparams_cpr->gzipMode = 19;
+		else if(strcmp(modeBuf, "Zstd_BEST_COMPRESSION")==0)
+			confparams_cpr->gzipMode = 22;			
+		else if(strcmp(modeBuf, "Zstd_DEFAULT_COMPRESSION")==0)
+			confparams_cpr->gzipMode = 3;
+		else
+		{
+			printf("[SZ] Error: Wrong zstd Mode (please check sz.config file)\n");
+			return SZ_NSCS;
+		}		
 		
 		//TODO
 		confparams_cpr->snapshotCmprStep = (int)iniparser_getint(ini, "PARAMETER:snapshotCmprStep", 5);

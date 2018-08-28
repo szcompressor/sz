@@ -178,7 +178,7 @@ unsigned long sz_lossless_compress(int losslessCompressor, int level, unsigned c
 	case ZSTD_COMPRESSOR:
 		estimatedCompressedSize = dataLength*1.2;
 		*compressBytes = (unsigned char*)malloc(estimatedCompressedSize);
-		outSize = ZSTD_compress(*compressBytes, estimatedCompressedSize, data, dataLength, 3); //default setting of level is 3
+		outSize = ZSTD_compress(*compressBytes, estimatedCompressedSize, data, dataLength, level); //default setting of level is 3
 		break;
 	default:
 		printf("Error: Unrecognized lossless compressor in sz_lossless_compress()\n");

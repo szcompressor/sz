@@ -1563,7 +1563,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			exit(0);
 			return SZ_NSCS;
 		}
-	}				
+	}
 		
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
