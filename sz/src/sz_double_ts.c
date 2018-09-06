@@ -66,7 +66,7 @@ unsigned int optimize_intervals_double_1D_ts(double *oriData, size_t dataLength,
 TightDataPointStorageD* SZ_compress_double_1D_MDQ_ts(double *oriData, size_t dataLength, sz_multisteps* multisteps,
 double realPrecision, double valueRangeSize, double medianValue_d)
 {
-double* preStepData = (double*)(multisteps->hist_data);
+	double* preStepData = (double*)(multisteps->hist_data);
 	//store the decompressed data
 	double* decData = (double*)malloc(sizeof(double)*dataLength);
 	memset(decData, 0, sizeof(double)*dataLength);

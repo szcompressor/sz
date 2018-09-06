@@ -1796,7 +1796,7 @@ void getSnapshotData_float_3D(float** data, size_t r1, size_t r2, size_t r3, Tig
 					if(multisteps->compressionType == 0)
 						decompressDataSeries_float_3D(data, r1, r2, r3, tdps);
 					else
-						decompressDataSeries_float_1D_ts(data, r1*r2*r3, multisteps, tdps);					
+						decompressDataSeries_float_1D_ts(data, dataSeriesLength, multisteps, tdps);					
 				}
 				else
 #endif				
@@ -4913,6 +4913,11 @@ void decompressDataSeries_float_3D_nonblocked_with_blocked_regression(float** da
 			}
 		}
 	}
+	
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(multisteps->hist_data, (*data), num_elements*sizeof(float));
+#endif	
 
 	free(coeff_result_type);
 

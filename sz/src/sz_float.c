@@ -1357,8 +1357,11 @@ char SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 			compressionType = 1; //time-series based compression 
 		}
 		else
-		{	
-			tdps = SZ_compress_float_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_f);
+		{
+			if(sz_with_regression == SZ_NO_REGRESSION)	
+				tdps = SZ_compress_float_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_f);
+			else
+				*newByteData = SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(oriData, r1, r2, r3, realPrecision, outSize);
 			compressionType = 0; //snapshot-based compression
 			multisteps->lastSnapshotStep = timestep;
 		}		
@@ -1367,14 +1370,14 @@ char SZ_compress_args_float_NoCkRngeNoGzip_3D(unsigned char** newByteData, float
 #endif
 		tdps = SZ_compress_float_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_f);
 
+	if(tdps!=NULL)
+	{
+		convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
+		if(*outSize>dataLength*sizeof(float))
+			SZ_compress_args_float_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+		free_TightDataPointStorageF(tdps);
+	}
 
-	convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
-
-	if(*outSize>dataLength*sizeof(float))
-		SZ_compress_args_float_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
-
-	free_TightDataPointStorageF(tdps);
-	
 	return compressionType;
 }
 
@@ -1892,7 +1895,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)				
-					multisteps->compressionType = SZ_compress_args_float_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+						multisteps->compressionType = SZ_compress_args_float_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
 #endif
 				{
@@ -5157,6 +5160,12 @@ unsigned int optimize_intervals_float_3D_with_freq_and_dense_pos(float *oriData,
 // 3D:  modified for higher performance
 unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t * comp_size){
 
+#ifdef HAVE_TIMECMPR	
+	float* decData = NULL;
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+		decData = (float*)(multisteps->hist_data);
+#endif
+
 	unsigned int quantization_intervals;
 	float sz_sample_correct_freq = -1;//0.5; //-1
 	float dense_pos;
@@ -5355,7 +5364,11 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 				size_t strip_unpredictable_count = 0;
 				for(size_t k=0; k<num_z; k++){
 					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
-
+#ifdef HAVE_TIMECMPR
+					size_t offset_z = 0;
+					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+					size_t block_offset = offset_x * dim0_offset + offset_y * dim1_offset + offset_z;
+#endif
 					/*sampling and decide which predictor*/
 					{
 						// sample point [1, 1, 1] [1, 1, 4] [1, 4, 1] [1, 4, 4] [4, 1, 1] [4, 1, 4] [4, 4, 1] [4, 4, 4]
@@ -5489,6 +5502,13 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 										pred = curData;
 										unpredictable_data[block_unpredictable_count ++] = curData;
 									}
+									
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = pred;
+#endif									
+									
 									if((jj == current_blockcount_y - 1) || (kk == current_blockcount_z - 1)){
 										// assign value to block surfaces
 										pb_pos[ii * strip_dim0_offset + jj * strip_dim1_offset + kk] = pred;
@@ -5526,6 +5546,12 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 										pred = curData;
 										unpredictable_data[block_unpredictable_count ++] = curData;
 									}
+
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = pred;
+#endif									
 
 									if((jj == current_blockcount_y - 1) || (kk == current_blockcount_z - 1)){
 										// assign value to block surfaces
@@ -5589,6 +5615,12 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 											unpredictable_data[unpredictable_count ++] = curData;
 										}
 									}
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = *cur_pb_pos;
+#endif																		
+									
 									index ++;
 									cur_pb_pos ++;
 									cur_data_pos ++;
@@ -5635,6 +5667,13 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 											unpredictable_data[unpredictable_count ++] = curData;
 										}
 									}
+#ifdef HAVE_TIMECMPR
+									size_t ii = current_blockcount_x - 1;
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = *cur_pb_pos;
+#endif																		
+									
 									next_pb_pos[jj * strip_dim1_offset + kk] = *cur_pb_pos;
 									index ++;
 									cur_pb_pos ++;
@@ -5695,6 +5734,11 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 				size_t strip_unpredictable_count = 0;
 				for(size_t k=0; k<num_z; k++){
 					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
+#ifdef HAVE_TIMECMPR
+				size_t offset_z = 0;
+				offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+				size_t block_offset = offset_x * dim0_offset + offset_y * dim1_offset + offset_z;
+#endif														
 					/*sampling*/
 					{
 						// sample point [1, 1, 1] [1, 1, 4] [1, 4, 1] [1, 4, 4] [4, 1, 1] [4, 1, 4] [4, 4, 1] [4, 4, 4]
@@ -5831,6 +5875,13 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 										unpredictable_data[block_unpredictable_count ++] = curData;
 									}
 
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = pred;
+#endif																		
+
+
 									if((jj == current_blockcount_y - 1) || (kk == current_blockcount_z - 1)){
 										// assign value to block surfaces
 										pb_pos[ii * strip_dim0_offset + jj * strip_dim1_offset + kk] = pred;
@@ -5868,6 +5919,12 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 										pred = curData;
 										unpredictable_data[block_unpredictable_count ++] = curData;
 									}
+									
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = pred;
+#endif																											
 
 									if((jj == current_blockcount_y - 1) || (kk == current_blockcount_z - 1)){
 										// assign value to block surfaces
@@ -5921,6 +5978,12 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 										*cur_pb_pos = curData;
 										unpredictable_data[unpredictable_count ++] = curData;
 									}
+									
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = *cur_pb_pos;
+#endif																											
 									index ++;
 									cur_pb_pos ++;
 									cur_data_pos ++;
@@ -5958,6 +6021,14 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 										*cur_pb_pos = curData;
 										unpredictable_data[unpredictable_count ++] = curData;
 									}
+									
+#ifdef HAVE_TIMECMPR
+									size_t ii = current_blockcount_x - 1;
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = *cur_pb_pos;
+#endif																											
+									
 									// assign value to next prediction buffer
 									next_pb_pos[jj * strip_dim1_offset + kk] = *cur_pb_pos;
 									index ++;
