@@ -34,9 +34,11 @@ int isZlibFormat(unsigned char magic1, unsigned char magic2)
 	if(magic1==104&&magic2==129) //DC+DC
 		return 1;
 	if(magic1==104&&magic2==222) //DC+BC
-		return 1;
+		return 1;		
 	if(magic1==120&&magic2==1) //BC+BS
 		return 1;
+	if(magic1==120&&magic2==94) //BC+? 
+		return 1;		
 	if(magic1==120&&magic2==156) //BC+DC
 		return 1;
 	if(magic1==120&&magic2==218) //BC+BS
@@ -212,6 +214,9 @@ unsigned long zlib_compress5(unsigned char* data, unsigned long dataLength, unsi
 	strm.zfree = Z_NULL;
 	strm.opaque = Z_NULL;
 	ret = deflateInit(&strm, level);
+	//int windowBits = 15;
+    //ret = deflateInit2(&strm, level, Z_DEFLATED, windowBits, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);//Z_FIXED); //Z_DEFAULT_STRATEGY
+
 	if (ret != Z_OK)
 		return ret;
 
