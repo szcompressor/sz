@@ -21,7 +21,7 @@ void new_DIA(DynamicIntArray **dia, size_t cap) {
 
 void convertDIAtoInts(DynamicIntArray *dia, unsigned char **data)
 {
-	int size = dia->size;
+	size_t size = dia->size;
 	if(size>0)
 		*data = (unsigned char*)malloc(size * sizeof(char));
 	else

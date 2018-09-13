@@ -270,7 +270,7 @@ TightDataPointStorageI* SZ_compress_int64_1D_MDQ(int64_t *oriData, size_t dataLe
 		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
 		pred = last3CmprsData[0];
 		predAbsErr = llabs(curData - pred);	
-		if(predAbsErr<=checkRadius)
+		if(predAbsErr<checkRadius)
 		{
 			state = (predAbsErr/realPrecision+1)/2;
 			if(curData>=pred)

@@ -21,7 +21,7 @@ void new_DFA(DynamicFloatArray **dfa, size_t cap) {
 
 void convertDFAtoFloats(DynamicFloatArray *dfa, float **data)
 {
-	int size = dfa->size;
+	size_t size = dfa->size;
 	if(size>0)
 		*data = (float*)malloc(size * sizeof(float));
 	else

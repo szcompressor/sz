@@ -21,7 +21,7 @@ void new_DDA(DynamicDoubleArray **dda, size_t cap) {
 
 void convertDDAtoDoubles(DynamicDoubleArray *dba, double **data)
 {
-	int size = dba->size;
+	size_t size = dba->size;
 	if(size>0)
 		*data = (double*)malloc(size * sizeof(double));
 	else
