@@ -132,7 +132,7 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 		
 	if(isRandomAccess == 1)
 	{
-		(*this)->raBytes_size = flatBytesLength - 3 - 1 - MetaDataByteLength;
+		(*this)->raBytes_size = flatBytesLength - 3 - 1 - MetaDataByteLength - exe_params->SZ_SIZE_TYPE;
 		(*this)->raBytes = &(flatBytes[index]);
 		return errorBoundMode;
 	}					

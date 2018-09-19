@@ -519,6 +519,9 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	isConstant = sameRByte & 0x01;
 	//confparams_dec->szMode = (sameRByte & 0x06)>>1;
 	isLossless = (sameRByte & 0x10)>>4;
+	
+	int isRandomAccess = (sameRByte >> 7) & 0x01;
+	
 	if(exe_params==NULL)
 	{
 		exe_params = (sz_exedata *)malloc(sizeof(struct sz_exedata));
@@ -536,8 +539,8 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 		index++; //jump to the dataLength info byte address
 	dataSeriesLength = bytesToSize(&(bytes[index]));// 4 or 8	
 	index += exe_params->SZ_SIZE_TYPE;
-	index += 4; //max_quant_intervals
-	
+	//index += 4; //max_quant_intervals
+
 	sz_metadata* metadata = (sz_metadata*)malloc(sizeof(struct sz_metadata));
 	
 	metadata->versionNumber[0] = versions[0];
@@ -553,18 +556,27 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	int defactoNBBins = 0; //real # bins
 	if(isConstant==0 && isLossless==0)
 	{
-		int radExpoL = 0, segmentL = 0, pwrErrBoundBytesL = 0;
-		if(metadata->conf_params->errorBoundMode >= PW_REL)
+		if(isRandomAccess==1)
 		{
-			radExpoL = 1;
-			segmentL = exe_params->SZ_SIZE_TYPE;
-			pwrErrBoundBytesL = 4;
+			unsigned char* raBytes = &(bytes[index]);
+			defactoNBBins = bytesToInt_bigEndian(raBytes + sizeof(int) + sizeof(double));
 		}
-		
-		int offset_typearray = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrErrBoundBytesL + 4 + (4 + params->dataType*4) + 1 + 8 
-				+ exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + 4;
-		defactoNBBins = bytesToInt_bigEndian(bytes+offset_typearray);
-	}
+		else
+		{
+			int radExpoL = 0, segmentL = 0, pwrErrBoundBytesL = 0;
+			if(metadata->conf_params->errorBoundMode >= PW_REL)
+			{
+				radExpoL = 1;
+				segmentL = exe_params->SZ_SIZE_TYPE;
+				pwrErrBoundBytesL = 4;
+			}
+			
+			int offset_typearray = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrErrBoundBytesL + 4 + (4 + params->dataType*4) + 1 + 8 
+					+ exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + 4;
+			defactoNBBins = bytesToInt_bigEndian(bytes+offset_typearray);			
+		}
+
+	}	
 	
 	metadata->defactoNBBins = defactoNBBins;
 	return metadata;
