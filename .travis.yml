@@ -1,3 +1,10 @@
 language: c
 compiler: gcc
-script: ./configure && make
+
+before_install:
+- cd test/travis-ci && getData.sh
+  
+script: 
+- ./configure && make
+- cd example && test.sh
+- cd test/travis-ci && test.sh
