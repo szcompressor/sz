@@ -155,7 +155,7 @@ float calculate_delta_t(size_t size){
 
 int is_lossless_compressed_data(unsigned char* compressedBytes, size_t cmpSize)
 {
-	int frameContentSize = ZSTD_getFrameContentSize(compressedBytes, cmpSize);
+	unsigned long long frameContentSize = ZSTD_getFrameContentSize(compressedBytes, cmpSize);
 	if(frameContentSize != ZSTD_CONTENTSIZE_ERROR)
 		return ZSTD_COMPRESSOR;
 	
@@ -176,7 +176,10 @@ unsigned long sz_lossless_compress(int losslessCompressor, int level, unsigned c
 		outSize = zlib_compress5(data, dataLength, compressBytes, level);
 		break;
 	case ZSTD_COMPRESSOR:
-		estimatedCompressedSize = dataLength*1.2;
+		if(dataLength < 100) 
+			estimatedCompressedSize = 200;
+		else
+			estimatedCompressedSize = dataLength*1.2;
 		*compressBytes = (unsigned char*)malloc(estimatedCompressedSize);
 		outSize = ZSTD_compress(*compressBytes, estimatedCompressedSize, data, dataLength, level); //default setting of level is 3
 		break;
