@@ -41,26 +41,27 @@ int main(int argc, char * argv[])
     size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     char oriDir[640], outputDir[640], outputFilePath[600];
     char *cfgFile;
-    
+    char *varName;
     if(argc < 3)
     {
-		printf("Test case: testdouble_compress_ts [config_file] [srcDir] [dimension sizes...]\n");
-		printf("Example: testdouble_compress_ts sz.config /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
+		printf("Test case: testdouble_compress_ts [config_file] [varName] [srcDir] [dimension sizes...]\n");
+		printf("Example: testdouble_compress_ts sz.config CLOUDf /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
 		exit(0);
     }
    
     cfgFile=argv[1];
-    sprintf(oriDir, "%s", argv[2]);
-    if(argc>=4)
-		r1 = atoi(argv[3]); //8
+    varName=argv[2];
+    sprintf(oriDir, "%s", argv[3]);
     if(argc>=5)
-		r2 = atoi(argv[4]); //8
+		r1 = atoi(argv[4]); //8
     if(argc>=6)
-		r3 = atoi(argv[5]); //128
+		r2 = atoi(argv[5]); //8
     if(argc>=7)
-        r4 = atoi(argv[6]);
+		r3 = atoi(argv[6]); //128
     if(argc>=8)
-        r5 = atoi(argv[7]);
+        r4 = atoi(argv[7]);
+    if(argc>=9)
+        r5 = atoi(argv[8]);
    
     printf("cfgFile=%s\n", cfgFile); 
     int status = SZ_Init(cfgFile);
@@ -72,7 +73,7 @@ int main(int argc, char * argv[])
     size_t nbEle;
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
     double *data = (double*)malloc(sizeof(double)*dataLength);
-    SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar(varName, SZ_DOUBLE, data, confparams_cpr->errorBoundMode, confparams_cpr->absErrBound, confparams_cpr->relBoundRatio, confparams_cpr->pw_relBoundRatio, r5, r4, r3, r2, r1);
 
     if(status != SZ_SCES)
     {
