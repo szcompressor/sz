@@ -130,9 +130,14 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 	int errorBoundMode = ABS;
 	
 	sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
+	int mode = confparams_dec->szMode;
+	int losslessCompressor = confparams_dec->losslessCompressor;
 	if(confparams_dec!=NULL)
 		free(confparams_dec);
 	confparams_dec = params;
+	confparams_dec->szMode = mode;
+	confparams_dec->losslessCompressor = losslessCompressor;
+	
 	index += MetaDataByteLength; //20	
 	
 	if(same==0)
