@@ -36,7 +36,7 @@ include_directories (
 	)
 # include_directories (${ZLIB_INCLUDE_DIRS})
 
-add_subdirectory (sz)
 add_subdirectory (zlib)
 add_subdirectory (zstd)
+add_subdirectory (sz)
 add_subdirectory (example)
