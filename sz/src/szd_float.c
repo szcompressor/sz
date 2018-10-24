@@ -5622,6 +5622,8 @@ void decompressDataSeries_float_3D_decompression_random_access_with_blocked_regr
 	free(result_type);
 }
 
+
+#ifdef HAVE_RANDOMACCESS
 void decompressDataSeries_float_3D_decompression_given_areas_with_blocked_regression(float** data, size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, size_t e2, size_t e3, unsigned char* comp_data){
 
 	// size_t dim0_offset = r2 * r3;
@@ -6127,3 +6129,4 @@ unsigned char* cmpBytes, size_t cmpSize)
 		free(szTmpBytes);
 	return status;
 }
+#endif

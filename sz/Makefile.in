@@ -93,12 +93,14 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @FORTRAN_TRUE@@TIMECMPR_TRUE@am__append_1 = -DHAVE_TIMECMPR
-@FORTRAN_TRUE@@OPENMP_TRUE@am__append_2 = -fopenmp
-@FORTRAN_FALSE@@TIMECMPR_TRUE@am__append_3 = -DHAVE_TIMECMPR
-@FORTRAN_FALSE@@OPENMP_TRUE@am__append_4 = -fopenmp
-@FORTRAN_FALSE@@PASTRI_TRUE@am__append_5 = src/pastri.c
-@FORTRAN_FALSE@@OPENMP_TRUE@am__append_6 = src/sz_omp.c
-@FORTRAN_FALSE@@TIMECMPR_TRUE@am__append_7 = src/sz_float_ts.c src/szd_float_ts.c src/sz_double_ts.c src/szd_double_ts.c
+@FORTRAN_TRUE@@RANDOMACCESS_TRUE@am__append_2 = -DHAVE_RANDOMACCESS
+@FORTRAN_TRUE@@OPENMP_TRUE@am__append_3 = -fopenmp
+@FORTRAN_FALSE@@TIMECMPR_TRUE@am__append_4 = -DHAVE_TIMECMPR
+@FORTRAN_FALSE@@RANDOMACCESS_TRUE@am__append_5 = -DHAVE_RANDOMACCESS
+@FORTRAN_FALSE@@OPENMP_TRUE@am__append_6 = -fopenmp
+@FORTRAN_FALSE@@PASTRI_TRUE@am__append_7 = src/pastri.c
+@FORTRAN_FALSE@@OPENMP_TRUE@am__append_8 = src/sz_omp.c
+@FORTRAN_FALSE@@TIMECMPR_TRUE@am__append_9 = src/sz_float_ts.c src/szd_float_ts.c src/sz_double_ts.c src/szd_double_ts.c
 subdir = sz
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -513,10 +515,10 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@lib_LTLIBRARIES = libSZ.la
 @FORTRAN_TRUE@lib_LTLIBRARIES = libSZ.la
 @FORTRAN_FALSE@libSZ_la_CFLAGS = -I./include -I../zlib -I../zstd/ \
-@FORTRAN_FALSE@	$(am__append_3) $(am__append_4)
+@FORTRAN_FALSE@	$(am__append_4) $(am__append_5) $(am__append_6)
 @FORTRAN_TRUE@libSZ_la_CFLAGS = -I./include -I../zlib/ -I../zstd/ \
 @FORTRAN_TRUE@	$(am__append_1) $(am__append_2) $(am__append_3) \
-@FORTRAN_TRUE@	$(am__append_4)
+@FORTRAN_TRUE@	$(am__append_4) $(am__append_5) $(am__append_6)
 @FORTRAN_FALSE@libSZ_la_LDFLAGS = -version-info  1:4:0
 @FORTRAN_TRUE@libSZ_la_LDFLAGS = -version-info  1:4:0
 @FORTRAN_FALSE@libSZ_la_LIDADD = ../zlib/.libs/libzlib.a ../zlib/.libs/libzstd.a
@@ -541,7 +543,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@	src/szd_int32.c src/szd_int64.c src/sz.c \
 @FORTRAN_FALSE@	src/sz_float_pwr.c src/sz_double_pwr.c \
 @FORTRAN_FALSE@	src/szd_float_pwr.c src/szd_double_pwr.c \
-@FORTRAN_FALSE@	$(am__append_5) $(am__append_6) $(am__append_7)
+@FORTRAN_FALSE@	$(am__append_7) $(am__append_8) $(am__append_9)
 @FORTRAN_TRUE@libSZ_la_SOURCES = src/ByteToolkit.c \
 @FORTRAN_TRUE@	src/dataCompression.c src/DynamicIntArray.c \
 @FORTRAN_TRUE@	src/iniparser.c src/szf.c src/CompressElement.c \
@@ -563,7 +565,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@	src/sz.c src/sz_float_pwr.c src/sz_double_pwr.c \
 @FORTRAN_TRUE@	src/szd_float_pwr.c src/szd_double_pwr.c \
 @FORTRAN_TRUE@	src/sz_interface.F90 src/rw_interface.F90 \
-@FORTRAN_TRUE@	$(am__append_5) $(am__append_6) $(am__append_7)
+@FORTRAN_TRUE@	$(am__append_7) $(am__append_8) $(am__append_9)
 @FORTRAN_FALSE@libSZ_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=CC --mode=link $(CCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 @FORTRAN_TRUE@libSZ_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=FC --mode=link $(FCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 all: all-am

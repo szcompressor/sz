@@ -18,6 +18,9 @@ libSZ_la_CFLAGS=-I./include -I../zlib/ -I../zstd/
 if TIMECMPR
 libSZ_la_CFLAGS+=-DHAVE_TIMECMPR
 endif
+if RANDOMACCESS
+libSZ_la_CFLAGS+=-DHAVE_RANDOMACCESS
+endif
 if OPENMP
 libSZ_la_CFLAGS+=-fopenmp
 endif
@@ -49,6 +52,9 @@ lib_LTLIBRARIES=libSZ.la
 libSZ_la_CFLAGS=-I./include -I../zlib -I../zstd/ 
 if TIMECMPR
 libSZ_la_CFLAGS+=-DHAVE_TIMECMPR
+endif
+if RANDOMACCESS
+libSZ_la_CFLAGS+=-DHAVE_RANDOMACCESS
 endif
 if OPENMP
 libSZ_la_CFLAGS+=-fopenmp
