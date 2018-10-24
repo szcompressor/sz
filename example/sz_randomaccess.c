@@ -93,7 +93,11 @@ void usage()
 	printf("	-2 <nx> <ny> : dimensions for 2D data such as data[ny][nx]\n");
 	printf("	-3 <nx> <ny> <nz> : dimensions for 3D data such as data[nz][ny][nx] \n");
 	printf("	-4 <nx> <ny> <nz> <np>: dimensions for 4D data such as data[np][nz][ny][nx] \n");
-	printf("* random access: \n");
+	printf("* random access in decompression: \n");
+	printf("	-3 <nx> <ny> <nz> <sx> <sy> <sz> <ex> <ey> <ez> : dimentions for 3D data, \n");
+	printf("		<nx> <ny> <nz> are the sizes of the original total dataset along the three dimentions, respectively.\n");
+	printf("		<sx> <sy> <sz> indicate the starting data point's position.\n");
+	printf("		<ex> <ey> <ez> indicate the ending position (exclusive) for the random access decompression.\n");
 	printf("* print compression results: \n");
 	printf("	-a : print compression results such as distortions\n");
 	printf("* examples: \n");
@@ -103,6 +107,8 @@ void usage()
 	printf("	sz -x -f -s testdata/x86/testfloat_8_8_128.dat.sz -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128 -a\n");	
 	printf("	sz -z -d -c sz.config -i testdata/x86/testdouble_8_8_128.dat -3 8 8 128\n");
 	printf("	sz -x -d -s testdata/x86/testdouble_8_8_128.dat.sz -3 8 8 128\n");
+	printf("	sz -z -f -c sz.config -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128 -M REL -R 1E-2\n");
+	printf("	sz -x -f -i testdata/x86/testfloat_8_8_128.dat -s testdata/x86/testfloat_8_8_128.dat.sz -3 8 8 128 4 4 4 8 8 8 -a\n");
 	printf("	sz -p -s testdata/x86/testdouble_8_8_128.dat.sz\n");
 	exit(0);
 }
