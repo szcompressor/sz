@@ -73,6 +73,8 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 	(*this)->isLossless = (sameRByte & 0x10)>>4;
 	int isPW_REL = (sameRByte & 0x20)>>5;
 	exe_params->SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
+	confparams_dec->randomAccess = (sameRByte & 0x02) >> 1;
+
 	int errorBoundMode = ABS;
 	if(isPW_REL)
 	{
@@ -85,11 +87,13 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 	int mode = confparams_dec->szMode;
 	int predictionMode = confparams_dec->predictionMode;
 	int losslessCompressor = confparams_dec->losslessCompressor;
+	int randomAccess = confparams_dec->randomAccess;
 	if(confparams_dec!=NULL)
 		free(confparams_dec);
 	confparams_dec = params;
 	confparams_dec->szMode = mode;
 	confparams_dec->losslessCompressor = losslessCompressor;
+	confparams_dec->randomAccess = randomAccess;
 
 	if(mode==SZ_TEMPORAL_COMPRESSION)
 	{

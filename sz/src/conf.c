@@ -122,6 +122,8 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		
 		sz_with_regression = SZ_WITH_LINEAR_REGRESSION;
 	
+		confparams_cpr->randomAccess = 0; //0: no random access , 1: support random access
+	
 		return SZ_SCES;
 	}
     
@@ -281,6 +283,8 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 			printf("[SZ] Error: Wrong zstd Mode (please check sz.config file)\n");
 			return SZ_NSCS;
 		}		
+		
+		confparams_cpr->randomAccess = (int)iniparser_getint(ini, "PARAMETER:randomAccess", 0);
 		
 		//TODO
 		confparams_cpr->snapshotCmprStep = (int)iniparser_getint(ini, "PARAMETER:snapshotCmprStep", 5);

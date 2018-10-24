@@ -219,7 +219,20 @@ if test "$ok" = "yes"; then
         PASTRI_FLAGS="-DHAVE_PASTRI"
 fi
 
-AC_SUBST(PASTRI_FLAGS)
+AC_SUBST(RANDOMACCESS_FLAGS)
+
+##
+## RANDOMACCESS
+##
+
+AC_ARG_ENABLE(randomaccess, [  --enable-randomaccess           use RANDOMACCESS], ok=$enableval, ok=no)
+AM_CONDITIONAL([RANDOMACCESS], [test "x$enable_randomaccess" = "xyes"])
+
+if test "$ok" = "yes"; then
+        RANDOMACCESS_FLAGS="-DHAVE_RANDOMACCESS"
+fi
+
+AC_SUBST(RANDOMACCESS_FLAGS)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T

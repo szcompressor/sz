@@ -520,7 +520,7 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	//confparams_dec->szMode = (sameRByte & 0x06)>>1;
 	isLossless = (sameRByte & 0x10)>>4;
 	
-	int isRandomAccess = (sameRByte >> 7) & 0x01;
+	int isRegressionBased = (sameRByte >> 7) & 0x01;
 	
 	if(exe_params==NULL)
 	{
@@ -556,7 +556,7 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	int defactoNBBins = 0; //real # bins
 	if(isConstant==0 && isLossless==0)
 	{
-		if(isRandomAccess==1)
+		if(isRegressionBased==1)
 		{
 			unsigned char* raBytes = &(bytes[index]);
 			defactoNBBins = bytesToInt_bigEndian(raBytes + sizeof(int) + sizeof(double));

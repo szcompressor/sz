@@ -49,7 +49,10 @@ testdouble_decompress_ts_SOURCES=testdouble_decompress_ts.c
 testdouble_decompress_ts_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 endif
 
-
+if RANDOMACCESS
+sz_SOURCES=sz_randomaccess.c
+sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
+else
 if PASTRI
 sz_SOURCES=sz_pastri.c
 sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
@@ -64,6 +67,7 @@ sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
 else
 sz_SOURCES=sz.c
 sz_LDADD=../sz/.libs/libSZ.a ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a -lm
+endif
 endif
 endif
 endif

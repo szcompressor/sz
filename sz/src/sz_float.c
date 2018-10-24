@@ -1899,10 +1899,17 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 				else
 #endif
 				{
-					if(sz_with_regression == SZ_NO_REGRESSION)
-						SZ_compress_args_float_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
-					else 
-						tmpByteData = SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize);
+					if(confparams_cpr->randomAccess == 0)
+					{
+						if(sz_with_regression == SZ_NO_REGRESSION)
+							SZ_compress_args_float_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+						else 
+							tmpByteData = SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize);
+					}
+					else
+					{
+						tmpByteData = SZ_compress_float_3D_MDQ_decompression_random_access_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize);
+					}
 				}
 		}
 		else
@@ -7559,7 +7566,7 @@ unsigned char * SZ_compress_float_3D_MDQ_decompression_random_access_with_blocke
 		}
 	}
 	size_t compressed_type_array_block_size;
-	unsigned char * compressed_type_array_block = SZ_compress_args(SZ_INT16, type_array_block_size, &compressed_type_array_block_size, ABS, 0.5, 0, 0, 0, 0, 0, 0, num_blocks);
+	unsigned char * compressed_type_array_block = SZ_compress_args(SZ_UINT16, type_array_block_size, &compressed_type_array_block_size, ABS, 0.5, 0, 0, 0, 0, 0, 0, num_blocks);
 	memcpy(result_pos, &compressed_type_array_block_size, sizeof(size_t));
 	result_pos += sizeof(size_t);
 	memcpy(result_pos, compressed_type_array_block, compressed_type_array_block_size);

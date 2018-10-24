@@ -37,7 +37,11 @@ void decompressDataSeries_float_3D_nonblocked_with_blocked_regression(float** da
 void decompressDataSeries_float_3D_random_access_with_blocked_regression(float** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data);
 void decompressDataSeries_float_3D_decompression_random_access_with_blocked_regression(float** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data);
 void decompressDataSeries_float_3D_decompression_given_areas_with_blocked_regression(float** data, size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, size_t e2, size_t e3, unsigned char* comp_data);
-
+int SZ_decompress_args_randomaccess_float(float** newData, 
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, 
+size_t s5, size_t s4, size_t s3, size_t s2, size_t s1, // start point
+size_t e5, size_t e4, size_t e3, size_t e2, size_t e1, // end point
+unsigned char* cmpBytes, size_t cmpSize);
 
 #ifdef __cplusplus
 }
