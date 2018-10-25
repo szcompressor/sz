@@ -538,7 +538,7 @@ int main(int argc, char* argv[])
 			{
 				SZ_decompress_args_randomaccess_float(&data, r5, r4, r3, r2, r1, 0, 0, s3, s2, s1, 0, 0, e3, e2, e1, bytes, byteLength);
 				if(randomAccess)
-					nbEle = (e3-s3+1)*(e2-s2+1)*(e1-s1+1);
+					nbEle = (e3-s3)*(e2-s2)*(e1-s1);
 			}
 			cost_end();
 			if(decPath == NULL)
@@ -636,6 +636,8 @@ int main(int argc, char* argv[])
 				else
 				{
 					verifyRandomAccess(ori_data, data, r3, r2, r1, s3, s2, s1, e3, e2, e1);	
+					double compressionRatio = 1.0*r3*r2*r1*sizeof(float)/byteLength;
+					printf ("compressionRatio=%f\n", compressionRatio);
 				}
 
 				free(ori_data);
