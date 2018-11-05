@@ -90,7 +90,7 @@ public static double[] SZ_decompress(byte[] bytes, size_t r5, size_t r4, size_t 
 
 ===Limitation of this version===
 --------------------------------
-In the current version, the maximum original double-array file size (such as the size of testdouble_8_8_128.dat) is 2147483647*8 bytes, i.e., 16GB; and the maximum compressed binary array file (such as .sz file) is 2147483647=2GB. If the data file size to compress is larger than 16GB or if its compressed size is larger than 2GB, please download and use SZ-largesize-version instead. 
+SZ is not suitable for compressing tiny datastes (such as the size <1MB)
 
 ===version history===
 ---------------------
