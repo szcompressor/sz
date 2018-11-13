@@ -390,14 +390,13 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	return tdps;	
 }
 
-void SZ_compress_args_double_StoreOriData(double* oriData, size_t dataLength, TightDataPointStorageD* tdps, 
-unsigned char** newByteData, size_t *outSize)
-{
+void SZ_compress_args_double_StoreOriData(double* oriData, size_t dataLength, unsigned char** newByteData, size_t *outSize)
+{	
 	int doubleSize = sizeof(double);
 	size_t k = 0, i;
-	tdps->isLossless = 1;
 	size_t totalByteLength = 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + doubleSize*dataLength;
-	*newByteData = (unsigned char*)malloc(totalByteLength);
+	/*No need to malloc because newByteData should always already be allocated with no less totalByteLength.*/
+	//*newByteData = (unsigned char*)malloc(totalByteLength);
 	
 	unsigned char dsLengthBytes[8];
 	for (i = 0; i < 3; i++)//3
@@ -454,8 +453,8 @@ size_t dataLength, double realPrecision, size_t *outSize, double valueRangeSize,
 	
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
 	
-	if(*outSize>dataLength*sizeof(double))
-		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+	if(*outSize>3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + sizeof(double)*dataLength)
+		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
 	
 	free_TightDataPointStorageD(tdps);	
 	return compressionType;
@@ -727,8 +726,8 @@ char SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, doub
 	
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
 	
-	if(*outSize>dataLength*sizeof(double))
-		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);	
+	if(*outSize>3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + sizeof(double)*dataLength)
+		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);	
 	
 	free_TightDataPointStorageD(tdps);
 	return compressionType;
@@ -1117,8 +1116,8 @@ char SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
 
-	if(*outSize>dataLength*sizeof(double))
-		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+	if(*outSize>3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + sizeof(double)*dataLength)
+		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
 
 	free_TightDataPointStorageD(tdps);
 	return compressionType;
@@ -1460,8 +1459,8 @@ char SZ_compress_args_double_NoCkRngeNoGzip_4D(unsigned char** newByteData, doub
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
 
 	size_t dataLength = r1*r2*r3*r4;
-	if(*outSize>dataLength*sizeof(double))
-		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+	if(*outSize>3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + sizeof(double)*dataLength)
+		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
 
 	free_TightDataPointStorageD(tdps);
 	return 0;
@@ -1610,7 +1609,11 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
 #endif
-					SZ_compress_args_double_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+					{
+						SZ_compress_args_double_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+						if(tmpOutSize>=dataLength*sizeof(double) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
+							SZ_compress_args_double_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);
+					}
 		}
 		else
 		if (r3==0)
@@ -1627,7 +1630,11 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					if(sz_with_regression == SZ_NO_REGRESSION)
 						SZ_compress_args_double_NoCkRngeNoGzip_2D(&tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 					else 
-						tmpByteData = SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize);		
+					{
+						tmpByteData = SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize);
+						if(tmpOutSize>=dataLength*sizeof(double) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
+							SZ_compress_args_double_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);
+					}
 				}
 		}
 		else
@@ -1645,7 +1652,11 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					if(sz_with_regression == SZ_NO_REGRESSION)
 						SZ_compress_args_double_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 					else 
+					{
 						tmpByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize);
+						if(tmpOutSize>=dataLength*sizeof(double) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
+							SZ_compress_args_double_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);
+					}
 				}
 					
 					
@@ -1665,7 +1676,11 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					if(sz_with_regression == SZ_NO_REGRESSION)
 						SZ_compress_args_double_NoCkRngeNoGzip_4D(&tmpByteData, oriData, r4, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 					else 
+					{
 						tmpByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r4*r3, r2, r1, realPrecision, &tmpOutSize);								
+						if(tmpOutSize>=dataLength*sizeof(double) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
+							SZ_compress_args_double_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);
+					}
 				}
 		
 		}
@@ -1795,7 +1810,7 @@ size_t r1, size_t s1, size_t e1)
 
 	//TODO
 //	if(*outSize>dataLength*sizeof(double))
-//		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+//		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
 
 	free_TightDataPointStorageD(tdps);
 }
@@ -1822,7 +1837,7 @@ size_t r2, size_t r1, size_t s2, size_t s1, size_t e2, size_t e1)
 
 	//TODO
 //	if(*outSize>dataLength*sizeof(double))
-//		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+//		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
 
 	free_TightDataPointStorageD(tdps);
 }
@@ -1849,7 +1864,7 @@ size_t r3, size_t r2, size_t r1, size_t s3, size_t s2, size_t s1, size_t e3, siz
 
 	//TODO
 //	if(*outSize>dataLength*sizeof(double))
-//		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+//		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
 
 	free_TightDataPointStorageD(tdps);
 }
@@ -1876,7 +1891,7 @@ size_t r4, size_t r3, size_t r2, size_t r1, size_t s4, size_t s3, size_t s2, siz
 
 	//TODO
 //	if(*outSize>dataLength*sizeof(double))
-//		SZ_compress_args_double_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
+//		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
 
 	free_TightDataPointStorageD(tdps);
 }

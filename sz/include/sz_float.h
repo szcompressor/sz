@@ -34,8 +34,7 @@ unsigned int optimize_intervals_float_1D_opt(float *oriData, size_t dataLength, 
 TightDataPointStorageF* SZ_compress_float_1D_MDQ(float *oriData, 
 size_t dataLength, double realPrecision, float valueRangeSize, float medianValue_f);
 
-void SZ_compress_args_float_StoreOriData(float* oriData, size_t dataLength, TightDataPointStorageF* tdps, 
-unsigned char** newByteData, size_t *outSize);
+void SZ_compress_args_float_StoreOriData(float* oriData, size_t dataLength, unsigned char** newByteData, size_t *outSize);
 
 char SZ_compress_args_float_NoCkRngeNoGzip_1D(unsigned char** newByteData, float *oriData, 
 size_t dataLength, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f);

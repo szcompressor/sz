@@ -339,6 +339,7 @@ void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_
 	if(exe_params==NULL)
 		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
 	memset(exe_params, 0, sizeof(sz_exedata));
+	exe_params->SZ_SIZE_TYPE = 8;
 	
 	int x = 1;
 	char *y = (char*)&x;

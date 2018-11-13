@@ -29,7 +29,7 @@ unsigned int optimize_intervals_double_1D_opt(double *oriData, size_t dataLength
 
 TightDataPointStorageD* SZ_compress_double_1D_MDQ(double *oriData, 
 size_t dataLength, double realPrecision, double valueRangeSize, double medianValue_d);
-void SZ_compress_args_double_StoreOriData(double* oriData, size_t dataLength, TightDataPointStorageD* tdps, unsigned char** newByteData, size_t *outSize);
+void SZ_compress_args_double_StoreOriData(double* oriData, size_t dataLength, unsigned char** newByteData, size_t *outSize);
 
 char SZ_compress_args_double_NoCkRngeNoGzip_1D(unsigned char** newByteData, double *oriData, size_t dataLength, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d);
 

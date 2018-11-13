@@ -1776,8 +1776,8 @@ size_t dataLength, double absErrBound, double relBoundRatio, double pwrErrRatio,
 
         convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
 
-        if(*outSize>dataLength*sizeof(float))
-                SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
+        if(*outSize>3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + sizeof(float)*dataLength)
+                SZ_compress_args_float_StoreOriData(oriData, dataLength, newByteData, outSize);
 
         free_TightDataPointStorageF(tdps);
 }
@@ -1839,8 +1839,8 @@ void SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log(unsigned char** newByt
 	free(signs);
 
     convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
-    if(*outSize>dataLength*sizeof(float))
-            SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
+    if(*outSize>3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + sizeof(float)*dataLength)
+            SZ_compress_args_float_StoreOriData(oriData, dataLength, newByteData, outSize);
 
     free_TightDataPointStorageF(tdps);
 }
@@ -1901,8 +1901,8 @@ void SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr_pre_log(unsigned char** newByt
 	free(signs);
 
     convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
-    if(*outSize>dataLength*sizeof(float))
-            SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
+    if(*outSize>3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + sizeof(float)*dataLength)
+            SZ_compress_args_float_StoreOriData(oriData, dataLength, newByteData, outSize);
 
     free_TightDataPointStorageF(tdps);
 }
@@ -1963,8 +1963,8 @@ void SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr_pre_log(unsigned char** newByt
 	free(signs);
 
     convertTDPStoFlatBytes_float(tdps, newByteData, outSize);
-    if(*outSize>dataLength*sizeof(float))
-            SZ_compress_args_float_StoreOriData(oriData, dataLength+2, tdps, newByteData, outSize);
+    if(*outSize>3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + sizeof(float)*dataLength)
+            SZ_compress_args_float_StoreOriData(oriData, dataLength, newByteData, outSize);
 
     free_TightDataPointStorageF(tdps);
 }
