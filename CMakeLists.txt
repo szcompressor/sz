@@ -21,6 +21,12 @@ if (NETCDF_FOUND)
   include_directories (${NETCDF_INCLUDE_DIRS})
 endif ()
 
+find_package(OpenCL)
+if(OpenCL_FOUND)
+	include_directories(${OpenCL_INCLUDE_DIRS})
+	add_definitions(-DHAVE_OPENCL)
+endif()
+
 include_directories (
 	${CMAKE_CURRENT_SOURCE_DIR}/sz/include 
 	${CMAKE_CURRENT_SOURCE_DIR}/sz/include 
