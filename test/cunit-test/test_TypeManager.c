@@ -9,8 +9,19 @@
 
 /* Test Suite setup and cleanup functions: */
 
-int init_suite(void) { return 0; }
-int clean_suite(void) { return 0; }
+int
+init_suite(void)
+{
+  exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
+  return 0;
+}
+
+int
+clean_suite(void)
+{
+  free(exe_params);
+  return 0;
+}
 
 /************* Test case functions ****************/
 

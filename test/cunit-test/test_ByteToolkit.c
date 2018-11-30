@@ -243,7 +243,7 @@ void test_doubleToBytes(void)
 void test_doubleToBytes_bytesToDouble()
 {
 	double value = 123.456;
-	unsigned char bytes[4];
+	unsigned char bytes[sizeof(double)];
 	doubleToBytes(bytes, value);
 	double newValue = bytesToDouble(bytes);
 	CU_ASSERT_DOUBLE_EQUAL(value, newValue, 1E-10);

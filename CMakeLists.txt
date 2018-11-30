@@ -1,5 +1,6 @@
 cmake_minimum_required (VERSION 3.1.3)
 project (sz)
+enable_testing()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -lm -fopenmp")
 
@@ -46,3 +47,4 @@ add_subdirectory (zlib)
 add_subdirectory (zstd)
 add_subdirectory (sz)
 add_subdirectory (example)
+add_subdirectory (test)
