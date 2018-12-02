@@ -280,7 +280,7 @@ typedef struct sz_exedata
 	char optQuantMode;	//opt Quantization (0: fixed ; 1: optimized)	
 	int intvCapacity; // the number of intervals for the linear-scaling quantization
 	int intvRadius;  // the number of intervals for the radius of the quantization range (intvRadius=intvCapacity/2)
-	int SZ_SIZE_TYPE; //the length (# bytes) of the size_t in the system at runtime //4 or 8: sizeof(size_t) 
+	unsigned int SZ_SIZE_TYPE; //the length (# bytes) of the size_t in the system at runtime //4 or 8: sizeof(size_t) 
 } sz_exedata;
 
 /*We use a linked list to maintain time-step meta info for time-step based compression*/

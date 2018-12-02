@@ -26,8 +26,8 @@ typedef struct node_t {
 } *node;
 
 typedef struct HuffmanTree {
-	int stateNum;
-	int allNodes;
+	unsigned int stateNum;
+	unsigned int allNodes;
 	struct node_t* pool;
 	node *qqq, *qq; //the root node of the HuffmanTree is qq[1]
 	int n_nodes; //n_nodes is for compression

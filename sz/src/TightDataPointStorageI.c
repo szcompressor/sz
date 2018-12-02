@@ -277,7 +277,7 @@ void new_TightDataPointStorageI(TightDataPointStorageI **this,
 	(*this)->isLossless = 0;
 }
 
-void convertTDPStoBytes_int(TightDataPointStorageI* tdps, unsigned char* bytes, unsigned char* dsLengthBytes, unsigned char sameByte)
+void convertTDPStoBytes_int(TightDataPointStorageI* tdps, unsigned char* bytes, unsigned char sameByte)
 {
 	size_t i, k = 0;
 	
@@ -387,7 +387,7 @@ void convertTDPStoFlatBytes_int(TightDataPointStorageI *tdps, unsigned char** by
 
 		*bytes = (unsigned char *)malloc(sizeof(unsigned char)*totalByteLength);
 
-		convertTDPStoBytes_int(tdps, *bytes, dsLengthBytes, sameByte);
+		convertTDPStoBytes_int(tdps, *bytes, sameByte);
 		
 		*size = totalByteLength;
 	}
@@ -441,7 +441,7 @@ void convertTDPStoFlatBytes_int_args(TightDataPointStorageI *tdps, unsigned char
 				+ exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE  
 				+ tdps->typeArray_size + tdps->exactDataBytes_size;
 
-		convertTDPStoBytes_int(tdps, bytes, dsLengthBytes, sameByte);
+		convertTDPStoBytes_int(tdps, bytes, sameByte);
 		
 		*size = totalByteLength;
 	}
