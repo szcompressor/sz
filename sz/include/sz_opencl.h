@@ -6,6 +6,8 @@ extern "C" {
 #ifndef SZ_OPENCL_H
 #define SZ_OPENCL_H
 
+#include<stddef.h>
+
 	//opaque pointer for opencl state
   struct sz_opencl_state;
 
@@ -54,6 +56,9 @@ extern "C" {
 	 * \return SZ_SCES if the opencl implementation is functioning
 	 */
 	int sz_opencl_check(struct sz_opencl_state*);
+
+  unsigned char* sz_compress_float3d_opencl(float* data, size_t r1, size_t r2, size_t r3, double, size_t* out_size);
+
 
 #endif /* SZ_OPENCL_H */
 
