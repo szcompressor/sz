@@ -1,9 +1,9 @@
 #!/bin/bash
 
-exeDir="`pwd`/../../example"
+exeDir="${1:-$(pwd)/../../example}"
 export PATH=$exeDir:$PATH
 
-dataDir=SZ-travis-testdata-master/travis-testdata
+dataDir=${2:-SZ-travis-testdata-master/travis-testdata}
 #cp "$exeDir/sz.config" $dataDir
 
 echo ------------------------------- CESM-ATM-Tylor --------------------------------

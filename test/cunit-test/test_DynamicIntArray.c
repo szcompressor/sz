@@ -86,6 +86,7 @@ int main ( void )
    CU_basic_run_tests();
    printf("\n");
    CU_basic_show_failures(CU_get_failure_list());
+	 unsigned int num_failures = CU_get_number_of_failures();
    printf("\n\n");
 /*
    // Run all tests using the automated interface
@@ -97,5 +98,5 @@ int main ( void )
 */
    /* Clean up registry and return */
    CU_cleanup_registry();
-   return CU_get_error();
+	 return num_failures || CU_get_error();
 }
