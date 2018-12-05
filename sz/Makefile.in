@@ -158,8 +158,7 @@ am__libSZ_la_SOURCES_DIST = src/ByteToolkit.c src/dataCompression.c \
 	src/sz.c src/sz_float_pwr.c src/sz_double_pwr.c \
 	src/szd_float_pwr.c src/szd_double_pwr.c src/pastri.c \
 	src/sz_omp.c src/sz_float_ts.c src/szd_float_ts.c \
-	src/sz_double_ts.c src/szd_double_ts.c src/szf.c src/rwf.c \
-	src/sz_interface.F90 src/rw_interface.F90
+	src/sz_double_ts.c src/szd_double_ts.c src/szf.c src/rwf.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@@PASTRI_TRUE@am__objects_1 = src/libSZ_la-pastri.lo
 @FORTRAN_FALSE@@OPENMP_TRUE@am__objects_2 = src/libSZ_la-sz_omp.lo
@@ -248,10 +247,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_TRUE@	src/libSZ_la-sz_float_pwr.lo \
 @FORTRAN_TRUE@	src/libSZ_la-sz_double_pwr.lo \
 @FORTRAN_TRUE@	src/libSZ_la-szd_float_pwr.lo \
-@FORTRAN_TRUE@	src/libSZ_la-szd_double_pwr.lo \
-@FORTRAN_TRUE@	src/sz_interface.lo src/rw_interface.lo \
-@FORTRAN_TRUE@	$(am__objects_1) $(am__objects_2) \
-@FORTRAN_TRUE@	$(am__objects_3)
+@FORTRAN_TRUE@	src/libSZ_la-szd_double_pwr.lo $(am__objects_1) \
+@FORTRAN_TRUE@	$(am__objects_2) $(am__objects_3)
 libSZ_la_OBJECTS = $(am_libSZ_la_OBJECTS)
 @FORTRAN_FALSE@am_libSZ_la_rpath = -rpath $(libdir)
 @FORTRAN_TRUE@am_libSZ_la_rpath = -rpath $(libdir)
@@ -271,28 +268,10 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
-PPFCCOMPILE = $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-LTPPFCCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=FC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=compile $(FC) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_FCFLAGS) $(FCFLAGS)
-AM_V_PPFC = $(am__v_PPFC_@AM_V@)
-am__v_PPFC_ = $(am__v_PPFC_@AM_DEFAULT_V@)
-am__v_PPFC_0 = @echo "  PPFC    " $@;
-am__v_PPFC_1 = 
-FCLD = $(FC)
-FCLINK = $(LIBTOOL) $(AM_V_lt) --tag=FC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(FCLD) $(AM_FCFLAGS) $(FCFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-AM_V_FCLD = $(am__v_FCLD_@AM_V@)
-am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
-am__v_FCLD_0 = @echo "  FCLD    " $@;
-am__v_FCLD_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -335,8 +314,9 @@ am__include_HEADERS_DIST = include/CompressElement.h \
 	include/szd_float_pwr.h include/szd_double_pwr.h \
 	include/sz_float_ts.h include/szd_float_ts.h \
 	include/sz_double_ts.h include/szd_double_ts.h \
-	include/utility.h include/DynamicByteArray.h \
-	include/DynamicIntArray.h include/TightDataPointStorageI.h \
+	include/utility.h include/sz_opencl.h \
+	include/DynamicByteArray.h include/DynamicIntArray.h \
+	include/TightDataPointStorageI.h \
 	include/TightDataPointStorageD.h \
 	include/TightDataPointStorageF.h include/pastriD.h \
 	include/pastriF.h include/pastriGeneral.h include/pastri.h \
@@ -498,7 +478,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
 @FORTRAN_FALSE@		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
 @FORTRAN_FALSE@		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
-@FORTRAN_FALSE@		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h\
+@FORTRAN_FALSE@		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h include/sz_opencl.h\
 @FORTRAN_FALSE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
 @FORTRAN_FALSE@		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/sz_omp.h
 
@@ -508,7 +488,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
 @FORTRAN_TRUE@		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
 @FORTRAN_TRUE@		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
-@FORTRAN_TRUE@		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h\
+@FORTRAN_TRUE@		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h include/sz_opencl.h\
 @FORTRAN_TRUE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
 @FORTRAN_TRUE@		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/sz_omp.h sz.mod rw.mod
 
@@ -564,14 +544,13 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@	src/szd_int16.c src/szd_int32.c src/szd_int64.c \
 @FORTRAN_TRUE@	src/sz.c src/sz_float_pwr.c src/sz_double_pwr.c \
 @FORTRAN_TRUE@	src/szd_float_pwr.c src/szd_double_pwr.c \
-@FORTRAN_TRUE@	src/sz_interface.F90 src/rw_interface.F90 \
 @FORTRAN_TRUE@	$(am__append_7) $(am__append_8) $(am__append_9)
 @FORTRAN_FALSE@libSZ_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=CC --mode=link $(CCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 @FORTRAN_TRUE@libSZ_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=FC --mode=link $(FCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .F90 .c .lo .o .obj
+.SUFFIXES: .c .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -742,8 +721,6 @@ src/libSZ_la-szd_double_ts.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-szf.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-rwf.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
-src/sz_interface.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
-src/rw_interface.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 
 libSZ.la: $(libSZ_la_OBJECTS) $(libSZ_la_DEPENDENCIES) $(EXTRA_libSZ_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libSZ_la_LINK) $(am_libSZ_la_rpath) $(libSZ_la_OBJECTS) $(libSZ_la_LIBADD) $(LIBS)
@@ -808,15 +785,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_uint8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-utility.Plo@am__quote@
-
-.F90.o:
-	$(AM_V_PPFC)$(PPFCCOMPILE) -c -o $@ $<
-
-.F90.obj:
-	$(AM_V_PPFC)$(PPFCCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-.F90.lo:
-	$(AM_V_PPFC)$(LTPPFCCOMPILE) -c -o $@ $<
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -1446,6 +1414,7 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES
 
 .PRECIOUS: Makefile
 
+@FORTRAN_TRUE@		src/sz_interface.F90 src/rw_interface.F90
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

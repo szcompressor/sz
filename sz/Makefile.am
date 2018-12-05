@@ -9,7 +9,7 @@ include_HEADERS=include/CompressElement.h include/DynamicDoubleArray.h include/r
 		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
 		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
 		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
-		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h\
+		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h include/sz_opencl.h\
 		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
 		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/sz_omp.h sz.mod rw.mod
 
@@ -34,7 +34,7 @@ libSZ_la_SOURCES=src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c s
 		src/sz_float.c src/sz_double.c src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c\
 		src/sz_uint8.c src/sz_uint16.c src/sz_uint32.c src/sz_uint64.c src/szd_uint8.c src/szd_uint16.c src/szd_uint32.c src/szd_uint64.c\
 		src/szd_float.c src/szd_double.c src/szd_int8.c src/szd_int16.c src/szd_int32.c src/szd_int64.c src/sz.c\
-		src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c src/szd_double_pwr.c\
+		src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c src/szd_double_pwr.c
 		src/sz_interface.F90 src/rw_interface.F90
 libSZ_la_LINK=$(AM_V_CC)$(LIBTOOL) --tag=FC --mode=link $(FCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 else
@@ -44,7 +44,7 @@ include_HEADERS=include/CompressElement.h include/DynamicDoubleArray.h include/r
 		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
 		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
 		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
-		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h\
+		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h include/sz_opencl.h\
 		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
 		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/sz_omp.h
 
