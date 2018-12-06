@@ -7079,16 +7079,16 @@ unsigned char * SZ_compress_float_3D_MDQ_decompression_random_access_with_blocke
 							block_data_pos_z = block_data_pos_y;
 							for(int kk=0; kk<block_size; kk++){
 								*pred_buffer_pos = *block_data_pos_z;
-								if(k*block_size + kk < r3) block_data_pos_z ++;
+								if(k*block_size + kk + 1< r3) block_data_pos_z ++;
 								pred_buffer_pos ++;
 							}
 							// add 1 in z offset
 							pred_buffer_pos ++;
-							if(j*block_size + jj < r2) block_data_pos_y += dim1_offset;
+							if(j*block_size + jj + 1< r2) block_data_pos_y += dim1_offset;
 						}
 						// add 1 in y offset
 						pred_buffer_pos += pred_buffer_block_size;
-						if(i*block_size + ii < r1) block_data_pos_x += dim0_offset;
+						if(i*block_size + ii +1 < r1) block_data_pos_x += dim0_offset;
 					}
 					/*sampling*/
 					{
@@ -7353,16 +7353,16 @@ unsigned char * SZ_compress_float_3D_MDQ_decompression_random_access_with_blocke
 							block_data_pos_z = block_data_pos_y;
 							for(int kk=0; kk<block_size; kk++){
 								*pred_buffer_pos = *block_data_pos_z;
-								if(k*block_size + kk < r3) block_data_pos_z ++;
+								if(k*block_size + kk +1< r3) block_data_pos_z ++;
 								pred_buffer_pos ++;
 							}
 							// add 1 in z offset
 							pred_buffer_pos ++;
-							if(j*block_size + jj < r2) block_data_pos_y += dim1_offset;
+							if(j*block_size + jj +1< r2) block_data_pos_y += dim1_offset;
 						}
 						// add 1 in y offset
 						pred_buffer_pos += pred_buffer_block_size;
-						if(i*block_size + ii < r1) block_data_pos_x += dim0_offset;
+						if(i*block_size + ii +1< r1) block_data_pos_x += dim0_offset;
 					}
 					if(!(indicator_pos[k]))
 					{
@@ -7594,6 +7594,7 @@ unsigned char * SZ_compress_float_3D_MDQ_decompression_random_access_with_blocke
 	// encode(huffmanTree, result_type, num_blocks*max_num_block_elements, result_pos, &typeArray_size);
 	// result_pos += typeArray_size;
 
+	free(compressed_type_array_block);
 	free(type_array_buffer);
 	free(type_array_block_size);
 	size_t totalEncodeSize = result_pos - result;
