@@ -4,3 +4,6 @@ tags
 CMakeCache.txt
 cmake-build-debug/
 CMakeFiles/
+Testing/
+.idea/
+
