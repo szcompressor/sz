@@ -539,10 +539,100 @@ void ari_encode(AriCoder *ariCoder, int *s, size_t length, unsigned char *out, s
 	}
 }
 
-void ari_decode(unsigned char *s, size_t targetLength, int *out)
+/**
+ * Get the integer code based on Arithmetic Coding Value 
+ * @param AriCoder *ariCoder (input)
+ * @param size_t scaled_value (input)
+ * 
+ * @return Prob* (output)
+ * 
+ * */
+Prob* getCode(AriCoder *ariCoder, size_t scaled_value)
 {
-/*	size_t high = MAX_CODE;
-	size_t low = 0;
-	unsigned char value = 0;
-	*/
+	int numOfRealStates = ariCoder->numOfRealStates;
+	int i = 0;
+	Prob *p = ariCoder->cumulative_frequency;
+	for(i=0;i<numOfRealStates;i++)
+	{
+		if(scaled_value < p->high)
+			break;
+	}
+	return p;
+}
+
+/**
+ * Get one bit from the input stream of bytes
+ * @param unsigned char* p (input): the current location to be read (byte) of the byte stream
+ * @param int offset (input): the offset of the specified byte in the byte stream
+ * 
+ * @return unsigned char (output) : 1 or 0
+ * */
+inline unsigned char get_bit(unsigned char* p, int offset)
+{
+	return ((*p) >> (7-offset)) & 0x01;
+}
+
+/**
+ * Arithmetic Decoding algorithm 
+ * @param AriCoder *ariCoder (input): the encoder with the constructed frequency information
+ * @param unsigned char *s (input): the compressed stream of bytes
+ * @param size_t s_len (input): the number of bytes in the 'unsigned char *s'
+ * @param size_t targetLength (input): the target number of elements in the type array
+ * @param int *out (output) : the result (type array decompressed from the stream 's')
+ * 
+ * */
+void ari_decode(AriCoder *ariCoder, unsigned char *s, size_t s_len, size_t targetLength, int *out)
+{
+	size_t high = MAX_CODE;
+	size_t low = 0, i = 0;
+	size_t range = 0, scaled_value = 0;
+	size_t total_frequency = ariCoder->total_frequency;
+	unsigned char *sp = s;
+	int offset = 0;
+	int value = bytesToInt32_bigEndian(s);
+	size_t s_counter = sizeof(int);
+
+	for(i=0;i<targetLength;i++)
+	{
+		range = high -  low + 1;
+		scaled_value = ((value - low + 1) * ariCoder->total_frequency  - 1 ) / range;
+		Prob *p = getCode(ariCoder, scaled_value);
+		out[i] = p->state;  //output the state to the 'out' array
+		
+		high = low + (range*p->high)/total_frequency -1;
+		low = low + (range*p->low)/total_frequency;
+		
+		for( ; ; )
+		{
+			if (high < ONE_HALF) {
+			  //do nothing, bit is a zero
+			} else if ( low >= ONE_HALF ) 
+			{
+			  value -= ONE_HALF;  //subtract one half from all three code values
+			  low -= ONE_HALF;
+			  high -= ONE_HALF;
+			} else if ( low >= ONE_FOURTH && high < THREE_FOURTHS ) 
+			{
+			  value -= ONE_FOURTH;
+			  low -= ONE_FOURTH;
+			  high -= ONE_FOURTH;
+			} else
+			  break;
+			low <<= 1;
+			high <<= 1;
+			high++;
+			value <<= 1;
+			//load one bit from the input byte stream	
+			if(s_counter < s_len)
+			{	
+				value += get_bit(sp, offset++);
+				if(offset==8)
+				{
+					sp++;
+					s_counter++;
+					offset = 0;
+				}
+			}
+		}
+	}
 }

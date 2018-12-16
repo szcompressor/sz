@@ -42,11 +42,15 @@ int output_bit_0_plus_pending(int pending_bits);
 
 AriCoder *createAriCoder(int numOfStates, int *s, size_t length);
 void ari_init(AriCoder *ariCoder, int *s, size_t length);
-void ari_encode(AriCoder *ariCoder, int *s, size_t length, unsigned char *out, size_t *outSize);
 unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out);
 void unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes);
 
-void ari_decode(unsigned char *s, size_t targetLength, int *out);
+inline unsigned char get_bit(unsigned char* p, int offset);
+
+void ari_encode(AriCoder *ariCoder, int *s, size_t length, unsigned char *out, size_t *outSize);
+void ari_decode(AriCoder *ariCoder, unsigned char *s, size_t s_len, size_t targetLength, int *out);
+
+Prob* getCode(AriCoder *ariCoder, size_t scaled_value);
 
 #ifdef __cplusplus
 }
