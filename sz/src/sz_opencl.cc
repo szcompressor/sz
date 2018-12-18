@@ -32,12 +32,12 @@ void sz_opencl_sample(const float *oriData, size_t r1, size_t r2, size_t r3, siz
 size_t
 save_unpredictable_data(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t num_x,
 						size_t num_y, size_t num_z, size_t block_size, size_t dim0_offset, size_t dim1_offset,
-						int *result_type, size_t total_unpred, size_t unpredictable_count, float *data_pos,
-						int *type, float *reg_params_pos, size_t params_offset_b, size_t params_offset_c,
-						size_t params_offset_d, float *pred_buffer, float *pred_buffer_pos, float mean,
-						double tmp_realPrecision, float *unpredictable_data, unsigned char *indicator_pos,
-						int intvCapacity, int intvRadius, int pred_buffer_block_size, int strip_dim0_offset,
-						int strip_dim1_offset, int *blockwise_unpred_count_pos, bool use_mean);
+						int *result_type, size_t total_unpred, float *data_pos, int *type, float *reg_params_pos,
+						size_t params_offset_b, size_t params_offset_c, size_t params_offset_d,
+						float *pred_buffer, float *pred_buffer_pos, float mean, double tmp_realPrecision,
+						float *unpredictable_data, unsigned char *indicator_pos, int intvCapacity,
+						int intvRadius, int pred_buffer_block_size, int strip_dim0_offset, int strip_dim1_offset,
+						int *blockwise_unpred_count_pos, bool use_mean);
 
 void calculate_regression_coefficents(const float *oriData, size_t r1, size_t r2, size_t r3, size_t num_x, size_t num_y,
                                       size_t num_z, size_t block_size, size_t dim0_offset, size_t dim1_offset,
@@ -214,7 +214,6 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	size_t unpred_data_max_size = max_num_block_elements;
 	float * result_unpredictable_data = (float *) malloc(unpred_data_max_size * sizeof(float) * num_blocks);
 	size_t total_unpred = 0;
-	size_t unpredictable_count;
 	float * data_pos = oriData;
 	int * type = result_type;
 	float * reg_params = (float *) malloc(num_blocks * 4 * sizeof(float));
@@ -355,14 +354,15 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	indicator_pos = indicator;
 
     total_unpred = save_unpredictable_data(oriData, r1, r2, r3, realPrecision, num_x, num_y, num_z, block_size,
-                                               dim0_offset, dim1_offset,
-                                               result_type, total_unpred, unpredictable_count, data_pos, type,
-                                               reg_params_pos, params_offset_b,
-                                               params_offset_c, params_offset_d,
-                                               pred_buffer, pred_buffer_pos, mean, tmp_realPrecision,
-                                               unpredictable_data, indicator_pos, intvCapacity, intvRadius,
-                                               pred_buffer_block_size,
-                                               strip_dim0_offset, strip_dim1_offset, blockwise_unpred_count_pos, use_mean);
+										   dim0_offset, dim1_offset,
+										   result_type, total_unpred, data_pos, type,
+										   reg_params_pos, params_offset_b,
+										   params_offset_c, params_offset_d,
+										   pred_buffer,
+										   pred_buffer_pos, mean, tmp_realPrecision,
+										   unpredictable_data, indicator_pos, intvCapacity, intvRadius,
+										   pred_buffer_block_size,
+										   strip_dim0_offset, strip_dim1_offset, blockwise_unpred_count_pos, use_mean);
 
 	free(pred_buffer);
 	int stateNum = 2*quantization_intervals;
@@ -701,12 +701,12 @@ reg_params_pos ++;
 size_t
 save_unpredictable_data(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t num_x,
 						size_t num_y, size_t num_z, size_t block_size, size_t dim0_offset, size_t dim1_offset,
-						int *result_type, size_t total_unpred, size_t unpredictable_count, float *data_pos,
-						int *type, float *reg_params_pos, size_t params_offset_b, size_t params_offset_c,
-						size_t params_offset_d, float *pred_buffer, float *pred_buffer_pos, float mean,
-						double tmp_realPrecision, float *unpredictable_data, unsigned char *indicator_pos,
-						int intvCapacity, int intvRadius, int pred_buffer_block_size, int strip_dim0_offset,
-						int strip_dim1_offset, int *blockwise_unpred_count_pos, bool use_mean) {
+						int *result_type, size_t total_unpred, float *data_pos, int *type, float *reg_params_pos,
+						size_t params_offset_b, size_t params_offset_c, size_t params_offset_d,
+						float *pred_buffer, float *pred_buffer_pos, float mean, double tmp_realPrecision,
+						float *unpredictable_data, unsigned char *indicator_pos, int intvCapacity,
+						int intvRadius, int pred_buffer_block_size, int strip_dim0_offset, int strip_dim1_offset,
+						int *blockwise_unpred_count_pos, bool use_mean) {
     {
 int intvCapacity_sz = intvCapacity - 2;
 type = result_type;
@@ -784,7 +784,7 @@ unpredictable_data += block_unpredictable_count;
 else{
 // use SZ
 // SZ predication
-unpredictable_count = 0;
+size_t unpredictable_count = 0;
 float * cur_data_pos = pred_buffer + pred_buffer_block_size*pred_buffer_block_size + pred_buffer_block_size + 1;
 float curData;
 float pred3D;
