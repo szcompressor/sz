@@ -39,6 +39,12 @@ save_unpredictable_data(float *oriData, size_t r1, size_t r2, size_t r3, double 
 						int intvCapacity, int intvRadius, int pred_buffer_block_size, int strip_dim0_offset,
 						int strip_dim1_offset, int *blockwise_unpred_count_pos, bool use_mean);
 
+void calculate_regression_coefficents(const float *oriData, size_t r1, size_t r2, size_t r3, size_t num_x, size_t num_y,
+                                      size_t num_z, size_t block_size, size_t dim0_offset, size_t dim1_offset,
+                                      float *reg_params_pos, size_t params_offset_b, size_t params_offset_c,
+                                      size_t params_offset_d, float *pred_buffer, const float *data_pos,
+                                      float *&pred_buffer_pos);
+
 extern "C"
 {
   int sz_opencl_init(struct sz_opencl_state** state)
@@ -222,67 +228,12 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 //	float * block_data_pos_x = NULL;
 //	float * block_data_pos_y = NULL;
 //	float * block_data_pos_z = NULL;
-	for(size_t i=0; i<num_x; i++){
-		for(size_t j=0; j<num_y; j++){
-			for(size_t k=0; k<num_z; k++){
-				data_pos = oriData + i*block_size * dim0_offset + j*block_size * dim1_offset + k*block_size;
-				pred_buffer_pos = pred_buffer;
-				//block_data_pos_x = data_pos;
-				// use the buffer as block_size*block_size*block_size
-				for(size_t ii=0; ii<block_size; ii++){
-					//block_data_pos_y = block_data_pos_x;
-					for(size_t jj=0; jj<block_size; jj++){
-						//block_data_pos_z = block_data_pos_y;
-						for(size_t kk=0; kk<block_size; kk++){
-							//*pred_buffer_pos = *block_data_pos_z;
-							int ii_ = (i*block_size + ii < r1) ? ii : r1 - 1 - i*block_size;
-							int jj_ = (j*block_size + jj < r2) ? jj : r2 - 1 - j*block_size;
-							int kk_ = (k*block_size + kk < r3) ? kk : r3 - 1 - k*block_size;
-							*pred_buffer_pos = *(data_pos + ii_*dim0_offset + jj_*dim1_offset + kk_);
-							//if(k*block_size + kk + 1 < r3) block_data_pos_z ++;
-							pred_buffer_pos ++;
-						}
-						//if(j*block_size + jj + 1 < r2) block_data_pos_y += dim1_offset;
-					}
-					//if(i*block_size + ii + 1 < r1) block_data_pos_x += dim0_offset;
-				}
-				/*Calculate regression coefficients*/
-				{
-					float * cur_data_pos = pred_buffer;
-					float fx = 0.0;
-					float fy = 0.0;
-					float fz = 0.0;
-					float f = 0;
-					float sum_x, sum_y;
-					float curData;
-					for(size_t i=0; i<block_size; i++){
-						sum_x = 0;
-						for(size_t j=0; j<block_size; j++){
-							sum_y = 0;
-							for(size_t k=0; k<block_size; k++){
-								curData = *cur_data_pos;
-								sum_y += curData;
-								fz += curData * k;
-								cur_data_pos ++;
-							}
-							fy += sum_y * j;
-							sum_x += sum_y;
-						}
-						fx += sum_x * i;
-						f += sum_x;
-					}
-					float coeff = 1.0 / (block_size * block_size * block_size);
-					reg_params_pos[0] = (2 * fx / (block_size - 1) - f) * 6 * coeff / (block_size + 1);
-					reg_params_pos[params_offset_b] = (2 * fy / (block_size - 1) - f) * 6 * coeff / (block_size + 1);
-					reg_params_pos[params_offset_c] = (2 * fz / (block_size - 1) - f) * 6 * coeff / (block_size + 1);
-					reg_params_pos[params_offset_d] = f * coeff - ((block_size - 1) * reg_params_pos[0] / 2 + (block_size - 1) * reg_params_pos[params_offset_b] / 2 + (block_size - 1) * reg_params_pos[params_offset_c] / 2);
-				}
-				reg_params_pos ++;
-			}
-		}
-	}
+    calculate_regression_coefficents(oriData, r1, r2, r3, num_x, num_y, num_z, block_size, dim0_offset, dim1_offset,
+                                     reg_params_pos,
+                                     params_offset_b, params_offset_c, params_offset_d, pred_buffer, data_pos,
+                                     pred_buffer_pos);
 
-	if(exe_params->optQuantMode==1)
+    if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_float_3D_with_freq_and_dense_pos(oriData, r1, r2, r3, realPrecision, &dense_pos, &sz_sample_correct_freq, &mean_flush_freq);
 		if(mean_flush_freq > 0.5 || mean_flush_freq > sz_sample_correct_freq) use_mean = 1;
@@ -679,6 +630,72 @@ int sz_decompress_float_opencl(float** newData,
 	return status;
 }
 
+}
+
+void calculate_regression_coefficents(const float *oriData, size_t r1, size_t r2, size_t r3, size_t num_x, size_t num_y,
+                                      size_t num_z, size_t block_size, size_t dim0_offset, size_t dim1_offset,
+                                      float *reg_params_pos, size_t params_offset_b, size_t params_offset_c,
+                                      size_t params_offset_d, float *pred_buffer, const float *data_pos,
+                                      float *&pred_buffer_pos) {
+    for(size_t i=0; i < num_x; i++){
+for(size_t j=0; j<num_y; j++){
+for(size_t k=0; k<num_z; k++){
+data_pos = oriData + i*block_size * dim0_offset + j*block_size * dim1_offset + k*block_size;
+pred_buffer_pos = pred_buffer;
+//block_data_pos_x = data_pos;
+// use the buffer as block_size*block_size*block_size
+for(size_t ii=0; ii<block_size; ii++){
+//block_data_pos_y = block_data_pos_x;
+for(size_t jj=0; jj<block_size; jj++){
+//block_data_pos_z = block_data_pos_y;
+for(size_t kk=0; kk<block_size; kk++){
+//*pred_buffer_pos = *block_data_pos_z;
+int ii_ = (i*block_size + ii < r1) ? ii : r1 - 1 - i*block_size;
+int jj_ = (j*block_size + jj < r2) ? jj : r2 - 1 - j*block_size;
+int kk_ = (k*block_size + kk < r3) ? kk : r3 - 1 - k*block_size;
+*pred_buffer_pos = *(data_pos + ii_*dim0_offset + jj_*dim1_offset + kk_);
+//if(k*block_size + kk + 1 < r3) block_data_pos_z ++;
+pred_buffer_pos ++;
+}
+//if(j*block_size + jj + 1 < r2) block_data_pos_y += dim1_offset;
+}
+//if(i*block_size + ii + 1 < r1) block_data_pos_x += dim0_offset;
+}
+/*Calculate regression coefficients*/
+{
+float * cur_data_pos = pred_buffer;
+float fx = 0.0;
+float fy = 0.0;
+float fz = 0.0;
+float f = 0;
+float sum_x, sum_y;
+float curData;
+for(size_t i=0; i<block_size; i++){
+sum_x = 0;
+for(size_t j=0; j<block_size; j++){
+sum_y = 0;
+for(size_t k=0; k<block_size; k++){
+curData = *cur_data_pos;
+sum_y += curData;
+fz += curData * k;
+cur_data_pos ++;
+}
+fy += sum_y * j;
+sum_x += sum_y;
+}
+fx += sum_x * i;
+f += sum_x;
+}
+float coeff = 1.0 / (block_size * block_size * block_size);
+reg_params_pos[0] = (2 * fx / (block_size - 1) - f) * 6 * coeff / (block_size + 1);
+reg_params_pos[params_offset_b] = (2 * fy / (block_size - 1) - f) * 6 * coeff / (block_size + 1);
+reg_params_pos[params_offset_c] = (2 * fz / (block_size - 1) - f) * 6 * coeff / (block_size + 1);
+reg_params_pos[params_offset_d] = f * coeff - ((block_size - 1) * reg_params_pos[0] / 2 + (block_size - 1) * reg_params_pos[params_offset_b] / 2 + (block_size - 1) * reg_params_pos[params_offset_c] / 2);
+}
+reg_params_pos ++;
+}
+}
+}
 }
 
 size_t
