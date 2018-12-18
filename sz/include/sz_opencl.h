@@ -57,7 +57,45 @@ extern "C" {
 	 */
 	int sz_opencl_check(struct sz_opencl_state*);
 
+	/**
+	 * compresses the data using opencl using some algorithm
+	 * @param data  the data to be compressed
+	 * @param r1  the x dimension of the data
+	 * @param r2  the y dimension of the data
+	 * @param r3  the z dimension of the data
+	 * @param out_size
+	 * @return a pointer to the compressed data
+	 */
   unsigned char* sz_compress_float3d_opencl(float* data, size_t r1, size_t r2, size_t r3, double, size_t* out_size);
+
+  /**
+   * decompression scheme using the opencl implementation of SZ
+   *
+   * @param newData  the data that has been decompresed
+   * @param r5 the 5th dimension of the data
+   * @param r4 the 4th dimension of the data
+   * @param r3 the 3th dimension of the data
+   * @param r2 the 2th dimension of the data
+   * @param r1 the 1th dimension of the data
+   * @param s5 the 5th dimension of the starting point of the compression
+   * @param s4 the 4th dimension of the starting point of the compression
+   * @param s3 the 3th dimension of the starting point of the compression
+   * @param s2 the 2th dimension of the starting point of the compression
+   * @param s1 the 1th dimension of the starting point of the compression
+   * @param e5 the 5th dimension of the starting point of the compression
+   * @param e4 the 4th dimension of the starting point of the compression
+   * @param e3 the 3th dimension of the starting point of the compression
+   * @param e2 the 2th dimension of the starting point of the compression
+   * @param e1 the 1th dimension of the starting point of the compression
+   * @param cmpBytes the compresed bytes
+   * @param cmpSize  the size of the data that has been compressed
+   * @return a status code for the compression
+   */
+	int sz_decompress_float_opencl(float** newData, 
+	size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, 
+	size_t s5, size_t s4, size_t s3, size_t s2, size_t s1, // start point
+	size_t e5, size_t e4, size_t e3, size_t e2, size_t e1, // end point
+	unsigned char* cmpBytes, size_t cmpSize);
 
 
 #endif /* SZ_OPENCL_H */

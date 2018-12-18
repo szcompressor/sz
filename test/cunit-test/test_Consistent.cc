@@ -19,17 +19,27 @@ int clean_suite()
 	return 0;
 }
 
-void test_all_functions()
-{
-	auto functions = {
-		SZ_compress_float_3D_MDQ_decompression_random_access_with_blocked_regression,
+void test_all_functions() {
+
+	std::vector<Compressors> compressor_functions{
+			{
+					SZ_compress_float_3D_MDQ_decompression_random_access_with_blocked_regression,
+					SZ_decompress_args_randomaccess_float
+			}
 	};
+
+
 	auto num_random_test_cases = 4;
 
-	for (auto& func : functions) {
-		test_identical_output_random(num_random_test_cases, func, func);
-		test_identical_output_deterministic(func, func);
+	for(auto functions: compressor_functions) {
+		auto compressor = functions.compressor;
+		auto decompressor = functions.decompressor;
+
+		test_identical_output_compression_random(num_random_test_cases, compressor, compressor, decompressor,
+												 decompressor);
+		test_identical_output_compression_deterministic(compressor, compressor, decompressor, decompressor);
 	}
+}
 }
 
 int main(int argc, char *argv[])
@@ -57,6 +67,4 @@ int main(int argc, char *argv[])
 error:
 	CU_cleanup_registry();
 	return  num_failures ||  CU_get_error();
-}
-
 }

@@ -39,9 +39,11 @@ void test_identical_opencl_impl()
 {
 	auto num_random_test_cases = 32;
 	auto opencl_compressor = sz_compress_float3d_opencl;
+	auto opencl_decompressor = sz_decompress_float_opencl;
 	auto existing_compressor = SZ_compress_float_3D_MDQ_decompression_random_access_with_blocked_regression;
-	test_identical_output_random(num_random_test_cases, opencl_compressor, existing_compressor);
-	test_identical_output_deterministic(opencl_compressor, existing_compressor);
+	auto existing_decompressor = SZ_decompress_args_randomaccess_float;
+	test_identical_output_compression_random(num_random_test_cases, opencl_compressor, existing_compressor, existing_decompressor, opencl_decompressor);
+	test_identical_output_compression_deterministic(opencl_compressor, existing_compressor, existing_decompressor, opencl_decompressor);
 }
 
 

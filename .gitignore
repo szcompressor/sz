@@ -6,4 +6,4 @@ cmake-build-debug/
 CMakeFiles/
 Testing/
 .idea/
-
+cscope.out

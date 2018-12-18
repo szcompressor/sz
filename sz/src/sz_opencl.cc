@@ -936,4 +936,126 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	return result;
 }
 
+int sz_decompress_float_opencl(float** newData,
+							   size_t r5, size_t r4, size_t r3, size_t r2, size_t r1,
+							   size_t s5, size_t s4, size_t s3, size_t s2, size_t s1, // start point
+							   size_t e5, size_t e4, size_t e3, size_t e2, size_t e1, // end point
+							   unsigned char* cmpBytes, size_t cmpSize)
+{
+	if(confparams_dec==NULL)
+		confparams_dec = (sz_params*)malloc(sizeof(sz_params));
+	memset(confparams_dec, 0, sizeof(sz_params));
+	if(exe_params==NULL)
+		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
+	memset(exe_params, 0, sizeof(sz_exedata));
+	
+	int x = 1;
+	char *y = (char*)&x;
+	if(*y==1)
+		sysEndianType = LITTLE_ENDIAN_SYSTEM;
+	else //=0
+		sysEndianType = BIG_ENDIAN_SYSTEM;	
+
+	confparams_dec->randomAccess = 1;
+	
+	int status = SZ_SCES;
+	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
+	
+	//unsigned char* tmpBytes;
+	size_t targetUncompressSize = dataLength <<2; //i.e., *4
+	//tmpSize must be "much" smaller than dataLength
+	size_t i, tmpSize = 8+MetaDataByteLength+exe_params->SZ_SIZE_TYPE;
+	unsigned char* szTmpBytes;	
+	
+	if(cmpSize!=8+4+MetaDataByteLength && cmpSize!=8+8+MetaDataByteLength) //4,8 means two posibilities of SZ_SIZE_TYPE
+	{
+		confparams_dec->losslessCompressor = is_lossless_compressed_data(cmpBytes, cmpSize);
+		if(confparams_dec->szMode!=SZ_TEMPORAL_COMPRESSION)
+		{
+			if(confparams_dec->losslessCompressor!=-1)
+				confparams_dec->szMode = SZ_BEST_COMPRESSION;
+			else
+				confparams_dec->szMode = SZ_BEST_SPEED;			
+		}
+		
+		if(confparams_dec->szMode==SZ_BEST_SPEED)
+		{
+			tmpSize = cmpSize;
+			szTmpBytes = cmpBytes;	
+		}
+		else if(confparams_dec->szMode==SZ_BEST_COMPRESSION || confparams_dec->szMode==SZ_DEFAULT_COMPRESSION || confparams_dec->szMode==SZ_TEMPORAL_COMPRESSION)
+		{
+			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
+				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
+			tmpSize = sz_lossless_decompress(confparams_dec->losslessCompressor, cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize		
+		}
+		else
+		{
+			printf("Wrong value of confparams_dec->szMode in the double compressed bytes.\n");
+			status = SZ_MERR;
+			return status;
+		}	
+	}
+	else
+		szTmpBytes = cmpBytes;	
+
+	TightDataPointStorageF* tdps;
+	new_TightDataPointStorageF_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
+	
+	int dim = computeDimension(r5,r4,r3,r2,r1);	
+	int floatSize = sizeof(float);
+	if(tdps->isLossless)
+	{
+		*newData = (float*)malloc(floatSize*dataLength);
+		if(sysEndianType==BIG_ENDIAN_SYSTEM)
+		{
+			memcpy(*newData, szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE, dataLength*floatSize);
+		}
+		else
+		{
+			unsigned char* p = szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE;
+			for(i=0;i<dataLength;i++,p+=floatSize)
+				(*newData)[i] = bytesToFloat(p);
+		}		
+	}
+	else 
+	{
+		if(confparams_dec->randomAccess == 0 && (s1+s2+s3+s4+s5>0 || (r5-e5+r4-e4+r3-e3+r2-e2+r1-e1 > 0)))
+		{
+			printf("Error: you specified the random access mode for decompression, but the compressed data were generate in the non-random-access way.!\n");
+			status = SZ_DERR;
+		}
+		if (dim == 1)
+		{
+			printf("Error: random access mode doesn't support 1D yet, but only 3D.\n");
+			status = SZ_DERR;
+		}
+		else if(dim == 2)
+		{
+			printf("Error: random access mode doesn't support 2D yet, but only 3D.\n");
+			status = SZ_DERR;
+		}	
+		else if(dim == 3)
+		{
+			decompressDataSeries_float_3D_decompression_given_areas_with_blocked_regression(newData, r3, r2, r1, s3, s2, s1, e3, e2, e1, tdps->raBytes);
+			status = SZ_SCES;
+		}
+		else if(dim == 4)
+		{
+			printf("Error: random access mode doesn't support 4D yet, but only 3D.\n");
+			status = SZ_DERR;			
+		}	
+		else
+		{
+			printf("Error: currently support only at most 4 dimensions!\n");
+			status = SZ_DERR;
+		}	
+	}	
+	
+	free_TightDataPointStorageF2(tdps);
+	if(confparams_dec->szMode!=SZ_BEST_SPEED && cmpSize!=8+MetaDataByteLength+exe_params->SZ_SIZE_TYPE)
+		free(szTmpBytes);
+	return status;
+}
+
 }
