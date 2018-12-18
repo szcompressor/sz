@@ -37,7 +37,7 @@ void test_valid_opencl()
 
 void test_identical_opencl_impl()
 {
-	auto num_random_test_cases = 32;
+	auto num_random_test_cases = 4;
 	auto opencl_compressor = sz_compress_float3d_opencl;
 	auto opencl_decompressor = sz_decompress_float_opencl;
 	auto existing_compressor = SZ_compress_float_3D_MDQ_decompression_random_access_with_blocked_regression;
