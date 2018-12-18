@@ -10,35 +10,36 @@
 #include <sz.h>
 #include <ArithmeticCoding.h>
 
-inline void output_bit_1(int* buf)
+inline void output_bit_1(unsigned int* buf)
 {
 	(*buf) = (*buf) << 1;
 	(*buf) |= 1;
 }
 
-inline void output_bit_0(int* buf)
+inline void output_bit_0(unsigned int* buf)
 {
 	(*buf) = (*buf) << 1;
 	//(*byte) |= 0; //actually doesn't have to set the bit to 0
 }
 
-inline int output_bit_1_plus_pending(int pending_bits)
+//TODO: problematic
+inline unsigned int output_bit_1_plus_pending(int pending_bits)
 {
-	int buf = 0, pbits = pending_bits;
+	unsigned int buf = 0, pbits = pending_bits;
 	output_bit_1(&buf);
 	while(pbits--)
 		output_bit_0(&buf);
-	buf = buf << (32-(pbits+1)); //alignment to the left leading bit, which would be easier for the final output
+	buf = buf << (32-(pending_bits+1)); //alignment to the left leading bit, which would be easier for the final output
 	return buf;
 }
 
-inline int output_bit_0_plus_pending(int pending_bits)
+inline unsigned int output_bit_0_plus_pending(int pending_bits)
 {
-	int buf = 0, pbits = pending_bits;
-	output_bit_0(&buf);
+	unsigned int buf = 0, pbits = pending_bits;
+	//output_bit_0(&buf);
 	while(pbits--)
 		output_bit_1(&buf);
-	buf = buf << (32-(pbits+1)); //alignment to the left leading bit
+	buf = buf << (32-(pending_bits+1)); //alignment to the left leading bit
 	return buf;
 }
 
@@ -56,7 +57,13 @@ AriCoder *createAriCoder(int numOfStates, int *s, size_t length)
 	memset(ariCoder, 0, sizeof(AriCoder));
 	ariCoder->numOfRealStates = numOfStates;
 	ari_init(ariCoder, s, length);
-    return ariCoder;	
+    return ariCoder;
+}
+
+void freeAriCoder(AriCoder *ariCoder)
+{
+	free(ariCoder->cumulative_frequency);
+	free(ariCoder);
 }
 
 void ari_init(AriCoder *ariCoder, int *s, size_t length)
@@ -72,24 +79,50 @@ void ari_init(AriCoder *ariCoder, int *s, size_t length)
 	}
  
 	int counter = 0;
-	size_t _sum = 0, sum = 0;
+	size_t _sum = 0, sum = 0, freqDiv = 0;
 	ariCoder->cumulative_frequency = (Prob *)malloc(ariCoder->numOfRealStates*sizeof(Prob));
 	
 	memset(ariCoder->cumulative_frequency, 0, ariCoder->numOfRealStates*sizeof(Prob));
 	
-	for (index = 0; index < ariCoder->numOfRealStates; index++)
+	if(length <= MAX_INTERVALS)
 	{
-		if (freq[index]) 
+		for (index = 0; index < ariCoder->numOfRealStates; index++)
 		{
-			sum += freq[index];
-			(ariCoder->cumulative_frequency[index]).low = _sum;
-			(ariCoder->cumulative_frequency[index]).high = sum;
-			(ariCoder->cumulative_frequency[index]).state = index;
-			_sum = sum;
+			if (freq[index]) 
+			{
+				sum += freq[index];
+				(ariCoder->cumulative_frequency[index]).low = _sum;
+				(ariCoder->cumulative_frequency[index]).high = sum;
+				(ariCoder->cumulative_frequency[index]).state = index;
+				_sum = sum;
+				counter++;
+			}
 		}
+		ariCoder->numOfValidStates = counter;
+		ariCoder->total_frequency = sum;		
 	}
-	ariCoder->numOfValidStates = counter;
-	ariCoder->total_frequency = sum;
+	else
+	{
+		int intvSize = length%MAX_INTERVALS==0?length/MAX_INTERVALS:length/MAX_INTERVALS+1;
+		for (index = 0; index < ariCoder->numOfRealStates; index++)
+		{
+			if (freq[index]) 
+			{
+				freqDiv = freq[index]/intvSize; //control the sum of frequency to be no greater than MAX_INTERVALS
+				if(freqDiv==0)
+					freqDiv = 1;
+				sum += freqDiv;
+				(ariCoder->cumulative_frequency[index]).low = _sum;
+				(ariCoder->cumulative_frequency[index]).high = sum;
+				(ariCoder->cumulative_frequency[index]).state = index;
+				_sum = sum;
+				counter++;
+			}
+		}
+		ariCoder->numOfValidStates = counter;
+		ariCoder->total_frequency = sum;			
+	}
+
 	free(freq);
 }
 
@@ -98,6 +131,7 @@ void ari_init(AriCoder *ariCoder, int *s, size_t length)
  * @param AriCoder* ariCoder (input)
  * @param unsigned char** out (output)
  * 
+ * @return outSize
  * */
 unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 {
@@ -106,8 +140,8 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 	uint64_t total_frequency = ariCoder->total_frequency;
 	Prob* cumulative_frequency = ariCoder->cumulative_frequency;
 	
-	unsigned int outSize = 2*sizeof(int)+sizeof(uint64_t)+sizeof(Prob)*numOfValidStates;
-	*out = (unsigned char*)malloc(outSize);
+	unsigned int outSize = 0;
+	*out = (unsigned char*)malloc(2*sizeof(int)+sizeof(uint64_t)+sizeof(Prob)*numOfRealStates);
 	
 	unsigned char* p = *out;
 	intToBytes_bigEndian(p, numOfRealStates);
@@ -124,26 +158,29 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 		{
 			for(i=0;i<numOfRealStates;i++)
 			{
+				high = (uint16_t)(cumulative_frequency[i].high);				
 				if(high!=0) //if this state cell is not null
 				{
 					low = (uint16_t)(cumulative_frequency[i].low);
-					high = (uint16_t)(cumulative_frequency[i].high);
 					int16ToBytes_bigEndian(p,low);
 					p+=sizeof(uint16_t);
 					int16ToBytes_bigEndian(p,high);
 					p+=sizeof(uint16_t);
 					*(p++)=(unsigned char)cumulative_frequency[i].state;
+					//if(((unsigned char)cumulative_frequency[i].state)==129)
+					//	printf("break i=%zu\n", i);
 				}
 			}
+			outSize = 2*sizeof(int)+sizeof(uint64_t)+ariCoder->numOfValidStates*5; //2*sizeof(uint16_t)+1
 		}
 		else if(numOfRealStates<=65536)
 		{
 			for(i=0;i<numOfRealStates;i++)
 			{
+				high = (uint16_t)(cumulative_frequency[i].high);				
 				if(high!=0)
 				{
 					low = (uint16_t)(cumulative_frequency[i].low);
-					high = (uint16_t)(cumulative_frequency[i].high);
 					int16ToBytes_bigEndian(p,low);
 					p+=sizeof(uint16_t);
 					int16ToBytes_bigEndian(p,high);
@@ -153,15 +190,16 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 					p+=sizeof(uint16_t);
 				}
 			}	
+			outSize = 2*sizeof(int)+sizeof(uint64_t)+ariCoder->numOfValidStates*6;
 		}
 		else
 		{
 			for(i=0;i<numOfRealStates;i++)
 			{
+				high = (uint16_t)(cumulative_frequency[i].high);				
 				if(high!=0)
 				{
 					low = (uint16_t)(cumulative_frequency[i].low);
-					high = (uint16_t)(cumulative_frequency[i].high);
 					int16ToBytes_bigEndian(p,low);
 					p+=sizeof(uint16_t);
 					int16ToBytes_bigEndian(p,high);
@@ -170,6 +208,7 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 					p+=sizeof(uint32_t);
 				}
 			}
+			outSize = 2*sizeof(int)+sizeof(uint64_t)+ariCoder->numOfValidStates*8;
 		}
 	}
 	else if(total_frequency <=4294967296)
@@ -179,27 +218,27 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 		{
 			for(i=0;i<numOfRealStates;i++)
 			{
+				high = (uint32_t)(cumulative_frequency[i].high);				
 				if(high!=0)
 				{
 					low = (uint32_t)(cumulative_frequency[i].low);
-					high = (uint32_t)(cumulative_frequency[i].high);
 					int32ToBytes_bigEndian(p,low);
 					p+=sizeof(uint32_t);
 					int32ToBytes_bigEndian(p,high);
 					p+=sizeof(uint32_t);
 					*(p++)=(unsigned char)cumulative_frequency[i].state;					
 				}
-
 			}
+			outSize = 2*sizeof(int)+sizeof(uint64_t)+ariCoder->numOfValidStates*9;
 		}
 		else if(numOfRealStates<=65536)
 		{
 			for(i=0;i<numOfRealStates;i++)
 			{
+				high = (uint32_t)(cumulative_frequency[i].high);
 				if(high!=0)
 				{
 					low = (uint32_t)(cumulative_frequency[i].low);
-					high = (uint32_t)(cumulative_frequency[i].high);
 					int32ToBytes_bigEndian(p,low);
 					p+=sizeof(uint32_t);
 					int32ToBytes_bigEndian(p,high);
@@ -209,16 +248,17 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 					p+=sizeof(uint16_t);
 					
 				}
-			}	
+			}
+			outSize = 2*sizeof(int)+sizeof(uint64_t)+ariCoder->numOfValidStates*10;
 		}
 		else
 		{
 			for(i=0;i<numOfRealStates;i++)
 			{
+				high = (uint32_t)(cumulative_frequency[i].high);
 				if(high!=0)
 				{
 					low = (uint32_t)(cumulative_frequency[i].low);
-					high = (uint32_t)(cumulative_frequency[i].high);
 					int32ToBytes_bigEndian(p,low);
 					p+=sizeof(uint32_t);
 					int32ToBytes_bigEndian(p,high);
@@ -226,8 +266,8 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 					int32ToBytes_bigEndian(p, cumulative_frequency[i].state);
 					p+=sizeof(uint32_t);
 				}
-
 			}
+			outSize = 2*sizeof(int)+sizeof(uint64_t)+ariCoder->numOfValidStates*12;
 		}
 	}
 	else
@@ -237,10 +277,10 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 		{
 			for(i=0;i<numOfRealStates;i++)
 			{
+				high = (uint64_t)(cumulative_frequency[i].high);
 				if(high!=0)
 				{
 					low = (uint64_t)(cumulative_frequency[i].low);
-					high = (uint64_t)(cumulative_frequency[i].high);
 					int64ToBytes_bigEndian(p,low);
 					p+=sizeof(uint64_t);
 					int64ToBytes_bigEndian(p,high);
@@ -248,15 +288,16 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 					*(p++)=(unsigned char)cumulative_frequency[i].state;
 				}
 			}
+			outSize = 2*sizeof(int)+sizeof(uint64_t)+ariCoder->numOfValidStates*17;
 		}
 		else if(numOfRealStates<=65536)
 		{
 			for(i=0;i<numOfRealStates;i++)
 			{
+				high = (uint64_t)(cumulative_frequency[i].high);
 				if(high!=0)
 				{
 					low = (uint64_t)(cumulative_frequency[i].low);
-					high = (uint64_t)(cumulative_frequency[i].high);
 					int64ToBytes_bigEndian(p,low);
 					p+=sizeof(uint64_t);
 					int64ToBytes_bigEndian(p,high);
@@ -265,16 +306,17 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 					int16ToBytes_bigEndian(p, state);
 					p+=sizeof(uint16_t);					
 				}
-			}	
+			}
+			outSize = 2*sizeof(int)+sizeof(uint64_t)+ariCoder->numOfValidStates*18;
 		}
 		else
 		{
 			for(i=0;i<numOfRealStates;i++)
 			{
+				high = (uint64_t)(cumulative_frequency[i].high);
 				if(high!=0)
 				{
 					low = (uint64_t)(cumulative_frequency[i].low);
-					high = (uint64_t)(cumulative_frequency[i].high);
 					int64ToBytes_bigEndian(p,low);
 					p+=sizeof(uint64_t);
 					int64ToBytes_bigEndian(p,high);
@@ -283,6 +325,7 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
 					p+=sizeof(uint32_t);					
 				}
 			}
+			outSize = 2*sizeof(int)+sizeof(uint64_t)+ariCoder->numOfValidStates*20;
 		}
 	}
 	return outSize;
@@ -293,9 +336,12 @@ unsigned int pad_ariCoder(AriCoder* ariCoder, unsigned char** out)
  * @param AriCoder** ariCoder (ourput)
  * @param unsigned char* bytes (input)
  * 
+ * @return offset
  * */
-void unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes)
+int unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes)
 {
+	int offset = 0;
+	
 	*ariCoder = (AriCoder*)malloc(sizeof(AriCoder));
 	memset(*ariCoder, 0, sizeof(AriCoder));
 	
@@ -322,13 +368,13 @@ void unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes)
 				high_p = low_p+sizeof(uint16_t);
 				state_p = high_p+sizeof(uint16_t);
 				state = *state_p;
-				
 				(*ariCoder)->cumulative_frequency[state].low = bytesToUInt16_bigEndian(low_p);
 				(*ariCoder)->cumulative_frequency[state].high = bytesToUInt16_bigEndian(high_p);
 				(*ariCoder)->cumulative_frequency[state].state = state;
 				
 				p = state_p + 1;
 			}
+			offset = 2*sizeof(int)+sizeof(uint64_t)+(*ariCoder)->numOfValidStates*5; //2*sizeof(uint16_t)+1
 		}
 		else if(numOfRealStates<=65536)
 		{
@@ -345,6 +391,7 @@ void unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes)
 				
 				p = state_p + sizeof(uint16_t);
 			}
+			offset = 2*sizeof(int)+sizeof(uint64_t)+(*ariCoder)->numOfValidStates*6;
 		}
 		else
 		{
@@ -361,6 +408,7 @@ void unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes)
 				
 				p = state_p + sizeof(uint32_t);
 			}
+			offset = 2*sizeof(int)+sizeof(uint64_t)+(*ariCoder)->numOfValidStates*8;
 		}
 	}
 	else if(total_frequency <=4294967296)
@@ -380,6 +428,7 @@ void unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes)
 				
 				p = state_p + 1;
 			}
+			offset = 2*sizeof(int)+sizeof(uint64_t)+(*ariCoder)->numOfValidStates*9;
 		}
 		else if(numOfRealStates<=65536)
 		{
@@ -396,6 +445,7 @@ void unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes)
 				
 				p = state_p + sizeof(uint16_t);
 			}
+			offset = 2*sizeof(int)+sizeof(uint64_t)+(*ariCoder)->numOfValidStates*10;
 		}
 		else
 		{
@@ -412,6 +462,7 @@ void unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes)
 				
 				p = state_p + sizeof(uint32_t);
 			}
+			offset = 2*sizeof(int)+sizeof(uint64_t)+(*ariCoder)->numOfValidStates*12;
 		}
 	}
 	else
@@ -431,6 +482,7 @@ void unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes)
 				
 				p = state_p + 1;
 			}
+			offset = 2*sizeof(int)+sizeof(uint64_t)+(*ariCoder)->numOfValidStates*17;
 		}
 		else if(numOfRealStates<=65536)
 		{
@@ -447,6 +499,7 @@ void unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes)
 				
 				p = state_p + sizeof(uint16_t);
 			}
+			offset = 2*sizeof(int)+sizeof(uint64_t)+(*ariCoder)->numOfValidStates*18;
 		}
 		else
 		{
@@ -463,8 +516,10 @@ void unpad_ariCoder(AriCoder** ariCoder, unsigned char* bytes)
 				
 				p = state_p + sizeof(uint32_t);
 			}
+			offset = 2*sizeof(int)+sizeof(uint64_t)+(*ariCoder)->numOfValidStates*20;
 		}
 	}
+	return offset;
 }
 
 /**
@@ -489,7 +544,7 @@ void ari_encode(AriCoder *ariCoder, int *s, size_t length, unsigned char *out, s
 	unsigned char *outp = out;
 	
 	Prob *cumulative_frequency = ariCoder->cumulative_frequency;
-	int buf = 0;
+	unsigned int buf = 0;
 	
 	for (i=0;i<length;i++)
 	{
@@ -525,18 +580,18 @@ void ari_encode(AriCoder *ariCoder, int *s, size_t length, unsigned char *out, s
 			high &= MAX_CODE;
 			low &= MAX_CODE;
 		}
-		pending_bits++;
-		if(low < ONE_FOURTH)
-		{
-			buf = output_bit_0_plus_pending(pending_bits);
-			put_codes_to_output(buf, pending_bits+1, &outp, &lackBits, outSize);
-		}
-		else
-		{
-			buf = output_bit_1_plus_pending(pending_bits);
-			put_codes_to_output(buf, pending_bits+1, &outp, &lackBits, outSize);
-		}
 	}
+	pending_bits++;
+	if(low < ONE_FOURTH)
+	{
+		buf = output_bit_0_plus_pending(pending_bits);
+		put_codes_to_output(buf, pending_bits+1, &outp, &lackBits, outSize);
+	}
+	else
+	{
+		buf = output_bit_1_plus_pending(pending_bits);
+		put_codes_to_output(buf, pending_bits+1, &outp, &lackBits, outSize);
+	}	
 }
 
 /**
@@ -552,7 +607,7 @@ Prob* getCode(AriCoder *ariCoder, size_t scaled_value)
 	int numOfRealStates = ariCoder->numOfRealStates;
 	int i = 0;
 	Prob *p = ariCoder->cumulative_frequency;
-	for(i=0;i<numOfRealStates;i++)
+	for(i=0;i<numOfRealStates;i++,p++)
 	{
 		if(scaled_value < p->high)
 			break;
@@ -587,18 +642,17 @@ void ari_decode(AriCoder *ariCoder, unsigned char *s, size_t s_len, size_t targe
 	size_t low = 0, i = 0;
 	size_t range = 0, scaled_value = 0;
 	size_t total_frequency = ariCoder->total_frequency;
-	unsigned char *sp = s;
-	int offset = 0;
-	int value = bytesToInt32_bigEndian(s);
+	unsigned char *sp = s+5;
+	unsigned int offset = 4;
+	size_t value = (bytesToUInt64_bigEndian(s) >> 20); //alignment with the MAX_CODE
 	size_t s_counter = sizeof(int);
-
+	
 	for(i=0;i<targetLength;i++)
 	{
 		range = high -  low + 1;
 		scaled_value = ((value - low + 1) * ariCoder->total_frequency  - 1 ) / range;
 		Prob *p = getCode(ariCoder, scaled_value);
 		out[i] = p->state;  //output the state to the 'out' array
-		
 		high = low + (range*p->high)/total_frequency -1;
 		low = low + (range*p->low)/total_frequency;
 		
