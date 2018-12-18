@@ -51,6 +51,11 @@ encode_all_blocks(size_t num_x, size_t num_y, size_t num_z, size_t max_num_block
 
 float compute_mean(const float *oriData, double realPrecision, float dense_pos, size_t num_elements);
 
+void compute_errors(const float *reg_params_pos, size_t params_offset_b, size_t params_offset_c, size_t params_offset_d,
+					const float *pred_buffer, float mean, float noise, int pred_buffer_block_size,
+					int strip_dim0_offset, int strip_dim1_offset, bool use_mean, size_t i, size_t a, size_t b, size_t c,
+					size_t d, float &err_sz, float &err_reg);
+
 extern "C"
 {
   int sz_opencl_init(struct sz_opencl_state** state)
@@ -838,18 +843,6 @@ save_unpredictable_data(float *oriData, size_t r1, size_t r2, size_t r3, double 
     return total_unpred;
 }
 
-void
-sample_update_error(float mean, float noise, bool use_mean, float curData, float pred_reg, float pred_sz, float &err_sz,
-                    float &err_reg) {
-    if(use_mean) {
-        err_sz += std::min(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-        err_reg += fabs(pred_reg - curData);
-    } else {
-        err_sz += fabs(pred_sz - curData) + noise;
-        err_reg += fabs(pred_reg - curData);
-    }
-}
-
 void sz_opencl_sample(const float *oriData, size_t r1, size_t r2, size_t r3, size_t num_x, size_t num_y, size_t num_z,
                       size_t block_size, size_t dim0_offset, size_t dim1_offset, const float *data_pos,
                       float *reg_params_pos, size_t params_offset_b, size_t params_offset_c, size_t params_offset_d,
@@ -880,31 +873,31 @@ void sz_opencl_sample(const float *oriData, size_t r1, size_t r2, size_t r3, siz
                     // sample point [1, 1, 1] [1, 1, 4] [1, 4, 1] [1, 4, 4] [4, 1, 1] [4, 1, 4] [4, 4, 1] [4, 4, 4]
                     float err_sz = 0.0, err_reg = 0.0;
                     for(size_t i=2; i<=block_size; i++){
-                        const float* cur_data_pos = pred_buffer + i*pred_buffer_block_size*pred_buffer_block_size + i*pred_buffer_block_size + i;
-                        float curData = *cur_data_pos;
-                        float pred_sz = cur_data_pos[-1] + cur_data_pos[-strip_dim1_offset]+ cur_data_pos[-strip_dim0_offset] - cur_data_pos[-strip_dim1_offset - 1] - cur_data_pos[-strip_dim0_offset - 1] - cur_data_pos[-strip_dim0_offset - strip_dim1_offset] + cur_data_pos[-strip_dim0_offset - strip_dim1_offset - 1];
-                        float pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * (i-1) + reg_params_pos[params_offset_c] * (i-1) + reg_params_pos[params_offset_d];
-                        sample_update_error(mean, noise, use_mean, curData, pred_reg, pred_sz, err_sz, err_reg);
+						compute_errors(reg_params_pos, params_offset_b, params_offset_c, params_offset_d, pred_buffer,
+									   mean, noise,
+									   pred_buffer_block_size, strip_dim0_offset, strip_dim1_offset, use_mean, i, i, i,
+									   (i - 1), (i - 1),
+									   err_sz, err_reg);
 
                         int bmi = block_size - i + 1;
-                        cur_data_pos = pred_buffer + i*pred_buffer_block_size*pred_buffer_block_size + i*pred_buffer_block_size + bmi;
-                        curData = *cur_data_pos;
-                        pred_sz = cur_data_pos[-1] + cur_data_pos[-strip_dim1_offset]+ cur_data_pos[-strip_dim0_offset] - cur_data_pos[-strip_dim1_offset - 1] - cur_data_pos[-strip_dim0_offset - 1] - cur_data_pos[-strip_dim0_offset - strip_dim1_offset] + cur_data_pos[-strip_dim0_offset - strip_dim1_offset - 1];
-                        pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * (i-1) + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];
-                        sample_update_error(mean, noise, use_mean, curData, pred_reg, pred_sz, err_sz, err_reg);
+						compute_errors(reg_params_pos, params_offset_b, params_offset_c, params_offset_d, pred_buffer,
+									   mean, noise,
+									   pred_buffer_block_size, strip_dim0_offset, strip_dim1_offset, use_mean, i, i, bmi,
+									   (i - 1), bmi,
+									   err_sz, err_reg);
 
 
-                        cur_data_pos = pred_buffer + i*pred_buffer_block_size*pred_buffer_block_size + bmi*pred_buffer_block_size + i;
-                        curData = *cur_data_pos;
-                        pred_sz = cur_data_pos[-1] + cur_data_pos[-strip_dim1_offset]+ cur_data_pos[-strip_dim0_offset] - cur_data_pos[-strip_dim1_offset - 1] - cur_data_pos[-strip_dim0_offset - 1] - cur_data_pos[-strip_dim0_offset - strip_dim1_offset] + cur_data_pos[-strip_dim0_offset - strip_dim1_offset - 1];
-                        pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * (i-1) + reg_params_pos[params_offset_d];
-                        sample_update_error(mean, noise, use_mean, curData, pred_reg, pred_sz, err_sz, err_reg);
+						compute_errors(reg_params_pos, params_offset_b, params_offset_c, params_offset_d, pred_buffer,
+									   mean, noise,
+									   pred_buffer_block_size, strip_dim0_offset, strip_dim1_offset, use_mean, i, bmi, i,
+									   bmi, (i - 1),
+									   err_sz, err_reg);
 
-                        cur_data_pos = pred_buffer + i*pred_buffer_block_size*pred_buffer_block_size + bmi*pred_buffer_block_size + bmi;
-                        curData = *cur_data_pos;
-                        pred_sz = cur_data_pos[-1] + cur_data_pos[-strip_dim1_offset]+ cur_data_pos[-strip_dim0_offset] - cur_data_pos[-strip_dim1_offset - 1] - cur_data_pos[-strip_dim0_offset - 1] - cur_data_pos[-strip_dim0_offset - strip_dim1_offset] + cur_data_pos[-strip_dim0_offset - strip_dim1_offset - 1];
-                        pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];
-                        sample_update_error(mean, noise, use_mean, curData, pred_reg, pred_sz, err_sz, err_reg);
+						compute_errors(reg_params_pos, params_offset_b, params_offset_c, params_offset_d, pred_buffer,
+									   mean, noise,
+									   pred_buffer_block_size, strip_dim0_offset, strip_dim1_offset, use_mean, i, bmi, bmi,
+									   bmi, bmi,
+									   err_sz, err_reg);
                     }
                     // indicator_pos[k] = (err_sz < err_reg);
                     indicator_pos[k] = err_reg >= err_sz;
@@ -914,6 +907,23 @@ void sz_opencl_sample(const float *oriData, size_t r1, size_t r2, size_t r3, siz
             indicator_pos += num_z;
         }// end j
     }// end i
+}
+
+void compute_errors(const float *reg_params_pos, size_t params_offset_b, size_t params_offset_c, size_t params_offset_d,
+					const float *pred_buffer, float mean, float noise, int pred_buffer_block_size,
+					int strip_dim0_offset, int strip_dim1_offset, bool use_mean, size_t i, size_t a, size_t b, size_t c,
+					size_t d, float &err_sz, float &err_reg) {
+	const float* cur_data_pos = pred_buffer + i * pred_buffer_block_size * pred_buffer_block_size + a * pred_buffer_block_size + b;
+	float curData = *cur_data_pos;
+	float pred_sz = cur_data_pos[-1] + cur_data_pos[-strip_dim1_offset]+ cur_data_pos[-strip_dim0_offset] - cur_data_pos[-strip_dim1_offset - 1] - cur_data_pos[-strip_dim0_offset - 1] - cur_data_pos[-strip_dim0_offset - strip_dim1_offset] + cur_data_pos[-strip_dim0_offset - strip_dim1_offset - 1];
+	float pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * c + reg_params_pos[params_offset_c] * d + reg_params_pos[params_offset_d];
+	if(use_mean) {
+		err_sz += std::min(fabs(pred_sz - curData) + noise, fabs(mean - curData));
+		err_reg += fabs(pred_reg - curData);
+	} else {
+		err_sz += fabs(pred_sz - curData) + noise;
+		err_reg += fabs(pred_reg - curData);
+	}
 }
 
 
