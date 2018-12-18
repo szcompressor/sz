@@ -45,6 +45,12 @@ void calculate_regression_coefficents(const float *oriData, size_t r1, size_t r2
                                       size_t params_offset_d, float *pred_buffer, const float *data_pos,
                                       float *&pred_buffer_pos);
 
+unsigned char *
+encode_all_blocks(size_t num_x, size_t num_y, size_t num_z, size_t max_num_block_elements, size_t num_blocks,
+				  int *result_type, int *type, HuffmanTree *huffmanTree, unsigned char *result_pos);
+
+float compute_mean(const float *oriData, double realPrecision, float dense_pos, size_t num_elements);
+
 extern "C"
 {
   int sz_opencl_init(struct sz_opencl_state** state)
@@ -243,18 +249,7 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	}
 
 	float mean = 0;
-	if(use_mean){
-		// compute mean
-		double sum = 0.0;
-		size_t mean_count = 0;
-		for(size_t i=0; i<num_elements; i++){
-			if(fabs(oriData[i] - dense_pos) < realPrecision){
-				sum += oriData[i];
-				mean_count ++;
-			}
-		}
-		if(mean_count > 0) mean = sum / mean_count;
-	}
+	if(use_mean) mean = compute_mean(oriData, realPrecision, dense_pos, num_elements);
 
 	double tmp_realPrecision = realPrecision;
 
@@ -467,41 +462,13 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	free(indicator);
 	free(result_unpredictable_data);
 	// encode type array by block
-	type = result_type;
-	size_t total_type_array_size = 0;
-	unsigned char * type_array_buffer = (unsigned char *) malloc(num_blocks*max_num_block_elements*sizeof(int));
-	unsigned short * type_array_block_size = (unsigned short *) malloc(num_blocks*sizeof(unsigned short));
-	unsigned char * type_array_buffer_pos = type_array_buffer;
-	unsigned short * type_array_block_size_pos = type_array_block_size;
-	for(size_t i=0; i<num_x; i++){
-		for(size_t j=0; j<num_y; j++){
-			for(size_t k=0; k<num_z; k++){
-				size_t typeArray_size = 0;
-				encode(huffmanTree, type, max_num_block_elements, type_array_buffer_pos, &typeArray_size);
-				total_type_array_size += typeArray_size;
-				*type_array_block_size_pos = typeArray_size;
-				type_array_buffer_pos += typeArray_size;
-				type += max_num_block_elements;
-				type_array_block_size_pos ++;
-			}
-		}
-	}
-	size_t compressed_type_array_block_size;
-	unsigned char * compressed_type_array_block = SZ_compress_args(SZ_UINT16, type_array_block_size, &compressed_type_array_block_size, ABS, 0.5, 0, 0, 0, 0, 0, 0, num_blocks);
-	memcpy(result_pos, &compressed_type_array_block_size, sizeof(size_t));
-	result_pos += sizeof(size_t);
-	memcpy(result_pos, compressed_type_array_block, compressed_type_array_block_size);
-	result_pos += compressed_type_array_block_size;
-	memcpy(result_pos, type_array_buffer, total_type_array_size);
-	result_pos += total_type_array_size;
-	// size_t typeArray_size = 0;
-	// encode(huffmanTree, result_type, num_blocks*max_num_block_elements, result_pos, &typeArray_size);
-	// result_pos += typeArray_size;
 
-	free(compressed_type_array_block);
-	free(type_array_buffer);
-	free(type_array_block_size);
+	result_pos = encode_all_blocks(num_x, num_y, num_z, max_num_block_elements, num_blocks, result_type, type,
+								   huffmanTree,
+								   result_pos);
+
 	size_t totalEncodeSize = result_pos - result;
+
 	free(result_type);
 	SZ_ReleaseHuffman(huffmanTree);
 	*comp_size = totalEncodeSize;
@@ -630,6 +597,60 @@ int sz_decompress_float_opencl(float** newData,
 	return status;
 }
 
+}
+
+float compute_mean(const float *oriData, double realPrecision, float dense_pos, size_t num_elements) {
+	float mean;
+	{
+		// compute mean
+		double sum = 0.0;
+		size_t mean_count = 0;
+		for(size_t i=0; i<num_elements; i++){
+			if(fabs(oriData[i] - dense_pos) < realPrecision){
+				sum += oriData[i];
+				mean_count ++;
+			}
+		}
+		if(mean_count > 0) mean = sum / mean_count;
+	}
+	return mean;
+}
+
+unsigned char *
+encode_all_blocks(size_t num_x, size_t num_y, size_t num_z, size_t max_num_block_elements, size_t num_blocks,
+				  int *result_type, int *type, HuffmanTree *huffmanTree, unsigned char *result_pos) {
+	type = result_type;
+	size_t total_type_array_size = 0;
+	unsigned char * type_array_buffer = (unsigned char *) malloc(num_blocks*max_num_block_elements*sizeof(int));
+	unsigned short * type_array_block_size = (unsigned short *) malloc(num_blocks*sizeof(unsigned short));
+	unsigned char * type_array_buffer_pos = type_array_buffer;
+	unsigned short * type_array_block_size_pos = type_array_block_size;
+	for(size_t i=0; i<num_x; i++){
+for(size_t j=0; j<num_y; j++){
+for(size_t k=0; k<num_z; k++){
+size_t typeArray_size = 0;
+encode(huffmanTree, type, max_num_block_elements, type_array_buffer_pos, &typeArray_size);
+total_type_array_size += typeArray_size;
+*type_array_block_size_pos = typeArray_size;
+type_array_buffer_pos += typeArray_size;
+type += max_num_block_elements;
+type_array_block_size_pos ++;
+}
+}
+}
+	size_t compressed_type_array_block_size;
+	unsigned char * compressed_type_array_block = SZ_compress_args(SZ_UINT16, type_array_block_size, &compressed_type_array_block_size, ABS, 0.5, 0, 0, 0, 0, 0, 0, num_blocks);
+	memcpy(result_pos, &compressed_type_array_block_size, sizeof(size_t));
+	result_pos += sizeof(size_t);
+	memcpy(result_pos, compressed_type_array_block, compressed_type_array_block_size);
+	result_pos += compressed_type_array_block_size;
+	memcpy(result_pos, type_array_buffer, total_type_array_size);
+	result_pos += total_type_array_size;
+
+	free(compressed_type_array_block);
+	free(type_array_buffer);
+	free(type_array_block_size);
+	return result_pos;
 }
 
 void calculate_regression_coefficents(const float *oriData, size_t r1, size_t r2, size_t r3, size_t num_x, size_t num_y,
