@@ -1883,15 +1883,24 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					multisteps->compressionType = SZ_compress_args_float_NoCkRngeNoGzip_2D(&tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
 #endif
-				{	
-					if(sz_with_regression == SZ_NO_REGRESSION)
-						SZ_compress_args_float_NoCkRngeNoGzip_2D(&tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
-					else 
+				{
+#ifdef HAVE_RANDOMACCESS															
+					if(confparams_cpr->randomAccess == 0)
 					{
-						tmpByteData = SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize);					
-						if(tmpOutSize>=dataLength*sizeof(float) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
-							SZ_compress_args_float_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);						
-					}
+#endif							
+						if(sz_with_regression == SZ_NO_REGRESSION)
+							SZ_compress_args_float_NoCkRngeNoGzip_2D(&tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+						else 
+						{
+							tmpByteData = SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize);					
+							if(tmpOutSize>=dataLength*sizeof(float) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
+								SZ_compress_args_float_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);						
+						}
+#ifdef HAVE_RANDOMACCESS							
+					}					
+					else //TODO Xin Liang
+						tmpByteData = SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize);		
+#endif	
 				}
 		}
 		else
@@ -1913,15 +1922,15 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 						if(sz_with_regression == SZ_NO_REGRESSION)
 							SZ_compress_args_float_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 						else 
+						{
 							tmpByteData = SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize);
-#ifdef HAVE_RANDOMACCESS
-					}
+							if(tmpOutSize>=dataLength*sizeof(float) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
+								SZ_compress_args_float_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);		
+						}
+#ifdef HAVE_RANDOMACCESS							
+					}					
 					else
-					{
-						tmpByteData = SZ_compress_float_3D_MDQ_decompression_random_access_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize);
-					}
-					if(tmpOutSize>=dataLength*sizeof(float) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
-						SZ_compress_args_float_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);
+						tmpByteData = SZ_compress_float_3D_MDQ_decompression_random_access_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize);	
 #endif					
 				}
 		}

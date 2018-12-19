@@ -6104,8 +6104,9 @@ unsigned char* cmpBytes, size_t cmpSize)
 		}
 		else if(dim == 2)
 		{
-			printf("Error: random access mode doesn't support 2D yet, but only 3D.\n");
-			status = SZ_DERR;
+			//printf("Error: random access mode doesn't support 2D yet, but only 3D.\n");
+			decompressDataSeries_float_2D_nonblocked_with_blocked_regression(newData, r2, r1, tdps->raBytes);
+			//status = SZ_DERR;
 		}	
 		else if(dim == 3)
 		{
