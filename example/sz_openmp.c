@@ -54,7 +54,7 @@ void usage()
 	printf("* error control: (the error control parameters here will overwrite the setting in sz.config)\n");
 	printf("	-M <error bound mode> : 10 options as follows. \n");
 	printf("		ABS (absolute error bound)\n");
-	printf("		REL (value range based error bound)\n");
+	printf("		REL (value range based error bound\n");
 	printf("		ABS_AND_REL (using min{ABS, REL})\n");
 	printf("		ABS_OR_REL (using max{ABS, REL})\n");
 	printf("		PSNR (peak signal-to-noise ratio)\n");
@@ -309,6 +309,7 @@ int main(int argc, char* argv[])
 	
 	char outputFilePath[256];	
 	unsigned char *bytes = NULL; //the binary data read from "compressed data file"
+	size_t byteLength; 
 	if(isCompression == 1)
 	{
 		if(absErrorBound != NULL)
@@ -814,7 +815,6 @@ int main(int argc, char* argv[])
 	
 	if(printMeta==1) //==-1 for printing metadata
 	{
-		size_t byteLength; 
 		int status;
 		if(bytes==NULL)
 			bytes = readByteData(cmpPath, &byteLength, &status);
