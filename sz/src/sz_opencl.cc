@@ -10,6 +10,7 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "CL/cl.hpp"
 
+
 struct sz_opencl_state
 {
   struct error_t
@@ -21,6 +22,49 @@ struct sz_opencl_state
   cl::Device device;
   cl::Context context;
   cl::CommandQueue queue;
+};
+
+
+struct sz_opencl_sizes {
+    sz_opencl_sizes(int block_size, int r1, int r2, int r3):
+            r1(r1),
+            r2(r2),
+            r3(r3),
+            block_size(block_size),
+            num_x((r1 - 1) / block_size + 1),
+            num_y((r2 - 1) / block_size + 1),
+            num_z((r3 - 1) / block_size + 1),
+            max_num_block_elements(block_size * block_size * block_size),
+            num_blocks(num_x * num_y * num_z),
+            num_elements( r1 * r2 * r3),
+            dim0_offset(r2 * r3),
+            dim1_offset(r3),
+            params_offset_b(num_blocks),
+            params_offset_c(2*num_blocks),
+            params_offset_d(3*num_blocks),
+            pred_buffer_block_size(  block_size + 1),
+            strip_dim0_offset(  pred_buffer_block_size * pred_buffer_block_size),
+            strip_dim1_offset(  pred_buffer_block_size),
+            unpred_data_max_size(max_num_block_elements)
+    {}
+
+    const size_t r1,r2,r3;
+    const size_t block_size;
+    const size_t num_x;
+    const size_t num_y;
+    const size_t num_z;
+    const size_t max_num_block_elements;
+    const size_t num_blocks;
+    const size_t num_elements;
+    const size_t dim0_offset;
+    const size_t dim1_offset;
+    const size_t params_offset_b;
+    const size_t params_offset_c;
+    const size_t params_offset_d;
+    const int pred_buffer_block_size;
+    const int strip_dim0_offset;
+    const int strip_dim1_offset;
+    const size_t unpred_data_max_size;
 };
 
 float compute_mean(const float *oriData, double realPrecision, float dense_pos, size_t num_elements) {
@@ -41,29 +85,29 @@ float compute_mean(const float *oriData, double realPrecision, float dense_pos, 
 }
 
 unsigned char *
-encode_all_blocks(size_t num_x, size_t num_y, size_t num_z, size_t max_num_block_elements, size_t num_blocks,
-                  int *result_type, int *type, HuffmanTree *huffmanTree, unsigned char *result_pos) {
+encode_all_blocks(sz_opencl_sizes const *sizes, int *result_type, int *type, HuffmanTree *huffmanTree,
+                  unsigned char *result_pos) {
     type = result_type;
     size_t total_type_array_size = 0;
-    unsigned char * type_array_buffer = (unsigned char *) malloc(num_blocks*max_num_block_elements*sizeof(int));
-    unsigned short * type_array_block_size = (unsigned short *) malloc(num_blocks*sizeof(unsigned short));
+    unsigned char * type_array_buffer = (unsigned char *) malloc(sizes->num_blocks*sizes->max_num_block_elements*sizeof(int));
+    unsigned short * type_array_block_size = (unsigned short *) malloc(sizes->num_blocks*sizeof(unsigned short));
     unsigned char * type_array_buffer_pos = type_array_buffer;
     unsigned short * type_array_block_size_pos = type_array_block_size;
-    for(size_t i=0; i<num_x; i++){
-        for(size_t j=0; j<num_y; j++){
-            for(size_t k=0; k<num_z; k++){
+    for(size_t i=0; i<sizes->num_x; i++){
+        for(size_t j=0; j<sizes->num_y; j++){
+            for(size_t k=0; k<sizes->num_z; k++){
                 size_t typeArray_size = 0;
-                encode(huffmanTree, type, max_num_block_elements, type_array_buffer_pos, &typeArray_size);
+                encode(huffmanTree, type, sizes->max_num_block_elements, type_array_buffer_pos, &typeArray_size);
                 total_type_array_size += typeArray_size;
                 *type_array_block_size_pos = typeArray_size;
                 type_array_buffer_pos += typeArray_size;
-                type += max_num_block_elements;
+                type += sizes->max_num_block_elements;
                 type_array_block_size_pos ++;
             }
         }
     }
     size_t compressed_type_array_block_size;
-    unsigned char * compressed_type_array_block = SZ_compress_args(SZ_UINT16, type_array_block_size, &compressed_type_array_block_size, ABS, 0.5, 0, 0, 0, 0, 0, 0, num_blocks);
+    unsigned char * compressed_type_array_block = SZ_compress_args(SZ_UINT16, type_array_block_size, &compressed_type_array_block_size, ABS, 0.5, 0, 0, 0, 0, 0, 0, sizes->num_blocks);
     memcpy(result_pos, &compressed_type_array_block_size, sizeof(size_t));
     result_pos += sizeof(size_t);
     memcpy(result_pos, compressed_type_array_block, compressed_type_array_block_size);
@@ -77,23 +121,20 @@ encode_all_blocks(size_t num_x, size_t num_y, size_t num_z, size_t max_num_block
     return result_pos;
 }
 
-void calculate_regression_coefficents(const float *oriData, size_t r1, size_t r2, size_t r3, size_t num_x, size_t num_y,
-                                      size_t num_z, size_t block_size, size_t dim0_offset, size_t dim1_offset,
-                                      float *reg_params_pos, size_t params_offset_b, size_t params_offset_c,
-                                      size_t params_offset_d, float *pred_buffer, const float *data_pos,
-									  float *&pred_buffer_pos) {
-	for(size_t i=0; i < num_x; i++){
-		for(size_t j=0; j<num_y; j++){
-			for(size_t k=0; k<num_z; k++){
-				data_pos = oriData + i*block_size * dim0_offset + j*block_size * dim1_offset + k*block_size;
+void calculate_regression_coefficents(const float *oriData, sz_opencl_sizes const *sizes, float *reg_params_pos,
+                                      float *pred_buffer, const float *data_pos, float *pred_buffer_pos) {
+	for(size_t i=0; i < sizes->num_x; i++){
+		for(size_t j=0; j<sizes->num_y; j++){
+			for(size_t k=0; k<sizes->num_z; k++){
+				data_pos = oriData + i*sizes->block_size * sizes->dim0_offset + j*sizes->block_size * sizes->dim1_offset + k*sizes->block_size;
 				pred_buffer_pos = pred_buffer;
-				for(size_t ii=0; ii<block_size; ii++){
-					for(size_t jj=0; jj<block_size; jj++){
-						for(size_t kk=0; kk<block_size; kk++){
-							int ii_ = (i*block_size + ii < r1) ? ii : r1 - 1 - i*block_size;
-							int jj_ = (j*block_size + jj < r2) ? jj : r2 - 1 - j*block_size;
-							int kk_ = (k*block_size + kk < r3) ? kk : r3 - 1 - k*block_size;
-							*pred_buffer_pos = *(data_pos + ii_*dim0_offset + jj_*dim1_offset + kk_);
+				for(size_t ii=0; ii<sizes->block_size; ii++){
+					for(size_t jj=0; jj<sizes->block_size; jj++){
+						for(size_t kk=0; kk<sizes->block_size; kk++){
+							int ii_ = (i*sizes->block_size + ii < sizes->r1) ? ii : sizes->r1 - 1 - i*sizes->block_size;
+							int jj_ = (j*sizes->block_size + jj < sizes->r2) ? jj : sizes->r2 - 1 - j*sizes->block_size;
+							int kk_ = (k*sizes->block_size + kk < sizes->r3) ? kk : sizes->r3 - 1 - k*sizes->block_size;
+							*pred_buffer_pos = *(data_pos + ii_*sizes->dim0_offset + jj_*sizes->dim1_offset + kk_);
 							pred_buffer_pos ++;
 						}
 					}
@@ -108,11 +149,11 @@ void calculate_regression_coefficents(const float *oriData, size_t r1, size_t r2
 					float f = 0;
 					float sum_x, sum_y;
 					float curData;
-					for(size_t i=0; i<block_size; i++){
+					for(size_t i=0; i<sizes->block_size; i++){
 						sum_x = 0;
-						for(size_t j=0; j<block_size; j++){
+						for(size_t j=0; j<sizes->block_size; j++){
 							sum_y = 0;
-							for(size_t k=0; k<block_size; k++){
+							for(size_t k=0; k<sizes->block_size; k++){
 								curData = *cur_data_pos;
 								sum_y += curData;
 								fz += curData * k;
@@ -124,11 +165,11 @@ void calculate_regression_coefficents(const float *oriData, size_t r1, size_t r2
 						fx += sum_x * i;
 						f += sum_x;
 					}
-					float coeff = 1.0 / (block_size * block_size * block_size);
-					reg_params_pos[0] = (2 * fx / (block_size - 1) - f) * 6 * coeff / (block_size + 1);
-					reg_params_pos[params_offset_b] = (2 * fy / (block_size - 1) - f) * 6 * coeff / (block_size + 1);
-					reg_params_pos[params_offset_c] = (2 * fz / (block_size - 1) - f) * 6 * coeff / (block_size + 1);
-					reg_params_pos[params_offset_d] = f * coeff - ((block_size - 1) * reg_params_pos[0] / 2 + (block_size - 1) * reg_params_pos[params_offset_b] / 2 + (block_size - 1) * reg_params_pos[params_offset_c] / 2);
+					float coeff = 1.0 / (sizes->block_size * sizes->block_size * sizes->block_size);
+					reg_params_pos[0] = (2 * fx / (sizes->block_size - 1) - f) * 6 * coeff / (sizes->block_size + 1);
+					reg_params_pos[sizes->params_offset_b] = (2 * fy / (sizes->block_size - 1) - f) * 6 * coeff / (sizes->block_size + 1);
+					reg_params_pos[sizes->params_offset_c] = (2 * fz / (sizes->block_size - 1) - f) * 6 * coeff / (sizes->block_size + 1);
+					reg_params_pos[sizes->params_offset_d] = f * coeff - ((sizes->block_size - 1) * reg_params_pos[0] / 2 + (sizes->block_size - 1) * reg_params_pos[sizes->params_offset_b] / 2 + (sizes->block_size - 1) * reg_params_pos[sizes->params_offset_c] / 2);
 				}
 				reg_params_pos ++;
 			}
@@ -137,34 +178,30 @@ void calculate_regression_coefficents(const float *oriData, size_t r1, size_t r2
 }
 
 size_t
-save_unpredictable_data(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t num_x,
-                        size_t num_y, size_t num_z, size_t block_size, size_t dim0_offset, size_t dim1_offset,
-                        int *result_type, const float *data_pos, int *type, float *reg_params_pos,
-                        size_t params_offset_b, size_t params_offset_c, size_t params_offset_d,
-                        float *pred_buffer, float *pred_buffer_pos, float mean, float *unpredictable_data,
-                        unsigned char *indicator_pos, int intvCapacity, int intvRadius,
-                        int pred_buffer_block_size, int strip_dim0_offset, int strip_dim1_offset,
-                        int *blockwise_unpred_count_pos, bool use_mean) {
+save_unpredictable_data(const float *data_pos, sz_opencl_sizes const *sizes, double realPrecision, float mean,
+                        int intvCapacity, int intvRadius, bool use_mean, float *oriData, int *type,
+                        float *unpredictable_data, int *result_type, float *reg_params_pos, float *pred_buffer,
+                        float *pred_buffer_pos, const unsigned char *indicator_pos, int *blockwise_unpred_count_pos) {
 	size_t total_unpred = 0;
         int intvCapacity_sz = intvCapacity - 2;
         type = result_type;
-        for(size_t i=0; i<num_x; i++){
-            for(size_t j=0; j<num_y; j++){
-                for(size_t k=0; k<num_z; k++){
-                    data_pos = oriData + i*block_size * dim0_offset + j*block_size * dim1_offset + k*block_size;
-                    pred_buffer_pos = pred_buffer + pred_buffer_block_size*pred_buffer_block_size + pred_buffer_block_size + 1;
-                    for(size_t ii=0; ii<block_size; ii++){
-                        for(size_t jj=0; jj<block_size; jj++){
-                            for(size_t kk=0; kk<block_size; kk++){
-                                int ii_ = (i*block_size + ii < r1) ? ii : r1 - 1 - i*block_size;
-                                int jj_ = (j*block_size + jj < r2) ? jj : r2 - 1 - j*block_size;
-                                int kk_ = (k*block_size + kk < r3) ? kk : r3 - 1 - k*block_size;
-                                *pred_buffer_pos = *(data_pos + ii_*dim0_offset + jj_*dim1_offset + kk_);
+        for(size_t i=0; i<sizes->num_x; i++){
+            for(size_t j=0; j<sizes->num_y; j++){
+                for(size_t k=0; k<sizes->num_z; k++){
+                    data_pos = oriData + i*sizes->block_size * sizes->dim0_offset + j*sizes->block_size * sizes->dim1_offset + k*sizes->block_size;
+                    pred_buffer_pos = pred_buffer + sizes->pred_buffer_block_size*sizes->pred_buffer_block_size + sizes->pred_buffer_block_size + 1;
+                    for(size_t ii=0; ii<sizes->block_size; ii++){
+                        for(size_t jj=0; jj<sizes->block_size; jj++){
+                            for(size_t kk=0; kk<sizes->block_size; kk++){
+                                int ii_ = (i*sizes->block_size + ii < sizes->r1) ? ii : sizes->r1 - 1 - i*sizes->block_size;
+                                int jj_ = (j*sizes->block_size + jj < sizes->r2) ? jj : sizes->r2 - 1 - j*sizes->block_size;
+                                int kk_ = (k*sizes->block_size + kk < sizes->r3) ? kk : sizes->r3 - 1 - k*sizes->block_size;
+                                *pred_buffer_pos = *(data_pos + ii_*sizes->dim0_offset + jj_*sizes->dim1_offset + kk_);
                                 pred_buffer_pos ++;
                             }
                             pred_buffer_pos ++;
                         }
-                        pred_buffer_pos += pred_buffer_block_size;
+                        pred_buffer_pos += sizes->pred_buffer_block_size;
                     }
 
                     if(!(indicator_pos[k])){
@@ -174,12 +211,12 @@ save_unpredictable_data(float *oriData, size_t r1, size_t r2, size_t r3, double 
                         double diff;
                         size_t index = 0;
                         size_t block_unpredictable_count = 0;
-                        float * cur_data_pos = pred_buffer + pred_buffer_block_size*pred_buffer_block_size + pred_buffer_block_size + 1;
-                        for(size_t ii=0; ii<block_size; ii++){
-                            for(size_t jj=0; jj<block_size; jj++){
-                                for(size_t kk=0; kk<block_size; kk++){
+                        float * cur_data_pos = pred_buffer + sizes->pred_buffer_block_size*sizes->pred_buffer_block_size + sizes->pred_buffer_block_size + 1;
+                        for(size_t ii=0; ii<sizes->block_size; ii++){
+                            for(size_t jj=0; jj<sizes->block_size; jj++){
+                                for(size_t kk=0; kk<sizes->block_size; kk++){
                                     curData = *cur_data_pos;
-                                    pred = reg_params_pos[0] * ii + reg_params_pos[params_offset_b] * jj + reg_params_pos[params_offset_c] * kk + reg_params_pos[params_offset_d];
+                                    pred = reg_params_pos[0] * ii + reg_params_pos[sizes->params_offset_b] * jj + reg_params_pos[sizes->params_offset_c] * kk + reg_params_pos[sizes->params_offset_d];
                                     diff = curData - pred;
                                     itvNum = fabs(diff)/realPrecision + 1;
                                     if (itvNum < intvCapacity){
@@ -201,7 +238,7 @@ save_unpredictable_data(float *oriData, size_t r1, size_t r2, size_t r3, double 
                                 }
                                 cur_data_pos ++;
                             }
-                            cur_data_pos += pred_buffer_block_size;
+                            cur_data_pos += sizes->pred_buffer_block_size;
                         }
                         reg_params_pos ++;
                         total_unpred += block_unpredictable_count;
@@ -212,14 +249,14 @@ save_unpredictable_data(float *oriData, size_t r1, size_t r2, size_t r3, double 
 // use SZ
 // SZ predication
                         size_t unpredictable_count = 0;
-                        float * cur_data_pos = pred_buffer + pred_buffer_block_size*pred_buffer_block_size + pred_buffer_block_size + 1;
+                        float * cur_data_pos = pred_buffer + sizes->pred_buffer_block_size*sizes->pred_buffer_block_size + sizes->pred_buffer_block_size + 1;
                         float curData;
                         float pred3D;
                         double itvNum, diff;
                         size_t index = 0;
-                        for(size_t ii=0; ii<block_size; ii++){
-                            for(size_t jj=0; jj<block_size; jj++){
-                                for(size_t kk=0; kk<block_size; kk++){
+                        for(size_t ii=0; ii<sizes->block_size; ii++){
+                            for(size_t jj=0; jj<sizes->block_size; jj++){
+                                for(size_t kk=0; kk<sizes->block_size; kk++){
 
                                     curData = *cur_data_pos;
                                     if(use_mean && fabs(curData - mean) <= realPrecision){
@@ -228,8 +265,8 @@ save_unpredictable_data(float *oriData, size_t r1, size_t r2, size_t r3, double 
                                     }
                                     else
                                     {
-                                        pred3D = cur_data_pos[-1] + cur_data_pos[-strip_dim1_offset]+ cur_data_pos[-strip_dim0_offset] - cur_data_pos[-strip_dim1_offset - 1]
-                                                 - cur_data_pos[-strip_dim0_offset - 1] - cur_data_pos[-strip_dim0_offset - strip_dim1_offset] + cur_data_pos[-strip_dim0_offset - strip_dim1_offset - 1];
+                                        pred3D = cur_data_pos[-1] + cur_data_pos[-sizes->strip_dim1_offset]+ cur_data_pos[-sizes->strip_dim0_offset] - cur_data_pos[-sizes->strip_dim1_offset - 1]
+                                                 - cur_data_pos[-sizes->strip_dim0_offset - 1] - cur_data_pos[-sizes->strip_dim0_offset - sizes->strip_dim1_offset] + cur_data_pos[-sizes->strip_dim0_offset - sizes->strip_dim1_offset - 1];
                                         diff = curData - pred3D;
                                         itvNum = fabs(diff)/realPrecision + 1;
                                         if (itvNum < intvCapacity_sz){
@@ -254,29 +291,28 @@ save_unpredictable_data(float *oriData, size_t r1, size_t r2, size_t r3, double 
                                 }
                                 cur_data_pos ++;
                             }
-                            cur_data_pos += pred_buffer_block_size;
+                            cur_data_pos += sizes->pred_buffer_block_size;
                         }
                         total_unpred += unpredictable_count;
                         unpredictable_data += unpredictable_count;
                         *blockwise_unpred_count_pos = unpredictable_count;
                     }// end SZ
                     blockwise_unpred_count_pos ++;
-                    type += block_size * block_size * block_size;
+                    type += sizes->block_size * sizes->block_size * sizes->block_size;
                 } // end k
-                indicator_pos += num_z;
+                indicator_pos += sizes->num_z;
             }// end j
         }// end i
     return total_unpred;
 }
 
-void compute_errors(const float *reg_params_pos, size_t params_offset_b, size_t params_offset_c, size_t params_offset_d,
-                    const float *pred_buffer, float mean, float noise, int pred_buffer_block_size,
-                    int strip_dim0_offset, int strip_dim1_offset, bool use_mean, size_t i, size_t a, size_t b, size_t c,
-                    size_t d, float &err_sz, float &err_reg) {
-    const float* cur_data_pos = pred_buffer + i * pred_buffer_block_size * pred_buffer_block_size + a * pred_buffer_block_size + b;
+void compute_errors(const float *reg_params_pos, const float *pred_buffer, sz_opencl_sizes const *sizes, float mean,
+                    float noise, bool use_mean, size_t i, size_t a, size_t b, size_t c, size_t d, float &err_sz,
+                    float &err_reg) {
+    const float* cur_data_pos = pred_buffer + i * sizes->pred_buffer_block_size * sizes->pred_buffer_block_size + a * sizes->pred_buffer_block_size + b;
     float curData = *cur_data_pos;
-    float pred_sz = cur_data_pos[-1] + cur_data_pos[-strip_dim1_offset]+ cur_data_pos[-strip_dim0_offset] - cur_data_pos[-strip_dim1_offset - 1] - cur_data_pos[-strip_dim0_offset - 1] - cur_data_pos[-strip_dim0_offset - strip_dim1_offset] + cur_data_pos[-strip_dim0_offset - strip_dim1_offset - 1];
-    float pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * c + reg_params_pos[params_offset_c] * d + reg_params_pos[params_offset_d];
+    float pred_sz = cur_data_pos[-1] + cur_data_pos[-sizes->strip_dim1_offset]+ cur_data_pos[-sizes->strip_dim0_offset] - cur_data_pos[-sizes->strip_dim1_offset - 1] - cur_data_pos[-sizes->strip_dim0_offset - 1] - cur_data_pos[-sizes->strip_dim0_offset - sizes->strip_dim1_offset] + cur_data_pos[-sizes->strip_dim0_offset - sizes->strip_dim1_offset - 1];
+    float pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[sizes->params_offset_b] * c + reg_params_pos[sizes->params_offset_c] * d + reg_params_pos[sizes->params_offset_d];
     if(use_mean) {
         err_sz += std::min(fabs(pred_sz - curData) + noise, fabs(mean - curData));
         err_reg += fabs(pred_reg - curData);
@@ -286,68 +322,66 @@ void compute_errors(const float *reg_params_pos, size_t params_offset_b, size_t 
     }
 }
 
-void sz_opencl_sample(const float *oriData, size_t r1, size_t r2, size_t r3, size_t num_x, size_t num_y, size_t num_z,
-                      size_t block_size, size_t dim0_offset, size_t dim1_offset, const float *data_pos,
-                      float *reg_params_pos, size_t params_offset_b, size_t params_offset_c, size_t params_offset_d,
-                      float *pred_buffer, float *pred_buffer_pos, float mean, unsigned char *indicator_pos, float noise,
-                      int pred_buffer_block_size, int strip_dim0_offset, int strip_dim1_offset, bool use_mean) {
-    for(size_t i=0; i<num_x; i++){
-        for(size_t j=0; j<num_y; j++){
-            for(size_t k=0; k<num_z; k++){
-                data_pos = oriData + i*block_size * dim0_offset + j*block_size * dim1_offset + k*block_size;
+void sz_opencl_sample(const sz_opencl_sizes *sizes, const float *oriData, const float *data_pos, float mean, float noise,
+                      bool use_mean, float *pred_buffer, float *reg_params_pos, float *pred_buffer_pos,
+                      unsigned char *indicator_pos) {
+    for(size_t i=0; i<sizes->num_x; i++){
+        for(size_t j=0; j<sizes->num_y; j++){
+            for(size_t k=0; k<sizes->num_z; k++){
+                data_pos = oriData + i*sizes->block_size * sizes->dim0_offset + j*sizes->block_size * sizes->dim1_offset + k*sizes->block_size;
 // add 1 in x, y, z offset
-                pred_buffer_pos = pred_buffer + pred_buffer_block_size*pred_buffer_block_size + pred_buffer_block_size + 1;
-                for(size_t ii=0; ii<block_size; ii++){
-                    for(size_t jj=0; jj<block_size; jj++){
-                        for(size_t kk=0; kk<block_size; kk++){
-                            int ii_ = (i*block_size + ii < r1) ? ii : r1 - 1 - i*block_size;
-                            int jj_ = (j*block_size + jj < r2) ? jj : r2 - 1 - j*block_size;
-                            int kk_ = (k*block_size + kk < r3) ? kk : r3 - 1 - k*block_size;
-                            *pred_buffer_pos = *(data_pos + ii_*dim0_offset + jj_*dim1_offset + kk_);
+                pred_buffer_pos = pred_buffer + sizes->pred_buffer_block_size*sizes->pred_buffer_block_size + sizes->pred_buffer_block_size + 1;
+                for(size_t ii=0; ii<sizes->block_size; ii++){
+                    for(size_t jj=0; jj<sizes->block_size; jj++){
+                        for(size_t kk=0; kk<sizes->block_size; kk++){
+                            int ii_ = (i*sizes->block_size + ii < sizes->r1) ? ii : sizes->r1 - 1 - i*sizes->block_size;
+                            int jj_ = (j*sizes->block_size + jj < sizes->r2) ? jj : sizes->r2 - 1 - j*sizes->block_size;
+                            int kk_ = (k*sizes->block_size + kk < sizes->r3) ? kk : sizes->r3 - 1 - k*sizes->block_size;
+                            *pred_buffer_pos = *(data_pos + ii_*sizes->dim0_offset + jj_*sizes->dim1_offset + kk_);
                             pred_buffer_pos ++;
                         }
                         pred_buffer_pos ++;
                     }
                     // add 1 in y offset
-                    pred_buffer_pos += pred_buffer_block_size;
+                    pred_buffer_pos += sizes->pred_buffer_block_size;
                 }
 /*sampling and decide which predictor*/
                 {
                     // sample point [1, 1, 1] [1, 1, 4] [1, 4, 1] [1, 4, 4] [4, 1, 1] [4, 1, 4] [4, 4, 1] [4, 4, 4]
                     float err_sz = 0.0, err_reg = 0.0;
-                    for(size_t i=2; i<=block_size; i++){
-						compute_errors(reg_params_pos, params_offset_b, params_offset_c, params_offset_d, pred_buffer,
-									   mean, noise,
-									   pred_buffer_block_size, strip_dim0_offset, strip_dim1_offset, use_mean, i, i, i,
-									   (i - 1), (i - 1),
-									   err_sz, err_reg);
+                    for(size_t i=2; i<=sizes->block_size; i++){
+                        compute_errors(reg_params_pos, pred_buffer, sizes,
+                                       mean, noise, use_mean, i, i, i,
+                                       (i - 1), (i - 1),
+                                       err_sz,
+                                       err_reg);
 
-                        int bmi = block_size - i + 1;
-						compute_errors(reg_params_pos, params_offset_b, params_offset_c, params_offset_d, pred_buffer,
-									   mean, noise,
-									   pred_buffer_block_size, strip_dim0_offset, strip_dim1_offset, use_mean, i, i, bmi,
-									   (i - 1), bmi,
-									   err_sz, err_reg);
+                        int bmi = sizes->block_size - i + 1;
+                        compute_errors(reg_params_pos, pred_buffer, sizes,
+                                       mean, noise, use_mean, i, i, bmi,
+                                       (i - 1), bmi,
+                                       err_sz,
+                                       err_reg);
 
 
-						compute_errors(reg_params_pos, params_offset_b, params_offset_c, params_offset_d, pred_buffer,
-									   mean, noise,
-									   pred_buffer_block_size, strip_dim0_offset, strip_dim1_offset, use_mean, i, bmi, i,
-									   bmi, (i - 1),
-									   err_sz, err_reg);
+                        compute_errors(reg_params_pos, pred_buffer, sizes,
+                                       mean, noise, use_mean, i, bmi, i,
+                                       bmi, (i - 1),
+                                       err_sz,
+                                       err_reg);
 
-						compute_errors(reg_params_pos, params_offset_b, params_offset_c, params_offset_d, pred_buffer,
-									   mean, noise,
-									   pred_buffer_block_size, strip_dim0_offset, strip_dim1_offset, use_mean, i, bmi, bmi,
-									   bmi, bmi,
-									   err_sz, err_reg);
+                        compute_errors(reg_params_pos, pred_buffer, sizes,
+                                       mean, noise, use_mean, i, bmi, bmi,
+                                       bmi, bmi,
+                                       err_sz,
+                                       err_reg);
                     }
                     // indicator_pos[k] = (err_sz < err_reg);
                     indicator_pos[k] = err_reg >= err_sz;
                 }
                 reg_params_pos ++;
             } // end k
-            indicator_pos += num_z;
+            indicator_pos += sizes->num_z;
         }// end j
     }// end i
 }
@@ -502,30 +536,15 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	bool use_mean = false;
 
 	// calculate block dims
-	const size_t block_size = 6;
-	const size_t num_x = (r1 - 1) / block_size + 1;
-	const size_t num_y = (r2 - 1) / block_size + 1;
-	const size_t num_z = (r3 - 1) / block_size + 1;
-	const size_t max_num_block_elements = block_size * block_size * block_size;
-	const size_t num_blocks = num_x * num_y * num_z;
-	const size_t num_elements = r1 * r2 * r3;
-	const size_t dim0_offset = r2 * r3;
-	const size_t dim1_offset = r3;
-	const size_t params_offset_b = num_blocks;
-	const size_t params_offset_c = 2*num_blocks;
-	const size_t params_offset_d = 3*num_blocks;
-	const int pred_buffer_block_size = block_size + 1;
-	const int strip_dim0_offset = pred_buffer_block_size * pred_buffer_block_size;
-	const int strip_dim1_offset = pred_buffer_block_size;
-	const size_t unpred_data_max_size = max_num_block_elements;
+	const sz_opencl_sizes sizes (/*block_size*/6, r1, r2, r3);
 
 
-	int * result_type = (int *) malloc(num_blocks*max_num_block_elements * sizeof(int));
-	float * result_unpredictable_data = (float *) malloc(unpred_data_max_size * sizeof(float) * num_blocks);
-	float * reg_params = (float *) malloc(num_blocks * 4 * sizeof(float));
-	float * pred_buffer = (float *) malloc((block_size+1)*(block_size+1)*(block_size+1)*sizeof(float));
-	unsigned char * indicator = (unsigned char *) calloc(num_blocks,sizeof(unsigned char));
-	int * blockwise_unpred_count = (int *) malloc(num_blocks * sizeof(int));
+	int * result_type = (int *) malloc(sizes.num_blocks*sizes.max_num_block_elements * sizeof(int));
+	float * result_unpredictable_data = (float *) malloc(sizes.unpred_data_max_size * sizeof(float) * sizes.num_blocks);
+	float * reg_params = (float *) malloc(sizes.num_blocks * 4 * sizeof(float));
+	float * pred_buffer = (float *) malloc((sizes.block_size+1)*(sizes.block_size+1)*(sizes.block_size+1)*sizeof(float));
+	unsigned char * indicator = (unsigned char *) calloc(sizes.num_blocks,sizeof(unsigned char));
+	int * blockwise_unpred_count = (int *) malloc(sizes.num_blocks * sizeof(int));
 
 	float * data_pos = oriData;
 	int * type = result_type;
@@ -533,9 +552,8 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	float * pred_buffer_pos = NULL;
 	int * blockwise_unpred_count_pos = blockwise_unpred_count;
 
-    calculate_regression_coefficents(oriData, r1, r2, r3, num_x, num_y, num_z, block_size, dim0_offset, dim1_offset,
-                                     reg_params_pos,
-                                     params_offset_b, params_offset_c, params_offset_d, pred_buffer, data_pos,
+    calculate_regression_coefficents(oriData, &sizes,
+                                     reg_params_pos, pred_buffer, data_pos,
                                      pred_buffer_pos);
 
     float mean = 0.0f;
@@ -546,7 +564,7 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 		if(mean_flush_freq > 0.5 || mean_flush_freq > sz_sample_correct_freq)
 		{
 			use_mean = 1;
-			mean = compute_mean(oriData, realPrecision, dense_pos, num_elements);
+			mean = compute_mean(oriData, realPrecision, dense_pos, sizes.num_elements);
 		}
 		updateQuantizationInfo(quantization_intervals);
 	} else{
@@ -564,23 +582,20 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	float noise = realPrecision * 1.22;
 	reg_params_pos = reg_params;
 
-	memset(pred_buffer, 0, (block_size+1)*(block_size+1)*(block_size+1)*sizeof(float));
+	memset(pred_buffer, 0, (sizes.block_size+1)*(sizes.block_size+1)*(sizes.block_size+1)*sizeof(float));
 
 	// select
-    sz_opencl_sample(oriData, r1, r2, r3, num_x, num_y, num_z, block_size, dim0_offset, dim1_offset, data_pos,
-                     reg_params_pos,
-                     params_offset_b, params_offset_c, params_offset_d, pred_buffer, pred_buffer_pos, mean,
-                     indicator_pos, noise,
-                     pred_buffer_block_size, strip_dim0_offset,
-                     strip_dim1_offset, use_mean);
+    sz_opencl_sample(&sizes, oriData, data_pos, mean, noise, use_mean, pred_buffer,
+                     reg_params_pos, pred_buffer_pos,
+                     indicator_pos);
 
 	size_t reg_count = 0;
-	for(size_t i=0; i<num_blocks; i++){
+	for(size_t i=0; i<sizes.num_blocks; i++){
 		if(!(indicator[i])){
 			reg_params[reg_count] = reg_params[i];
-			reg_params[reg_count + params_offset_b] = reg_params[i + params_offset_b];
-			reg_params[reg_count + params_offset_c] = reg_params[i + params_offset_c];
-			reg_params[reg_count + params_offset_d] = reg_params[i + params_offset_d];
+			reg_params[reg_count + sizes.params_offset_b] = reg_params[i + sizes.params_offset_b];
+			reg_params[reg_count + sizes.params_offset_c] = reg_params[i + sizes.params_offset_c];
+			reg_params[reg_count + sizes.params_offset_d] = reg_params[i + sizes.params_offset_d];
 			reg_count ++;
 		}
 	}
@@ -589,9 +604,9 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	const float rel_param_err = 0.025;
     const int coeff_intvCapacity_sz = 65536;
     const int coeff_intvRadius = coeff_intvCapacity_sz / 2;
-    const double precision[4] = { rel_param_err * realPrecision / block_size,
-                                  rel_param_err * realPrecision / block_size,
-                                  rel_param_err * realPrecision / block_size,
+    const double precision[4] = { rel_param_err * realPrecision / sizes.block_size,
+                                  rel_param_err * realPrecision / sizes.block_size,
+                                  rel_param_err * realPrecision / sizes.block_size,
                                   rel_param_err * realPrecision};
 
 	float last_coeffcients[4] = {0.0};
@@ -608,7 +623,7 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 
 	float * reg_params_separte[4];
 	for(int i=0; i<4; i++){
-		reg_params_separte[i] = reg_params + i * num_blocks;
+		reg_params_separte[i] = reg_params + i * sizes.num_blocks;
 	}
 
 	for(size_t coeff_index=0; coeff_index<reg_count;  coeff_index++){
@@ -640,24 +655,20 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	reg_params_pos = reg_params;
 	indicator_pos = indicator;
 
-    size_t total_unpred = save_unpredictable_data(oriData, r1, r2, r3, realPrecision, num_x, num_y, num_z, block_size,
-                                                  dim0_offset, dim1_offset,
-                                                  result_type, data_pos, type,
-                                                  reg_params_pos, params_offset_b,
-                                                  params_offset_c, params_offset_d,
+    size_t total_unpred = save_unpredictable_data(data_pos, &sizes, realPrecision, mean, intvCapacity, intvRadius,
+                                                  use_mean, oriData, type,
+                                                  unpredictable_data,
+                                                  result_type,
+                                                  reg_params_pos,
                                                   pred_buffer,
-                                                  pred_buffer_pos, mean,
-                                                  unpredictable_data, indicator_pos, intvCapacity, intvRadius,
-                                                  pred_buffer_block_size,
-                                                  strip_dim0_offset, strip_dim1_offset, blockwise_unpred_count_pos,
-                                                  use_mean);
+                                                  pred_buffer_pos, indicator_pos, blockwise_unpred_count_pos);
 
 	free(pred_buffer);
 	int stateNum = 2*quantization_intervals;
 	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
 
 	size_t nodeCount = 0;
-	init(huffmanTree, result_type, num_blocks*max_num_block_elements);
+	init(huffmanTree, result_type, sizes.num_blocks*sizes.max_num_block_elements);
 	size_t i = 0;
 	for (i = 0; i < huffmanTree->stateNum; i++)
 		if (huffmanTree->code[i]) nodeCount++;
@@ -668,16 +679,16 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 
 	const unsigned int meta_data_offset = 3 + 1 + MetaDataByteLength;
 	// total size 										metadata		  # elements     real precision		intervals	nodeCount		huffman 	 	block index 						unpredicatable count						mean 					 	unpred size 				elements
-	unsigned char * result = (unsigned char *) calloc(meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(double) + sizeof(int) + sizeof(int) + treeByteSize + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(float) + total_unpred * sizeof(float) + num_elements * sizeof(int), 1);
+	unsigned char * result = (unsigned char *) calloc(meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(double) + sizeof(int) + sizeof(int) + treeByteSize + sizes.num_blocks * sizeof(unsigned short) + sizes.num_blocks * sizeof(unsigned short) + sizes.num_blocks * sizeof(float) + total_unpred * sizeof(float) + sizes.num_elements * sizeof(int), 1);
 	unsigned char * result_pos = result;
 	initRandomAccessBytes(result_pos);
 
 	result_pos += meta_data_offset;
 
-	sizeToBytes(result_pos,num_elements); //SZ_SIZE_TYPE: 4 or 8
+	sizeToBytes(result_pos,sizes.num_elements); //SZ_SIZE_TYPE: 4 or 8
 	result_pos += exe_params->SZ_SIZE_TYPE;
 
-	intToBytes_bigEndian(result_pos, block_size);
+	intToBytes_bigEndian(result_pos, sizes.block_size);
 	result_pos += sizeof(int);
 	doubleToBytes(result_pos, realPrecision);
 	result_pos += sizeof(double);
@@ -695,7 +706,7 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	result_pos += sizeof(unsigned char);
 	memcpy(result_pos, &mean, sizeof(float));
 	result_pos += sizeof(float);
-	size_t indicator_size = convertIntArray2ByteArray_fast_1b_to_result(indicator, num_blocks, result_pos);
+	size_t indicator_size = convertIntArray2ByteArray_fast_1b_to_result(indicator, sizes.num_blocks, result_pos);
 	result_pos += indicator_size;
 
 	//convert the lead/mid/resi to byte stream
@@ -741,7 +752,7 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	result_pos += sizeof(size_t);
 	// record blockwise unpred data
 	size_t compressed_blockwise_unpred_count_size;
-	unsigned char * compressed_bw_unpred_count = SZ_compress_args(SZ_INT32, blockwise_unpred_count, &compressed_blockwise_unpred_count_size, ABS, 0.5, 0, 0, 0, 0, 0, 0, num_blocks);
+	unsigned char * compressed_bw_unpred_count = SZ_compress_args(SZ_INT32, blockwise_unpred_count, &compressed_blockwise_unpred_count_size, ABS, 0.5, 0, 0, 0, 0, 0, 0, sizes.num_blocks);
 	memcpy(result_pos, &compressed_blockwise_unpred_count_size, sizeof(size_t));
 	result_pos += sizeof(size_t);
 	memcpy(result_pos, compressed_bw_unpred_count, compressed_blockwise_unpred_count_size);
@@ -756,9 +767,9 @@ unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2,
 	free(result_unpredictable_data);
 	// encode type array by block
 
-	result_pos = encode_all_blocks(num_x, num_y, num_z, max_num_block_elements, num_blocks, result_type, type,
-								   huffmanTree,
-								   result_pos);
+	result_pos = encode_all_blocks(&sizes, result_type, type,
+                                   huffmanTree,
+                                   result_pos);
 
 	size_t totalEncodeSize = result_pos - result;
 
