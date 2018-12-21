@@ -835,15 +835,15 @@ inline void sizeToBytes(unsigned char* outBytes, size_t size)
 /**
  * put 'buf_nbBits' bits represented by buf into a long byte stream (the current output byte pointer is p, where offset is the number of bits already filled out for this byte so far)
  * */
-void put_codes_to_output(int buf, int bitSize, unsigned char** p, int* lackBits, size_t *outSize)
+void put_codes_to_output(unsigned int buf, int bitSize, unsigned char** p, int* lackBits, size_t *outSize)
 {
 	int byteSize, byteSizep;
 	if(*lackBits == 0)
 	{
 		byteSize = bitSize%8==0 ? bitSize/8 : bitSize/8+1; //it's equal to the number of bytes involved (for *outSize)
-		byteSizep = bitSize/8; //it's used to move the pointer p for next data
+		byteSizep = bitSize >> 3; //it's used to move the pointer p for next data
 		intToBytes_bigEndian(*p, buf);
-		(*p) += byteSize;
+		(*p) += byteSizep;
 		*outSize += byteSize;
 		(*lackBits) = bitSize%8==0 ? 0 : 8 - bitSize%8;
 	}

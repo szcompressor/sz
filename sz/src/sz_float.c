@@ -1867,9 +1867,18 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 				else
 #endif				
 					{
-						SZ_compress_args_float_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
-						if(tmpOutSize>=dataLength*sizeof(float) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
-							SZ_compress_args_float_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);
+#ifdef HAVE_RANDOMACCESS						
+						if(confparams_cpr->randomAccess == 0)
+						{
+#endif							
+							SZ_compress_args_float_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+							if(tmpOutSize>=dataLength*sizeof(float) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
+								SZ_compress_args_float_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);
+#ifdef HAVE_RANDOMACCESS
+						}
+						else
+							tmpByteData = SZ_compress_float_1D_MDQ_decompression_random_access_with_blocked_regression(oriData, r1, realPrecision, &tmpOutSize);			
+#endif							
 					}
 		}
 		else
