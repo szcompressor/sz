@@ -7676,7 +7676,7 @@ unsigned char * SZ_compress_float_2D_MDQ_decompression_random_access_with_blocke
 					for(int i=2; i<=block_size; i++){
 						cur_data_pos = pred_buffer + i*pred_buffer_block_size + i;
 						curData = *cur_data_pos;
-						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
+						pred_sz = cur_data_pos[-1] + cur_data_pos[-strip_dim0_offset] - cur_data_pos[-strip_dim0_offset - 1];
 						pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * (i-1) + reg_params_pos[params_offset_c];							
 						err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
 						err_reg += fabs(pred_reg - curData);
@@ -7684,7 +7684,7 @@ unsigned char * SZ_compress_float_2D_MDQ_decompression_random_access_with_blocke
 						bmi = block_size - i + 1;
 						cur_data_pos = pred_buffer + i*pred_buffer_block_size + bmi;
 						curData = *cur_data_pos;
-						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
+						pred_sz = cur_data_pos[-1] + cur_data_pos[-strip_dim0_offset] - cur_data_pos[-strip_dim0_offset - 1];
 						pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c];							
 						err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
 						err_reg += fabs(pred_reg - curData);								
@@ -7724,7 +7724,7 @@ unsigned char * SZ_compress_float_2D_MDQ_decompression_random_access_with_blocke
 					for(int i=2; i<=block_size; i++){
 						cur_data_pos = pred_buffer + i*pred_buffer_block_size + i;
 						curData = *cur_data_pos;
-						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
+						pred_sz = cur_data_pos[-1] + cur_data_pos[-strip_dim0_offset] - cur_data_pos[-strip_dim0_offset - 1];
 						pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * (i-1) + reg_params_pos[params_offset_c];							
 						err_sz += fabs(pred_sz - curData) + noise;
 						err_reg += fabs(pred_reg - curData);
@@ -7732,7 +7732,7 @@ unsigned char * SZ_compress_float_2D_MDQ_decompression_random_access_with_blocke
 						bmi = block_size - i + 1;
 						cur_data_pos = pred_buffer + i*pred_buffer_block_size + bmi;
 						curData = *cur_data_pos;
-						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
+						pred_sz = cur_data_pos[-1] + cur_data_pos[-strip_dim0_offset] - cur_data_pos[-strip_dim0_offset - 1];
 						pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c];							
 						err_sz += fabs(pred_sz - curData) + noise;
 						err_reg += fabs(pred_reg - curData);								
