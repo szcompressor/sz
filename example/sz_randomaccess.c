@@ -25,6 +25,31 @@ void cost_end()
 	totalCost += elapsed;
 }
 
+void verifyRandomAccess_1d(float * ori_data, float * dec_data, size_t n1, size_t s1, size_t e1)
+{
+	float diff;
+	float diffMax = 0;
+	
+	float Min = ori_data[0];
+	float Max = Min;
+	size_t nbEle = n1;
+	for(int i = 0;i<nbEle;i++)
+	{
+		if(ori_data[i]<Min) Min = ori_data[i];
+		if(ori_data[i]>Max) Max = ori_data[i];
+	}
+	
+	for(size_t i=s1; i<e1; i++){
+		diff = ori_data[i] - dec_data[(i-s1)];
+		if(fabs(diff) > diffMax) diffMax = fabs(diff);
+	}
+
+	printf ("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, Max - Min);
+	printf ("Max absolute error = %.10f\n", diffMax);
+	printf ("Max relative error = %f\n", diffMax/(Max-Min));
+}
+
+
 void verifyRandomAccess_2d(float * ori_data, float * dec_data, size_t n1, size_t n2, size_t s1, size_t s2, size_t e1, size_t e2)
 {
 	float diff;
@@ -251,6 +276,12 @@ int main(int argc, char* argv[])
 		case '1': 
 			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1)
 				usage();
+			if (i+1 < argc && argv[i+1][0] != '-')
+			{
+				sscanf(argv[++i], "%zu", &s1);
+				sscanf(argv[++i], "%zu", &e1);
+				randomAccess = 1;
+			}
 			break;
 		case '2':
 			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
@@ -681,6 +712,11 @@ int main(int argc, char* argv[])
 						verifyRandomAccess_2d(ori_data, data, r2, r1, s2, s1, e2, e1);
 						double compressionRatio = 1.0*r2*r1*sizeof(float)/byteLength;
 						printf ("compressionRatio=%f\n", compressionRatio);			
+					}
+					else{
+						verifyRandomAccess_1d(ori_data, data, r1, s1, e1);
+						double compressionRatio = 1.0*r1*sizeof(float)/byteLength;
+						printf ("compressionRatio=%f\n", compressionRatio);
 					}
 				}
 

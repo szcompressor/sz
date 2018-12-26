@@ -5771,7 +5771,7 @@ void decompressDataSeries_float_1D_decompression_given_areas_with_blocked_regres
 		cur_type_array_offset += *(type_array_block_size_pos++);
 	}
 	free(type_array_block_size);
-	int * result_type = (int *) malloc((ex - sx)*sizeof(int));
+	int * result_type = (int *) malloc((ex - sx)*block_size*sizeof(int));
 	int * block_type = result_type;
 	for(size_t i=sx; i<ex; i++){
 		size_t index = i;
@@ -5789,8 +5789,8 @@ void decompressDataSeries_float_1D_decompression_given_areas_with_blocked_regres
 	float * block_data_pos_x = NULL;
 	// printf("decompression start, %d %d %d, %d %d %d, total unpred %ld\n", sx, sy, sz, ex, ey, ez, total_unpred);
 	// fflush(stdout);
-	float * dec_block_data = (float *) malloc((ex - sx)*sizeof(float));
-	memset(dec_block_data, 0, (ex - sx)*sizeof(float));
+	float * dec_block_data = (float *) malloc((ex - sx)*block_size*sizeof(float));
+	memset(dec_block_data, 0, (ex - sx)*block_size*sizeof(float));
 	if(use_mean){
 		for(size_t i=sx; i<ex; i++){
 			data_pos = dec_buffer + 1;
