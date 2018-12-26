@@ -7008,6 +7008,7 @@ unsigned char * SZ_compress_float_1D_MDQ_decompression_random_access_with_blocke
 		// use the buffer as block_size
 		for(int ii=0; ii<block_size; ii++){
 			*pred_buffer_pos = *block_data_pos_x;
+			pred_buffer_pos ++;
 			if(i*block_size + ii + 1 < r1) block_data_pos_x ++;
 		}
 		/*Calculate regression coefficients*/
