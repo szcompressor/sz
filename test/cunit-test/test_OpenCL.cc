@@ -50,6 +50,8 @@ void test_identical_opencl_impl()
 int main(int argc, char *argv[])
 {
 	unsigned int num_failures = 0;
+	CU_ErrorCode error_code = CUE_SUCCESS;
+
 	if (CUE_SUCCESS != CU_initialize_registry())
 	{
 		return CU_get_error();
@@ -67,12 +69,14 @@ int main(int argc, char *argv[])
 
 	CU_basic_set_mode(CU_BRM_VERBOSE);
 	CU_basic_run_tests();
+	error_code = (CU_ErrorCode)(error_code | CU_get_error());
 	CU_basic_show_failures(CU_get_failure_list());
 	num_failures = CU_get_number_of_failures();
 
 error:
 	CU_cleanup_registry();
-	return  num_failures ||  CU_get_error();
+	error_code = (CU_ErrorCode)(error_code | CU_get_error());
+	return  num_failures ||  error_code;
 }
 
 }
