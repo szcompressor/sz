@@ -59,14 +59,16 @@ extern "C" {
 
 	/**
 	 * compresses the data using opencl using some algorithm
-	 * @param data  the data to be compressed
+	 * @param oriData  the data to be compressed
 	 * @param r1  the x dimension of the data
 	 * @param r2  the y dimension of the data
 	 * @param r3  the z dimension of the data
-	 * @param out_size
+	 * @param comp_size
 	 * @return a pointer to the compressed data
 	 */
-  unsigned char* sz_compress_float3d_opencl(float* data, size_t r1, size_t r2, size_t r3, double, size_t* out_size);
+	unsigned char *
+	sz_compress_float3d_opencl(struct sz_opencl_state *state, float *oriData, size_t r1, size_t r2, size_t r3,
+								   double realPrecision, size_t *comp_size);
 
   /**
    * decompression scheme using the opencl implementation of SZ

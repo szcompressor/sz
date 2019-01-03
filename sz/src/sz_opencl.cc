@@ -515,7 +515,8 @@ extern "C"
     }
   }
 
-unsigned char * sz_compress_float3d_opencl(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t * comp_size){
+unsigned char *sz_compress_float3d_opencl(struct sz_opencl_state *state, float *oriData, size_t r1, size_t r2, size_t r3,
+                                          double realPrecision, size_t *comp_size) {
 	unsigned int quantization_intervals;
 	bool use_mean = false;
 

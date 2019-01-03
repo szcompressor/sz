@@ -12,8 +12,8 @@ namespace {
 
 struct Compressors
 {
-	using Compressor = decltype(sz_compress_float3d_opencl);
-	using Decompressor = decltype(sz_decompress_float_opencl);
+	using Compressor = decltype(SZ_compress_float_3D_MDQ_decompression_random_access_with_blocked_regression);
+	using Decompressor = decltype(SZ_decompress_args_randomaccess_float);
 	Compressor* compressor;
 	Decompressor* decompressor;
 };
