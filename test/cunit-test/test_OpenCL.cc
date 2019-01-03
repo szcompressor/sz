@@ -19,6 +19,8 @@ int init_suite()
 {
 	int rc = sz_opencl_init(&state);
 	rc |= sz_opencl_error_code(state);
+	const char* msg = sz_opencl_error_msg(state);
+	if(rc) fprintf(stderr,"WARNING - %s\n", msg);
 	return rc;
 }
 

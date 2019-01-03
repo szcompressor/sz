@@ -6,9 +6,14 @@
 #include <random>
 #include <utility>
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
 
 #define __CL_ENABLE_EXCEPTIONS
 #include "CL/cl.hpp"
+#include "sz_opencl_kernels.h"
+#include "sz_opencl_config.h"
 
 
 struct sz_opencl_state
@@ -22,50 +27,22 @@ struct sz_opencl_state
   cl::Device device;
   cl::Context context;
   cl::CommandQueue queue;
+	cl::Kernel calculate_regression_coefficents;
 };
 
-
-struct sz_opencl_sizes {
-    sz_opencl_sizes(int block_size, int r1, int r2, int r3):
-            r1(r1),
-            r2(r2),
-            r3(r3),
-            block_size(block_size),
-            num_x((r1 - 1) / block_size + 1),
-            num_y((r2 - 1) / block_size + 1),
-            num_z((r3 - 1) / block_size + 1),
-            max_num_block_elements(block_size * block_size * block_size),
-            num_blocks(num_x * num_y * num_z),
-            num_elements( r1 * r2 * r3),
-            dim0_offset(r2 * r3),
-            dim1_offset(r3),
-            params_offset_b(num_blocks),
-            params_offset_c(2*num_blocks),
-            params_offset_d(3*num_blocks),
-            pred_buffer_block_size(  block_size + 1),
-            strip_dim0_offset(  pred_buffer_block_size * pred_buffer_block_size),
-            strip_dim1_offset(  pred_buffer_block_size),
-            unpred_data_max_size(max_num_block_elements)
-    {}
-
-    const size_t r1,r2,r3;
-    const size_t block_size;
-    const size_t num_x;
-    const size_t num_y;
-    const size_t num_z;
-    const size_t max_num_block_elements;
-    const size_t num_blocks;
-    const size_t num_elements;
-    const size_t dim0_offset;
-    const size_t dim1_offset;
-    const size_t params_offset_b;
-    const size_t params_offset_c;
-    const size_t params_offset_d;
-    const int pred_buffer_block_size;
-    const int strip_dim0_offset;
-    const int strip_dim1_offset;
-    const size_t unpred_data_max_size;
+class sz_opencl_exception: public std::runtime_error
+{
+	using std::runtime_error::runtime_error;
 };
+
+std::string get_sz_kernel_sources() 
+{
+	std::ifstream infile{SZ_OPENCL_KERNEL_SOURCE_FILE};
+	if(infile.fail()) throw sz_opencl_exception("missing kernel source: " SZ_OPENCL_KERNEL_SOURCE_FILE);
+	std::ostringstream buffer;
+	buffer << infile.rdbuf();
+	return buffer.str();
+}
 
 float compute_mean(const float *oriData, double realPrecision, float dense_pos, size_t num_elements) {
 	float mean = 0.0f;
@@ -417,14 +394,21 @@ extern "C"
 
       (*state)->context = cl::Context({ (*state)->device });
       (*state)->queue = cl::CommandQueue((*state)->context, (*state)->device);
+			auto sources = get_sz_kernel_sources();
+			cl::Program program((*state)->context, sources);
+			program.build({(*state)->device}, "-I " SZ_OPENCL_KERNEL_INCLUDE_DIR);
+			(*state)->calculate_regression_coefficents = cl::Kernel(program, "calculate_regression_coefficents");
 
       return SZ_SCES;
     } catch (cl::Error const& cl_error) {
       (*state)->error.code = cl_error.err();
       (*state)->error.str = cl_error.what();
       return SZ_NSCS;
-
-    } catch (...) {
+    } catch(sz_opencl_exception const& sz_error) {
+      (*state)->error.code = -1;
+      (*state)->error.str = sz_error.what();
+      return SZ_NSCS;
+		} catch (...) {
       delete *state;
       *state = nullptr;
       return SZ_NSCS;
