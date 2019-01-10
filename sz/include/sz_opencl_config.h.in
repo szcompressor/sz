@@ -1,2 +1,5 @@
+/**
+ * this file is for any information for the opencl implementation that must be generated at configure time
+ */
 #define SZ_OPENCL_KERNEL_SOURCE_FILE "@CMAKE_CURRENT_SOURCE_DIR@/src/sz_opencl.cl"
 #define SZ_OPENCL_KERNEL_INCLUDE_DIR "@CMAKE_CURRENT_SOURCE_DIR@/include"

@@ -36,7 +36,7 @@ endif()
 find_program(TAGS ctags)
 if(TAGS)
 	add_custom_target(tags ALL
-		COMMAND ${TAGS} -f ${CMAKE_BINARY_DIR}/tags -R
+    COMMAND ${TAGS} --exclude=${CMAKE_BINARY_DIR} -f ${CMAKE_BINARY_DIR}/tags --c++-kinds=+p --fields=+iaS --extra=+q -R 
 		COMMENT Generating Tag files
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
