@@ -30,8 +30,10 @@ struct sz_opencl_sizes
     , strip_dim1_offset(pred_buffer_block_size)
     , unpred_data_max_size(max_num_block_elements)
     , reg_params_buffer_size(num_blocks * 4)
-    , pred_buffer_size((block_size + 1) * (block_size + 1) * (block_size + 1))
+    , pred_buffer_size(pred_buffer_block_size * pred_buffer_block_size * pred_buffer_block_size)
     , parallel_pred_buffer_size(pred_buffer_size * num_blocks)
+    , block_dim0_offset(pred_buffer_block_size*pred_buffer_block_size)
+    , block_dim1_offset(pred_buffer_block_size)
   {}
 #endif
 
@@ -55,4 +57,44 @@ struct sz_opencl_sizes
   const cl_ulong reg_params_buffer_size;
   const cl_ulong pred_buffer_size;
   const cl_ulong parallel_pred_buffer_size;
+  const cl_ulong block_dim0_offset;
+  const cl_ulong block_dim1_offset;
+};
+
+struct sz_opencl_decompress_positions {
+#ifdef __cplusplus
+  sz_opencl_decompress_positions(int block_size, int s1, int s2, int s3, int e1, int e2, int e3)
+      : start_elm1(s1),
+  start_elm2(s2),
+  start_elm3(s3),
+  end_elm1(e1),
+  end_elm2(e2),
+  end_elm3(e3),
+  start_block1(s1 / block_size),
+  start_block2(s2 / block_size),
+  start_block3(s3 / block_size),
+  end_block1((e1 - 1) / block_size + 1),
+  end_block2((e2 - 1) / block_size + 1),
+  end_block3((e3 - 1) / block_size + 1),
+  num_data_blocks1(end_block1-start_block1),
+  num_data_blocks2(end_block2-start_block2),
+  num_data_blocks3(end_block3-start_block3),
+  data_elms1(e1-s1),
+  data_elms2(e2-s2),
+  data_elms3(e3-s3),
+  data_buffer_size(data_elms1 * data_elms2 * data_elms3),
+  dec_block_dim1_offset(num_data_blocks3 * block_size),
+  dec_block_dim0_offset(dec_block_dim1_offset * num_data_blocks2 * block_size)
+  {}
+
+#endif
+  const cl_ulong start_elm1, start_elm2, start_elm3;
+  const cl_ulong end_elm1, end_elm2, end_elm3;
+  const cl_ulong start_block1, start_block2, start_block3;
+  const cl_ulong end_block1, end_block2, end_block3;
+  const cl_ulong num_data_blocks1, num_data_blocks2, num_data_blocks3;
+  const cl_ulong data_elms1, data_elms2, data_elms3;
+  const cl_ulong data_buffer_size;
+  const cl_ulong dec_block_dim1_offset;
+  const cl_ulong dec_block_dim0_offset;
 };
