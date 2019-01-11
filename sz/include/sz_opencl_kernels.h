@@ -1,8 +1,12 @@
 #ifdef __cplusplus
 #include <CL/cl_platform.h>
+#define CL_GLOBAL_DECL
 #else
 #define cl_ulong ulong
 #define cl_float float
+#define cl_int int
+#define cl_double double
+#define CL_GLOBAL_DECL __global
 #endif
 
 struct sz_opencl_sizes
@@ -97,4 +101,50 @@ struct sz_opencl_decompress_positions {
   const cl_ulong data_buffer_size;
   const cl_ulong dec_block_dim1_offset;
   const cl_ulong dec_block_dim0_offset;
+};
+
+struct sz_opencl_coefficient_sizes {
+#ifdef __cplusplus
+  sz_opencl_coefficient_sizes(cl_double realPrecision, cl_ulong block_size):
+    rel_param_err(0.025),
+    coeff_intvCapacity_sz(65536),
+    coeff_intvRadius(coeff_intvCapacity_sz / 2),
+    precision{(rel_param_err * realPrecision) / block_size,
+              (rel_param_err * realPrecision) / block_size,
+              (rel_param_err * realPrecision) / block_size,
+              (rel_param_err * realPrecision)}
+  {}
+#endif
+  const cl_float rel_param_err;
+  const cl_int coeff_intvCapacity_sz;
+  const cl_int coeff_intvRadius;
+  const cl_double precision [4];
+};
+
+struct sz_opencl_coefficient_params {
+#ifdef __cplusplus
+  sz_opencl_coefficient_params(cl_ulong reg_count, cl_ulong num_blocks, cl_float* reg_params,cl_int* coeff_result_type, cl_float* coeff_unpredictable_data):
+    last_coeffcients{ 0.0, 0.0, 0.0, 0.0 },
+    coeff_result_type{coeff_result_type},
+    coeff_unpredicatable_data{coeff_unpredictable_data},
+    coeff_type{},
+    coeff_unpred_data{},
+    coeff_unpredictable_count{0,0,0,0},
+    reg_params_separte{}
+  {
+    for (int i = 0; i < 4; i++) {
+      coeff_type[i] = coeff_result_type + i * reg_count;
+      coeff_unpred_data[i] = coeff_unpredictable_data + i * reg_count;
+      reg_params_separte[i] = reg_params + i * num_blocks;
+    }
+  }
+#endif
+
+    cl_float last_coeffcients[4];
+    CL_GLOBAL_DECL cl_int* coeff_result_type;
+    CL_GLOBAL_DECL cl_float* coeff_unpredicatable_data;
+    CL_GLOBAL_DECL cl_int* coeff_type[4];
+    CL_GLOBAL_DECL cl_float* coeff_unpred_data[4];
+    CL_GLOBAL_DECL cl_uint coeff_unpredictable_count[4];
+    CL_GLOBAL_DECL cl_float* reg_params_separte[4];
 };
