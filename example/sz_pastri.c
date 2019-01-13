@@ -256,6 +256,8 @@ int main(int argc, char* argv[])
 	//overwriting the selection of compressor if compressorString is not NULL.
 	if(compressorString!=NULL)
 	{
+		if(confparams_cpr==NULL)
+			confparams_cpr = (sz_params*)malloc(sizeof(sz_params)); 		
 		if(strcmp(compressorString, "SZ")==0)
 			confparams_cpr->sol_ID = SZ;
 		else if(strcmp(compressorString, "PASTRI")==0)
@@ -317,6 +319,7 @@ int main(int argc, char* argv[])
 	
 	char outputFilePath[256];	
 	unsigned char *bytes = NULL; //the binary data read from "compressed data file"
+	size_t byteLength; 
 	if(isCompression == 1)
 	{
 		if(absErrorBound != NULL)
@@ -478,7 +481,6 @@ int main(int argc, char* argv[])
 			}
 		}		
 		
-		size_t byteLength;
 		char outputFilePath[256];
 		
 		if(r2==0)
@@ -800,7 +802,6 @@ int main(int argc, char* argv[])
 	
 	if(printMeta==1) //==-1 for printing metadata
 	{
-		size_t byteLength; 
 		int status;
 		if(bytes==NULL)
 			bytes = readByteData(cmpPath, &byteLength, &status);
