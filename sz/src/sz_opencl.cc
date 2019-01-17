@@ -1,7 +1,6 @@
 #include "sz_opencl.h"
 #include "sz.h"
 #include <algorithm>
-#include <ansidecl.h>
 #include <iterator>
 #include <numeric>
 #include <random>
