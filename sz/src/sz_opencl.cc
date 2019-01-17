@@ -83,9 +83,10 @@ encode_all_blocks(sz_opencl_sizes const* sizes, int* result_type, int* type,
 
 void
 calculate_regression_coefficents(struct sz_opencl_state* state,
-                                 const float* oriData,
+                                 const cl_float* oriData,
                                  sz_opencl_sizes const* sizes,
-                                 float* reg_params, float* const pred_buffer)
+                                 cl_float* reg_params,
+                                 cl_float* const pred_buffer)
 {
   /*
   std::vector<buffer_copy_info> buffer_info = {
@@ -108,11 +109,12 @@ calculate_regression_coefficents(struct sz_opencl_state* state,
     for (size_t j = 0; j < sizes->num_y; j++) {
       for (size_t k = 0; k < sizes->num_z; k++) {
         const unsigned int block_id =
-          i * sizes->num_y * sizes->num_z + j * sizes->num_z + k;
+          i * (sizes->num_y * sizes->num_z) + j * sizes->num_z + k;
         const float* data_pos =
           oriData + i * sizes->block_size * sizes->dim0_offset +
           j * sizes->block_size * sizes->dim1_offset + k * sizes->block_size;
-        float* pred_buffer_pos = pred_buffer; //+(block_id*sizes->num_blocks);
+        float* const pred_buffer_pos =
+          pred_buffer + (block_id * sizes->num_blocks);
         for (size_t ii = 0; ii < sizes->block_size; ii++) {
           for (size_t jj = 0; jj < sizes->block_size; jj++) {
             for (size_t kk = 0; kk < sizes->block_size; kk++) {
@@ -125,15 +127,17 @@ calculate_regression_coefficents(struct sz_opencl_state* state,
               int kk_ = (k * sizes->block_size + kk < sizes->r3)
                           ? kk
                           : sizes->r3 - 1 - k * sizes->block_size;
-              *pred_buffer_pos = *(data_pos + ii_ * sizes->dim0_offset +
-                                   jj_ * sizes->dim1_offset + kk_);
-              pred_buffer_pos++;
+              cl_ulong loc_data =
+                ii_ * sizes->dim0_offset + jj_ * sizes->dim1_offset + kk_;
+              cl_ulong loc_pred = ii * (sizes->block_size * sizes->block_size) +
+                                  jj * sizes->block_size + kk;
+              pred_buffer_pos[loc_pred] = data_pos[loc_data];
             }
           }
         }
         {
           const float* cur_data_pos =
-            pred_buffer; //+(block_id*sizes->num_blocks);
+            pred_buffer + (block_id * sizes->num_blocks);
           float fx = 0.0;
           float fy = 0.0;
           float fz = 0.0;
@@ -373,10 +377,10 @@ compute_errors(const float* reg_params_pos, const float* pred_buffer,
 }
 
 void
-opencl_sample(const sz_opencl_sizes *sizes, const float *oriData,
-              const float *data_pos, float mean, float noise, bool use_mean,
-              float *pred_buffer, float *reg_params_pos,
-              float *pred_buffer_pos, unsigned char *indicator_pos)
+opencl_sample(const sz_opencl_sizes* sizes, const float* oriData,
+              const float* data_pos, float mean, float noise, bool use_mean,
+              float* pred_buffer, float* reg_params_pos, float* pred_buffer_pos,
+              unsigned char* indicator_pos)
 {
   for (size_t i = 0; i < sizes->num_x; i++) {
     for (size_t j = 0; j < sizes->num_y; j++) {
@@ -440,13 +444,13 @@ opencl_sample(const sz_opencl_sizes *sizes, const float *oriData,
   }   // end i
 }
 
-void decompress_location_using_regression(const sz_opencl_sizes &sizes,
-                                          const float *reg_params_pos,
-                                          const int *type,
-                                          const float *block_unpred,
-                                          double realPrecision,
-                                          int intvRadius,
-                                          float *data_out) {
+void
+decompress_location_using_regression(const sz_opencl_sizes& sizes,
+                                     const float* reg_params_pos,
+                                     const int* type, const float* block_unpred,
+                                     double realPrecision, int intvRadius,
+                                     float* data_out)
+{
   float pred;
   int type_;
   size_t index = 0;
@@ -457,14 +461,12 @@ void decompress_location_using_regression(const sz_opencl_sizes &sizes,
         type_ = type[index];
         if (type_ != 0) {
           pred = reg_params_pos[0] * ii + reg_params_pos[1] * jj +
-              reg_params_pos[2] * kk + reg_params_pos[3];
-          data_out[ii * sizes.block_dim0_offset +
-              jj * sizes.block_dim1_offset + kk] =
-              pred + 2 * (type_ - intvRadius) * realPrecision;
+                 reg_params_pos[2] * kk + reg_params_pos[3];
+          data_out[ii * sizes.block_dim0_offset + jj * sizes.block_dim1_offset +
+                   kk] = pred + 2 * (type_ - intvRadius) * realPrecision;
         } else {
-          data_out[ii * sizes.block_dim0_offset +
-              jj * sizes.block_dim1_offset + kk] =
-              block_unpred[unpredictable_count++];
+          data_out[ii * sizes.block_dim0_offset + jj * sizes.block_dim1_offset +
+                   kk] = block_unpred[unpredictable_count++];
         }
         index++;
       }
@@ -472,22 +474,18 @@ void decompress_location_using_regression(const sz_opencl_sizes &sizes,
   }
 }
 
-void move_data_block(const sz_opencl_sizes &sizes,
-                     const sz_opencl_decompress_positions &pos,
-                     const float *data_pos,
-                     float *block_data_pos_x,
-                     float *block_data_pos_y,
-                     float *block_data_pos_z,
-                     float *dec_block_data,
-                     size_t i,
-                     size_t j,
-                     size_t k) {
-  block_data_pos_x = dec_block_data +
-      (i - pos.start_block1) * sizes.block_size *
-          pos.dec_block_dim0_offset +
-      (j - pos.start_block2) * sizes.block_size *
-          pos.dec_block_dim1_offset +
-      (k - pos.start_block3) * sizes.block_size;
+void
+move_data_block(const sz_opencl_sizes& sizes,
+                const sz_opencl_decompress_positions& pos,
+                const float* data_pos, float* block_data_pos_x,
+                float* block_data_pos_y, float* block_data_pos_z,
+                float* dec_block_data, size_t i, size_t j, size_t k)
+{
+  block_data_pos_x =
+    dec_block_data +
+    (i - pos.start_block1) * sizes.block_size * pos.dec_block_dim0_offset +
+    (j - pos.start_block2) * sizes.block_size * pos.dec_block_dim1_offset +
+    (k - pos.start_block3) * sizes.block_size;
   for (cl_ulong ii = 0; ii < sizes.block_size; ii++) {
     if (i * sizes.block_size + ii >= sizes.r1)
       break;
@@ -499,10 +497,9 @@ void move_data_block(const sz_opencl_sizes &sizes,
       for (cl_uint kk = 0; kk < sizes.block_size; kk++) {
         if (k * sizes.block_size + kk >= sizes.r3)
           break;
-        *block_data_pos_z =
-            data_pos[ii * sizes.pred_buffer_block_size *
-                sizes.pred_buffer_block_size +
-                jj * sizes.pred_buffer_block_size + kk];
+        *block_data_pos_z = data_pos[ii * sizes.pred_buffer_block_size *
+                                       sizes.pred_buffer_block_size +
+                                     jj * sizes.pred_buffer_block_size + kk];
         block_data_pos_z++;
       }
       block_data_pos_y += pos.dec_block_dim1_offset;
@@ -511,14 +508,12 @@ void move_data_block(const sz_opencl_sizes &sizes,
   }
 }
 
-void decompress_location_using_sz(const sz_opencl_sizes &sizes,
-                                  double realPrecision,
-                                  float mean,
-                                  unsigned char use_mean,
-                                  int intvRadius,
-                                  const int *type,
-                                  float *data_pos,
-                                  const float *block_unpred) {
+void
+decompress_location_using_sz(const sz_opencl_sizes& sizes, double realPrecision,
+                             float mean, unsigned char use_mean, int intvRadius,
+                             const int* type, float* data_pos,
+                             const float* block_unpred)
+{
   float* block_data_pos;
   float pred;
   size_t index = 0;
@@ -528,24 +523,22 @@ void decompress_location_using_sz(const sz_opencl_sizes &sizes,
     for (size_t jj = 0; jj < sizes.block_size; jj++) {
       for (size_t kk = 0; kk < sizes.block_size; kk++) {
         block_data_pos = data_pos + ii * sizes.block_dim0_offset +
-            jj * sizes.block_dim1_offset + kk;
+                         jj * sizes.block_dim1_offset + kk;
         type_ = type[index];
         if (use_mean && type_ == 1) {
           *block_data_pos = mean;
         } else if (type_ == 0) {
           *block_data_pos = block_unpred[unpredictable_count++];
         } else {
-          pred = block_data_pos[-1] +
-              block_data_pos[-sizes.block_dim1_offset] +
-              block_data_pos[-sizes.block_dim0_offset] -
-              block_data_pos[-sizes.block_dim1_offset - 1] -
-              block_data_pos[-sizes.block_dim0_offset - 1] -
-              block_data_pos[-sizes.block_dim0_offset -
-                  sizes.block_dim1_offset] +
-              block_data_pos[-sizes.block_dim0_offset -
-                  sizes.block_dim1_offset - 1];
-          *block_data_pos =
-              pred + 2 * (type_ - intvRadius) * realPrecision;
+          pred =
+            block_data_pos[-1] + block_data_pos[-sizes.block_dim1_offset] +
+            block_data_pos[-sizes.block_dim0_offset] -
+            block_data_pos[-sizes.block_dim1_offset - 1] -
+            block_data_pos[-sizes.block_dim0_offset - 1] -
+            block_data_pos[-sizes.block_dim0_offset - sizes.block_dim1_offset] +
+            block_data_pos[-sizes.block_dim0_offset - sizes.block_dim1_offset -
+                           1];
+          *block_data_pos = pred + 2 * (type_ - intvRadius) * realPrecision;
         }
         index++;
       }
@@ -553,163 +546,148 @@ void decompress_location_using_sz(const sz_opencl_sizes &sizes,
   }
 }
 
-void decode_all_blocks(unsigned char *comp_data_pos,
-                       const sz_opencl_sizes &sizes,
-                       node_t *root,
-                       const sz_opencl_decompress_positions &pos,
-                       const size_t *type_array_offset,
-                       int *result_type) {
+void
+decode_all_blocks(unsigned char* comp_data_pos, const sz_opencl_sizes& sizes,
+                  node_t* root, const sz_opencl_decompress_positions& pos,
+                  const size_t* type_array_offset, int* result_type)
+{
   int* block_type = result_type;
   for (size_t i = pos.start_block1; i < pos.end_block1; i++) {
-      for (size_t j = pos.start_block2; j < pos.end_block2; j++) {
-        for (size_t k = pos.start_block3; k < pos.end_block3; k++) {
-          size_t index = i * sizes.num_y * sizes.num_z + j * sizes.num_z + k;
-          decode(comp_data_pos + type_array_offset[index],
-                 sizes.max_num_block_elements, root, block_type);
-          block_type += sizes.max_num_block_elements;
-        }
+    for (size_t j = pos.start_block2; j < pos.end_block2; j++) {
+      for (size_t k = pos.start_block3; k < pos.end_block3; k++) {
+        size_t index = i * sizes.num_y * sizes.num_z + j * sizes.num_z + k;
+        decode(comp_data_pos + type_array_offset[index],
+               sizes.max_num_block_elements, root, block_type);
+        block_type += sizes.max_num_block_elements;
       }
     }
+  }
 }
-void decompress_coefficents(const sz_opencl_sizes &sizes,
-                            const unsigned char *indicator,
-                            const int *coeff_intvRadius,
-                            int *const *coeff_type,
-                            const double *precision,
-                            float *const *coeff_unpred_data,
-                            float *last_coefficients,
-                            int *coeff_unpred_data_count,
-                            float *reg_params) {
+void
+decompress_coefficents(const sz_opencl_sizes& sizes,
+                       const unsigned char* indicator,
+                       const int* coeff_intvRadius, int* const* coeff_type,
+                       const double* precision, float* const* coeff_unpred_data,
+                       float* last_coefficients, int* coeff_unpred_data_count,
+                       float* reg_params)
+{
   float* reg_params_pos = reg_params;
   size_t coeff_index = 0;
   for (size_t i = 0; i < sizes.num_blocks; i++) {
-      if (!indicator[i]) {
-        float pred;
-        int type_;
-        for (int e = 0; e < 4; e++) {
-          type_ = coeff_type[e][coeff_index];
-          if (type_ != 0) {
-            pred = last_coefficients[e];
-            last_coefficients[e] =
-              pred + 2 * (type_ - coeff_intvRadius[e]) * precision[e];
-          } else {
-            last_coefficients[e] =
-              coeff_unpred_data[e][coeff_unpred_data_count[e]];
-            coeff_unpred_data_count[e]++;
-          }
-          reg_params_pos[e] = last_coefficients[e];
-        }
-        coeff_index++;
-      }
-      reg_params_pos += 4;
-    }
-}
-sz_opencl_coefficient_params &compress_coefficent_arrays(size_t reg_count,
-                                                         const sz_opencl_coefficient_sizes &coefficient_sizes,
-                                                         sz_opencl_coefficient_params &params) {
-  for (size_t coeff_index = 0; coeff_index < reg_count; coeff_index++) {
+    if (!indicator[i]) {
+      float pred;
+      int type_;
       for (int e = 0; e < 4; e++) {
-        const float cur_coeff = params.reg_params_separte[e][coeff_index];
-        const double diff = cur_coeff - params.last_coeffcients[e];
-        double itvNum = fabs(diff) / coefficient_sizes.precision[e] + 1;
-        if (itvNum < coefficient_sizes.coeff_intvCapacity_sz) {
-          if (diff < 0)
-            itvNum = -itvNum;
-          params.coeff_type[e][coeff_index] = (int)(itvNum / 2) + coefficient_sizes.coeff_intvRadius;
-          params.last_coeffcients[e] =
-            params.last_coeffcients[e] +
-            2 * (params.coeff_type[e][coeff_index] - coefficient_sizes.coeff_intvRadius) * coefficient_sizes.precision[e];
-          // ganrantee compression error against the case of machine-epsilon
-          if (fabs(cur_coeff - params.last_coeffcients[e]) > coefficient_sizes.precision[e]) {
-            params.coeff_type[e][coeff_index] = 0;
-            params.last_coeffcients[e] = cur_coeff;
-            params.coeff_unpred_data[e][params.coeff_unpredictable_count[e]++] = cur_coeff;
-          }
+        type_ = coeff_type[e][coeff_index];
+        if (type_ != 0) {
+          pred = last_coefficients[e];
+          last_coefficients[e] =
+            pred + 2 * (type_ - coeff_intvRadius[e]) * precision[e];
         } else {
+          last_coefficients[e] =
+            coeff_unpred_data[e][coeff_unpred_data_count[e]];
+          coeff_unpred_data_count[e]++;
+        }
+        reg_params_pos[e] = last_coefficients[e];
+      }
+      coeff_index++;
+    }
+    reg_params_pos += 4;
+  }
+}
+sz_opencl_coefficient_params&
+compress_coefficent_arrays(size_t reg_count,
+                           const sz_opencl_coefficient_sizes& coefficient_sizes,
+                           sz_opencl_coefficient_params& params)
+{
+  for (size_t coeff_index = 0; coeff_index < reg_count; coeff_index++) {
+    for (int e = 0; e < 4; e++) {
+      const float cur_coeff = params.reg_params_separte[e][coeff_index];
+      const double diff = cur_coeff - params.last_coeffcients[e];
+      double itvNum = fabs(diff) / coefficient_sizes.precision[e] + 1;
+      if (itvNum < coefficient_sizes.coeff_intvCapacity_sz) {
+        if (diff < 0)
+          itvNum = -itvNum;
+        params.coeff_type[e][coeff_index] =
+          (int)(itvNum / 2) + coefficient_sizes.coeff_intvRadius;
+        params.last_coeffcients[e] =
+          params.last_coeffcients[e] + 2 *
+                                         (params.coeff_type[e][coeff_index] -
+                                          coefficient_sizes.coeff_intvRadius) *
+                                         coefficient_sizes.precision[e];
+        // ganrantee compression error against the case of machine-epsilon
+        if (fabs(cur_coeff - params.last_coeffcients[e]) >
+            coefficient_sizes.precision[e]) {
           params.coeff_type[e][coeff_index] = 0;
           params.last_coeffcients[e] = cur_coeff;
-          params.coeff_unpred_data[e][params.coeff_unpredictable_count[e]++] = cur_coeff;
+          params.coeff_unpred_data[e][params.coeff_unpredictable_count[e]++] =
+            cur_coeff;
         }
-        params.reg_params_separte[e][coeff_index] = params.last_coeffcients[e];
-
+      } else {
+        params.coeff_type[e][coeff_index] = 0;
+        params.last_coeffcients[e] = cur_coeff;
+        params.coeff_unpred_data[e][params.coeff_unpredictable_count[e]++] =
+          cur_coeff;
       }
+      params.reg_params_separte[e][coeff_index] = params.last_coeffcients[e];
     }
+  }
   return params;
 }
-void decompress_all_blocks(float *const *data,
-                           const sz_opencl_sizes &sizes,
-                           double realPrecision,
-                           float mean,
-                           unsigned char use_mean,
-                           const unsigned char *indicator,
-                           const float *reg_params,
-                           int intvRadius,
-                           const size_t *unpred_offset,
-                           float *unpred_data,
-                           const sz_opencl_decompress_positions &pos,
-                           int *result_type,
-                           float *&decompression_buffer,
-                           float *&dec_block_data) {
-  decompression_buffer= (float*)calloc(sizeof(float), sizes.pred_buffer_size);
-  dec_block_data= (float*)calloc(sizeof(float), (pos.num_data_blocks1) * sizes.block_size *
-                                      pos.dec_block_dim0_offset);
+void
+decompress_all_blocks(float* const* data, const sz_opencl_sizes& sizes,
+                      double realPrecision, float mean, unsigned char use_mean,
+                      const unsigned char* indicator, const float* reg_params,
+                      int intvRadius, const size_t* unpred_offset,
+                      float* unpred_data,
+                      const sz_opencl_decompress_positions& pos,
+                      int* result_type, float*& decompression_buffer,
+                      float*& dec_block_data)
+{
+  decompression_buffer = (float*)calloc(sizeof(float), sizes.pred_buffer_size);
+  dec_block_data =
+    (float*)calloc(sizeof(float), (pos.num_data_blocks1) * sizes.block_size *
+                                    pos.dec_block_dim0_offset);
   int* type = NULL;
   float* data_pos = *data;
   float* block_data_pos_x = NULL;
   float* block_data_pos_y = NULL;
   float* block_data_pos_z = NULL;
   for (size_t i = pos.start_block1; i < pos.end_block1; i++) {
-      for (size_t j = pos.start_block2; j < pos.end_block2; j++) {
-        for (size_t k = pos.start_block3; k < pos.end_block3; k++) {
-          data_pos =
-            decompression_buffer +
-            sizes.pred_buffer_block_size * sizes.pred_buffer_block_size +
-            sizes.pred_buffer_block_size + 1;
-          type = result_type +
-                 (i - pos.start_block1) * sizes.block_size * sizes.block_size *
-                   (pos.num_data_blocks2) * sizes.block_size *
-                   (pos.num_data_blocks3) +
-                 (j - pos.start_block2) * sizes.max_num_block_elements *
-                   (pos.num_data_blocks3) +
-                 (k - pos.start_block3) * sizes.max_num_block_elements;
-          size_t coeff_index = i * sizes.num_y * sizes.num_z + j * sizes.num_z + k;
-          float* block_unpred = unpred_data + unpred_offset[coeff_index];
-          if (indicator[coeff_index]) {
-            // decompress by SZ
-            decompress_location_using_sz(sizes,
-                                         realPrecision,
-                                         mean,
-                                         use_mean,
-                                         intvRadius,
-                                         type,
-                                         data_pos,
-                                         block_unpred);
-          } else {
-            // decompress by regression
-            decompress_location_using_regression(sizes,
-                                                 reg_params + 4 * coeff_index,
-                                                 type,
-                                                 block_unpred,
-                                                 realPrecision,
-                                                 intvRadius,
-                                                 data_pos);
-          }
-
-          // mv data back
-          move_data_block(
-              sizes,
-              pos,
-              data_pos,
-              block_data_pos_x,
-              block_data_pos_y,
-              block_data_pos_z,
-              dec_block_data,
-              i,
-              j,
-              k);
+    for (size_t j = pos.start_block2; j < pos.end_block2; j++) {
+      for (size_t k = pos.start_block3; k < pos.end_block3; k++) {
+        data_pos = decompression_buffer +
+                   sizes.pred_buffer_block_size * sizes.pred_buffer_block_size +
+                   sizes.pred_buffer_block_size + 1;
+        type = result_type +
+               (i - pos.start_block1) * sizes.block_size * sizes.block_size *
+                 (pos.num_data_blocks2) * sizes.block_size *
+                 (pos.num_data_blocks3) +
+               (j - pos.start_block2) * sizes.max_num_block_elements *
+                 (pos.num_data_blocks3) +
+               (k - pos.start_block3) * sizes.max_num_block_elements;
+        size_t coeff_index =
+          i * sizes.num_y * sizes.num_z + j * sizes.num_z + k;
+        float* block_unpred = unpred_data + unpred_offset[coeff_index];
+        if (indicator[coeff_index]) {
+          // decompress by SZ
+          decompress_location_using_sz(sizes, realPrecision, mean, use_mean,
+                                       intvRadius, type, data_pos,
+                                       block_unpred);
+        } else {
+          // decompress by regression
+          decompress_location_using_regression(
+            sizes, reg_params + 4 * coeff_index, type, block_unpred,
+            realPrecision, intvRadius, data_pos);
         }
+
+        // mv data back
+        move_data_block(sizes, pos, data_pos, block_data_pos_x,
+                        block_data_pos_y, block_data_pos_z, dec_block_data, i,
+                        j, k);
       }
     }
+  }
 }
 
 extern "C"
@@ -883,7 +861,7 @@ extern "C"
     cl_float* reg_params =
       (cl_float*)malloc(sizeof(cl_float) * sizes.reg_params_buffer_size);
     cl_float* pred_buffer =
-      (cl_float*)malloc(sizeof(cl_float) * sizes.pred_buffer_size);
+      (cl_float*)malloc(sizeof(cl_float) * sizes.num_blocks * sizes.num_blocks);
     unsigned char* indicator =
       (unsigned char*)calloc(sizes.num_blocks, sizeof(unsigned char));
     int* blockwise_unpred_count = (int*)malloc(sizes.num_blocks * sizeof(int));
@@ -926,9 +904,8 @@ extern "C"
     memset(pred_buffer, 0, sizeof(cl_float) * sizes.pred_buffer_size);
 
     // select
-    opencl_sample(&sizes, oriData, data_pos, mean, noise, use_mean,
-                  pred_buffer, reg_params_pos, pred_buffer_pos,
-                  indicator_pos);
+    opencl_sample(&sizes, oriData, data_pos, mean, noise, use_mean, pred_buffer,
+                  reg_params_pos, pred_buffer_pos, indicator_pos);
 
     size_t reg_count = 0;
     for (size_t i = 0; i < sizes.num_blocks; i++) {
@@ -945,14 +922,13 @@ extern "C"
     }
 
     // Compress coefficient arrays
-    const sz_opencl_coefficient_sizes coefficient_sizes(realPrecision, sizes.block_size);
+    const sz_opencl_coefficient_sizes coefficient_sizes(realPrecision,
+                                                        sizes.block_size);
     sz_opencl_coefficient_params params(
-        reg_count,
-        sizes.num_blocks,
-        reg_params,
-        /*coeff_result_type=*/ (cl_int*)malloc(reg_count * 4 * sizeof(cl_int)),
-        /*coeff_unpredictable_data=*/(cl_float*)malloc(reg_count * 4 * sizeof(cl_float))
-        );
+      reg_count, sizes.num_blocks, reg_params,
+      /*coeff_result_type=*/(cl_int*)malloc(reg_count * 4 * sizeof(cl_int)),
+      /*coeff_unpredictable_data=*/
+      (cl_float*)malloc(reg_count * 4 * sizeof(cl_float)));
 
     params = compress_coefficent_arrays(reg_count, coefficient_sizes, params);
 
@@ -983,9 +959,9 @@ extern "C"
       convert_HuffTree_to_bytes_anyStates(huffmanTree, nodeCount, &treeBytes);
 
     const unsigned int meta_data_offset = 3 + 1 + MetaDataByteLength;
-    // total size 										metadata		  # elements
-    // real precision intervals nodeCount		huffman
-    // block index unpredicatable count mean unpred size elements
+    // total size 										metadata		  #
+    // elements real precision intervals nodeCount		huffman block
+    // index unpredicatable count mean unpred size elements
     unsigned char* result = (unsigned char*)calloc(
       meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(double) +
         sizeof(int) + sizeof(int) + treeByteSize +
@@ -1187,15 +1163,9 @@ extern "C"
     int coeff_unpred_data_count[4] = { 0 };
 
     float* reg_params = (float*)calloc(sizeof(float), 4 * sizes.num_blocks);
-    decompress_coefficents(sizes,
-                           indicator,
-                           coeff_intvRadius,
-                           coeff_type,
-                           precision,
-                           coeff_unpred_data,
-                           last_coefficients,
-                           coeff_unpred_data_count,
-                           reg_params);
+    decompress_coefficents(sizes, indicator, coeff_intvRadius, coeff_type,
+                           precision, coeff_unpred_data, last_coefficients,
+                           coeff_unpred_data_count, reg_params);
 
     updateQuantizationInfo(intervals);
     int intvRadius = exe_params->intvRadius;
@@ -1252,25 +1222,16 @@ extern "C"
     free(type_array_block_size);
     int* result_type = (int*)malloc((pos.num_data_blocks1) * sizes.block_size *
                                     pos.dec_block_dim0_offset * sizeof(int));
-    decode_all_blocks(comp_data_pos, sizes, root, pos, type_array_offset, result_type);
+    decode_all_blocks(comp_data_pos, sizes, root, pos, type_array_offset,
+                      result_type);
     SZ_ReleaseHuffman(huffmanTree);
     free(type_array_offset);
 
-    float *decompression_buffer;
-    float *dec_block_data;
-    decompress_all_blocks(data,
-                          sizes,
-                          realPrecision,
-                          mean,
-                          use_mean,
-                          indicator,
-                          reg_params,
-                          intvRadius,
-                          unpred_offset,
-                          unpred_data,
-                          pos,
-                          result_type,
-                          decompression_buffer,
+    float* decompression_buffer;
+    float* dec_block_data;
+    decompress_all_blocks(data, sizes, realPrecision, mean, use_mean, indicator,
+                          reg_params, intvRadius, unpred_offset, unpred_data,
+                          pos, result_type, decompression_buffer,
                           dec_block_data);
 
     free(unpred_offset);
@@ -1429,4 +1390,3 @@ extern "C"
     return status;
   }
 }
-
