@@ -1,0 +1,22 @@
+FROM fedora:29
+RUN dnf update -y && \
+    dnf install -y \
+        cmake \
+        coreutils-single \
+        CUnit-devel \
+        ctags \
+        fftw-devel \
+        libomp-devel \
+        libzstd-devel \
+        netcdf-devel \
+        ocl-icd-devel \
+        gcc \
+        zlib-devel && \
+    dnf clean all
+COPY . /build/
+WORKDIR /build/
+RUN rm -rf build && \
+    mkdir -p build && \
+    cd build && \
+    cmake .. && \
+    make -j $(nproc --all)

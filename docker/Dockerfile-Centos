@@ -1,0 +1,25 @@
+FROM centos:7
+RUN yum update -y && \
+    yum install -y epel-release && \ 
+    yum install -y \
+        cmake3 \
+        coreutils-single \
+        CUnit-devel \
+        ctags \
+        gcc \
+        gcc-c++ \
+        fftw-devel \
+        libomp-devel \
+        libzstd-devel \
+        netcdf-devel \
+        ocl-icd-devel \
+        make \
+        zlib-devel && \
+    yum clean all
+COPY . /build/
+WORKDIR /build/
+RUN rm -rf build && \
+    mkdir -p build && \
+    cd build && \
+    cmake3 .. && \
+    make -j $(nproc --all)

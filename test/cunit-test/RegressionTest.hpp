@@ -76,7 +76,7 @@ void run_test(std::vector<float> &test_array, Func sz_compress1, Func2 sz_compre
 	std::vector<bool> not_equal_entries2;
 
 	size_t size1 = 0;
-	sz_params conf_params1{sz_default_config()};
+	sz_params conf_params1(sz_default_config());
 	SZ_Init_Params(&conf_params1);
 	unsigned char* data1 = sz_compress1(test_array.data(), r, r, r, .99, &size1);
 	float* decompressed1;
@@ -87,7 +87,7 @@ data1, size1);
 	SZ_Finalize();
 
 	size_t size2 = 0;
-	sz_params conf_params2{sz_default_config()};
+	sz_params conf_params2(sz_default_config());
 	SZ_Init_Params(&conf_params2);
 	unsigned char* data2 = sz_compress2(test_array2.data(), r, r, r, .99, &size2);
 	float* decompressed2;

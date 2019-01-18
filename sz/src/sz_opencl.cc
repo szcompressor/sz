@@ -717,7 +717,7 @@ extern "C"
       if (valid_platform == std::end(platforms))
         throw cl::Error(CL_DEVICE_NOT_FOUND, "Failed to find a GPU");
 
-      (*state)->context = cl::Context({ (*state)->device });
+      (*state)->context = cl::Context(std::vector<cl::Device>({(*state)->device }));
       (*state)->queue = cl::CommandQueue((*state)->context, (*state)->device);
       auto sources = get_sz_kernel_sources();
       cl::Program program((*state)->context, sources);
@@ -828,8 +828,7 @@ extern "C"
                                      /*size*/ sizeof(cl_float) * size,
                                      h_c.data());
 
-      if (std::equal(std::begin(h_c), std::end(h_c), std::begin(verify),
-                     std::end(verify))) {
+      if (std::equal(std::begin(h_c), std::end(h_c), std::begin(verify))) {
         return SZ_SCES;
       } else {
         return SZ_NSCS;
