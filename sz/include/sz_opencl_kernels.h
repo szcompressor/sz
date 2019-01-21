@@ -5,6 +5,7 @@
 #define cl_ulong ulong
 #define cl_float float
 #define cl_int int
+#define cl_uint uint
 #define cl_double double
 #define CL_GLOBAL_DECL __global
 #endif
@@ -119,32 +120,4 @@ struct sz_opencl_coefficient_sizes {
   const cl_int coeff_intvCapacity_sz;
   const cl_int coeff_intvRadius;
   const cl_double precision [4];
-};
-
-struct sz_opencl_coefficient_params {
-#ifdef __cplusplus
-  sz_opencl_coefficient_params(cl_ulong reg_count, cl_ulong num_blocks, cl_float* reg_params,cl_int* coeff_result_type, cl_float* coeff_unpredictable_data):
-    last_coeffcients{ 0.0, 0.0, 0.0, 0.0 },
-    coeff_result_type{coeff_result_type},
-    coeff_unpredicatable_data{coeff_unpredictable_data},
-    coeff_type{},
-    coeff_unpred_data{},
-    coeff_unpredictable_count{0,0,0,0},
-    reg_params_separte{}
-  {
-    for (int i = 0; i < 4; i++) {
-      coeff_type[i] = coeff_result_type + i * reg_count;
-      coeff_unpred_data[i] = coeff_unpredictable_data + i * reg_count;
-      reg_params_separte[i] = reg_params + i * num_blocks;
-    }
-  }
-#endif
-
-    cl_float last_coeffcients[4];
-    CL_GLOBAL_DECL cl_int* coeff_result_type;
-    CL_GLOBAL_DECL cl_float* coeff_unpredicatable_data;
-    CL_GLOBAL_DECL cl_int* coeff_type[4];
-    CL_GLOBAL_DECL cl_float* coeff_unpred_data[4];
-    CL_GLOBAL_DECL cl_uint coeff_unpredictable_count[4];
-    CL_GLOBAL_DECL cl_float* reg_params_separte[4];
 };

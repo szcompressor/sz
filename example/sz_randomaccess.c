@@ -25,7 +25,58 @@ void cost_end()
 	totalCost += elapsed;
 }
 
-void verifyRandomAccess(float * ori_data, float * dec_data, size_t n1, size_t n2, size_t n3, size_t s1, size_t s2, size_t s3, size_t e1, size_t e2, size_t e3)
+void verifyRandomAccess_1d(float * ori_data, float * dec_data, size_t n1, size_t s1, size_t e1)
+{
+	float diff;
+	float diffMax = 0;
+	
+	float Min = ori_data[0];
+	float Max = Min;
+	size_t nbEle = n1;
+	for(int i = 0;i<nbEle;i++)
+	{
+		if(ori_data[i]<Min) Min = ori_data[i];
+		if(ori_data[i]>Max) Max = ori_data[i];
+	}
+	
+	for(size_t i=s1; i<e1; i++){
+		diff = ori_data[i] - dec_data[(i-s1)];
+		if(fabs(diff) > diffMax) diffMax = fabs(diff);
+	}
+
+	printf ("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, Max - Min);
+	printf ("Max absolute error = %.10f\n", diffMax);
+	printf ("Max relative error = %f\n", diffMax/(Max-Min));
+}
+
+
+void verifyRandomAccess_2d(float * ori_data, float * dec_data, size_t n1, size_t n2, size_t s1, size_t s2, size_t e1, size_t e2)
+{
+	float diff;
+	float diffMax = 0;
+	
+	float Min = ori_data[0];
+	float Max = Min;
+	size_t nbEle = n1*n2;
+	for(int i = 0;i<nbEle;i++)
+	{
+		if(ori_data[i]<Min) Min = ori_data[i];
+		if(ori_data[i]>Max) Max = ori_data[i];
+	}
+	
+	for(size_t i=s1; i<e1; i++){
+		for(size_t j=s2; j<e2; j++){
+			diff = ori_data[i*n2 + j] - dec_data[(i-s1)*(e2-s2) + (j-s2)];
+			if(fabs(diff) > diffMax) diffMax = fabs(diff);
+		}
+	}
+
+	printf ("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, Max - Min);
+	printf ("Max absolute error = %.10f\n", diffMax);
+	printf ("Max relative error = %f\n", diffMax/(Max-Min));
+}
+
+void verifyRandomAccess_3d(float * ori_data, float * dec_data, size_t n1, size_t n2, size_t n3, size_t s1, size_t s2, size_t s3, size_t e1, size_t e2, size_t e3)
 {
 	float diff;
 	float diffMax = 0;
@@ -72,7 +123,7 @@ void usage()
 	printf("* error control: (the error control parameters here will overwrite the setting in sz.config)\n");
 	printf("	-M <error bound mode> : 10 options as follows. \n");
 	printf("		ABS (absolute error bound)\n");
-	printf("		REL (value range based error bound)\n");
+	printf("		REL (value range based error bound\n");
 	printf("		ABS_AND_REL (using min{ABS, REL})\n");
 	printf("		ABS_OR_REL (using max{ABS, REL})\n");
 	printf("		PSNR (peak signal-to-noise ratio)\n");
@@ -225,11 +276,26 @@ int main(int argc, char* argv[])
 		case '1': 
 			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1)
 				usage();
+			if (i+1 < argc && argv[i+1][0] != '-')
+			{
+				sscanf(argv[++i], "%zu", &s1);
+				sscanf(argv[++i], "%zu", &e1);
+				randomAccess = 1;
+			}
 			break;
 		case '2':
 			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
 				++i == argc || sscanf(argv[i], "%zu", &r2) != 1)
 				usage();
+
+			if (i+1 < argc && argv[i+1][0] != '-')
+			{
+				sscanf(argv[++i], "%zu", &s1);
+				sscanf(argv[++i], "%zu", &s2);
+				sscanf(argv[++i], "%zu", &e1);
+				sscanf(argv[++i], "%zu", &e2);
+				randomAccess = 1;
+			}
 			break;
 		case '3':
 			if (++i == argc || sscanf(argv[i], "%zu", &r1) != 1 ||
@@ -350,6 +416,7 @@ int main(int argc, char* argv[])
 	
 	char outputFilePath[256];	
 	unsigned char *bytes = NULL; //the binary data read from "compressed data file"
+	size_t byteLength;
 	if(isCompression == 1)
 	{
 		if(absErrorBound != NULL)
@@ -493,7 +560,6 @@ int main(int argc, char* argv[])
 			}
 		}		
 		
-		size_t byteLength;
 		char outputFilePath[256];
 		
 		if(r2==0)
@@ -635,9 +701,23 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					verifyRandomAccess(ori_data, data, r3, r2, r1, s3, s2, s1, e3, e2, e1);	
-					double compressionRatio = 1.0*r3*r2*r1*sizeof(float)/byteLength;
-					printf ("compressionRatio=%f\n", compressionRatio);
+					if(r3)
+					{
+						verifyRandomAccess_3d(ori_data, data, r3, r2, r1, s3, s2, s1, e3, e2, e1);	
+						double compressionRatio = 1.0*r3*r2*r1*sizeof(float)/byteLength;
+						printf ("compressionRatio=%f\n", compressionRatio);
+					}
+					else if(r2)
+					{
+						verifyRandomAccess_2d(ori_data, data, r2, r1, s2, s1, e2, e1);
+						double compressionRatio = 1.0*r2*r1*sizeof(float)/byteLength;
+						printf ("compressionRatio=%f\n", compressionRatio);			
+					}
+					else{
+						verifyRandomAccess_1d(ori_data, data, r1, s1, e1);
+						double compressionRatio = 1.0*r1*sizeof(float)/byteLength;
+						printf ("compressionRatio=%f\n", compressionRatio);
+					}
 				}
 
 				free(ori_data);
@@ -825,7 +905,6 @@ int main(int argc, char* argv[])
 	
 	if(printMeta==1) //==-1 for printing metadata
 	{
-		size_t byteLength; 
 		int status;
 		if(bytes==NULL)
 			bytes = readByteData(cmpPath, &byteLength, &status);

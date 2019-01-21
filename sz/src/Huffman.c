@@ -143,6 +143,12 @@ void build_code(HuffmanTree *huffmanTree, node n, int len, unsigned long out1, u
 	}
 }
 
+/**
+ * Compute the frequency of the data and build the Huffman tree
+ * @param HuffmanTree* huffmanTree (output)
+ * @param int *s (input)
+ * @param size_t length (input)
+ * */
 void init(HuffmanTree* huffmanTree, int *s, size_t length)
 {
 	size_t i, index;
@@ -150,9 +156,6 @@ void init(HuffmanTree* huffmanTree, int *s, size_t length)
 	memset(freq, 0, huffmanTree->allNodes*sizeof(size_t));
 	for(i = 0;i < length;i++) 
 	{
-		//index = 0;
-		//index = (index | s[i])<<8;
-		//index = index | s[i+1];
 		index = s[i];
 		freq[index]++;
 	}
@@ -178,10 +181,6 @@ void encode(HuffmanTree *huffmanTree, int *s, size_t length, unsigned char *out,
 	//long totalBitSize = 0, maxBitSize = 0, bitSize21 = 0, bitSize32 = 0;
 	for (i = 0;i<length;i++) 
 	{
-		//state = 0;
-		//state = (state | s[i])<<8;
-		//state = state | s[i+1];
-		
 		state = s[i];
 		bitSize = huffmanTree->cout[state];	
 		
@@ -374,7 +373,6 @@ void pad_tree_uint(HuffmanTree* huffmanTree, unsigned int* L, unsigned int* R, u
  
 unsigned int convert_HuffTree_to_bytes_anyStates(HuffmanTree* huffmanTree, int nodeCount, unsigned char** out) 
 {
-	//printf("nodeCount=%d\n", nodeCount);
 	if(nodeCount<=256)
 	{
 		unsigned char* L = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
@@ -528,7 +526,6 @@ void unpad_tree_uint(HuffmanTree* huffmanTree, unsigned int* L, unsigned int* R,
 
 node reconstruct_HuffTree_from_bytes_anyStates(HuffmanTree *huffmanTree, unsigned char* bytes, int nodeCount)
 {
-	//printf("nodeCount=%d\n", nodeCount);
 	if(nodeCount<=256)
 	{
 		unsigned char* L = (unsigned char*)malloc(nodeCount*sizeof(unsigned char));
@@ -660,7 +657,7 @@ void encode_withTree(HuffmanTree* huffmanTree, int *s, size_t length, unsigned c
 		if (huffmanTree->code[i]) nodeCount++; 
 	nodeCount = nodeCount*2-1;
 	unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(huffmanTree,nodeCount, &treeBytes);
-	//printf("treeByteSize=%d\n", treeByteSize);
+
 	*out = (unsigned char*)malloc(length*sizeof(int)+treeByteSize);
 	intToBytes_bigEndian(buffer, nodeCount);
 	memcpy(*out, buffer, 4);
