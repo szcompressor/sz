@@ -68,4 +68,5 @@ add_subdirectory (zstd)
 add_subdirectory (sz)
 add_subdirectory (example)
 add_subdirectory (test)
+add_subdirectory (swig)
 

@@ -361,7 +361,7 @@ int SZ_compress_rev_args2(int dataType, void *data, void *reservedValue, unsigne
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 unsigned char *SZ_compress_rev(int dataType, void *data, void *reservedValue, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
-void SZ_Create_ParamsExe(sz_params** conf_params, sz_exedata** exe_params);
+//void SZ_Create_ParamsExe(sz_params** conf_params, sz_exedata** exe_params);
 
 void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 size_t SZ_decompress_args(int dataType, unsigned char *bytes, size_t byteLength, void* decompressed_array, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
@@ -378,10 +378,13 @@ void SZ_registerVar(char* varName, int dataType, void* data,
 			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio, 
 			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 int SZ_deregisterVar(char* varName);
-int SZ_deregisterAllVars();
+//int SZ_deregisterAllVars();
 
+
+#ifdef HAVE_TIMECMPR
 int SZ_compress_ts(unsigned char** newByteData, size_t *outSize);
 void SZ_decompress_ts(unsigned char *bytes, size_t byteLength);
+#endif
 
 void SZ_Finalize();
 
