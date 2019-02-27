@@ -4,6 +4,7 @@
 #define SWIG_FILE_WITH_INIT
 #define SWIG_PYTHON_STRICT_BYTE_CHAR
 #include "pysz.h"
+#include "defines.h"
 %}
 
 %init %{
@@ -31,6 +32,7 @@ namespace std {
 
 
 %include "pysz.h"
+%include "defines.h"
 
 %extend Compressor {
   %template(CompressFloat1) Compress1<float>;
