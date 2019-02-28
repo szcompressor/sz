@@ -26,6 +26,8 @@
 #include "rw.h"
 #include "sz_double_ts.h"
 #include "utility.h"
+#include "CacheTable.h"
+#include "MultiLevelCacheTableWideInterval.h"
 
 unsigned char* SZ_skip_compress_double(double* data, size_t dataLength, size_t* outSize)
 {
@@ -38,7 +40,7 @@ unsigned char* SZ_skip_compress_double(double* data, size_t dataLength, size_t* 
 void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue)
 {
 	short reqExpo = getPrecisionReqLength_double(realPrecision);
-	*reqLength = 12+radExpo - reqExpo; //radExpo-reqExpo == reqMantiLength
+	*reqLength = 12+radExpo - reqExpo+1; //radExpo-reqExpo == reqMantiLength
 	if(*reqLength<12)
 		*reqLength = 12;
 	if(*reqLength>64)
@@ -365,7 +367,7 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 		
 	}//end of for
 		
-	int exactDataNum = exactLeadNumArray->size;
+	size_t exactDataNum = exactLeadNumArray->size;
 	
 	TightDataPointStorageD* tdps;
 			
@@ -1466,6 +1468,895 @@ char SZ_compress_args_double_NoCkRngeNoGzip_4D(unsigned char** newByteData, doub
 	return 0;
 }
 
+/*MSST19*/
+TightDataPointStorageD* SZ_compress_double_1D_MDQ_MSST19(double *oriData, 
+size_t dataLength, double realPrecision, double valueRangeSize, double medianValue_f)
+{
+#ifdef HAVE_TIMECMPR	
+	double* decData = NULL;
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+		decData = (double*)(multisteps->hist_data);
+#endif	
+
+	//struct ClockPoint clockPointBuild;
+	//TimeDurationStart("build", &clockPointBuild);
+	unsigned int quantization_intervals;
+	if(exe_params->optQuantMode==1)
+		quantization_intervals = optimize_intervals_double_1D_opt(oriData, dataLength, realPrecision);
+	else
+		quantization_intervals = exe_params->intvCapacity;
+	updateQuantizationInfo(quantization_intervals);
+	
+	double* precisionTable = (double*)malloc(sizeof(double) * quantization_intervals);
+	double inv = 2.0-pow(2, -(confparams_cpr->plus_bits));
+    for(int i=0; i<quantization_intervals; i++){
+        double test = pow((1+realPrecision), inv*(i - exe_params->intvRadius));
+        precisionTable[i] = test;
+    }
+    
+	struct TopLevelTableWideInterval levelTable;
+    MultiLevelCacheTableWideIntervalBuild(&levelTable, precisionTable, quantization_intervals, realPrecision, confparams_cpr->plus_bits);
+
+	size_t i;
+	int reqLength;
+	double medianValue = medianValue_f;
+	double medianInverse = 1 / medianValue_f;
+	short radExpo = getExponent_double(valueRangeSize/2);
+	
+	computeReqLength_double(realPrecision, radExpo, &reqLength, &medianValue);	
+
+	int* type = (int*) malloc(dataLength*sizeof(int));
+		
+	double* spaceFillingValue = oriData; //
+	
+	DynamicIntArray *exactLeadNumArray;
+	new_DIA(&exactLeadNumArray, dataLength/2/8);
+	
+	DynamicByteArray *exactMidByteArray;
+	new_DBA(&exactMidByteArray, dataLength/2);
+	
+	DynamicIntArray *resiBitArray;
+	new_DIA(&resiBitArray, DynArrayInitLen);
+	
+	unsigned char preDataBytes[8];
+	intToBytes_bigEndian(preDataBytes, 0);
+	
+	int reqBytesLength = reqLength/8;
+	int resiBitsLength = reqLength%8;
+	double last3CmprsData[3] = {0};
+
+	//size_t miss=0, hit=0;
+
+	DoubleValueCompressElement *vce = (DoubleValueCompressElement*)malloc(sizeof(DoubleValueCompressElement));
+	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
+				
+	//add the first data	
+	type[0] = 0;
+	compressSingleDoubleValue_MSST19(vce, spaceFillingValue[0], realPrecision, medianValue, medianInverse, reqLength, reqBytesLength, resiBitsLength);
+	updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+	memcpy(preDataBytes,vce->curBytes,8);
+	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+	listAdd_double(last3CmprsData, vce->data);
+	//miss++;
+#ifdef HAVE_TIMECMPR	
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+		decData[0] = vce->data;
+#endif		
+		
+	//add the second data
+	type[1] = 0;
+	compressSingleDoubleValue_MSST19(vce, spaceFillingValue[1], realPrecision, medianValue, medianInverse, reqLength, reqBytesLength, resiBitsLength);
+	updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+	memcpy(preDataBytes,vce->curBytes,8);
+	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+	listAdd_double(last3CmprsData, vce->data);
+	//miss++;
+#ifdef HAVE_TIMECMPR	
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+		decData[1] = vce->data;
+#endif
+	int state;
+	//double checkRadius;
+	double curData;
+	double pred = vce->data;
+
+    double predRelErrRatio;
+
+	const uint64_t top = levelTable.topIndex, base = levelTable.baseIndex;
+	const uint64_t range = top - base;
+	const int bits = levelTable.bits;
+	uint64_t* const buffer = (uint64_t*)&predRelErrRatio;
+	const int shift = 52-bits;
+	uint64_t expoIndex, mantiIndex;
+	uint16_t* tables[range+1];
+	for(int i=0; i<=range; i++){
+		tables[i] = levelTable.subTables[i].table;
+	}
+
+	for(i=2;i<dataLength;i++)
+	{
+		curData = spaceFillingValue[i];
+		predRelErrRatio = curData / pred;
+
+		expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+		if(expoIndex <= range){
+			mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+			state = tables[expoIndex][mantiIndex];
+		}else{
+			state = 0;
+		}
+
+		if(state)
+		{
+			type[i] = state;
+			pred *= precisionTable[state];
+			//hit++;
+			continue;
+		}
+
+		//unpredictable data processing
+		type[i] = 0;
+		compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianInverse, reqLength, reqBytesLength, resiBitsLength);
+		updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+		memcpy(preDataBytes,vce->curBytes,8);
+		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+		pred =  vce->data;
+		//miss++;
+#ifdef HAVE_TIMECMPR
+		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+			decData[i] = vce->data;
+#endif	
+		
+	}//end of for
+		
+//	printf("miss:%d, hit:%d\n", miss, hit);
+
+	size_t exactDataNum = exactLeadNumArray->size;
+	
+	TightDataPointStorageD* tdps;
+			
+	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum, 
+			type, exactMidByteArray->array, exactMidByteArray->size,  
+			exactLeadNumArray->array,  
+			resiBitArray->array, resiBitArray->size, 
+			resiBitsLength,
+			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
+    tdps->plus_bits = confparams_cpr->plus_bits;
+	
+	//free memory
+	free_DIA(exactLeadNumArray);
+	free_DIA(resiBitArray);
+	free(type);	
+	free(vce);
+	free(lce);	
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
+
+	return tdps;
+}
+
+TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t r1, size_t r2, double realPrecision, double valueRangeSize, double medianValue_f)
+{
+#ifdef HAVE_TIMECMPR
+	double* decData = NULL;	
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+		decData = (double*)(multisteps->hist_data);
+#endif	
+	
+	unsigned int quantization_intervals;
+	if(exe_params->optQuantMode==1)
+	{
+		quantization_intervals = optimize_intervals_double_2D_opt(oriData, r1, r2, realPrecision);
+		updateQuantizationInfo(quantization_intervals);
+	}	
+	else
+		quantization_intervals = exe_params->intvCapacity;
+
+	double* precisionTable = (double*)malloc(sizeof(double) * quantization_intervals);
+	double inv = 2.0-pow(2, -(confparams_cpr->plus_bits));
+	for(int i=0; i<quantization_intervals; i++){
+		double test = pow((1+realPrecision), inv*(i - exe_params->intvRadius));
+		precisionTable[i] = test;
+	}
+	//double smallest_precision = precisionTable[0], largest_precision = precisionTable[quantization_intervals-1];
+	struct TopLevelTableWideInterval levelTable;
+	MultiLevelCacheTableWideIntervalBuild(&levelTable, precisionTable, quantization_intervals, realPrecision, confparams_cpr->plus_bits);
+
+	size_t i,j; 
+	int reqLength;
+	double pred1D, pred2D;
+	//double diff = 0.0;
+	//double itvNum = 0;
+	double *P0, *P1;
+	double predRelErrRatio;
+		
+	size_t dataLength = r1*r2;	
+	
+	P0 = (double*)malloc(r2*sizeof(double));
+	memset(P0, 0, r2*sizeof(double));
+	P1 = (double*)malloc(r2*sizeof(double));
+	memset(P1, 0, r2*sizeof(double));
+		
+	double medianValue = medianValue_f;
+	double medianValueInverse = 1 / medianValue_f;
+	short radExpo = getExponent_double(valueRangeSize/2);
+	computeReqLength_double(realPrecision, radExpo, &reqLength, &medianValue);	
+
+	int* type = (int*) malloc(dataLength*sizeof(int));
+	//type[dataLength]=0;
+		
+	double* spaceFillingValue = oriData; //
+
+	DynamicIntArray *exactLeadNumArray;
+	new_DIA(&exactLeadNumArray, DynArrayInitLen);
+	
+	DynamicByteArray *exactMidByteArray;
+	new_DBA(&exactMidByteArray, DynArrayInitLen);
+	
+	DynamicIntArray *resiBitArray;
+	new_DIA(&resiBitArray, DynArrayInitLen);
+	
+	type[0] = 0;
+	unsigned char preDataBytes[4];
+	intToBytes_bigEndian(preDataBytes, 0);
+	
+	int reqBytesLength = reqLength/8;
+	int resiBitsLength = reqLength%8;
+
+	DoubleValueCompressElement *vce = (DoubleValueCompressElement*)malloc(sizeof(DoubleValueCompressElement));
+	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
+
+    const uint64_t top = levelTable.topIndex, base = levelTable.baseIndex;
+    const uint64_t range = top - base;
+    const int bits = levelTable.bits;
+    uint64_t* const buffer = (uint64_t*)&predRelErrRatio;
+    const int shift = 52-bits;
+    uint64_t expoIndex, mantiIndex;
+    uint16_t* tables[range+1];
+    for(int i=0; i<=range; i++){
+        tables[i] = levelTable.subTables[i].table;
+    }
+			
+	/* Process Row-0 data 0*/
+	type[0] = 0;
+	compressSingleDoubleValue_MSST19(vce, spaceFillingValue[0], realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+	updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+	memcpy(preDataBytes,vce->curBytes,8);
+	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+	P1[0] = vce->data;
+#ifdef HAVE_TIMECMPR	
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+		decData[0] = vce->data;
+#endif	
+
+	double curData;
+	int state;
+
+	/* Process Row-0 data 1*/
+	pred1D = P1[0];
+
+	curData = spaceFillingValue[1];
+	predRelErrRatio = curData / pred1D;
+
+	expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+	if(expoIndex <= range){
+		mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+		state = tables[expoIndex][mantiIndex];
+	}else{
+		state = 0;
+	}
+
+	if (state)
+	{
+		type[1] = state;
+		P1[1] = fabs(pred1D) * precisionTable[state];
+	}
+	else
+	{
+		type[1] = 0;
+		compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+		updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+		memcpy(preDataBytes,vce->curBytes,8);
+		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+		P1[1] = vce->data;
+	}
+#ifdef HAVE_TIMECMPR	
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+		decData[1] = P1[1];
+#endif
+
+    /* Process Row-0 data 2 --> data r2-1 */
+	for (j = 2; j < r2; j++)
+	{
+		pred1D = P1[j-1] * P1[j-1] / P1[j-2];
+		curData = spaceFillingValue[j];
+		predRelErrRatio = curData / pred1D;
+
+		expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+		if(expoIndex <= range){
+			mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+			state = tables[expoIndex][mantiIndex];
+		}else{
+			state = 0;
+		}
+
+		if (state)
+		{
+			type[j] = state;
+			P1[j] = fabs(pred1D) * precisionTable[state];
+		}
+		else
+		{
+			type[j] = 0;
+			compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+			updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+			memcpy(preDataBytes,vce->curBytes,8);
+			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+			P1[j] = vce->data;
+		}
+#ifdef HAVE_TIMECMPR	
+		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+			decData[j] = P1[j];
+#endif		
+	}
+
+	/* Process Row-1 --> Row-r1-1 */
+	size_t index;
+	for (i = 1; i < r1; i++)
+	{	
+		/* Process row-i data 0 */
+		index = i*r2;
+		pred1D = P1[0];
+		curData = spaceFillingValue[index];
+		predRelErrRatio = curData / pred1D;
+
+		expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+		if(expoIndex <= range){
+			mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+			state = tables[expoIndex][mantiIndex];
+		}else{
+			state = 0;
+		}
+
+		if (state)
+		{
+			type[index] = state;
+			P0[0] = fabs(pred1D) * precisionTable[state];
+		}
+		else
+		{
+			type[index] = 0;
+			compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+			updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+			memcpy(preDataBytes,vce->curBytes,8);
+			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+			P0[0] = vce->data;
+		}
+#ifdef HAVE_TIMECMPR	
+		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+			decData[index] = P0[0];
+#endif
+									
+		/* Process row-i data 1 --> r2-1*/
+		for (j = 1; j < r2; j++)
+		{
+			index = i*r2+j;
+			pred2D = P0[j-1] * P1[j] / P1[j-1];
+
+			curData = spaceFillingValue[index];
+			predRelErrRatio = curData / pred2D;
+
+			expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+			if(expoIndex <= range){
+				mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+				state = tables[expoIndex][mantiIndex];
+			}else{
+				state = 0;
+			}
+
+			if (state)
+			{
+				type[index] = state;
+				P0[j] = fabs(pred2D) * precisionTable[state];
+			}
+			else
+			{
+				type[index] = 0;
+				compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,8);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+				P0[j] = vce->data;
+			}
+#ifdef HAVE_TIMECMPR	
+			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+				decData[index] = P0[j];
+#endif			
+		}
+
+		double *Pt;
+		Pt = P1;
+		P1 = P0;
+		P0 = Pt;
+	}
+	
+	if(r2!=1)
+		free(P0);
+	free(P1);
+	size_t exactDataNum = exactLeadNumArray->size;
+	
+	TightDataPointStorageD* tdps;
+			
+	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum, 
+			type, exactMidByteArray->array, exactMidByteArray->size,  
+			exactLeadNumArray->array,  
+			resiBitArray->array, resiBitArray->size, 
+			resiBitsLength, 
+			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
+	tdps->plus_bits = confparams_cpr->plus_bits;
+
+	//free memory
+	free_DIA(exactLeadNumArray);
+	free_DIA(resiBitArray);
+	free(type);
+	free(vce);
+	free(lce);
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
+	
+	return tdps;	
+}
+
+TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, double valueRangeSize, double medianValue_f)
+{
+#ifdef HAVE_TIMECMPR	
+	double* decData = NULL;
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+		decData = (double*)(multisteps->hist_data);
+#endif		
+
+	unsigned int quantization_intervals;
+	if(exe_params->optQuantMode==1)
+	{
+		quantization_intervals = optimize_intervals_double_3D_opt(oriData, r1, r2, r3, realPrecision);
+		updateQuantizationInfo(quantization_intervals);
+	}	
+	else
+		quantization_intervals = exe_params->intvCapacity;
+
+    double* precisionTable = (double*)malloc(sizeof(double) * quantization_intervals);
+    double inv = 2.0-pow(2, -(confparams_cpr->plus_bits));
+    for(int i=0; i<quantization_intervals; i++){
+        double test = pow((1+realPrecision), inv*(i - exe_params->intvRadius));
+        precisionTable[i] = test;
+    }
+    //double smallest_precision = precisionTable[0], largest_precision = precisionTable[quantization_intervals-1];
+    struct TopLevelTableWideInterval levelTable;
+    MultiLevelCacheTableWideIntervalBuild(&levelTable, precisionTable, quantization_intervals, realPrecision, confparams_cpr->plus_bits);
+
+    size_t i,j,k;
+	int reqLength;
+	double pred1D, pred2D, pred3D;
+	//double diff = 0.0;
+	//double itvNum = 0;
+	double *P0, *P1;
+    double predRelErrRatio;
+
+	size_t dataLength = r1*r2*r3;
+	size_t r23 = r2*r3;
+	P0 = (double*)malloc(r23*sizeof(double));
+	P1 = (double*)malloc(r23*sizeof(double));
+
+	double medianValue = medianValue_f;
+	double medianValueInverse = 1/ medianValue_f;
+	short radExpo = getExponent_double(valueRangeSize/2);
+	computeReqLength_double(realPrecision, radExpo, &reqLength, &medianValue);	
+
+	int* type = (int*) malloc(dataLength*sizeof(int));
+
+	double* spaceFillingValue = oriData; //
+
+	DynamicIntArray *exactLeadNumArray;
+	new_DIA(&exactLeadNumArray, DynArrayInitLen);
+
+	DynamicByteArray *exactMidByteArray;
+	new_DBA(&exactMidByteArray, DynArrayInitLen);
+
+	DynamicIntArray *resiBitArray;
+	new_DIA(&resiBitArray, DynArrayInitLen);
+
+	unsigned char preDataBytes[4];
+	intToBytes_bigEndian(preDataBytes, 0);
+	
+	int reqBytesLength = reqLength/8;
+	int resiBitsLength = reqLength%8;
+
+	DoubleValueCompressElement *vce = (DoubleValueCompressElement*)malloc(sizeof(DoubleValueCompressElement));
+	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
+
+    const uint64_t top = levelTable.topIndex, base = levelTable.baseIndex;
+    const uint64_t range = top - base;
+    const int bits = levelTable.bits;
+    uint64_t* const buffer = (uint64_t*)&predRelErrRatio;
+    const int shift = 52-bits;
+    uint64_t expoIndex, mantiIndex;
+    uint16_t* tables[range+1];
+    for(int i=0; i<=range; i++){
+        tables[i] = levelTable.subTables[i].table;
+    }
+    int state;
+
+    double temp, temp2;
+
+
+    //size_t miss=0, hit=0;
+
+    ///////////////////////////	Process layer-0 ///////////////////////////
+	/* Process Row-0 data 0*/
+	type[0] = 0;
+	compressSingleDoubleValue_MSST19(vce, spaceFillingValue[0], realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+	updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+	memcpy(preDataBytes,vce->curBytes,4);
+	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+	P1[0] = vce->data;
+	//miss++;
+#ifdef HAVE_TIMECMPR	
+		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+			decData[0] = P1[0];
+#endif
+
+	double curData;
+
+	/* Process Row-0 data 1*/
+	pred1D = P1[0];
+	curData = spaceFillingValue[1];
+    predRelErrRatio = curData / pred1D;
+
+    expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+    if(expoIndex <= range){
+        mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+        state = tables[expoIndex][mantiIndex];
+    }else{
+        state = 0;
+    }
+
+	if (state)
+	{
+		type[1] = state;
+		P1[1] = fabs(pred1D) * precisionTable[state];
+		//hit++;
+	}
+	else
+	{
+		type[1] = 0;
+		compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+		updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+		memcpy(preDataBytes,vce->curBytes,8);
+		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+		P1[1] = vce->data;
+		//miss++;
+	}
+#ifdef HAVE_TIMECMPR	
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+		decData[1] = P1[1];
+#endif
+
+    /* Process Row-0 data 2 --> data r3-1 */
+	for (j = 2; j < r3; j++)
+	{
+		temp = P1[j-1];
+		pred1D = temp * temp / P1[j-2];
+		curData = spaceFillingValue[j];
+        predRelErrRatio = curData / pred1D;
+
+        expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+        if(expoIndex <= range){
+            mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+            state = tables[expoIndex][mantiIndex];
+        }else{
+            state = 0;
+        }
+
+        if (state)
+		{
+			type[j] = state;
+			P1[j] = fabs(pred1D) * precisionTable[state];
+			//hit++;
+		}
+		else
+		{
+			type[j] = 0;
+			compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+			updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+			memcpy(preDataBytes,vce->curBytes,8);
+			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+			P1[j] = vce->data;
+			//miss++;
+		}
+#ifdef HAVE_TIMECMPR	
+		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+			decData[j] = P1[j];
+#endif		
+	}
+
+	/* Process Row-1 --> Row-r2-1 */
+	size_t index;
+	for (i = 1; i < r2; i++)
+	{
+		/* Process row-i data 0 */
+		index = i*r3;	
+		pred1D = P1[index-r3];
+		curData = spaceFillingValue[index];
+        predRelErrRatio = curData / pred1D;
+
+        expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+        if(expoIndex <= range){
+            mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+            state = tables[expoIndex][mantiIndex];
+        }else{
+            state = 0;
+        }
+
+		if (state)
+		{
+			type[index] = state;
+			P1[index] = pred1D * precisionTable[state];
+			//hit++;
+		}
+		else
+		{
+			type[index] = 0;
+			compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+			updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+			memcpy(preDataBytes,vce->curBytes,8);
+			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+			P1[index] = vce->data;
+			//miss++;
+		}
+#ifdef HAVE_TIMECMPR	
+		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+			decData[index] = P1[index];
+#endif		
+
+		/* Process row-i data 1 --> data r3-1*/
+		for (j = 1; j < r3; j++)
+		{
+			index = i*r3+j;
+			temp = P1[index-1];
+			pred2D = temp * P1[index-r3] / P1[index-r3-1];
+			//double a = P1[index-1];
+			//double b = P1[index-r3];
+			//double c = P1[index-r3-1];
+
+			curData = spaceFillingValue[index];
+            predRelErrRatio = curData / pred2D;
+
+            expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+            if(expoIndex <= range){
+                mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+                state = tables[expoIndex][mantiIndex];
+            }else{
+                state = 0;
+            }
+
+			if (state)
+			{
+				type[index] = state;
+				//double temp1 = precisionTable[state];
+				//double temp = fabsf(pred2D) * precisionTable[state];
+				P1[index] = fabs(pred2D) * precisionTable[state];
+				//hit++;
+			}
+			else
+			{
+				type[index] = 0;
+				compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,8);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+				P1[index] = vce->data;
+				//miss++;
+			}
+#ifdef HAVE_TIMECMPR	
+			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+				decData[index] = P1[index];
+#endif			
+		}
+	}
+
+
+	///////////////////////////	Process layer-1 --> layer-r1-1 ///////////////////////////
+
+	for (k = 1; k < r1; k++)
+	{
+		/* Process Row-0 data 0*/
+		index = k*r23;
+		pred1D = P1[0];
+		curData = spaceFillingValue[index];
+        predRelErrRatio = curData / pred1D;
+
+        expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+        if(expoIndex <= range){
+            mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+            state = tables[expoIndex][mantiIndex];
+        }else{
+            state = 0;
+        }
+
+		if (state)
+		{
+			type[index] = state;
+			P0[0] = fabs(pred1D) * precisionTable[state];
+			//hit++;
+		}
+		else
+		{
+			type[index] = 0;
+			compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+			updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+			memcpy(preDataBytes,vce->curBytes,8);
+			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+			P0[0] = vce->data;
+			//miss++;
+		}
+#ifdef HAVE_TIMECMPR	
+		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+			decData[index] = P0[0];
+#endif
+
+	    /* Process Row-0 data 1 --> data r3-1 */
+		for (j = 1; j < r3; j++)
+		{
+			//index = k*r2*r3+j;
+			index ++;
+			temp = P0[j-1];
+			pred2D = temp * P1[j] / P1[j-1];
+			curData = spaceFillingValue[index];
+            predRelErrRatio = curData / pred2D;
+
+            expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+            if(expoIndex <= range){
+                mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+                state = tables[expoIndex][mantiIndex];
+            }else{
+                state = 0;
+            }
+
+			if (state)
+			{
+				type[index] = state;
+				P0[j] = fabs(pred2D) * precisionTable[state];
+				//hit++;
+			}
+			else
+			{
+				type[index] = 0;
+				compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,8);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+				P0[j] = vce->data;
+				//miss++;
+			}
+#ifdef HAVE_TIMECMPR	
+			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+				decData[index] = P0[j];
+#endif			
+		}
+
+	    /* Process Row-1 --> Row-r2-1 */
+		size_t index2D;
+		for (i = 1; i < r2; i++)
+		{
+			/* Process Row-i data 0 */
+			index = k*r23 + i*r3;
+			index2D = i*r3;
+			temp = P0[index2D-r3];
+			pred2D = temp * P1[index2D] / P1[index2D-r3];
+			curData = spaceFillingValue[index];
+            predRelErrRatio = curData / pred2D;
+
+            expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+            if(expoIndex <= range){
+                mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+                state = tables[expoIndex][mantiIndex];
+            }else{
+                state = 0;
+            }
+
+			if (state)
+			{
+				type[index] = state;
+				P0[index2D] = fabs(pred2D) * precisionTable[state];
+				//hit++;
+			}
+			else
+			{
+				type[index] = 0;
+				compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+				updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+				memcpy(preDataBytes,vce->curBytes,8);
+				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+				P0[index2D] = vce->data;
+				//miss++;
+			}
+#ifdef HAVE_TIMECMPR	
+			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+				decData[index] = P0[index2D];
+#endif			
+
+			/* Process Row-i data 1 --> data r3-1 */
+			for (j = 1; j < r3; j++)
+			{
+				index ++;
+				index2D = i*r3 + j;
+				//pred3D = P0[index2D-1] * P0[index2D-r3] * P1[index2D] / P0[index2D-r3-1] / P1[index2D-r3] / P1[index2D-1] * P1[index2D-r3-1];
+				temp = P0[index2D-1];
+				temp2 = P0[index2D-r3-1];
+                pred3D = temp * P0[index2D-r3] * P1[index2D] * P1[index2D-r3-1] / (temp2 * P1[index2D-r3] * P1[index2D-1]);
+
+				curData = spaceFillingValue[index];
+                predRelErrRatio = curData / pred3D;
+
+                expoIndex = ((*buffer & 0x7fffffffffffffff) >> 52) - base;
+                if(expoIndex <= range){
+                    mantiIndex = (*buffer & 0x000fffffffffffff) >> shift;
+                    state = tables[expoIndex][mantiIndex];
+                }else{
+                    state = 0;
+                }
+
+				if (state)
+				{
+					type[index] = state;
+					P0[index2D] = fabs(pred3D) * precisionTable[state];
+					//hit++;
+				}
+				else
+				{
+					type[index] = 0;
+					compressSingleDoubleValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+					updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
+					memcpy(preDataBytes,vce->curBytes,8);
+					addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
+					P0[index2D] = vce->data;
+					//miss++;
+				}
+#ifdef HAVE_TIMECMPR	
+				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+					decData[index] = P0[index2D];
+#endif				
+			}
+		}
+
+		double *Pt;
+		Pt = P1;
+		P1 = P0;
+		P0 = Pt;
+	}
+	if(r23!=1)
+		free(P0);
+	free(P1);
+	size_t exactDataNum = exactLeadNumArray->size;
+
+	TightDataPointStorageD* tdps;
+
+	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum,
+			type, exactMidByteArray->array, exactMidByteArray->size,
+			exactLeadNumArray->array,
+			resiBitArray->array, resiBitArray->size,
+			resiBitsLength, 
+			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
+	tdps->plus_bits = confparams_cpr->plus_bits;
+
+	//free memory
+	free_DIA(exactLeadNumArray);
+	free_DIA(resiBitArray);
+	free(type);	
+	free(vce);
+	free(lce);
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
+	
+	return tdps;	
+}
 void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *oriData, size_t dataLength, size_t *outSize)
 {
 	TightDataPointStorageD* tdps = (TightDataPointStorageD*) malloc(sizeof(TightDataPointStorageD));
@@ -1575,7 +2466,18 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	
 	double valueRangeSize = 0, medianValue = 0;
 	
-	double min = computeRangeSize_double(oriData, dataLength, &valueRangeSize, &medianValue);
+	unsigned char * signs = NULL;
+	bool positive = true;
+	double nearZero = 0.0;
+	double min = 0;
+	if(confparams_cpr->errorBoundMode == PW_REL && confparams_cpr->accelerate_pw_rel_compression == 1)
+	{
+		signs = (unsigned char *) malloc(dataLength);
+		memset(signs, 0, dataLength);
+		min = computeRangeSize_double_MSST19(oriData, dataLength, &valueRangeSize, &medianValue, signs, &positive, &nearZero);
+	}
+	else
+		min = computeRangeSize_double(oriData, dataLength, &valueRangeSize, &medianValue);	
 	double max = min+valueRangeSize;
 
 	double realPrecision = 0; 
@@ -1600,7 +2502,10 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
 			{
-				SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r1, &tmpOutSize, min, max);
+				if(confparams_cpr->accelerate_pw_rel_compression)
+					SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr_pre_log_MSST19(&tmpByteData, oriData, pwRelBoundRatio, r1, &tmpOutSize, valueRangeSize, medianValue, signs, &positive, min, max, nearZero);
+				else
+					SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r1, &tmpOutSize, min, max);
 				//SZ_compress_args_double_NoCkRngeNoGzip_1D_pwrgroup(&tmpByteData, oriData, r1, absErr_Bound, relBoundRatio, pwRelBoundRatio, valueRangeSize, medianValue, &tmpOutSize);
 			}
 			else
@@ -1619,7 +2524,12 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		if (r3==0)
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
-				SZ_compress_args_double_NoCkRngeNoGzip_2D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r2, r1, &tmpOutSize, min, max);
+			{
+				if(confparams_cpr->accelerate_pw_rel_compression)
+					SZ_compress_args_double_NoCkRngeNoGzip_2D_pwr_pre_log_MSST19(&tmpByteData, oriData, pwRelBoundRatio, r2, r1, &tmpOutSize, valueRangeSize, signs, &positive, min, max, nearZero);
+				else
+					SZ_compress_args_double_NoCkRngeNoGzip_2D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r2, r1, &tmpOutSize, min, max);
+			}
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)			
@@ -1641,7 +2551,12 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		if (r4==0)
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
-				SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r3, r2, r1, &tmpOutSize, min, max);
+			{
+				if(confparams_cpr->accelerate_pw_rel_compression)
+					SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr_pre_log_MSST19(&tmpByteData, oriData, pwRelBoundRatio, r3, r2, r1, &tmpOutSize, valueRangeSize, signs, &positive, min, max, nearZero);
+				else
+					SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r3, r2, r1, &tmpOutSize, min, max);
+			}
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
@@ -1665,7 +2580,12 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		if (r5==0)
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
-				SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r4*r3, r2, r1, &tmpOutSize, min, max);
+			{
+				if(confparams_cpr->accelerate_pw_rel_compression)
+					SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr_pre_log_MSST19(&tmpByteData, oriData, pwRelBoundRatio, r4*r3, r2, r1, &tmpOutSize, valueRangeSize, signs, &positive, min, max, nearZero);
+				else
+					SZ_compress_args_double_NoCkRngeNoGzip_3D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r4*r3, r2, r1, &tmpOutSize, min, max);
+			}
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)			

@@ -78,8 +78,8 @@ extern "C" {
 
 #define SZ_VERNUM 0x0200
 #define SZ_VER_MAJOR 2
-#define SZ_VER_MINOR 0
-#define SZ_VER_BUILD 2
+#define SZ_VER_MINOR 1
+#define SZ_VER_BUILD 0
 #define SZ_VER_REVISION 0
 
 #define PASTRI 103
@@ -260,6 +260,9 @@ typedef struct sz_params
 	
 	int snapshotCmprStep; //perform single-snapshot-based compression if time_step == snapshotCmprStep
 	int predictionMode;
+
+	int accelerate_pw_rel_compression;
+	int plus_bits;
 	
 	int randomAccess;
 } sz_params;

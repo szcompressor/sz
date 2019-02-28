@@ -20,6 +20,11 @@ void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, Tigh
 void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps);
 void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps);
 void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageD* tdps);
+
+void decompressDataSeries_double_1D_MSST19(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps);
+void decompressDataSeries_double_2D_MSST19(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps);
+void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps);
+
 void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps, int errBoundMode);
 void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps, int errBoundMode);
 void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps, int errBoundMode);

@@ -84,6 +84,11 @@ TightDataPointStorageF* SZ_compress_float_4D_MDQ(float *oriData, size_t r1, size
 
 char SZ_compress_args_float_NoCkRngeNoGzip_4D(unsigned char** newByteData, float *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision, size_t *outSize, float valueRangeSize, float medianValue_f);
 
+TightDataPointStorageF* SZ_compress_float_1D_MDQ_MSST19(float *oriData, 
+size_t dataLength, double realPrecision, float valueRangeSize, float medianValue_f);
+TightDataPointStorageF* SZ_compress_float_2D_MDQ_MSST19(float *oriData, size_t r1, size_t r2, double realPrecision, float valueRangeSize, float medianValue_f);
+TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, float valueRangeSize, float medianValue_f);
+
 void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriData, size_t dataLength, size_t *outSize);
 
 int SZ_compress_args_float_wRngeNoGzip(unsigned char** newByteData, float *oriData, 

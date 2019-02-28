@@ -115,6 +115,34 @@ float computeRangeSize_float(float* oriData, size_t size, float* valueRangeSize,
 	return min;
 }
 
+float computeRangeSize_float_MSST19(float* oriData, size_t size, float* valueRangeSize, float* medianValue, unsigned char * signs, bool* positive, float* nearZero)
+{
+    size_t i = 0;
+    float min = oriData[0];
+    float max = min;
+    *nearZero = 3.40E+38;
+
+    for(i=1;i<size;i++)
+    {
+        float data = oriData[i];
+        if(data <0){
+            signs[i] = 1;
+            *positive = false;
+        }
+        if(oriData[i] != 0 && fabsf(oriData[i]) < fabsf(*nearZero)){
+            *nearZero = oriData[i];
+        }
+        if(min>data)
+            min = data;
+        else if(max<data)
+            max = data;
+    }
+
+    *valueRangeSize = max - min;
+    *medianValue = min + *valueRangeSize/2;
+    return min;
+}
+
 double computeRangeSize_double(double* oriData, size_t size, double* valueRangeSize, double* medianValue)
 {
 	size_t i = 0;
@@ -132,6 +160,34 @@ double computeRangeSize_double(double* oriData, size_t size, double* valueRangeS
 	*valueRangeSize = max - min;
 	*medianValue = min + *valueRangeSize/2;
 	return min;
+}
+
+float computeRangeSize_double_MSST19(double* oriData, size_t size, double* valueRangeSize, double* medianValue, unsigned char * signs, bool* positive, double* nearZero)
+{
+    size_t i = 0;
+    double min = oriData[0];
+    double max = min;
+    *nearZero = 1.7E+308;
+
+    for(i=1;i<size;i++)
+    {
+        double data = oriData[i];
+        if(data <0){
+            signs[i] = 1;
+            *positive = false;
+        }
+        if(oriData[i] != 0 && fabs(oriData[i]) < fabs(*nearZero)){
+            *nearZero = oriData[i];
+        }
+        if(min>data)
+            min = data;
+        else if(max<data)
+            max = data;
+    }
+
+    *valueRangeSize = max - min;
+    *medianValue = min + *valueRangeSize/2;
+    return min;
 }
 
 float computeRangeSize_float_subblock(float* oriData, float* valueRangeSize, float* medianValue,
@@ -417,6 +473,31 @@ void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, fl
 	vce->resiBitsLength = resiBitsLength;
 }
 
+void compressSingleFloatValue_MSST19(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, float medianValueInverse,
+                              int reqLength, int reqBytesLength, int resiBitsLength)
+{
+    float normValue = tgtValue * medianValueInverse;
+
+    lfloat lfBuf;
+    lfBuf.value = normValue;
+
+    int ignBytesLength = 32 - reqLength;
+    if(ignBytesLength<0)
+        ignBytesLength = 0;
+
+    int tmp_int = lfBuf.ivalue;
+    intToBytes_bigEndian(vce->curBytes, tmp_int);
+
+    lfBuf.ivalue = (lfBuf.ivalue >> ignBytesLength) << ignBytesLength;
+
+    //float tmpValue = lfBuf.value;
+
+    vce->data = lfBuf.value*medianValue;
+    vce->curValue = tmp_int;
+    vce->reqBytesLength = reqBytesLength;
+    vce->resiBitsLength = resiBitsLength;
+}
+
 void compressSingleDoubleValue(DoubleValueCompressElement *vce, double tgtValue, double precision, double medianValue, 
 		int reqLength, int reqBytesLength, int resiBitsLength)
 {		
@@ -440,6 +521,31 @@ void compressSingleDoubleValue(DoubleValueCompressElement *vce, double tgtValue,
 	vce->curValue = tmp_long;
 	vce->reqBytesLength = reqBytesLength;
 	vce->resiBitsLength = resiBitsLength;
+}
+
+void compressSingleDoubleValue_MSST19(DoubleValueCompressElement *vce, double tgtValue, double precision, double medianValue, double medianValueInverse,
+                              int reqLength, int reqBytesLength, int resiBitsLength)
+{
+    double normValue = tgtValue * medianValueInverse;
+
+    ldouble lfBuf;
+    lfBuf.value = normValue;
+
+    int ignBytesLength = 64 - reqLength;
+    if(ignBytesLength<0)
+        ignBytesLength = 0;
+
+    long tmp_long = lfBuf.lvalue;
+    longToBytes_bigEndian(vce->curBytes, tmp_long);
+
+    lfBuf.lvalue = (lfBuf.lvalue >> ignBytesLength) << ignBytesLength;
+
+    //float tmpValue = lfBuf.value;
+
+    vce->data = lfBuf.value*medianValue;
+    vce->curValue = tmp_long;
+    vce->reqBytesLength = reqBytesLength;
+    vce->resiBitsLength = resiBitsLength;
 }
 
 int compIdenticalLeadingBytesCount_double(unsigned char* preBytes, unsigned char* curBytes)
@@ -583,7 +689,7 @@ int initRandomAccessBytes(unsigned char* raBytes)
 	int k = 0, i = 0;
 	for (i = 0; i < 3; i++)//3
 		raBytes[k++] = versionNumber[i];
-	int sameByte = 0x80; //indicating this is regressio-based compression mode
+	int sameByte = 0x80; //indicating this is regression-based compression mode
 	if(exe_params->SZ_SIZE_TYPE==8)
 		sameByte = (unsigned char) (sameByte | 0x40); // 01000000, the 6th bit
 	if(confparams_cpr->randomAccess)

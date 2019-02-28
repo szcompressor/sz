@@ -10,9 +10,12 @@
 #include <stdlib.h> 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "TightDataPointStorageD.h"
+#include "CompressElement.h"
 #include "sz.h"
 #include "Huffman.h"
+#include "sz_double_pwr.h"
 #include "utility.h"
 //#include "rw.h"
 
@@ -1417,6 +1420,80 @@ void decompressDataSeries_double_3D_pwr_pre_log(double** data, size_t r1, size_t
 		for(size_t i=0; i<dataSeriesLength; i++){
 			if((*data)[i] < threshold) (*data)[i] = 0;
 			else (*data)[i] = exp2((*data)[i]);
+		}
+	}
+}
+
+void decompressDataSeries_double_1D_pwr_pre_log_MSST19(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps) 
+{
+	decompressDataSeries_double_1D_MSST19(data, dataSeriesLength, tdps);
+}
+
+void decompressDataSeries_double_2D_pwr_pre_log_MSST19(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps) {
+
+	size_t dataSeriesLength = r1 * r2;
+	decompressDataSeries_double_2D_MSST19(data, r1, r2, tdps);
+	double threshold = tdps->minLogValue;
+	uint64_t* ptr;
+
+	if(tdps->pwrErrBoundBytes_size > 0){
+		unsigned char * signs = NULL;
+		if(tdps->pwrErrBoundBytes_size==0)
+		{
+			signs = (unsigned char*)malloc(dataSeriesLength);
+			memset(signs, 0, dataSeriesLength);
+		}
+		else
+			sz_lossless_decompress(ZSTD_COMPRESSOR, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold && (*data)[i] >= 0){
+				(*data)[i] = 0;
+				continue;
+			}
+			if(signs[i]){
+			    ptr = (uint64_t*)(*data) + i;
+                *ptr |= 0x8000000000000000;
+			}
+		}
+		free(signs);
+	}
+	else{
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+		}
+	}
+}
+
+void decompressDataSeries_double_3D_pwr_pre_log_MSST19(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps) {
+
+	size_t dataSeriesLength = r1 * r2 * r3;
+	decompressDataSeries_double_3D_MSST19(data, r1, r2, r3, tdps);
+	double threshold = tdps->minLogValue;
+	if(tdps->pwrErrBoundBytes_size > 0){
+		unsigned char * signs = NULL;
+		uint64_t* ptr;
+		if(tdps->pwrErrBoundBytes_size==0)
+		{
+			signs = (unsigned char*)malloc(dataSeriesLength);
+			memset(signs, 0, dataSeriesLength);
+		}
+		else
+			sz_lossless_decompress(ZSTD_COMPRESSOR, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold && (*data)[i] >= 0) {
+			    (*data)[i] = 0;
+                continue;
+			}
+			if(signs[i]) {
+			    ptr = (uint64_t*)(*data)+i;
+			    *ptr |= 0x8000000000000000;
+			}
+		}
+		free(signs);
+	}
+	else{
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
 		}
 	}
 }
