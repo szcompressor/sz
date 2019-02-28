@@ -1,6 +1,6 @@
 /**
  *  @file double_compression.c
- *  @author Sheng Di
+ *  @author Sheng Di, Dingwen Tao, Xin Liang, Xiangyu Zou, Tao Lu, Wen Xia, Xuan Wang, Weizhe Zhang
  *  @date April, 2016
  *  @brief Compression Technique for double array
  *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.

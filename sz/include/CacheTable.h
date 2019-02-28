@@ -1,6 +1,11 @@
-//
-// Created by borelset on 2018/12/18.
-//
+/**
+ *  @file CacheTable.h
+ *  @author Xiangyu Zou, Tao Lu, Wen Xia, Xuan Wang, Weizhe Zhang
+ *  @date Jan, 2019
+ *  @brief Header file.
+ *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
+ *      See COPYRIGHT in top-level directory.
+ */
 
 #ifndef SZ_MASTER_CACHETABLE_H
 #define SZ_MASTER_CACHETABLE_H

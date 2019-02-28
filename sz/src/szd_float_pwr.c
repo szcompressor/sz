@@ -1,7 +1,7 @@
 /**
  *  @file szd_float_pwr.c
- *  @author Sheng Di
- *  @date Aug, 2016
+ *  @author Sheng Di, Dingwen Tao, Xin Liang, Xiangyu Zou, Tao Lu, Wen Xia, Xuan Wang, Weizhe Zhang
+ *  @date Feb., 2019
  *  @brief 
  *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.

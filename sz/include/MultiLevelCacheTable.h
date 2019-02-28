@@ -1,6 +1,11 @@
-//
-// Created by borelset on 2018/12/22.
-//
+/**
+ *  @file MultiLevelCacheTable.h
+ *  @author Xiangyu Zou, Tao Lu, Wen Xia, Xuan Wang, Weizhe Zhang, Sheng Di, Dingwen Tao
+ *  @date Jan, 2019
+ *  @brief Header file.
+ *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
+ *      See COPYRIGHT in top-level directory.
+ */
 
 #ifndef _MULTILEVELCACHETABLE_H
 #define _MULTILEVELCACHETABLE_H

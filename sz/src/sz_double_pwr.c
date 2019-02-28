@@ -1,6 +1,6 @@
 /**
  *  @file sz_double_pwr.c
- *  @author Sheng Di
+ *  @author Sheng Di, Dingwen Tao, Xin Liang, Xiangyu Zou, Tao Lu, Wen Xia, Xuan Wang, Weizhe Zhang
  *  @date Aug, 2016
  *  @brief SZ_Init, Compression and Decompression functions
  * This file contains the compression/decompression functions related to point-wise relative errors

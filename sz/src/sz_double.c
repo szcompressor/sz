@@ -1,6 +1,6 @@
 /**
  *  @file sz_double.c
- *  @author Sheng Di and Dingwen Tao
+ *  @author Sheng Di, Dingwen Tao, Xin Liang, Xiangyu Zou, Tao Lu, Wen Xia, Xuan Wang, Weizhe Zhang
  *  @date Aug, 2016
  *  @brief SZ_Init, Compression and Decompression functions
  *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.

@@ -1,3 +1,12 @@
+/**
+ *  @file MultiLevelCacheTableWideInterval.h
+ *  @author Xiangyu Zou, Tao Lu, Wen Xia, Xuan Wang, Weizhe Zhang, Sheng Di, Dingwen Tao
+ *  @date Jan, 2019
+ *  @brief Header file.
+ *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
+ *      See COPYRIGHT in top-level directory.
+ */
+
 #include <stdbool.h>
 #include "MultiLevelCacheTableWideInterval.h"
 
