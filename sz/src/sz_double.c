@@ -319,7 +319,7 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	int state;
 	double checkRadius;
 	double curData;
-	double pred;
+	double pred = last3CmprsData[0];
 	double predAbsErr;
 	checkRadius = (exe_params->intvCapacity-1)*realPrecision;
 	double interval = 2*realPrecision;
@@ -329,7 +329,7 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 		//printf("%.30G\n",last3CmprsData[0]);
 		curData = spaceFillingValue[i];
 		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
-		pred = last3CmprsData[0];
+		//pred = last3CmprsData[0];
 		predAbsErr = fabs(curData - pred);	
 		if(predAbsErr<checkRadius)
 		{
@@ -344,7 +344,7 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 				type[i] = exe_params->intvRadius-state;
 				pred = pred - state*interval;
 			}
-			listAdd_double(last3CmprsData, pred);
+			//listAdd_double(last3CmprsData, pred);
 #ifdef HAVE_TIMECMPR					
 			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 				decData[i] = pred;			
@@ -359,7 +359,9 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 		memcpy(preDataBytes,vce->curBytes,8);
 		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 							
-		listAdd_double(last3CmprsData, vce->data);
+		//listAdd_double(last3CmprsData, vce->data);
+		pred = vce->data;
+		
 #ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[i] = vce->data;
