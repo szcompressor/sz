@@ -958,9 +958,8 @@ void convertSZParamsToBytes(sz_params* params, unsigned char* result)
 		int32ToBytes_bigEndian(&result[16], params->quantization_intervals);
 }
 
-sz_params* convertBytesToSZParams(unsigned char* bytes)
+void convertBytesToSZParams(unsigned char* bytes, sz_params* params)
 {
-	sz_params* params = (sz_params*)malloc(sizeof(struct sz_params));
 	unsigned char flag1 = bytes[0];
 	exe_params->optQuantMode = flag1 >> 7;
 	dataEndianType = (flag1 & 0x7f) >> 7;
@@ -1035,5 +1034,4 @@ sz_params* convertBytesToSZParams(unsigned char* bytes)
 		params->max_quant_intervals = 0;
 		params->quantization_intervals = bytesToInt32_bigEndian(&bytes[16]);  
 	}
-	return params;
 }

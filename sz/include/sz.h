@@ -389,7 +389,7 @@ void SZ_decompress_ts(unsigned char *bytes, size_t byteLength);
 void SZ_Finalize();
 
 void convertSZParamsToBytes(sz_params* params, unsigned char* result);
-sz_params* convertBytesToSZParams(unsigned char* bytes);
+void convertBytesToSZParams(unsigned char* bytes, sz_params* params);
 
 #ifdef __cplusplus
 }

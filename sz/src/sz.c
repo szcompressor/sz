@@ -529,13 +529,20 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	}
 	exe_params->SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
 	
-	sz_params* params = convertBytesToSZParams(&(bytes[index]));
+	if(confparams_dec==NULL)
+	{
+		confparams_dec = (sz_params*)malloc(sizeof(sz_params));
+		memset(confparams_dec, 0, sizeof(sz_params));
+	}	
+	
+	convertBytesToSZParams(&(bytes[index]), confparams_dec);
+	/*sz_params* params = convertBytesToSZParams(&(bytes[index]));
 	if(confparams_dec!=NULL)
 		free(confparams_dec);
-	confparams_dec = params;	
+	confparams_dec = params;*/	
 	index += MetaDataByteLength;
 	
-	if(params->dataType!=SZ_FLOAT && params->dataType!= SZ_DOUBLE) //if this type is an Int type
+	if(confparams_dec->dataType!=SZ_FLOAT && confparams_dec->dataType!= SZ_DOUBLE) //if this type is an Int type
 		index++; //jump to the dataLength info byte address
 	dataSeriesLength = bytesToSize(&(bytes[index]));// 4 or 8	
 	index += exe_params->SZ_SIZE_TYPE;
@@ -571,7 +578,7 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 				pwrErrBoundBytesL = 4;
 			}
 			
-			int offset_typearray = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrErrBoundBytesL + 4 + (4 + params->dataType*4) + 1 + 8 
+			int offset_typearray = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrErrBoundBytesL + 4 + (4 + confparams_dec->dataType*4) + 1 + 8 
 					+ exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + 4;
 			defactoNBBins = bytesToInt_bigEndian(bytes+offset_typearray);			
 		}

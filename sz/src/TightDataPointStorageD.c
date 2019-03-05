@@ -86,7 +86,13 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 		pwrErrBoundBytesL = 4;
 	}
 	
-	sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
+	if(confparams_dec==NULL)
+	{
+		confparams_dec = (sz_params*)malloc(sizeof(sz_params));
+		memset(confparams_dec, 0, sizeof(sz_params));
+	}	
+	convertBytesToSZParams(&(flatBytes[index]), confparams_dec);
+	/*sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
 	int mode = confparams_dec->szMode;
 	int predictionMode = confparams_dec->predictionMode;
 	int losslessCompressor = confparams_dec->losslessCompressor;
@@ -98,13 +104,8 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 	confparams_dec->szMode = mode;
 	confparams_dec->losslessCompressor = losslessCompressor;
 	confparams_dec->randomAccess = randomAccess;
-	confparams_dec->accelerate_pw_rel_compression = superfast_compression;
-	
-	if(mode==SZ_TEMPORAL_COMPRESSION)
-	{
-		confparams_dec->szMode = SZ_TEMPORAL_COMPRESSION;
-		confparams_dec->predictionMode = predictionMode;
-	}
+	confparams_dec->accelerate_pw_rel_compression = superfast_compression;*/
+
 	index += MetaDataByteLength;
 
 	int isRegression = (sameRByte >> 7) & 0x01;
@@ -159,7 +160,7 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 		radExpoL = 1;
 		for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)
 			byteBuf[i] = flatBytes[index++];
-		params->segment_size = (*this)->segment_size = bytesToSize(byteBuf);// exe_params->SZ_SIZE_TYPE	
+		confparams_dec->segment_size = (*this)->segment_size = bytesToSize(byteBuf);// exe_params->SZ_SIZE_TYPE	
 
 		for (i = 0; i < 4; i++)
 			byteBuf[i] = flatBytes[index++];
