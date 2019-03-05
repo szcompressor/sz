@@ -122,13 +122,8 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 	else if(same==1)
 	{
 		(*this)->allSameData = 1;
-		size_t exactMidBytesLength = sizeof(float); //flatBytesLength - 3 - 1 - MetaDataByteLength - exe_params->SZ_SIZE_TYPE;
-		if(exactMidBytesLength>0)
-			(*this)->exactMidBytes = (unsigned char*)malloc(sizeof(unsigned char)*exactMidBytesLength);
-		else
-			(*this)->exactMidBytes = NULL;
-		for(i = 0;i<exactMidBytesLength;i++)
-			(*this)->exactMidBytes[i] = flatBytes[index++];
+		//size_t exactMidBytesLength = sizeof(double);//flatBytesLength - 3 - 1 - MetaDataByteLength -exe_params->SZ_SIZE_TYPE;
+		(*this)->exactMidBytes = &(flatBytes[index]);
 		return errorBoundMode;
 	}
 	else
