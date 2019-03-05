@@ -1698,7 +1698,7 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
 	new_DIA(&resiBitArray, DynArrayInitLen);
 	
 	type[0] = 0;
-	unsigned char preDataBytes[4];
+	unsigned char preDataBytes[8];
 	intToBytes_bigEndian(preDataBytes, 0);
 	
 	int reqBytesLength = reqLength/8;
@@ -1965,8 +1965,8 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 	DynamicIntArray *resiBitArray;
 	new_DIA(&resiBitArray, DynArrayInitLen);
 
-	unsigned char preDataBytes[4];
-	intToBytes_bigEndian(preDataBytes, 0);
+	unsigned char preDataBytes[8];
+	longToBytes_bigEndian(preDataBytes, 0);
 	
 	int reqBytesLength = reqLength/8;
 	int resiBitsLength = reqLength%8;
@@ -1996,7 +1996,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 	type[0] = 0;
 	compressSingleDoubleValue_MSST19(vce, spaceFillingValue[0], realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
-	memcpy(preDataBytes,vce->curBytes,4);
+	memcpy(preDataBytes,vce->curBytes,8);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	P1[0] = vce->data;
 	//miss++;
