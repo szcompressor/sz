@@ -162,7 +162,7 @@ double computeRangeSize_double(double* oriData, size_t size, double* valueRangeS
 	return min;
 }
 
-float computeRangeSize_double_MSST19(double* oriData, size_t size, double* valueRangeSize, double* medianValue, unsigned char * signs, bool* positive, double* nearZero)
+double computeRangeSize_double_MSST19(double* oriData, size_t size, double* valueRangeSize, double* medianValue, unsigned char * signs, bool* positive, double* nearZero)
 {
     size_t i = 0;
     double min = oriData[0];
@@ -220,7 +220,7 @@ size_t e5, size_t e4, size_t e3, size_t e2, size_t e1)
 }
 
 
-float computeRangeSize_double_subblock(double* oriData, double* valueRangeSize, double* medianValue,
+double computeRangeSize_double_subblock(double* oriData, double* valueRangeSize, double* medianValue,
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1,
 size_t s5, size_t s4, size_t s3, size_t s2, size_t s1,
 size_t e5, size_t e4, size_t e3, size_t e2, size_t e1)
