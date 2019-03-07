@@ -142,10 +142,11 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libSZ_la_LIBADD =
-am__libSZ_la_SOURCES_DIST = src/MultiLevelCacheTableWideInterval.c \
-	src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c \
-	src/iniparser.c src/CompressElement.c src/DynamicByteArray.c \
-	src/rw.c src/utility.c src/TightDataPointStorageI.c \
+am__libSZ_la_SOURCES_DIST = src/MultiLevelCacheTable.c \
+	src/MultiLevelCacheTableWideInterval.c src/ByteToolkit.c \
+	src/dataCompression.c src/DynamicIntArray.c src/iniparser.c \
+	src/CompressElement.c src/DynamicByteArray.c src/rw.c \
+	src/utility.c src/TightDataPointStorageI.c \
 	src/TightDataPointStorageD.c src/TightDataPointStorageF.c \
 	src/conf.c src/DynamicDoubleArray.c src/TypeManager.c \
 	src/dictionary.c src/DynamicFloatArray.c src/VarSet.c \
@@ -168,7 +169,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@@TIMECMPR_TRUE@	src/libSZ_la-szd_float_ts.lo \
 @FORTRAN_FALSE@@TIMECMPR_TRUE@	src/libSZ_la-sz_double_ts.lo \
 @FORTRAN_FALSE@@TIMECMPR_TRUE@	src/libSZ_la-szd_double_ts.lo
-@FORTRAN_FALSE@am_libSZ_la_OBJECTS = src/libSZ_la-MultiLevelCacheTableWideInterval.lo \
+@FORTRAN_FALSE@am_libSZ_la_OBJECTS =  \
+@FORTRAN_FALSE@	src/libSZ_la-MultiLevelCacheTable.lo \
+@FORTRAN_FALSE@	src/libSZ_la-MultiLevelCacheTableWideInterval.lo \
 @FORTRAN_FALSE@	src/libSZ_la-ByteToolkit.lo \
 @FORTRAN_FALSE@	src/libSZ_la-dataCompression.lo \
 @FORTRAN_FALSE@	src/libSZ_la-DynamicIntArray.lo \
@@ -213,7 +216,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@	src/libSZ_la-ArithmeticCoding.lo \
 @FORTRAN_FALSE@	src/libSZ_la-CacheTable.lo $(am__objects_1) \
 @FORTRAN_FALSE@	$(am__objects_2) $(am__objects_3)
-@FORTRAN_TRUE@am_libSZ_la_OBJECTS = src/libSZ_la-MultiLevelCacheTableWideInterval.lo \
+@FORTRAN_TRUE@am_libSZ_la_OBJECTS =  \
+@FORTRAN_TRUE@	src/libSZ_la-MultiLevelCacheTable.lo \
+@FORTRAN_TRUE@	src/libSZ_la-MultiLevelCacheTableWideInterval.lo \
 @FORTRAN_TRUE@	src/libSZ_la-ByteToolkit.lo \
 @FORTRAN_TRUE@	src/libSZ_la-dataCompression.lo \
 @FORTRAN_TRUE@	src/libSZ_la-DynamicIntArray.lo \
@@ -515,7 +520,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@libSZ_la_LDFLAGS = -version-info  1:4:0
 @FORTRAN_FALSE@libSZ_la_LIDADD = ../zlib/.libs/libzlib.a ../zlib/.libs/libzstd.a
 @FORTRAN_TRUE@libSZ_la_LIDADD = ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a
-@FORTRAN_FALSE@libSZ_la_SOURCES =  \
+@FORTRAN_FALSE@libSZ_la_SOURCES = src/MultiLevelCacheTable.c \
 @FORTRAN_FALSE@	src/MultiLevelCacheTableWideInterval.c \
 @FORTRAN_FALSE@	src/ByteToolkit.c src/dataCompression.c \
 @FORTRAN_FALSE@	src/DynamicIntArray.c src/iniparser.c \
@@ -539,7 +544,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@	src/szd_float_pwr.c src/szd_double_pwr.c \
 @FORTRAN_FALSE@	src/ArithmeticCoding.c src/CacheTable.c \
 @FORTRAN_FALSE@	$(am__append_7) $(am__append_8) $(am__append_9)
-@FORTRAN_TRUE@libSZ_la_SOURCES =  \
+@FORTRAN_TRUE@libSZ_la_SOURCES = src/MultiLevelCacheTable.c \
 @FORTRAN_TRUE@	src/MultiLevelCacheTableWideInterval.c \
 @FORTRAN_TRUE@	src/ByteToolkit.c src/dataCompression.c \
 @FORTRAN_TRUE@	src/DynamicIntArray.c src/iniparser.c src/szf.c \
@@ -639,6 +644,8 @@ src/$(am__dirstamp):
 src/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/$(DEPDIR)
 	@: > src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-MultiLevelCacheTable.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-MultiLevelCacheTableWideInterval.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-ByteToolkit.lo: src/$(am__dirstamp) \
@@ -766,6 +773,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-DynamicFloatArray.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-DynamicIntArray.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-Huffman.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-MultiLevelCacheTable.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-MultiLevelCacheTableWideInterval.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-TightDataPointStorageD.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-TightDataPointStorageF.Plo@am__quote@
@@ -836,6 +844,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+src/libSZ_la-MultiLevelCacheTable.lo: src/MultiLevelCacheTable.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-MultiLevelCacheTable.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-MultiLevelCacheTable.Tpo -c -o src/libSZ_la-MultiLevelCacheTable.lo `test -f 'src/MultiLevelCacheTable.c' || echo '$(srcdir)/'`src/MultiLevelCacheTable.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-MultiLevelCacheTable.Tpo src/$(DEPDIR)/libSZ_la-MultiLevelCacheTable.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/MultiLevelCacheTable.c' object='src/libSZ_la-MultiLevelCacheTable.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-MultiLevelCacheTable.lo `test -f 'src/MultiLevelCacheTable.c' || echo '$(srcdir)/'`src/MultiLevelCacheTable.c
 
 src/libSZ_la-MultiLevelCacheTableWideInterval.lo: src/MultiLevelCacheTableWideInterval.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-MultiLevelCacheTableWideInterval.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-MultiLevelCacheTableWideInterval.Tpo -c -o src/libSZ_la-MultiLevelCacheTableWideInterval.lo `test -f 'src/MultiLevelCacheTableWideInterval.c' || echo '$(srcdir)/'`src/MultiLevelCacheTableWideInterval.c
