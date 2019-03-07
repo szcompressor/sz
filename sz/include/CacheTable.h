@@ -1,6 +1,6 @@
 /**
  *  @file CacheTable.h
- *  @author Xiangyu Zou, Tao Lu, Wen Xia, Xuan Wang, Weizhe Zhang
+ *  @author Xiangyu Zou, Tao Lu, Wen Xia, Xuan Wang, Weizhe Zhang, Sheng Di, Dingwen Tao
  *  @date Jan, 2019
  *  @brief Header file.
  *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
@@ -18,26 +18,19 @@ extern "C" {
 #include "stdint.h"
 #include <math.h>
 
-double* g_CacheTable;
-uint32_t * g_InverseTable;
-uint32_t baseIndex;
-uint32_t topIndex;
-int bits;
+extern double* g_CacheTable;
+extern uint32_t * g_InverseTable;
+extern uint32_t baseIndex;
+extern uint32_t topIndex;
+extern int bits;
 
 int doubleGetExpo(double d);
-
 int CacheTableGetRequiredBits(double precision, int quantization_intervals);
-
 uint32_t CacheTableGetIndex(float value, int bits);
-
 uint64_t CacheTableGetIndexDouble(double value, int bits);
-
 int CacheTableIsInBoundary(uint32_t index);
-
 void CacheTableBuild(double * table, int count, double smallest, double largest, double precision, int quantization_intervals);
-
 uint32_t CacheTableFind(uint32_t index);
-
 void CacheTableFree();
 
 #ifdef __cplusplus

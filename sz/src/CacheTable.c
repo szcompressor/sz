@@ -10,6 +10,12 @@
 #include <stdlib.h>
 #include "CacheTable.h"
 
+extern double* g_CacheTable;
+extern uint32_t * g_InverseTable;
+extern uint32_t baseIndex;
+extern uint32_t topIndex;
+extern int bits;
+
 inline int doubleGetExpo(double d){
     long* ptr = (long*)&d;
     *ptr = ((*ptr) >> 52) - 1023;
