@@ -56,6 +56,9 @@
 #include "sz_float_ts.h"
 #include "szd_float_ts.h"
 #include "utility.h"
+#include "CacheTable.h"
+#include "MultiLevelCacheTable.h"
+#include "MultiLevelCacheTableWideInterval.h"
 
 #ifdef _WIN32
 #define PATH_SEPARATOR ';'

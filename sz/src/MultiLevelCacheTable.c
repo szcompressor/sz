@@ -13,6 +13,17 @@
 #include "stdio.h"
 #include "MultiLevelCacheTable.h"
 
+uint8_t MLCT_GetExpoIndex(float value){
+    uint32_t* ptr = (uint32_t*)&value;
+    return (*ptr) >> 23;
+}
+
+uint8_t MLCT_GetRequiredBits(float precision){
+    int32_t* ptr = (int32_t*)&precision;
+    return -(((*ptr) >> 23) - 127);
+}
+
+
 uint32_t MLCT_GetMantiIndex(float value, int bits){
     uint32_t* ptr = (uint32_t*)&value;
     (*ptr) = (*ptr) << 9 >> 9;
