@@ -19,21 +19,21 @@ extern "C" {
 #include <stdlib.h>
 #include "stdio.h"
 
-struct SubLevelTable{
+typedef struct SubLevelTable{
     uint32_t baseIndex;
     uint32_t topIndex;
     uint32_t* table;
     uint8_t expoIndex;
-}SubLevelTable;
+} SubLevelTable;
 
-struct TopLevelTable{
+typedef struct TopLevelTable{
     uint8_t bits;
     uint8_t baseIndex;
     uint8_t topIndex;
     struct SubLevelTable* subTables;
     float bottomBoundary;
     float topBoundary;
-}TopLevelTable;
+} TopLevelTable;
 
 uint8_t MLCT_GetExpoIndex(float value);
 uint8_t MLCT_GetRequiredBits(float precision);

@@ -20,14 +20,14 @@ extern "C" {
 #include <stdlib.h>
 #include "stdio.h"
 
-struct SubLevelTableWideInterval{
+typedef struct SubLevelTableWideInterval{
     uint64_t baseIndex;
     uint64_t topIndex;
     uint16_t* table;
     uint16_t expoIndex;
 } SubLevelTableWideInterval;
 
-struct TopLevelTableWideInterval{
+typedef struct TopLevelTableWideInterval{
     uint16_t bits;
     uint16_t baseIndex;
     uint16_t topIndex;
