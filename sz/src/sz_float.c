@@ -1739,10 +1739,11 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 	//struct ClockPoint clockPointBuild;
 	//TimeDurationStart("build", &clockPointBuild);
 	unsigned int quantization_intervals;
-	if(exe_params->optQuantMode==1)
+	/*if(exe_params->optQuantMode==1)
 		quantization_intervals = optimize_intervals_float_1D_opt(oriData, dataLength, realPrecision);
 	else
-		quantization_intervals = exe_params->intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;*/
+	quantization_intervals = confparams_cpr->max_quant_intervals;
 	updateQuantizationInfo(quantization_intervals);
 	
 	double* precisionTable = (double*)malloc(sizeof(double) * quantization_intervals);
@@ -1904,13 +1905,14 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ_MSST19(float *oriData, size_t r
 #endif	
 	
 	unsigned int quantization_intervals;
-	if(exe_params->optQuantMode==1)
+	/*if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_float_2D_opt(oriData, r1, r2, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
 	}	
 	else
-		quantization_intervals = exe_params->intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;*/
+	quantization_intervals = confparams_cpr->max_quant_intervals;
 
 	double* precisionTable = (double*)malloc(sizeof(double) * quantization_intervals);
 	double inv = 2.0-pow(2, -(confparams_cpr->plus_bits));
@@ -2176,13 +2178,14 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
 #endif		
 
 	unsigned int quantization_intervals;
-	if(exe_params->optQuantMode==1)
+	/*if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_float_3D_opt(oriData, r1, r2, r3, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
 	}	
 	else
-		quantization_intervals = exe_params->intvCapacity;
+		quantization_intervals = exe_params->intvCapacity;*/
+	quantization_intervals = confparams_cpr->max_quant_intervals;
 
     double* precisionTable = (double*)malloc(sizeof(double) * quantization_intervals);
     double inv = 2.0-pow(2, -(confparams_cpr->plus_bits));
@@ -2769,7 +2772,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
 			{
-				if(confparams_cpr->accelerate_pw_rel_compression)
+				if(confparams_cpr->accelerate_pw_rel_compression && confparams_cpr->maxRangeRadius <= 32768)
 					SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log_MSST19(&tmpByteData, oriData, pwRelBoundRatio, r1, &tmpOutSize, valueRangeSize, medianValue, signs, &positive, min, max, nearZero);
 				else
 					SZ_compress_args_float_NoCkRngeNoGzip_1D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r1, &tmpOutSize, min, max);
@@ -2801,7 +2804,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		{			
 			if(confparams_cpr->errorBoundMode>=PW_REL)
 			{
-				if(confparams_cpr->accelerate_pw_rel_compression)
+				if(confparams_cpr->accelerate_pw_rel_compression && confparams_cpr->maxRangeRadius <= 32768)
 					SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr_pre_log_MSST19(&tmpByteData, oriData, pwRelBoundRatio, r2, r1, &tmpOutSize, valueRangeSize, signs, &positive, min, max, nearZero);
 				else
 					SZ_compress_args_float_NoCkRngeNoGzip_2D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r2, r1, &tmpOutSize, min, max);
@@ -2837,7 +2840,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
 			{
-				if(confparams_cpr->accelerate_pw_rel_compression)
+				if(confparams_cpr->accelerate_pw_rel_compression && confparams_cpr->maxRangeRadius <= 32768)
 					SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr_pre_log_MSST19(&tmpByteData, oriData, pwRelBoundRatio, r3, r2, r1, &tmpOutSize, valueRangeSize, signs, &positive, min, max, nearZero);
 				else
 					SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r3, r2, r1, &tmpOutSize, min, max);
@@ -2873,7 +2876,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		{
 			if(confparams_cpr->errorBoundMode>=PW_REL)
 			{
-				if(confparams_cpr->accelerate_pw_rel_compression)
+				if(confparams_cpr->accelerate_pw_rel_compression && confparams_cpr->maxRangeRadius <= 32768)
 					SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr_pre_log_MSST19(&tmpByteData, oriData, pwRelBoundRatio, r4*r3, r2, r1, &tmpOutSize, valueRangeSize, signs, &positive, min, max, nearZero);
 				else
 					SZ_compress_args_float_NoCkRngeNoGzip_3D_pwr_pre_log(&tmpByteData, oriData, pwRelBoundRatio, r4*r3, r2, r1, &tmpOutSize, min, max);				
