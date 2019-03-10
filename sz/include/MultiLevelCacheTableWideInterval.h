@@ -36,6 +36,8 @@ typedef struct TopLevelTableWideInterval{
     double topBoundary;
 } TopLevelTableWideInterval;
 
+void freeTopLevelTableWideInterval(struct TopLevelTableWideInterval* topTable);
+
 uint16_t MLCTWI_GetExpoIndex(double value);
 uint16_t MLCTWI_GetRequiredBits(double precision);
 uint64_t MLCTWI_GetMantiIndex(double value, int bits);

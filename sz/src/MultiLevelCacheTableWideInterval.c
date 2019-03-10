@@ -10,6 +10,16 @@
 #include <stdbool.h>
 #include "MultiLevelCacheTableWideInterval.h"
 
+void freeTopLevelTableWideInterval(struct TopLevelTableWideInterval* topTable)
+{
+	for(int i=topTable->topIndex-topTable->baseIndex; i>=0; i--)
+	{
+		struct SubLevelTableWideInterval* processingSubTable = &topTable->subTables[i];
+		free(processingSubTable->table);
+	}
+	free(topTable->subTables);
+}
+
 uint16_t MLCTWI_GetExpoIndex(double value){
     uint64_t* ptr = (uint64_t*)&value;
     return (*ptr) >> 52;

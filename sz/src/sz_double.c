@@ -1632,7 +1632,8 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	free(vce);
 	free(lce);	
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
-
+	free(precisionTable);
+	freeTopLevelTableWideInterval(&levelTable);
 	return tdps;
 }
 
@@ -1903,7 +1904,8 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
 	free(vce);
 	free(lce);
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
-	
+	free(precisionTable);
+	freeTopLevelTableWideInterval(&levelTable);
 	return tdps;	
 }
 
@@ -2356,7 +2358,8 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 	free(vce);
 	free(lce);
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
-	
+	free(precisionTable);
+	freeTopLevelTableWideInterval(&levelTable);	
 	return tdps;	
 }
 void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *oriData, size_t dataLength, size_t *outSize)

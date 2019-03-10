@@ -1750,6 +1750,8 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
     for(int i=0; i<quantization_intervals; i++){
         double test = pow((1+realPrecision), inv*(i - exe_params->intvRadius));
         precisionTable[i] = test;
+//        if(i>30000 && i<40000)
+//			printf("%d %.30G\n", i, test);
     }
     //float smallest_precision = precisionTable[0], largest_precision = precisionTable[quantization_intervals-1];
 	struct TopLevelTableWideInterval levelTable;
@@ -1888,7 +1890,8 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 	free(vce);
 	free(lce);	
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
-
+	free(precisionTable);
+	freeTopLevelTableWideInterval(&levelTable);
 	return tdps;
 }
 
@@ -2159,7 +2162,8 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ_MSST19(float *oriData, size_t r
 	free(vce);
 	free(lce);
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
-	
+	free(precisionTable);
+	freeTopLevelTableWideInterval(&levelTable);	
 	return tdps;	
 }
 
@@ -2612,7 +2616,8 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
 	free(vce);
 	free(lce);
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
-	
+	free(precisionTable);
+	freeTopLevelTableWideInterval(&levelTable);	
 	return tdps;	
 }
 
