@@ -1671,6 +1671,7 @@ void decompressDataSeries_double_1D_MSST19(double** data, size_t dataSeriesLengt
 	
 	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
 	decode_withTree_MSST19(huffmanTree, tdps->typeArray, dataSeriesLength, type, tdps->max_bits);
+	//decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
 	SZ_ReleaseHuffman(huffmanTree);	
 	unsigned char preBytes[8];
 	unsigned char curBytes[8];
@@ -1784,6 +1785,7 @@ void decompressDataSeries_double_2D_MSST19(double** data, size_t r1, size_t r2, 
 
 	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
 	decode_withTree_MSST19(huffmanTree, tdps->typeArray, dataSeriesLength, type, tdps->max_bits);
+	//decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
 	SZ_ReleaseHuffman(huffmanTree);	
 
 	unsigned char preBytes[8];
@@ -2109,6 +2111,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 
 	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
 	decode_withTree_MSST19(huffmanTree, tdps->typeArray, dataSeriesLength, type, tdps->max_bits);
+	//decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
 	SZ_ReleaseHuffman(huffmanTree);
 
 	unsigned char preBytes[8];
