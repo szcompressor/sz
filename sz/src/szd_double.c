@@ -1681,11 +1681,11 @@ void decompressDataSeries_double_1D_MSST19(double** data, size_t dataSeriesLengt
 	size_t curByteIndex = 0;
 	int reqBytesLength, resiBitsLength, resiBits; 
 	unsigned char leadingNum;	
-	double medianValue, exactData, predValue = 0;
+	double exactData, predValue = 0;
 	reqBytesLength = tdps->reqLength/8;
 	resiBitsLength = tdps->reqLength%8;
-	medianValue = tdps->medianValue;
-	double threshold = tdps->minLogValue;
+
+	//double threshold = tdps->minLogValue;
 	double* precisionTable = (double*)malloc(sizeof(double) * exe_params->intvCapacity);
 	double inv = 2.0-pow(2, -(tdps->plus_bits));
 	for(int i=0; i<exe_params->intvCapacity; i++){
@@ -1736,7 +1736,7 @@ void decompressDataSeries_double_1D_MSST19(double** data, size_t dataSeriesLengt
 			}
 			
 			exactData = bytesToDouble(curBytes);
-			(*data)[i] = exactData * medianValue;
+			(*data)[i] = exactData;
 			memcpy(preBytes,curBytes,8);
 			predValue = (*data)[i];
 			break;
@@ -1745,12 +1745,8 @@ void decompressDataSeries_double_1D_MSST19(double** data, size_t dataSeriesLengt
 			//predValue = (*data)[i-1];
 			(*data)[i] = fabs(predValue) * precisionTable[type_] * (signs[i] ? -1:1);
 			predValue = (*data)[i];
-			if((*data)[i] < threshold && (*data)[i] > 0){
-                (*data)[i] = 0;
-			}
 			break;
 		}
-		//printf("%.30G\n",(*data)[i]);
 	}
 	
 #ifdef HAVE_TIMECMPR	
@@ -1796,7 +1792,7 @@ void decompressDataSeries_double_2D_MSST19(double** data, size_t r1, size_t r2, 
 	size_t curByteIndex = 0;
 	int reqBytesLength, resiBitsLength, resiBits; 
 	unsigned char leadingNum;	
-	double medianValue, exactData;
+	double exactData;
 	int type_;
 
     double* precisionTable = (double*)malloc(sizeof(double) * exe_params->intvCapacity);
@@ -1808,7 +1804,7 @@ void decompressDataSeries_double_2D_MSST19(double** data, size_t r1, size_t r2, 
 
     reqBytesLength = tdps->reqLength/8;
 	resiBitsLength = tdps->reqLength%8;
-	medianValue = tdps->medianValue;
+	//medianValue = tdps->medianValue;
 	
 	double pred1D, pred2D;
 	size_t ii, jj;
@@ -1853,7 +1849,7 @@ void decompressDataSeries_double_2D_MSST19(double** data, size_t r1, size_t r2, 
 	}
 
 	exactData = bytesToDouble(curBytes);
-	(*data)[0] = exactData * medianValue;
+	(*data)[0] = exactData;
 	memcpy(preBytes,curBytes,8);
 
 	/* Process Row-0, data 1 */
@@ -1903,7 +1899,7 @@ void decompressDataSeries_double_2D_MSST19(double** data, size_t r1, size_t r2, 
 		}
 
 		exactData = bytesToDouble(curBytes);
-		(*data)[1] = exactData * medianValue;
+		(*data)[1] = exactData;
 		memcpy(preBytes,curBytes,8);
 	}
 
@@ -1956,7 +1952,7 @@ void decompressDataSeries_double_2D_MSST19(double** data, size_t r1, size_t r2, 
 			}
 
 			exactData = bytesToDouble(curBytes);
-			(*data)[jj] = exactData * medianValue;
+			(*data)[jj] = exactData;
 			memcpy(preBytes,curBytes,8);
 		}
 	}
@@ -2014,7 +2010,7 @@ void decompressDataSeries_double_2D_MSST19(double** data, size_t r1, size_t r2, 
 			}
 
 			exactData = bytesToDouble(curBytes);
-			(*data)[index] = exactData * medianValue;
+			(*data)[index] = exactData;
 			memcpy(preBytes,curBytes,8);
 		}
 
@@ -2069,7 +2065,7 @@ void decompressDataSeries_double_2D_MSST19(double** data, size_t r1, size_t r2, 
 				}
 
 				exactData = bytesToDouble(curBytes);
-				(*data)[index] = exactData * medianValue;
+				(*data)[index] = exactData;
 				memcpy(preBytes,curBytes,8);
 			}
 		}
@@ -2121,12 +2117,11 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 	size_t curByteIndex = 0;
 	int reqBytesLength, resiBitsLength, resiBits;
 	unsigned char leadingNum;
-	double medianValue, exactData;
+	double exactData;
 	int type_;
 
 	reqBytesLength = tdps->reqLength/8;
 	resiBitsLength = tdps->reqLength%8;
-	medianValue = tdps->medianValue;
 	
 	double pred1D, pred2D, pred3D;
 	double temp;
@@ -2172,7 +2167,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 		curBytes[reqBytesLength] = resiByte;
 	}
 	exactData = bytesToDouble(curBytes);
-	(*data)[0] = exactData * medianValue;
+	(*data)[0] = exactData;
 	memcpy(preBytes,curBytes,8);
 
 	/* Process Row-0, data 1 */
@@ -2223,7 +2218,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 		}
 
 		exactData = bytesToDouble(curBytes);
-		(*data)[1] = exactData * medianValue;
+		(*data)[1] = exactData;
 		memcpy(preBytes,curBytes,8);
 	}
 	/* Process Row-0, data 2 --> data r3-1 */
@@ -2277,7 +2272,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 			}
 
 			exactData = bytesToDouble(curBytes);
-			(*data)[jj] = exactData * medianValue;
+			(*data)[jj] = exactData;
 			memcpy(preBytes,curBytes,8);
 		}
 	}
@@ -2335,7 +2330,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 			}
 
 			exactData = bytesToDouble(curBytes);
-			(*data)[index] = exactData * medianValue;
+			(*data)[index] = exactData;
 			memcpy(preBytes,curBytes,8);
 		}
 
@@ -2393,7 +2388,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 				}
 
 				exactData = bytesToDouble(curBytes);
-				(*data)[index] = exactData * medianValue;
+				(*data)[index] = exactData;
 				memcpy(preBytes,curBytes,8);
 			}
 		}
@@ -2452,7 +2447,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 			}
 
 			exactData = bytesToDouble(curBytes);
-			(*data)[index] = exactData * medianValue;
+			(*data)[index] = exactData;
 			memcpy(preBytes,curBytes,8);
 		}
 
@@ -2508,7 +2503,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 				}
 
 				exactData = bytesToDouble(curBytes);
-				(*data)[index] = exactData * medianValue;
+				(*data)[index] = exactData;
 				memcpy(preBytes,curBytes,8);
 			}
 		}
@@ -2566,7 +2561,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 				}
 
 				exactData = bytesToDouble(curBytes);
-				(*data)[index] = exactData * medianValue;
+				(*data)[index] = exactData;
 				memcpy(preBytes,curBytes,8);
 			}
 
@@ -2625,7 +2620,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 					}
 
 					exactData = bytesToDouble(curBytes);
-					(*data)[index] = exactData * medianValue;
+					(*data)[index] = exactData;
 					memcpy(preBytes,curBytes,8);
 				}
 			}

@@ -18,6 +18,7 @@ extern "C" {
 unsigned char* SZ_skip_compress_double(double* data, size_t dataLength, size_t* outSize);
 
 void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue);
+short computeReqLength_double_MSST19(double realPrecision);
 unsigned int optimize_intervals_double_1D(double *oriData, size_t dataLength, double realPrecision);
 unsigned int optimize_intervals_double_2D(double *oriData, size_t r1, size_t r2, double realPrecision);
 unsigned int optimize_intervals_double_3D(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision);

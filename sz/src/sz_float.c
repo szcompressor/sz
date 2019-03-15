@@ -36,6 +36,26 @@ unsigned char* SZ_skip_compress_float(float* data, size_t dataLength, size_t* ou
 	memcpy(out, data, dataLength*sizeof(float));
 	return out;
 }
+
+void computeReqLength_float(double realPrecision, short radExpo, int* reqLength, float* medianValue)
+{
+	short reqExpo = getPrecisionReqLength_double(realPrecision);
+	*reqLength = 9+radExpo - reqExpo+1; //radExpo-reqExpo == reqMantiLength
+	if(*reqLength<9)
+		*reqLength = 9;
+	if(*reqLength>32)
+	{	
+		*reqLength = 32;
+		*medianValue = 0;
+	}			
+}
+
+inline short computeReqLength_float_MSST19(double realPrecision)
+{
+	short reqExpo = getPrecisionReqLength_float(realPrecision);
+	return 9-reqExpo;
+}
+
 unsigned int optimize_intervals_float_1D(float *oriData, size_t dataLength, double realPrecision)
 {	
 	size_t i = 0, radiusIndex;
@@ -1761,10 +1781,10 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 	size_t i;
 	int reqLength;
 	float medianValue = medianValue_f;
-	float medianInverse = 1 / medianValue_f;
-	short radExpo = getExponent_float(valueRangeSize/2);
+	//float medianInverse = 1 / medianValue_f;
+	//short radExpo = getExponent_float(valueRangeSize/2);
 	
-	computeReqLength_float(realPrecision, radExpo, &reqLength, &medianValue);	
+	reqLength = computeReqLength_float_MSST19(realPrecision);	
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
 		
@@ -1793,7 +1813,7 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 				
 	//add the first data	
 	type[0] = 0;
-	compressSingleFloatValue_MSST19(vce, spaceFillingValue[0], realPrecision, medianValue, medianInverse, reqLength, reqBytesLength, resiBitsLength);
+	compressSingleFloatValue_MSST19(vce, spaceFillingValue[0], realPrecision, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -1806,7 +1826,7 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 		
 	//add the second data
 	type[1] = 0;
-	compressSingleFloatValue_MSST19(vce, spaceFillingValue[1], realPrecision, medianValue, medianInverse, reqLength, reqBytesLength, resiBitsLength);
+	compressSingleFloatValue_MSST19(vce, spaceFillingValue[1], realPrecision, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -1857,7 +1877,7 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 
 		//unpredictable data processing
 		type[i] = 0;
-		compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianInverse, reqLength, reqBytesLength, resiBitsLength);
+		compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 		memcpy(preDataBytes,vce->curBytes,4);
 		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -1940,9 +1960,9 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ_MSST19(float *oriData, size_t r
 	memset(P1, 0, r2*sizeof(float));
 		
 	float medianValue = medianValue_f;
-	float medianValueInverse = 1 / medianValue_f;
-	short radExpo = getExponent_float(valueRangeSize/2);
-	computeReqLength_float(realPrecision, radExpo, &reqLength, &medianValue);	
+	//float medianValueInverse = 1 / medianValue_f;
+	//short radExpo = getExponent_float(valueRangeSize/2);
+	reqLength = computeReqLength_double_MSST19(realPrecision);	
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
 	//type[dataLength]=0;
@@ -1981,7 +2001,7 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ_MSST19(float *oriData, size_t r
 			
 	/* Process Row-0 data 0*/
 	type[0] = 0;
-	compressSingleFloatValue_MSST19(vce, spaceFillingValue[0], realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+	compressSingleFloatValue_MSST19(vce, spaceFillingValue[0], realPrecision, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2016,7 +2036,7 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ_MSST19(float *oriData, size_t r
 	else
 	{
 		type[1] = 0;
-		compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+		compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 		memcpy(preDataBytes,vce->curBytes,4);
 		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2050,7 +2070,7 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ_MSST19(float *oriData, size_t r
 		else
 		{
 			type[j] = 0;
-			compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+			compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2088,7 +2108,7 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ_MSST19(float *oriData, size_t r
 		else
 		{
 			type[index] = 0;
-			compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+			compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2124,7 +2144,7 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ_MSST19(float *oriData, size_t r
 			else
 			{
 				type[index] = 0;
-				compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+				compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2211,9 +2231,9 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
 	P1 = (float*)malloc(r23*sizeof(float));
 
 	float medianValue = medianValue_f;
-	float medianValueInverse = 1/ medianValue_f;
-	short radExpo = getExponent_float(valueRangeSize/2);
-	computeReqLength_float(realPrecision, radExpo, &reqLength, &medianValue);	
+	//float medianValueInverse = 1/ medianValue_f;
+	//short radExpo = getExponent_float(valueRangeSize/2);
+	reqLength = computeReqLength_float_MSST19(realPrecision);	
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
 
@@ -2257,7 +2277,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
     ///////////////////////////	Process layer-0 ///////////////////////////
 	/* Process Row-0 data 0*/
 	type[0] = 0;
-	compressSingleFloatValue_MSST19(vce, spaceFillingValue[0], realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+	compressSingleFloatValue_MSST19(vce, spaceFillingValue[0], realPrecision, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,4);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2292,7 +2312,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
 	else
 	{
 		type[1] = 0;
-		compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+		compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 		memcpy(preDataBytes,vce->curBytes,4);
 		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2329,7 +2349,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
 		else
 		{
 			type[j] = 0;
-			compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+			compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2369,7 +2389,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
 		else
 		{
 			type[index] = 0;
-			compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+			compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2413,7 +2433,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
 			else
 			{
 				type[index] = 0;
-				compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+				compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2455,7 +2475,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
 		else
 		{
 			type[index] = 0;
-			compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+			compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 			updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 			memcpy(preDataBytes,vce->curBytes,4);
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2494,7 +2514,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
 			else
 			{
 				type[index] = 0;
-				compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+				compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2536,7 +2556,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
 			else
 			{
 				type[index] = 0;
-				compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+				compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 				updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 				memcpy(preDataBytes,vce->curBytes,4);
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2578,7 +2598,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ_MSST19(float *oriData, size_t r
 				else
 				{
 					type[index] = 0;
-					compressSingleFloatValue_MSST19(vce, curData, realPrecision, medianValue, medianValueInverse, reqLength, reqBytesLength, resiBitsLength);
+					compressSingleFloatValue_MSST19(vce, curData, realPrecision, reqLength, reqBytesLength, resiBitsLength);
 					updateLossyCompElement_Float(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 					memcpy(preDataBytes,vce->curBytes,4);
 					addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
@@ -2922,20 +2942,6 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	}
 	
 	return status;
-}
-
-
-void computeReqLength_float(double realPrecision, short radExpo, int* reqLength, float* medianValue)
-{
-	short reqExpo = getPrecisionReqLength_double(realPrecision);
-	*reqLength = 9+radExpo - reqExpo+1; //radExpo-reqExpo == reqMantiLength
-	if(*reqLength<9)
-		*reqLength = 9;
-	if(*reqLength>32)
-	{	
-		*reqLength = 32;
-		*medianValue = 0;
-	}			
 }
 
 //TODO

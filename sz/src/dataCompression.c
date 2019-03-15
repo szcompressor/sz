@@ -473,10 +473,9 @@ void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, fl
 	vce->resiBitsLength = resiBitsLength;
 }
 
-void compressSingleFloatValue_MSST19(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, float medianValueInverse,
-                              int reqLength, int reqBytesLength, int resiBitsLength)
+void compressSingleFloatValue_MSST19(FloatValueCompressElement *vce, float tgtValue, float precision, int reqLength, int reqBytesLength, int resiBitsLength)
 {
-    float normValue = tgtValue * medianValueInverse;
+    float normValue = tgtValue;
 
     lfloat lfBuf;
     lfBuf.value = normValue;
@@ -492,8 +491,30 @@ void compressSingleFloatValue_MSST19(FloatValueCompressElement *vce, float tgtVa
 
     //float tmpValue = lfBuf.value;
 
-    vce->data = lfBuf.value*medianValue;
+    vce->data = lfBuf.value;
     vce->curValue = tmp_int;
+    vce->reqBytesLength = reqBytesLength;
+    vce->resiBitsLength = resiBitsLength;
+}
+
+void compressSingleDoubleValue_MSST19(DoubleValueCompressElement *vce, double tgtValue, double precision, int reqLength, int reqBytesLength, int resiBitsLength)
+{
+    ldouble lfBuf;
+    lfBuf.value = tgtValue;
+
+    int ignBytesLength = 64 - reqLength;
+    if(ignBytesLength<0)
+        ignBytesLength = 0;
+
+    long tmp_long = lfBuf.lvalue;
+    longToBytes_bigEndian(vce->curBytes, tmp_long);
+
+    lfBuf.lvalue = (lfBuf.lvalue >> ignBytesLength) << ignBytesLength;
+
+    //float tmpValue = lfBuf.value;
+
+    vce->data = lfBuf.value;
+    vce->curValue = tmp_long;
     vce->reqBytesLength = reqBytesLength;
     vce->resiBitsLength = resiBitsLength;
 }
@@ -521,31 +542,6 @@ void compressSingleDoubleValue(DoubleValueCompressElement *vce, double tgtValue,
 	vce->curValue = tmp_long;
 	vce->reqBytesLength = reqBytesLength;
 	vce->resiBitsLength = resiBitsLength;
-}
-
-void compressSingleDoubleValue_MSST19(DoubleValueCompressElement *vce, double tgtValue, double precision, double medianValue, double medianValueInverse,
-                              int reqLength, int reqBytesLength, int resiBitsLength)
-{
-    double normValue = tgtValue * medianValueInverse;
-
-    ldouble lfBuf;
-    lfBuf.value = normValue;
-
-    int ignBytesLength = 64 - reqLength;
-    if(ignBytesLength<0)
-        ignBytesLength = 0;
-
-    long tmp_long = lfBuf.lvalue;
-    longToBytes_bigEndian(vce->curBytes, tmp_long);
-
-    lfBuf.lvalue = (lfBuf.lvalue >> ignBytesLength) << ignBytesLength;
-
-    //float tmpValue = lfBuf.value;
-
-    vce->data = lfBuf.value*medianValue;
-    vce->curValue = tmp_long;
-    vce->reqBytesLength = reqBytesLength;
-    vce->resiBitsLength = resiBitsLength;
 }
 
 int compIdenticalLeadingBytesCount_double(unsigned char* preBytes, unsigned char* curBytes)

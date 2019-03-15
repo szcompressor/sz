@@ -345,7 +345,7 @@ inline short getExponent_double(double value)
 	return (short)expValue;
 }
 
-short getPrecisionReqLength_double(double precision)
+inline short getPrecisionReqLength_double(double precision)
 {
 	ldouble lbuf;
 	lbuf.value = precision;

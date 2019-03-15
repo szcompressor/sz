@@ -68,12 +68,10 @@ void compressUInt64Value(uint64_t tgtValue, uint64_t minValue, int byteSize, uns
 
 void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, 
 		int reqLength, int reqBytesLength, int resiBitsLength);
-void compressSingleFloatValue_MSST19(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, float medianValueInverse,
-                              int reqLength, int reqBytesLength, int resiBitsLength);
+void compressSingleFloatValue_MSST19(FloatValueCompressElement *vce, float tgtValue, float precision, int reqLength, int reqBytesLength, int resiBitsLength);
 void compressSingleDoubleValue(DoubleValueCompressElement *vce, double tgtValue, double precision, double medianValue, 
 		int reqLength, int reqBytesLength, int resiBitsLength);
-void compressSingleDoubleValue_MSST19(DoubleValueCompressElement *vce, double tgtValue, double precision, double medianValue, double medianValueInverse,
-                              int reqLength, int reqBytesLength, int resiBitsLength);
+void compressSingleDoubleValue_MSST19(DoubleValueCompressElement *vce, double tgtValue, double precision, int reqLength, int reqBytesLength, int resiBitsLength);
                               
 int compIdenticalLeadingBytesCount_double(unsigned char* preBytes, unsigned char* curBytes);
 int compIdenticalLeadingBytesCount_float(unsigned char* preBytes, unsigned char* curBytes);
