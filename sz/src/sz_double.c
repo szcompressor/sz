@@ -2484,6 +2484,9 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	bool positive = true;
 	double nearZero = 0.0;
 	double min = 0;
+	if(pwRelBoundRatio < 0.000009999)
+		confparams_cpr->accelerate_pw_rel_compression = 0;
+		
 	if(confparams_cpr->errorBoundMode == PW_REL && confparams_cpr->accelerate_pw_rel_compression == 1)
 	{
 		signs = (unsigned char *) malloc(dataLength);
