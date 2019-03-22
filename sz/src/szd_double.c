@@ -1743,8 +1743,8 @@ void decompressDataSeries_double_1D_MSST19(double** data, size_t dataSeriesLengt
 		default:
 			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
 			//predValue = (*data)[i-1];
-			(*data)[i] = fabs(predValue) * precisionTable[type_] * (signs[i] ? -1:1);
-			predValue = (*data)[i];
+			predValue = fabs(predValue) * precisionTable[type_] * (signs[i] ? -1:1);
+			(*data)[i] = predValue;
 			break;
 		}
 	}
@@ -2578,7 +2578,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 				type_ = type[index];				
 				if (type_ != 0)
 				{
-					(*data)[index] = fabsf(pred3D) * precisionTable[type_];
+					(*data)[index] = fabsf(pred3D) * precisionTable[type_];	
 				}
 				else
 				{

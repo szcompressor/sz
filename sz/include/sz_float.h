@@ -17,6 +17,7 @@ extern "C" {
 unsigned char* SZ_skip_compress_float(float* data, size_t dataLength, size_t* outSize);
 
 void computeReqLength_float(double realPrecision, short radExpo, int* reqLength, float* medianValue);
+short computeReqLength_float_MSST19(double realPrecision);
 
 unsigned int optimize_intervals_float_1D(float *oriData, size_t dataLength, double realPrecision);
 unsigned int optimize_intervals_float_2D(float *oriData, size_t r1, size_t r2, double realPrecision);

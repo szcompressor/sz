@@ -120,7 +120,7 @@ float computeRangeSize_float_MSST19(float* oriData, size_t size, float* valueRan
     size_t i = 0;
     float min = oriData[0];
     float max = min;
-    *nearZero = 3.40E+38;
+    *nearZero = min;
 
     for(i=1;i<size;i++)
     {
@@ -167,7 +167,7 @@ double computeRangeSize_double_MSST19(double* oriData, size_t size, double* valu
     size_t i = 0;
     double min = oriData[0];
     double max = min;
-    *nearZero = 1.7E+308;
+    *nearZero = min;
 
     for(i=1;i<size;i++)
     {

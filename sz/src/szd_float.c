@@ -1738,8 +1738,8 @@ void decompressDataSeries_float_1D_MSST19(float** data, size_t dataSeriesLength,
 		default:
 			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
 			//predValue = (*data)[i-1];
-			(*data)[i] = fabs(predValue) * precisionTable[type_] * (signs[i] ? -1:1);
-			predValue = (*data)[i];
+			predValue = fabs(predValue) * precisionTable[type_] * (signs[i] ? -1:1);			
+			(*data)[i] = predValue;
 			break;
 		}
 		//printf("%.30G\n",(*data)[i]);

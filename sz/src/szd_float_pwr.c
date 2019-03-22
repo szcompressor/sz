@@ -1425,6 +1425,11 @@ void decompressDataSeries_float_3D_pwr_pre_log(float** data, size_t r1, size_t r
 void decompressDataSeries_float_1D_pwr_pre_log_MSST19(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps) 
 {
 	decompressDataSeries_float_1D_MSST19(data, dataSeriesLength, tdps);
+	double threshold = tdps->minLogValue;
+	for(size_t i=0; i<dataSeriesLength; i++){
+		if((*data)[i] < threshold) (*data)[i] = 0;
+	}
+	
 }
 
 void decompressDataSeries_float_2D_pwr_pre_log_MSST19(float** data, size_t r1, size_t r2, TightDataPointStorageF* tdps) {
