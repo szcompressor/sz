@@ -1654,14 +1654,6 @@ void decompressDataSeries_float_1D_MSST19(float** data, size_t dataSeriesLength,
 	//double interval = tdps->realPrecision*2;
 	
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
-    unsigned char * signs = NULL;
-    if(tdps->pwrErrBoundBytes_size==0)
-	{
-		signs = (unsigned char*)malloc(dataSeriesLength);
-		memset(signs, 0, dataSeriesLength);
-	}
-	else
-		sz_lossless_decompress(ZSTD_COMPRESSOR, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
 
 	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
@@ -1738,7 +1730,7 @@ void decompressDataSeries_float_1D_MSST19(float** data, size_t dataSeriesLength,
 		default:
 			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
 			//predValue = (*data)[i-1];
-			predValue = fabs(predValue) * precisionTable[type_] * (signs[i] ? -1:1);			
+			predValue = fabs(predValue) * precisionTable[type_];			
 			(*data)[i] = predValue;
 			break;
 		}
@@ -1752,7 +1744,6 @@ void decompressDataSeries_float_1D_MSST19(float** data, size_t dataSeriesLength,
 	free(precisionTable);
 	free(leadNum);
 	free(type);
-	free(signs);
 	return;
 }
 

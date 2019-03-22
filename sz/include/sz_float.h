@@ -31,6 +31,9 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 unsigned int optimize_intervals_float_2D_opt(float *oriData, size_t r1, size_t r2, double realPrecision);
 unsigned int optimize_intervals_float_1D_opt(float *oriData, size_t dataLength, double realPrecision);
 
+unsigned int optimize_intervals_float_1D_opt_MSST19(float *oriData, size_t dataLength, double realPrecision);
+unsigned int optimize_intervals_float_2D_opt_MSST19(float *oriData, size_t r1, size_t r2, double realPrecision);
+unsigned int optimize_intervals_float_3D_opt_MSST19(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision);
 
 TightDataPointStorageF* SZ_compress_float_1D_MDQ(float *oriData, 
 size_t dataLength, double realPrecision, float valueRangeSize, float medianValue_f);

@@ -1489,11 +1489,10 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	//struct ClockPoint clockPointBuild;
 	//TimeDurationStart("build", &clockPointBuild);
 	unsigned int quantization_intervals;
-	/*if(exe_params->optQuantMode==1)
-		quantization_intervals = optimize_intervals_double_1D_opt(oriData, dataLength, realPrecision);
+	if(exe_params->optQuantMode==1)
+		quantization_intervals = optimize_intervals_double_1D_opt_MSST19(oriData, dataLength, realPrecision);
 	else
-		quantization_intervals = exe_params->intvCapacity;*/
-	quantization_intervals = confparams_cpr->max_quant_intervals;
+		quantization_intervals = exe_params->intvCapacity;
 	updateQuantizationInfo(quantization_intervals);
 	
 	double* precisionTable = (double*)malloc(sizeof(double) * quantization_intervals);
@@ -1653,14 +1652,14 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
 #endif	
 	
 	unsigned int quantization_intervals;
-	/*if(exe_params->optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 	{
-		quantization_intervals = optimize_intervals_double_2D_opt(oriData, r1, r2, realPrecision);
+		quantization_intervals = optimize_intervals_double_2D_opt_MSST19(oriData, r1, r2, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
 	}	
 	else
-		quantization_intervals = exe_params->intvCapacity;*/
-	quantization_intervals = confparams_cpr->max_quant_intervals;	
+		quantization_intervals = exe_params->intvCapacity;
+
 
 	double* precisionTable = (double*)malloc(sizeof(double) * quantization_intervals);
 	double inv = 2.0-pow(2, -(confparams_cpr->plus_bits));
@@ -1926,14 +1925,13 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 #endif		
 
 	unsigned int quantization_intervals;
-	/*if(exe_params->optQuantMode==1)
+	if(exe_params->optQuantMode==1)
 	{
-		quantization_intervals = optimize_intervals_double_3D_opt(oriData, r1, r2, r3, realPrecision);
+		quantization_intervals = optimize_intervals_double_3D_opt_MSST19(oriData, r1, r2, r3, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
 	}	
 	else
-		quantization_intervals = exe_params->intvCapacity;*/
-	quantization_intervals = confparams_cpr->max_quant_intervals;
+		quantization_intervals = exe_params->intvCapacity;
 
     double* precisionTable = (double*)malloc(sizeof(double) * quantization_intervals);
     double inv = 2.0-pow(2, -(confparams_cpr->plus_bits));
@@ -2460,13 +2458,6 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	if(errBoundMode==PW_REL)
 	{
 		confparams_cpr->pw_relBoundRatio = pwRelBoundRatio;	
-		//confparams_cpr->pwr_type = SZ_PWR_MIN_TYPE;
-		if(confparams_cpr->pwr_type==SZ_PWR_AVG_TYPE && r3 != 0 )
-		{
-			printf("Error: Current version doesn't support 3D data compression with point-wise relative error bound being based on pwrType=AVG\n");
-			exit(0);
-			return SZ_NSCS;
-		}
 	}
 		
 	int status = SZ_SCES;
@@ -4067,10 +4058,168 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 	return tdps;
 }
 
-/**
- * 
- * This is a fast implementation for optimize_intervals_double_3D()
- * */
+unsigned int optimize_intervals_double_1D_opt_MSST19(double *oriData, size_t dataLength, double realPrecision)
+{	
+	size_t i = 0, radiusIndex;
+	double pred_value = 0;
+	double pred_err;
+	size_t *intervals = (size_t*)malloc(confparams_cpr->maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, confparams_cpr->maxRangeRadius*sizeof(size_t));
+	size_t totalSampleSize = 0;//dataLength/confparams_cpr->sampleDistance;
+
+	double * data_pos = oriData + 2;
+	double divider = log2(1+realPrecision)*2;
+	int tempIndex = 0;
+	while(data_pos - oriData < dataLength){
+	    tempIndex++;
+		totalSampleSize++;
+		pred_value = data_pos[-1];
+		pred_err = fabs((double)*data_pos / pred_value);
+		radiusIndex = (unsigned long)fabs(log2(pred_err)/divider+0.5);
+		if(radiusIndex>=confparams_cpr->maxRangeRadius)
+			radiusIndex = confparams_cpr->maxRangeRadius - 1;			
+		intervals[radiusIndex]++;
+
+		data_pos += confparams_cpr->sampleDistance;
+	}
+	//compute the appropriate number
+	size_t targetCount = totalSampleSize*confparams_cpr->predThreshold;
+	size_t sum = 0;
+	for(i=0;i<confparams_cpr->maxRangeRadius;i++)
+	{
+		sum += intervals[i];
+		if(sum>targetCount)
+			break;
+	}
+	if(i>=confparams_cpr->maxRangeRadius)
+		i = confparams_cpr->maxRangeRadius-1;
+		
+	unsigned int accIntervals = 2*(i+1);
+	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
+	
+	if(powerOf2<64)
+		powerOf2 = 64;
+	
+	free(intervals);
+	return powerOf2;
+}
+
+unsigned int optimize_intervals_double_2D_opt_MSST19(double *oriData, size_t r1, size_t r2, double realPrecision)
+{	
+	size_t i;
+	size_t radiusIndex;
+	double pred_value = 0, pred_err;
+	size_t *intervals = (size_t*)malloc(confparams_cpr->maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, confparams_cpr->maxRangeRadius*sizeof(size_t));
+	size_t totalSampleSize = 0;
+
+	size_t offset_count = confparams_cpr->sampleDistance - 1; // count r2 offset
+	size_t offset_count_2;
+	double * data_pos = oriData + r2 + offset_count;
+    double divider = log2(1+realPrecision)*2;
+	size_t n1_count = 1; // count i sum
+	size_t len = r1 * r2;
+	while(data_pos - oriData < len){
+		totalSampleSize++;
+		pred_value = data_pos[-1] + data_pos[-r2] - data_pos[-r2-1];
+		pred_err = fabs(pred_value / *data_pos);
+		radiusIndex = (unsigned long)fabs(log2(pred_err)/divider+0.5);
+		if(radiusIndex>=confparams_cpr->maxRangeRadius)
+			radiusIndex = confparams_cpr->maxRangeRadius - 1;
+		intervals[radiusIndex]++;
+
+		offset_count += confparams_cpr->sampleDistance;
+		if(offset_count >= r2){
+			n1_count ++;
+			offset_count_2 = n1_count % confparams_cpr->sampleDistance;
+			data_pos += (r2 + confparams_cpr->sampleDistance - offset_count) + (confparams_cpr->sampleDistance - offset_count_2);
+			offset_count = (confparams_cpr->sampleDistance - offset_count_2);
+			if(offset_count == 0) offset_count ++;
+		}
+		else data_pos += confparams_cpr->sampleDistance;
+	}
+
+	//compute the appropriate number
+	size_t targetCount = totalSampleSize*confparams_cpr->predThreshold;
+	size_t sum = 0;
+	for(i=0;i<confparams_cpr->maxRangeRadius;i++)
+	{
+		sum += intervals[i];
+		if(sum>targetCount)
+			break;
+	}
+	if(i>=confparams_cpr->maxRangeRadius)
+		i = confparams_cpr->maxRangeRadius-1;
+	unsigned int accIntervals = 2*(i+1);
+	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
+
+	if(powerOf2<64)
+		powerOf2 = 64;
+
+	free(intervals);
+	return powerOf2;
+}
+
+unsigned int optimize_intervals_double_3D_opt_MSST19(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision)
+{	
+	size_t i;
+	size_t radiusIndex;
+	size_t r23=r2*r3;
+	double pred_value = 0, pred_err;
+	size_t *intervals = (size_t*)malloc(confparams_cpr->maxRangeRadius*sizeof(size_t));
+	memset(intervals, 0, confparams_cpr->maxRangeRadius*sizeof(size_t));
+	size_t totalSampleSize = 0;
+
+	size_t offset_count = confparams_cpr->sampleDistance - 2; // count r3 offset
+	size_t offset_count_2;
+	double * data_pos = oriData + r23 + r3 + offset_count;
+    double divider = log2(1+realPrecision)*2;
+	size_t n1_count = 1, n2_count = 1; // count i,j sum
+	size_t len = r1 * r2 * r3;
+	while(data_pos - oriData < len){
+		totalSampleSize++;
+		pred_value = data_pos[-1] + data_pos[-r3] + data_pos[-r23] - data_pos[-1-r23] - data_pos[-r3-1] - data_pos[-r3-r23] + data_pos[-r3-r23-1];
+		pred_err = fabsf(*data_pos / pred_value);
+		radiusIndex = fabs(log2(pred_err)/divider+0.5);
+		if(radiusIndex>=confparams_cpr->maxRangeRadius)
+		{
+			radiusIndex = confparams_cpr->maxRangeRadius - 1;
+		}
+		intervals[radiusIndex]++;
+		offset_count += confparams_cpr->sampleDistance;
+		if(offset_count >= r3){
+			n2_count ++;
+			if(n2_count == r2){
+				n1_count ++;
+				n2_count = 1;
+				data_pos += r3;
+			}
+			offset_count_2 = (n1_count + n2_count) % confparams_cpr->sampleDistance;
+			data_pos += (r3 + confparams_cpr->sampleDistance - offset_count) + (confparams_cpr->sampleDistance - offset_count_2);
+			offset_count = (confparams_cpr->sampleDistance - offset_count_2);
+			if(offset_count == 0) offset_count ++;
+		}
+		else data_pos += confparams_cpr->sampleDistance;
+	}	
+	//compute the appropriate number
+	size_t targetCount = totalSampleSize*confparams_cpr->predThreshold;
+	size_t sum = 0;
+	for(i=0;i<confparams_cpr->maxRangeRadius;i++)
+	{
+		sum += intervals[i];
+		if(sum>targetCount)
+			break;
+	}
+	if(i>=confparams_cpr->maxRangeRadius)
+		i = confparams_cpr->maxRangeRadius-1;
+	unsigned int accIntervals = 2*(i+1);
+	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
+
+	if(powerOf2<64)
+		powerOf2 = 64;
+	free(intervals);
+	return powerOf2;
+}
 unsigned int optimize_intervals_double_3D_opt(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision){	
 	size_t i;
 	size_t radiusIndex;

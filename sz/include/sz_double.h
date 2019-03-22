@@ -29,6 +29,9 @@ unsigned int optimize_intervals_double_3D_opt(double *oriData, size_t r1, size_t
 unsigned int optimize_intervals_double_2D_opt(double *oriData, size_t r1, size_t r2, double realPrecision);
 unsigned int optimize_intervals_double_1D_opt(double *oriData, size_t dataLength, double realPrecision);
 
+unsigned int optimize_intervals_double_1D_opt_MSST19(double *oriData, size_t dataLength, double realPrecision);
+unsigned int optimize_intervals_double_2D_opt_MSST19(double *oriData, size_t r1, size_t r2, double realPrecision);
+unsigned int optimize_intervals_double_3D_opt_MSST19(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision);
 TightDataPointStorageD* SZ_compress_double_1D_MDQ(double *oriData, 
 size_t dataLength, double realPrecision, double valueRangeSize, double medianValue_d);
 void SZ_compress_args_double_StoreOriData(double* oriData, size_t dataLength, unsigned char** newByteData, size_t *outSize);

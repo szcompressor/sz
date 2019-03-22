@@ -1428,8 +1428,33 @@ void decompressDataSeries_double_1D_pwr_pre_log_MSST19(double** data, size_t dat
 {
 	decompressDataSeries_double_1D_MSST19(data, dataSeriesLength, tdps);
 	double threshold = tdps->minLogValue;
-	for(size_t i=0; i<dataSeriesLength; i++){
-		if((*data)[i] < threshold) (*data)[i] = 0;
+	uint64_t* ptr;
+
+	if(tdps->pwrErrBoundBytes_size > 0){
+		unsigned char * signs = NULL;
+		if(tdps->pwrErrBoundBytes_size==0)
+		{
+			signs = (unsigned char*)malloc(dataSeriesLength);
+			memset(signs, 0, dataSeriesLength);
+		}
+		else
+			sz_lossless_decompress(ZSTD_COMPRESSOR, tdps->pwrErrBoundBytes, tdps->pwrErrBoundBytes_size, &signs, dataSeriesLength);
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold && (*data)[i] >= 0){
+				(*data)[i] = 0;
+				continue;
+			}
+			if(signs[i]){
+			    ptr = (uint64_t*)(*data) + i;
+                *ptr |= 0x8000000000000000;
+			}
+		}
+		free(signs);
+	}
+	else{
+		for(size_t i=0; i<dataSeriesLength; i++){
+			if((*data)[i] < threshold) (*data)[i] = 0;
+		}
 	}
 }
 

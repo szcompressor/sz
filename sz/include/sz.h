@@ -83,7 +83,7 @@ extern "C" {
 #define SZ_VER_MAJOR 2
 #define SZ_VER_MINOR 1
 #define SZ_VER_BUILD 4
-#define SZ_VER_REVISION 0
+#define SZ_VER_REVISION 1
 
 #define PASTRI 103
 #define HZ 102
