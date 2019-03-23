@@ -3,7 +3,7 @@ project (sz)
 enable_testing()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -std=c99 -lm -fopenmp")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11 -lm -fopenmp")
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -26,12 +26,6 @@ find_package (NETCDF)
 if (NETCDF_FOUND)
   include_directories (${NETCDF_INCLUDE_DIRS})
 endif ()
-
-find_package(OpenCL)
-if(OpenCL_FOUND)
-	include_directories(${OpenCL_INCLUDE_DIRS})
-	add_definitions(-DHAVE_OPENCL)
-endif()
 
 find_program(TAGS ctags)
 if(TAGS)
