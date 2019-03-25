@@ -37,4 +37,4 @@ set(zstd_sources
 add_library (zstd SHARED ${zstd_sources})
 target_link_libraries (zstd ${zstd_dependencies})
 
-install (TARGETS zstd LIBRARY DESTINATION lib)
+install (TARGETS zstd LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
