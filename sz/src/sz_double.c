@@ -4770,6 +4770,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 	}
 	int coeff_index = 0;
 	unsigned int coeff_unpredictable_count[3] = {0};
+	double noise = realPrecision * 0.81;
 	if(use_mean){
 		type = result_type;
 		int intvCapacity_sz = intvCapacity - 2;
@@ -4795,28 +4796,24 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 					double err_sz = 0.0, err_reg = 0.0;
 					// [1, 1] [3, 3] [5, 5] [7, 7] [9, 9]
 					// [1, 9] [3, 7]		[7, 3] [9, 1]
-					int count = 0;
-					for(int i=1; i<current_blockcount_x; i+=2){
+					int bmi = 0;
+					int block_size = MIN(current_blockcount_x, current_blockcount_y);
+					for(int i=1; i<block_size; i++){
 						cur_data_pos = data_pos + i * dim0_offset + i;
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
-						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c];
-						
-						err_sz += MIN(fabs(pred_sz - curData) + realPrecision*0.81, fabs(mean - curData));
-
+						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c];							
+						err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
 						err_reg += fabs(pred_reg - curData);
 
-						cur_data_pos = data_pos + i * dim0_offset + (block_size - i);
+						bmi = block_size - i;
+						cur_data_pos = data_pos + i*dim0_offset + bmi;
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
-						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * (block_size - i) + reg_params_pos[params_offset_c];
-						err_sz += MIN(fabs(pred_sz - curData) + realPrecision*0.81, fabs(mean - curData));
-						
-						err_reg += fabs(pred_reg - curData);
-
-						count += 2;
+						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c];							
+						err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
+						err_reg += fabs(pred_reg - curData);								
 					}
-
 					use_reg = (err_reg < err_sz);
 				}
 				if(use_reg)
@@ -5108,27 +5105,25 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 					double err_sz = 0.0, err_reg = 0.0;
 					// [1, 1] [3, 3] [5, 5] [7, 7] [9, 9]
 					// [1, 9] [3, 7]		[7, 3] [9, 1]
-					int count = 0;
-					for(int i=1; i<current_blockcount_x; i+=2){
+					int bmi = 0;
+					int block_size = MIN(current_blockcount_x, current_blockcount_y);
+					for(int i=1; i<block_size; i++){
 						cur_data_pos = data_pos + i * dim0_offset + i;
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
-						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c];
-						err_sz += fabs(pred_sz - curData);
+						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c];							
+						err_sz += fabs(pred_sz - curData) + noise;
 						err_reg += fabs(pred_reg - curData);
 
-						cur_data_pos = data_pos + i * dim0_offset + (block_size - i);
+						bmi = block_size - i;
+						cur_data_pos = data_pos + i*dim0_offset + bmi;
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
-						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * (block_size - i) + reg_params_pos[params_offset_c];
-						err_sz += fabs(pred_sz - curData);
-						err_reg += fabs(pred_reg - curData);
-
-						count += 2;
+						pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c];							
+						err_sz += fabs(pred_sz - curData) + noise;
+						err_reg += fabs(pred_reg - curData);								
 					}
-					err_sz += realPrecision * count * 0.81;
 					use_reg = (err_reg < err_sz);
-
 				}
 				if(use_reg)
 				{
@@ -5697,70 +5692,36 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 						double pred_reg, pred_sz;
 						double err_sz = 0.0, err_reg = 0.0;
 						int bmi = 0;
-						if(i>0 && j>0 && k>0){
-							for(int i=0; i<block_size; i++){
-								cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + i;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-								err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-								err_reg += fabs(pred_reg - curData);
+						int block_size = MIN(current_blockcount_x, (MIN(current_blockcount_y, current_blockcount_z)));
+						for(int i=1; i<block_size; i++){
+							cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + i;
+							curData = *cur_data_pos;
+							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
+							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
+							err_reg += fabs(pred_reg - curData);
 
-								bmi = block_size - i;
-								cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + bmi;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-								err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-								err_reg += fabs(pred_reg - curData);								
+							bmi = block_size - i;
+							cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + bmi;
+							curData = *cur_data_pos;
+							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
+							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
+							err_reg += fabs(pred_reg - curData);								
 
-								cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + i;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-								err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-								err_reg += fabs(pred_reg - curData);								
+							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + i;
+							curData = *cur_data_pos;
+							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
+							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
+							err_reg += fabs(pred_reg - curData);								
 
-								cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + bmi;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-								err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-								err_reg += fabs(pred_reg - curData);
-							}
-						}
-						else{
-							for(int i=1; i<block_size; i++){
-								cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + i;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-								err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-								err_reg += fabs(pred_reg - curData);
-
-								bmi = block_size - i;
-								cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + bmi;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-								err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-								err_reg += fabs(pred_reg - curData);								
-
-								cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + i;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-								err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-								err_reg += fabs(pred_reg - curData);								
-
-								cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + bmi;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-								err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-								err_reg += fabs(pred_reg - curData);								
-
-							}
+							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + bmi;
+							curData = *cur_data_pos;
+							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
+							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
+							err_reg += fabs(pred_reg - curData);
 						}
 						use_reg = (err_reg < err_sz);
 					}
@@ -6035,70 +5996,37 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 						double curData;
 						double pred_reg, pred_sz;
 						double err_sz = 0.0, err_reg = 0.0;
-						int bmi;
-						if(i>0 && j>0 && k>0){
-							for(int i=0; i<block_size; i++){
-								cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + i;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-								err_sz += fabs(pred_sz - curData) + noise;
-								err_reg += fabs(pred_reg - curData);
+						int bmi = 0;
+						int block_size = MIN(current_blockcount_x, (MIN(current_blockcount_y, current_blockcount_z)));
+						for(int i=1; i<block_size; i++){
+							cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + i;
+							curData = *cur_data_pos;
+							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
+							err_sz += fabs(pred_sz - curData) + noise;
+							err_reg += fabs(pred_reg - curData);
 
-								bmi = block_size - i;
-								cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + bmi;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-								err_sz += fabs(pred_sz - curData) + noise;
-								err_reg += fabs(pred_reg - curData);								
+							bmi = block_size - i;
+							cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + bmi;
+							curData = *cur_data_pos;
+							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
+							err_sz += fabs(pred_sz - curData) + noise;
+							err_reg += fabs(pred_reg - curData);								
 
-								cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + i;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-								err_sz += fabs(pred_sz - curData) + noise;
-								err_reg += fabs(pred_reg - curData);								
+							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + i;
+							curData = *cur_data_pos;
+							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
+							err_sz += fabs(pred_sz - curData) + noise;
+							err_reg += fabs(pred_reg - curData);								
 
-								cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + bmi;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-								err_sz += fabs(pred_sz - curData) + noise;
-								err_reg += fabs(pred_reg - curData);
-							}
-						}
-						else{
-							for(int i=1; i<block_size; i++){
-								cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + i;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-								err_sz += fabs(pred_sz - curData) + noise;
-								err_reg += fabs(pred_reg - curData);
-
-								bmi = block_size - i;
-								cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + bmi;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-								err_sz += fabs(pred_sz - curData) + noise;
-								err_reg += fabs(pred_reg - curData);								
-
-								cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + i;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-								err_sz += fabs(pred_sz - curData) + noise;
-								err_reg += fabs(pred_reg - curData);								
-
-								cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + bmi;
-								curData = *cur_data_pos;
-								pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-								pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-								err_sz += fabs(pred_sz - curData) + noise;
-								err_reg += fabs(pred_reg - curData);
-							}
+							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + bmi;
+							curData = *cur_data_pos;
+							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
+							err_sz += fabs(pred_sz - curData) + noise;
+							err_reg += fabs(pred_reg - curData);
 						}
 						use_reg = (err_reg < err_sz);
 
