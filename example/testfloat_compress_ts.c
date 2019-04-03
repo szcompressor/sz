@@ -83,7 +83,7 @@ int main(int argc, char * argv[])
    
     size_t outSize; 
     unsigned char *bytes = NULL;
-    for(i=1;i<63;i++)
+    for(i=1;i<20;i++)
 	{
 		printf("simulation time step %d\n", i);
 		sprintf(oriFilePath, "%s/QCLOUDf%02d.bin.dat", oriDir, i);
@@ -93,7 +93,7 @@ int main(int argc, char * argv[])
 		SZ_compress_ts(&bytes, &outSize);
 		cost_end();
 		printf("timecost=%f\n",totalCost); 
-		sprintf(outputFilePath, "%s/%s_%02d.dat.sz2", outputDir, varName, i);
+		sprintf(outputFilePath, "%s/%s%02d.bin.dat.sz2", outputDir, varName, i);
 		printf("writing compressed data to %s\n", outputFilePath);
 		writeByteData(bytes, outSize, outputFilePath, &status); 
 		free(bytes);

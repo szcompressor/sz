@@ -71,7 +71,7 @@ int main(int argc, char * argv[])
     size_t byteLen = 0;
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
     float *data = (float*)malloc(sizeof(float)*dataLength);
-    SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("QCLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
 
     if(status != SZ_SCES)
     {
@@ -83,6 +83,7 @@ int main(int argc, char * argv[])
 	{
 		printf("simulation time step %d\n", i);
 		sprintf(cmprFilePath, "%s/QCLOUDf%02d.bin.dat.sz2", outputDir, i);
+		printf("compressed data file: %s\n", cmprFilePath);
 		unsigned char *bytes = readByteData(cmprFilePath, &byteLen, &status);
 		cost_start();
 		SZ_decompress_ts(bytes, byteLen);
