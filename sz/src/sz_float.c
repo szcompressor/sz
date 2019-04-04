@@ -2768,8 +2768,10 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		//printf("realPrecision=%lf\n", realPrecision);
 	}
 	else
+	{
 		realPrecision = getRealPrecision_float(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
-		
+		confparams_cpr->absErrBound = realPrecision;
+	}	
 	if(valueRangeSize <= realPrecision)
 	{
 		if(confparams_cpr->errorBoundMode>=PW_REL && confparams_cpr->accelerate_pw_rel_compression == 1)

@@ -2496,8 +2496,10 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		realPrecision = confparams_cpr->absErrBound = computeABSErrBoundFromPSNR(confparams_cpr->psnr, (double)confparams_cpr->predThreshold, valueRangeSize);
 	}
 	else
+	{
 		realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
-		
+		confparams_cpr->absErrBound = realPrecision;
+	}	
 	if(valueRangeSize <= realPrecision)
 	{
 		if(confparams_cpr->errorBoundMode>=PW_REL && confparams_cpr->accelerate_pw_rel_compression == 1)
