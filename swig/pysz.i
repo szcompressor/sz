@@ -1,4 +1,5 @@
 %module pysz
+%feature("autodoc", 1);
 
 %{
 #define SWIG_FILE_WITH_INIT
