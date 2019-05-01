@@ -5396,7 +5396,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 
 	unsigned int meta_data_offset = 3 + 1 + MetaDataByteLength;
 	// total size 										metadata		  # elements   real precision		intervals	nodeCount		huffman 	 	block index 						unpredicatable count						mean 					 	unpred size 				elements
-	unsigned char * result = (unsigned char *) calloc(meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(double) + sizeof(int) + sizeof(int) + treeByteSize + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(double) + total_unpred * sizeof(double) + num_elements * sizeof(int), 1);
+	unsigned char * result = (unsigned char *) calloc(meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(double) + sizeof(int) + sizeof(int) + 5*treeByteSize + 3*num_blocks*sizeof(int) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(double) + total_unpred * sizeof(double) + num_elements * sizeof(int), 1);
 	unsigned char * result_pos = result;
 	initRandomAccessBytes(result_pos);
 	result_pos += meta_data_offset;
@@ -6276,7 +6276,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 
 	unsigned int meta_data_offset = 3 + 1 + MetaDataByteLength;
 	// total size 										metadata		  # elements     real precision		intervals	nodeCount		huffman 	 	block index 						unpredicatable count						mean 					 	unpred size 				elements
-	unsigned char * result = (unsigned char *) calloc(meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(double) + sizeof(int) + sizeof(int) + treeByteSize + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(double) + total_unpred * sizeof(double) + num_elements * sizeof(int), 1);
+	unsigned char * result = (unsigned char *) calloc(meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(double) + sizeof(int) + sizeof(int) + 5*treeByteSize + 4*num_blocks*sizeof(int)+ num_blocks * sizeof(unsigned short) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(double) + total_unpred * sizeof(double) + num_elements * sizeof(int), 1);
 	unsigned char * result_pos = result;
 	initRandomAccessBytes(result_pos);
 	
