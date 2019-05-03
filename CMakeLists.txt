@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.14)
 project (sz)
 enable_testing()
 
@@ -42,14 +42,13 @@ endif()
 find_program(TAGS ctags)
 if(TAGS)
 	add_custom_target(tags ALL
-    COMMAND ${TAGS} --exclude=${CMAKE_BINARY_DIR} -f ${CMAKE_BINARY_DIR}/tags --c++-kinds=+p --fields=+iaS --extra=+q -R 
+    COMMAND ${TAGS} --exclude=${CMAKE_BINARY_DIR} -f ${CMAKE_BINARY_DIR}/tags --c++-kinds=+p --fields=+iaS --extras=+q -R 
 		COMMENT Generating Tag files
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
 endif()
 
 include_directories (
-	${CMAKE_CURRENT_SOURCE_DIR}/sz/include 
 	${CMAKE_CURRENT_SOURCE_DIR}/sz/include 
 	${CMAKE_CURRENT_SOURCE_DIR}/zlib 
 	${CMAKE_CURRENT_SOURCE_DIR}/zstd 
