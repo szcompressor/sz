@@ -164,6 +164,20 @@ size_t computeDataLength(size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 unsigned char* SZ_compress_args(int dataType, void *data, size_t *outSize, int errBoundMode, double absErrBound, 
 double relBoundRatio, double pwrBoundRatio, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
+	if(confparams_cpr == NULL)
+		SZ_Init(NULL);
+	else if(exe_params == NULL)
+	{
+		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
+		memset(exe_params, 0, sizeof(sz_exedata));
+	}
+	if(exe_params->intvCapacity == 0)
+	{
+		exe_params->intvCapacity = confparams_cpr->maxRangeRadius*2;
+		exe_params->intvRadius = confparams_cpr->maxRangeRadius;
+		exe_params->optQuantMode = 1;		
+	}
+	
 	confparams_cpr->dataType = dataType;
 	if(dataType==SZ_FLOAT)
 	{
