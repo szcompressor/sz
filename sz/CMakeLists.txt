@@ -63,8 +63,12 @@ add_library (SZ SHARED
   src/szf.c
   src/utility.c
   )
-target_include_directories(SZ PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
-target_link_libraries (SZ zlib zstd m ${OpenCL_LIBRARIES})
+target_include_directories(SZ 
+  PUBLIC 
+  ${CMAKE_CURRENT_BINARY_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries (SZ PUBLIC ZLIB ZSTD m ${OpenCL_LIBRARIES})
 target_compile_options(SZ
 	PUBLIC -DHAVE_RANDOMACCESS
 	PRIVATE $<$<CONFIG:Debug>:-Wall -Wextra -Wpedantic -Wno-unused-parameter>

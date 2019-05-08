@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 3.14)
 project (sz)
 enable_testing()
 
+include(GNUInstallDirs)
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_EXTENSIONS OFF)
 
@@ -39,6 +41,35 @@ if(OPENMP_FOUND)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+find_package(PkgConfig)
+if(PKG_CONFIG_FOUND)
+  pkg_search_module(ZLIB IMPORTED_TARGET GLOBAL zlib)
+  if(NOT ZLIB_FOUND)
+    set(USE_PACKAGED_ZLIB 1)
+  else()
+    add_library(ZLIB ALIAS PkgConfig::ZLIB)
+  endif()
+
+  pkg_search_module(ZSTD IMPORTED_TARGET GLOBAL libzstd)
+  if(NOT ZSTD_FOUND)
+    set(USE_PACKAGED_ZSTD 1)
+  else()
+    add_library(ZSTD ALIAS PkgConfig::ZSTD)
+  endif()
+else()
+  set(USE_PACKAGED_ZLIB 1)
+  set(USE_PACKAGED_ZSTD 1)
+endif()
+
+if(USE_PACKAGED_ZSTD)
+  add_subdirectory(zstd)
+endif()
+
+
+if(USE_PACKAGED_ZLIB)
+  add_subdirectory(zlib)
+endif()
+
 find_program(TAGS ctags)
 if(TAGS)
 	add_custom_target(tags ALL
@@ -48,22 +79,7 @@ if(TAGS)
 		)
 endif()
 
-include_directories (
-	${CMAKE_CURRENT_SOURCE_DIR}/sz/include 
-	${CMAKE_CURRENT_SOURCE_DIR}/zlib 
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd 
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/common 
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/compress
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/decompress
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/deprecated
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/dictBuilder
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/dll
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/legacy
-	)
-# include_directories (${ZLIB_INCLUDE_DIRS})
 
-add_subdirectory (zlib)
-add_subdirectory (zstd)
 add_subdirectory (sz)
 add_subdirectory (example)
 add_subdirectory (test)

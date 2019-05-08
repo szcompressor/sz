@@ -34,7 +34,10 @@ set(zstd_sources
 ./legacy/zstd_v05.c
 	)
 
-add_library (zstd SHARED ${zstd_sources})
-target_link_libraries (zstd ${zstd_dependencies})
+add_library (ZSTD SHARED ${zstd_sources})
+target_link_libraries (ZSTD ${zstd_dependencies})
+target_include_directories(ZSTD 
+  PUBLIC common compress decompress deprecated legacy dictBuilder
+  )
 
-install (TARGETS zstd LIBRARY DESTINATION lib)
+install (TARGETS ZSTD LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
