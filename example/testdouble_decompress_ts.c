@@ -71,7 +71,7 @@ int main(int argc, char * argv[])
     size_t byteLen = 0;
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
     double *data = (double*)malloc(sizeof(double)*dataLength);
-    SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("CLOUDf", SZ_DOUBLE, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
 
     if(status != SZ_SCES)
     {
