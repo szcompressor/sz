@@ -26,7 +26,7 @@ HDF5FLAGS	= -I$(HDF5PATH)/include -L$(HDF5PATH)/lib
 ##=======================================================================
 ##   TARGETS
 ##=======================================================================
-all: 		szToHDF5 dszFromHDF5 convertBinToHDF5 test_mpio
+all: 		szToHDF5 dszFromHDF5 convertBinToHDF5 #test_mpio
 
 szToHDF5:	szToHDF5.c
 	$(MPICC)  -O3 -o szToHDF5 szToHDF5.c $(SZFLAGS) $(HDF5FLAGS) -lSZ -lzlib -lhdf5sz -lhdf5 -lm -Wl,--no-as-needed -ldl
