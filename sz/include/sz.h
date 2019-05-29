@@ -49,7 +49,7 @@
 #include "szd_double.h"
 #include "sz_float_pwr.h"
 #include "sz_double_pwr.h"
-#include "sz_opencl.h"
+//#include "sz_opencl.h"
 #include "callZlib.h"
 #include "rw.h"
 #include "pastri.h"

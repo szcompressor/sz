@@ -7,7 +7,7 @@
  *      See COPYRIGHT in top-level directory.
  */
 
-
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
