@@ -45,7 +45,7 @@ int main(int argc, char * argv[])
     if(argc < 4)
     {
 		printf("Test case: testfloat_compress_ts [config_file] [varName] [srcDir] [dimension sizes...]\n");
-		printf("Example: testfloat_compress_ts sz.config CLOUDf /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
+		printf("Example: testfloat_compress_ts sz.config QCLOUDf /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
 		exit(0);
     }
    
