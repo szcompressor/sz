@@ -86,7 +86,7 @@ int main(int argc, char * argv[])
     for(i=1;i<20;i++)
 	{
 		printf("simulation time step %d\n", i);
-		sprintf(oriFilePath, "%s/QCLOUDf%02d.bin.dat", oriDir, i);
+		sprintf(oriFilePath, "%s/%s%02d.bin.dat", oriDir, varName, i);
 		float *data_ = readFloatData(oriFilePath, &nbEle, &status);
 		memcpy(data, data_, nbEle*sizeof(float));
 		cost_start();
