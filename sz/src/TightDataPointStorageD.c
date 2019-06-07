@@ -75,9 +75,9 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 	(*this)->isLossless = (sameRByte & 0x10)>>4;
 	int isPW_REL = (sameRByte & 0x20)>>5;
 	exe_params->SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
-	confparams_dec->randomAccess = (sameRByte & 0x02) >> 1;
-	
-	confparams_dec->accelerate_pw_rel_compression = (sameRByte & 0x04) >> 2;
+	//confparams_dec->randomAccess = (sameRByte & 0x02) >> 1;
+	//confparams_dec->szMode = (sameRByte & 0x06) >> 1;						//0000,0110	
+	confparams_dec->accelerate_pw_rel_compression = (sameRByte & 0x08) >> 3;
 	int errorBoundMode = ABS;
 	if(isPW_REL)
 	{
@@ -92,19 +92,6 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 		memset(confparams_dec, 0, sizeof(sz_params));
 	}	
 	convertBytesToSZParams(&(flatBytes[index]), confparams_dec);
-	/*sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
-	int mode = confparams_dec->szMode;
-	int predictionMode = confparams_dec->predictionMode;
-	int losslessCompressor = confparams_dec->losslessCompressor;
-	int randomAccess = confparams_dec->randomAccess;
-	int superfast_compression = confparams_dec->accelerate_pw_rel_compression;
-	if(confparams_dec!=NULL)
-		free(confparams_dec);
-	confparams_dec = params;
-	confparams_dec->szMode = mode;
-	confparams_dec->losslessCompressor = losslessCompressor;
-	confparams_dec->randomAccess = randomAccess;
-	confparams_dec->accelerate_pw_rel_compression = superfast_compression;*/
 
 	index += MetaDataByteLength;
 
@@ -605,7 +592,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 		longToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//8
 	
 	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
-	sameByte = sameByte | (confparams_cpr->szMode << 1);
+	//sameByte = sameByte | (confparams_cpr->szMode << 1);
 	if(tdps->isLossless)
 		sameByte = (unsigned char) (sameByte | 0x10);	
 	if(confparams_cpr->errorBoundMode>=PW_REL)
@@ -613,7 +600,7 @@ void convertTDPStoFlatBytes_double(TightDataPointStorageD *tdps, unsigned char**
 	if(exe_params->SZ_SIZE_TYPE==8)
 		sameByte = (unsigned char) (sameByte | 0x40); // 01000000, the 6th bit
 	if(confparams_cpr->errorBoundMode == PW_REL && confparams_cpr->accelerate_pw_rel_compression)
-		sameByte = (unsigned char) (sameByte | 0x04); 	
+		sameByte = (unsigned char) (sameByte | 0x08); 	
 	
 	if(tdps->allSameData==1)
 	{
@@ -679,16 +666,16 @@ void convertTDPStoFlatBytes_double_args(TightDataPointStorageD *tdps, unsigned c
 	else
 		longToBytes_bigEndian(dsLengthBytes, tdps->dataSeriesLength);//8
 		
-	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0;
-	sameByte = sameByte | (confparams_cpr->szMode << 1);
+	unsigned char sameByte = tdps->allSameData==1?(unsigned char)1:(unsigned char)0; //0000,0001
+	sameByte = sameByte | (confparams_cpr->szMode << 1); //0000,0110
 	if(tdps->isLossless)
-		sameByte = (unsigned char) (sameByte | 0x10);	
+		sameByte = (unsigned char) (sameByte | 0x10); // 0001,0000
 	if(confparams_cpr->errorBoundMode>=PW_REL)
-		sameByte = (unsigned char) (sameByte | 0x20); // 00100000, the 5th bit
+		sameByte = (unsigned char) (sameByte | 0x20); // 0010,0000, the 5th bit
 	if(exe_params->SZ_SIZE_TYPE==8)
-		sameByte = (unsigned char) (sameByte | 0x40); //01000000, the 6th bit
+		sameByte = (unsigned char) (sameByte | 0x40); //0100,0000, the 6th bit
 	if(confparams_cpr->errorBoundMode == PW_REL && confparams_cpr->accelerate_pw_rel_compression)
-		sameByte = (unsigned char) (sameByte | 0x04); 	
+		sameByte = (unsigned char) (sameByte | 0x08); //0000,1000, the 7th bit 	
 	if(tdps->allSameData==1)
 	{
 		size_t totalByteLength = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + tdps->exactMidBytes_size;

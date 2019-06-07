@@ -7615,7 +7615,7 @@ unsigned char* cmpBytes, size_t cmpSize)
 			printf("Error: you specified the random access mode for decompression, but the compressed data were generate in the non-random-access way.!\n");
 			status = SZ_DERR;
 		}
-		if (dim == 1)
+		else if (dim == 1)
 		{
 			//printf("Error: random access mode doesn't support 1D yet, but only 3D.\n");
 			decompressDataSeries_float_1D_decompression_given_areas_with_blocked_regression(newData, r1, s1, e1, tdps->raBytes);

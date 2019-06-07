@@ -879,7 +879,7 @@ void convertSZParamsToBytes(sz_params* params, unsigned char* result)
 	buf = exe_params->optQuantMode;
 	buf = (buf << 1) | dataEndianType;
 	buf = (buf << 1) | sysEndianType;
-	buf = (buf << 1) | params->szMode;
+	buf = (buf << 2) | params->szMode;
 	
 	int tmp = 0;
 	switch(params->gzipMode)
@@ -960,11 +960,11 @@ void convertSZParamsToBytes(sz_params* params, unsigned char* result)
 void convertBytesToSZParams(unsigned char* bytes, sz_params* params)
 {
 	unsigned char flag1 = bytes[0];
-	exe_params->optQuantMode = flag1 & 0x20 >> 5;
-	dataEndianType = (flag1 & 0x10) >> 4;
-	//sysEndianType = (flag1 & 0x08) >> 3;
+	exe_params->optQuantMode = flag1 & 0x40 >> 6;
+	dataEndianType = (flag1 & 0x20) >> 5;
+	//sysEndianType = (flag1 & 0x10) >> 4;
 	
-	params->szMode = (flag1 & 0x04) >> 2;
+	params->szMode = (flag1 & 0x0c) >> 2;
 	
 	int tmp = (flag1 & 0x03);
 	switch(tmp)
