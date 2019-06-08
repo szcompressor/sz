@@ -63,10 +63,10 @@ int SZ_Init(const char *configFilePath)
 	
 	exe_params->SZ_SIZE_TYPE = sizeof(size_t);
 	
-	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+/*	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 	{
 		initSZ_TSC();
-	}
+	}*/
 	return SZ_SCES;
 }
 
@@ -831,9 +831,9 @@ int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
 	memset(outSize_, 0, sizeof(size_t)*vset->count);
 	unsigned char** compressBuffer = (unsigned char**)malloc(vset->count*sizeof(unsigned char*));//to store compressed bytes
 	
-	char *metadata_str = (char*)malloc(vset->count*256);
-	memset(metadata_str, 0, vset->count*256);
-	sprintf(metadata_str, "step %d", sz_tsc->currentStep);
+	//char *metadata_str = (char*)malloc(vset->count*256);
+	//memset(metadata_str, 0, vset->count*256);
+	//sprintf(metadata_str, "step %d", sz_tsc->currentStep);
 	
 	int i = 0, totalSize = 0;
 	for(i=0;i<vset->count;i++)
@@ -849,16 +849,16 @@ int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
 		{
 			SZ_compress_args_double(&(compressBuffer[i]), (double*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &outSize_[i], v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
 		}
-		sprintf(metadata_str, "%s:%d,%d,%zu", metadata_str, i, multisteps->lastSnapshotStep, outSize_[i]);
+		//sprintf(metadata_str, "%s:%d,%d,%zu", metadata_str, i, multisteps->lastSnapshotStep, outSize_[i]);
 		
 		totalSize += outSize_[i];
 		v->compressType = multisteps->compressionType;
 		v = v->next;
 	}
 	
-	sprintf(metadata_str, "%s\n", metadata_str);
-	fputs(metadata_str, sz_tsc->metadata_file);
-	free(metadata_str);
+	//sprintf(metadata_str, "%s\n", metadata_str);
+	//fputs(metadata_str, sz_tsc->metadata_file);
+	//free(metadata_str);
 	
 	//sizeof(int)==current time step; 2*sizeof(char)+sizeof(size_t)=={compressionType + datatype + compression_data_size}; 
 	//sizeof(char)==# variables
@@ -1000,8 +1000,8 @@ void SZ_Finalize()
 		exe_params = NULL;
 	}
 	
-#ifdef HAVE_TIMECMPR	
-	if(sz_tsc!=NULL && sz_tsc->metadata_file!=NULL)
-		fclose(sz_tsc->metadata_file);
-#endif
+//#ifdef HAVE_TIMECMPR	
+//	if(sz_tsc!=NULL && sz_tsc->metadata_file!=NULL)
+//		fclose(sz_tsc->metadata_file);
+//#endif
 }
