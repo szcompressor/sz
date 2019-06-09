@@ -45,7 +45,7 @@ int main(int argc, char * argv[])
     if(argc < 3)
     {
 		printf("Test case: testdouble_compress_ts [config_file] [varName] [srcDir] [dimension sizes...]\n");
-		printf("Example: testdouble_compress_ts sz.config CLOUDf /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
+		printf("Example: testdouble_compress_ts sz.config QCLOUDf /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
 		exit(0);
     }
    
@@ -83,23 +83,27 @@ int main(int argc, char * argv[])
    
     size_t outSize; 
     unsigned char *bytes = NULL;
-    for(i=1;i<20;i++)
-	{
-		printf("simulation time step %d\n", i);
-		sprintf(oriFilePath, "%s/QCLOUDf%02d.bin.dat", oriDir, i);
-		double *data_ = readDoubleData(oriFilePath, &nbEle, &status);
-		memcpy(data, data_, nbEle*sizeof(double));
-		cost_start();
-		SZ_compress_ts(&bytes, &outSize);
-		cost_end();
-		printf("timecost=%f\n",totalCost); 
-		sprintf(outputFilePath, "%s/QCLOUDf%02d.bin.dat.sz2", outputDir, i);
-		printf("writing compressed data to %s\n", outputFilePath);
-		writeByteData(bytes, outSize, outputFilePath, &status); 
-		free(bytes);
-		free(data_);
-	}
-    
+   int j = 0;
+   for(i=1;i<20;i++)
+        {
+                printf("simulation time step %d\n", i);
+                sprintf(oriFilePath, "%s/%s%02d.bin.dat", oriDir, varName, i);
+                float *data_ = readFloatData(oriFilePath, &nbEle, &status);
+		for(j=0;j<nbEle;j++)
+			data[j] = (double)data_[j];	
+                cost_start();
+                SZ_compress_ts(&bytes, &outSize);
+                cost_end();
+                printf("timecost=%f\n",totalCost);
+                sprintf(outputFilePath, "%s/%s%02d-double.bin.dat.sz2", outputDir, varName, i);
+                printf("writing compressed data to %s\n", outputFilePath);
+                writeByteData(bytes, outSize, outputFilePath, &status);
+                free(bytes);
+                free(data_);
+        }
+
+
+
     printf("done\n");
     free(data);
     SZ_Finalize();
