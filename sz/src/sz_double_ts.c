@@ -181,7 +181,7 @@ double realPrecision, double valueRangeSize, double medianValue_d)
 	free(lce);	
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
 		
-	memcpy(preStepData, decData, dataLength*sizeof(float)); //update the data
+	memcpy(preStepData, decData, dataLength*sizeof(double)); //update the data
 	free(decData);
 	
 	return tdps;

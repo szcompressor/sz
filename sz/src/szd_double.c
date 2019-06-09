@@ -18,7 +18,7 @@
 #include "szd_double_ts.h"
 #include "utility.h"
 
-int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, unsigned char* cmpBytes, size_t cmpSize)
+int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, unsigned char* cmpBytes, size_t cmpSize, int compressionType, double* hist_data)
 {
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
@@ -86,7 +86,7 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 		if(tdps->raBytes_size > 0) //v2.0
 		{
 			if (dim == 1)
-				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode);
+				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode, 0, NULL);
 			else if(dim == 2)
 				decompressDataSeries_double_2D_nonblocked_with_blocked_regression(newData, r2, r1, tdps->raBytes);
 			else if(dim == 3)
@@ -99,19 +99,19 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 				status = SZ_DERR;
 			}	
 		}
-		else //1.4.13
+		else //1.4.13 or time-based compression
 		{
 			if (dim == 1)
-				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode);
+				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode, compressionType, hist_data);
 			else
 			if (dim == 2)
-				getSnapshotData_double_2D(newData,r2,r1,tdps, errBoundMode);
+				getSnapshotData_double_2D(newData,r2,r1,tdps, errBoundMode, compressionType, hist_data);
 			else
 			if (dim == 3)
-				getSnapshotData_double_3D(newData,r3,r2,r1,tdps, errBoundMode);
+				getSnapshotData_double_3D(newData,r3,r2,r1,tdps, errBoundMode, compressionType, hist_data);
 			else
 			if (dim == 4)
-				getSnapshotData_double_4D(newData,r4,r3,r2,r1,tdps, errBoundMode);			
+				getSnapshotData_double_4D(newData,r4,r3,r2,r1,tdps, errBoundMode, compressionType, hist_data);			
 			else
 			{
 				printf("Error: currently support only at most 4 dimensions!\n");
@@ -2628,7 +2628,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 	return;
 }
 
-void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps, int errBoundMode) 
+void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps, int errBoundMode, int compressionType, double* hist_data) 
 {
 	size_t i;
 	if (tdps->allSameData) {
@@ -2646,7 +2646,7 @@ void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightData
 					if(multisteps->compressionType == 0) //snapshot
 						decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
 					else
-						decompressDataSeries_double_1D_ts(data, dataSeriesLength, multisteps, tdps);					
+						decompressDataSeries_double_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
 #endif
@@ -2667,7 +2667,7 @@ void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightData
 	}
 }
 
-void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps, int errBoundMode) 
+void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps, int errBoundMode, int compressionType, double* hist_data)  
 {
 	size_t i;
 	size_t dataSeriesLength = r1*r2;
@@ -2683,10 +2683,10 @@ void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPoi
 #ifdef HAVE_TIMECMPR				
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
-					if(multisteps->compressionType == 0) //snapshot
+					if(compressionType == 0) //snapshot
 						decompressDataSeries_double_2D(data, r1, r2, tdps);
 					else
-						decompressDataSeries_double_1D_ts(data, dataSeriesLength, multisteps, tdps);					
+						decompressDataSeries_double_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
 #endif						
@@ -2705,7 +2705,7 @@ void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPoi
 	}
 }
 
-void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps, int errBoundMode) 
+void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps, int errBoundMode, int compressionType, double* hist_data) 
 {
 	size_t i;
 	size_t dataSeriesLength = r1*r2*r3;
@@ -2724,7 +2724,7 @@ void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, T
 					if(multisteps->compressionType == 0) //snapshot
 						decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
 					else
-						decompressDataSeries_double_1D_ts(data, dataSeriesLength, multisteps, tdps);					
+						decompressDataSeries_double_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
 #endif						
@@ -2745,7 +2745,7 @@ void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, T
 	}
 }
 
-void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageD* tdps, int errBoundMode)
+void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageD* tdps, int errBoundMode, int compressionType, double* hist_data)
 {
 	size_t i;
 	size_t dataSeriesLength = r1*r2*r3*r4;
@@ -2764,7 +2764,7 @@ void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, s
 					if(multisteps->compressionType == 0)
 						decompressDataSeries_double_4D(data, r1, r2, r3, r4, tdps);
 					else
-						decompressDataSeries_double_1D_ts(data, r1*r2*r3*r4, multisteps, tdps);					
+						decompressDataSeries_double_1D_ts(data, r1*r2*r3*r4, hist_data, tdps);					
 				}
 				else
 #endif				

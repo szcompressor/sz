@@ -53,9 +53,9 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 
 void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *oriData, size_t dataLength, size_t *outSize);
 
-int SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData, 
+/*int SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
-int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio);
+int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio);*/
 
 int SZ_compress_args_double(unsigned char** newByteData, double *oriData, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 

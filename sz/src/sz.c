@@ -364,13 +364,13 @@ void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_
 	if(dataType == SZ_FLOAT)
 	{
 		float *newFloatData;
-		SZ_decompress_args_float(&newFloatData, r5, r4, r3, r2, r1, bytes, byteLength);
+		SZ_decompress_args_float(&newFloatData, r5, r4, r3, r2, r1, bytes, byteLength, 0, NULL);
 		return newFloatData;	
 	}
 	else if(dataType == SZ_DOUBLE)
 	{
 		double *newDoubleData;
-		SZ_decompress_args_double(&newDoubleData, r5, r4, r3, r2, r1, bytes, byteLength);
+		SZ_decompress_args_double(&newDoubleData, r5, r4, r3, r2, r1, bytes, byteLength, 0, NULL);
 		return newDoubleData;	
 	}
 	else if(dataType == SZ_INT8)
@@ -956,12 +956,12 @@ void SZ_decompress_ts(unsigned char *bytes, size_t byteLength)
 		switch(dataType)
 		{
 		case SZ_FLOAT:
-				SZ_decompress_args_float(&newFloatData, r5, r4, r3, r2, r1, cmpBytes, cmpSize);
+				SZ_decompress_args_float(&newFloatData, r5, r4, r3, r2, r1, cmpBytes, cmpSize, multisteps->compressionType, multisteps->hist_data);
 				memcpy(p->data, newFloatData, dataLen*sizeof(float));
 				free(newFloatData);
 				break;
 		case SZ_DOUBLE:
-				SZ_decompress_args_double(&newDoubleData, r5, r4, r3, r2, r1, cmpBytes, cmpSize);
+				SZ_decompress_args_double(&newDoubleData, r5, r4, r3, r2, r1, cmpBytes, cmpSize, multisteps->compressionType, multisteps->hist_data);
 				memcpy(p->data, newDoubleData, dataLen*sizeof(double));
 				free(newDoubleData);
 				break;

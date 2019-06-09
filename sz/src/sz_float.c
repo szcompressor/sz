@@ -2671,6 +2671,7 @@ void SZ_compress_args_float_withinRange(unsigned char** newByteData, float *oriD
 	free_TightDataPointStorageF(tdps);	
 }
 
+/*
 int SZ_compress_args_float_wRngeNoGzip(unsigned char** newByteData, float *oriData, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio)
@@ -2724,6 +2725,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio)
 	}
 	return status;
 }
+*/
 
 int SZ_compress_args_float(unsigned char** newByteData, float *oriData, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
