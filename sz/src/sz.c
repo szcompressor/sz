@@ -804,14 +804,14 @@ void SZ_registerVar(char* varName, int dataType, void* data,
 			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio, 
 			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
-	if(sz_tsc==NULL)
-		initSZ_TSC();
+	/*if(sz_tsc==NULL)
+		initSZ_TSC();*/
 		
 	char str[256];
 	SZ_batchAddVar(varName, dataType, data, 
 			errBoundMode, absErrBound, relBoundRatio, pwRelBoundRatio, r5, r4, r3, r2, r1);
-	sprintf(str, "%d: %s : %zuX%zuX%zuX%zu%zu : %d : %f : %f : %f\n", sz_varset->count - 1, varName, r5, r4, r3, r2, r1, errBoundMode, absErrBound, relBoundRatio, pwRelBoundRatio);
-	fputs(str, sz_tsc->metadata_file);
+	//sprintf(str, "%d: %s : %zuX%zuX%zuX%zu%zu : %d : %f : %f : %f\n", sz_varset->count - 1, varName, r5, r4, r3, r2, r1, errBoundMode, absErrBound, relBoundRatio, pwRelBoundRatio);
+	//fputs(str, sz_tsc->metadata_file);
 }
 
 int SZ_deregisterVar(char* varName)
