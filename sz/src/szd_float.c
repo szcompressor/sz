@@ -97,13 +97,13 @@ size_t cmpSize, int compressionType, float* hist_data)
 		if(tdps->raBytes_size > 0) //v2.0
 		{
 			if (dim == 1)
-				getSnapshotData_float_1D(newData,r1,tdps, errBoundMode, 0, NULL);
+				getSnapshotData_float_1D(newData,r1,tdps, errBoundMode, 0, hist_data);
 			else if(dim == 2)
-				decompressDataSeries_float_2D_nonblocked_with_blocked_regression(newData, r2, r1, tdps->raBytes);
+				decompressDataSeries_float_2D_nonblocked_with_blocked_regression(newData, r2, r1, tdps->raBytes, hist_data);
 			else if(dim == 3)
-				decompressDataSeries_float_3D_nonblocked_with_blocked_regression(newData, r3, r2, r1, tdps->raBytes);
+				decompressDataSeries_float_3D_nonblocked_with_blocked_regression(newData, r3, r2, r1, tdps->raBytes, hist_data);
 			else if(dim == 4)
-				decompressDataSeries_float_3D_nonblocked_with_blocked_regression(newData, r4*r3, r2, r1, tdps->raBytes);
+				decompressDataSeries_float_3D_nonblocked_with_blocked_regression(newData, r4*r3, r2, r1, tdps->raBytes, hist_data);
 			else
 			{
 				printf("Error: currently support only at most 4 dimensions!\n");
@@ -133,7 +133,7 @@ size_t cmpSize, int compressionType, float* hist_data)
 	return status;
 }
 
-void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps) 
+void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, float* hist_data, TightDataPointStorageF* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
@@ -223,7 +223,7 @@ void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, TightD
 	
 #ifdef HAVE_TIMECMPR	
 	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
-		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(float));
+		memcpy(hist_data, (*data), dataSeriesLength*sizeof(float));
 #endif	
 	
 	free(leadNum);
@@ -231,7 +231,7 @@ void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, TightD
 	return;
 }
 
-void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightDataPointStorageF* tdps) 
+void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, float* hist_data, TightDataPointStorageF* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	//printf("tdps->intervals=%d, exe_params->intvRadius=%d\n", tdps->intervals, exe_params->intvRadius);
@@ -538,7 +538,7 @@ void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightData
 
 #ifdef HAVE_TIMECMPR	
 	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
-		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(float));
+		memcpy(hist_data, (*data), dataSeriesLength*sizeof(float));
 #endif	
 
 	free(leadNum);
@@ -546,7 +546,7 @@ void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightData
 	return;
 }
 
-void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageF* tdps) 
+void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3, float* hist_data, TightDataPointStorageF* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
@@ -1077,7 +1077,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 	
 #ifdef HAVE_TIMECMPR	
 	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
-		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(float));
+		memcpy(hist_data, (*data), dataSeriesLength*sizeof(float));
 #endif		
 
 	free(leadNum);
@@ -1085,7 +1085,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 	return;
 }
 
-void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageF* tdps)
+void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3, size_t r4, float* hist_data, TightDataPointStorageF* tdps)
 {
 	updateQuantizationInfo(tdps->intervals);
 	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
@@ -2641,13 +2641,13 @@ void getSnapshotData_float_1D(float** data, size_t dataSeriesLength, TightDataPo
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(compressionType == 0) //snapshot
-						decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
+						decompressDataSeries_float_1D(data, dataSeriesLength, hist_data, tdps);
 					else
 						decompressDataSeries_float_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
 #endif				
-					decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
+					decompressDataSeries_float_1D(data, dataSeriesLength, hist_data, tdps);
 			}
 			else 
 			{
@@ -2681,13 +2681,13 @@ void getSnapshotData_float_2D(float** data, size_t r1, size_t r2, TightDataPoint
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(compressionType == 0)
-						decompressDataSeries_float_2D(data, r1, r2, tdps);
+						decompressDataSeries_float_2D(data, r1, r2, hist_data, tdps);
 					else
 						decompressDataSeries_float_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
 #endif
-					decompressDataSeries_float_2D(data, r1, r2, tdps);
+					decompressDataSeries_float_2D(data, r1, r2, hist_data, tdps);
 			}
 			else 
 			{
@@ -2722,13 +2722,13 @@ void getSnapshotData_float_3D(float** data, size_t r1, size_t r2, size_t r3, Tig
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(compressionType == 0)
-						decompressDataSeries_float_3D(data, r1, r2, r3, tdps);
+						decompressDataSeries_float_3D(data, r1, r2, r3, hist_data, tdps);
 					else
 						decompressDataSeries_float_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
 #endif				
-					decompressDataSeries_float_3D(data, r1, r2, r3, tdps);
+					decompressDataSeries_float_3D(data, r1, r2, r3, hist_data, tdps);
 			}
 			else 
 			{
@@ -2763,13 +2763,13 @@ void getSnapshotData_float_4D(float** data, size_t r1, size_t r2, size_t r3, siz
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(compressionType == 0)
-						decompressDataSeries_float_4D(data, r1, r2, r3, r4, tdps);
+						decompressDataSeries_float_4D(data, r1, r2, r3, r4, hist_data, tdps);
 					else
 						decompressDataSeries_float_1D_ts(data, r1*r2*r3*r4, hist_data, tdps);					
 				}
 				else
 #endif				
-					decompressDataSeries_float_4D(data, r1, r2, r3, r4, tdps);
+					decompressDataSeries_float_4D(data, r1, r2, r3, r4, hist_data, tdps);
 			}
 			else 
 			{
@@ -3079,7 +3079,7 @@ size_t decompressDataSeries_float_2D_RA_block(float * data, float mean, size_t d
 	return unpredictable_count;
 }
 
-void decompressDataSeries_float_2D_nonblocked_with_blocked_regression(float** data, size_t r1, size_t r2, unsigned char* comp_data){
+void decompressDataSeries_float_2D_nonblocked_with_blocked_regression(float** data, size_t r1, size_t r2, unsigned char* comp_data, float* hist_data){
 
 	size_t dim0_offset = r2;
 	size_t num_elements = r1 * r2;
@@ -3408,6 +3408,12 @@ void decompressDataSeries_float_2D_nonblocked_with_blocked_regression(float** da
 			}
 		}
 	}
+	
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(hist_data, (*data), num_elements*sizeof(float));
+#endif	
+	
 	free(coeff_result_type);
 
 	free(indicator);
@@ -3415,7 +3421,7 @@ void decompressDataSeries_float_2D_nonblocked_with_blocked_regression(float** da
 }
 
 
-void decompressDataSeries_float_3D_nonblocked_with_blocked_regression(float** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data){
+void decompressDataSeries_float_3D_nonblocked_with_blocked_regression(float** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data, float* hist_data){
 
 	size_t dim0_offset = r2 * r3;
 	size_t dim1_offset = r3;
@@ -5791,7 +5797,7 @@ void decompressDataSeries_float_3D_nonblocked_with_blocked_regression(float** da
 	
 #ifdef HAVE_TIMECMPR	
 	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
-		memcpy(multisteps->hist_data, (*data), num_elements*sizeof(float));
+		memcpy(hist_data, (*data), num_elements*sizeof(float));
 #endif	
 
 	free(coeff_result_type);

@@ -1354,7 +1354,7 @@ void decompressDataSeries_double_1D_pwrgroup(double** data, size_t dataSeriesLen
 
 void decompressDataSeries_double_1D_pwr_pre_log(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps) {
 
-	decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
+	decompressDataSeries_double_1D(data, dataSeriesLength, NULL, tdps);
 	double threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;
@@ -1379,7 +1379,7 @@ void decompressDataSeries_double_1D_pwr_pre_log(double** data, size_t dataSeries
 void decompressDataSeries_double_2D_pwr_pre_log(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps) {
 
 	size_t dataSeriesLength = r1 * r2;
-	decompressDataSeries_double_2D(data, r1, r2, tdps);
+	decompressDataSeries_double_2D(data, r1, r2, NULL, tdps);
 	double threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;
@@ -1403,7 +1403,7 @@ void decompressDataSeries_double_2D_pwr_pre_log(double** data, size_t r1, size_t
 void decompressDataSeries_double_3D_pwr_pre_log(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps) {
 
 	size_t dataSeriesLength = r1 * r2 * r3;
-	decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
+	decompressDataSeries_double_3D(data, r1, r2, r3, NULL, tdps);
 	double threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;

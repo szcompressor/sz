@@ -73,7 +73,7 @@ int main(int argc, char * argv[])
     size_t nbEle;
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
     double *data = (double*)malloc(sizeof(double)*dataLength);
-    SZ_registerVar(varName, SZ_DOUBLE, data, confparams_cpr->errorBoundMode, confparams_cpr->absErrBound, confparams_cpr->relBoundRatio, confparams_cpr->pw_relBoundRatio, r5, r4, r3, r2, r1);
+    SZ_registerVar(1, varName, SZ_DOUBLE, data, confparams_cpr->errorBoundMode, confparams_cpr->absErrBound, confparams_cpr->relBoundRatio, confparams_cpr->pw_relBoundRatio, r5, r4, r3, r2, r1);
 
     if(status != SZ_SCES)
     {
@@ -83,25 +83,24 @@ int main(int argc, char * argv[])
    
     size_t outSize; 
     unsigned char *bytes = NULL;
-   int j = 0;
-   for(i=1;i<20;i++)
-        {
-                printf("simulation time step %d\n", i);
-                sprintf(oriFilePath, "%s/%s%02d.bin.dat", oriDir, varName, i);
-                float *data_ = readFloatData(oriFilePath, &nbEle, &status);
+	int j = 0;
+	for(i=1;i<20;i++)
+	{
+		printf("simulation time step %d\n", i);
+		sprintf(oriFilePath, "%s/%s%02d.bin.dat", oriDir, varName, i);
+		float *data_ = readFloatData(oriFilePath, &nbEle, &status);
 		for(j=0;j<nbEle;j++)
 			data[j] = (double)data_[j];	
-                cost_start();
-                SZ_compress_ts(&bytes, &outSize);
-                cost_end();
-                printf("timecost=%f\n",totalCost);
-                sprintf(outputFilePath, "%s/%s%02d-double.bin.dat.sz2", outputDir, varName, i);
-                printf("writing compressed data to %s\n", outputFilePath);
-                writeByteData(bytes, outSize, outputFilePath, &status);
-                free(bytes);
-                free(data_);
-        }
-
+		cost_start();
+		SZ_compress_ts(SZ_PERIO_TEMPORAL_COMPRESSION, &bytes, &outSize);
+		cost_end();
+		printf("timecost=%f\n",totalCost);
+		sprintf(outputFilePath, "%s/%s%02d-double.bin.dat.sz2", outputDir, varName, i);
+		printf("writing compressed data to %s\n", outputFilePath);
+		writeByteData(bytes, outSize, outputFilePath, &status);
+		free(bytes);
+		free(data_);
+	}
 
 
     printf("done\n");

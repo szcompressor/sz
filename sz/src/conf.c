@@ -400,14 +400,14 @@ void initSZ_TSC()
 {
 	sz_tsc = (sz_tsc_metadata*)malloc(sizeof(sz_tsc_metadata));
 	memset(sz_tsc, 0, sizeof(sz_tsc_metadata));
-	sprintf(sz_tsc->metadata_filename, "sz_tsc_metainfo.txt");
+	/*sprintf(sz_tsc->metadata_filename, "sz_tsc_metainfo.txt");
 	sz_tsc->metadata_file = fopen(sz_tsc->metadata_filename, "wb");
 	if (sz_tsc->metadata_file == NULL)
 	{
 		printf("Failed to open sz_tsc_metainfo.txt file for writing metainfo.\n");
 		exit(1);
 	}
-	fputs("#metadata of the time-step based compression\n", sz_tsc->metadata_file);	
+	fputs("#metadata of the time-step based compression\n", sz_tsc->metadata_file);	*/
 }
 
 /*double fabs(double value)

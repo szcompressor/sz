@@ -82,8 +82,8 @@ extern "C" {
 #define SZ_VERNUM 0x0200
 #define SZ_VER_MAJOR 2
 #define SZ_VER_MINOR 1
-#define SZ_VER_BUILD 4
-#define SZ_VER_REVISION 2
+#define SZ_VER_BUILD 5
+#define SZ_VER_REVISION 0
 
 #define PASTRI 103
 #define HZ 102
@@ -141,6 +141,10 @@ extern "C" {
 #define SZ_PWR_MIN_TYPE 0
 #define SZ_PWR_AVG_TYPE 1
 #define SZ_PWR_MAX_TYPE 2
+
+#define SZ_FORCE_SNAPSHOT_COMPRESSION 0
+#define SZ_FORCE_TEMPORAL_COMPRESSION 1
+#define SZ_PERIO_TEMPORAL_COMPRESSION 2
 
 //SUCCESS returning status
 #define SZ_SCES 0  //successful
@@ -380,13 +384,17 @@ void filloutDimArray(size_t* dim, size_t r5, size_t r4, size_t r3, size_t r2, si
 
 size_t compute_total_batch_size();
 
-void SZ_registerVar(char* varName, int dataType, void* data, 
+void SZ_registerVar(int var_id, char* varName, int dataType, void* data, 
 			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio, 
 			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
+
+int SZ_deregisterVar_ID(int var_id);
 int SZ_deregisterVar(char* varName);
 int SZ_deregisterAllVars();
 
-int SZ_compress_ts(unsigned char** newByteData, size_t *outSize);
+int SZ_compress_ts_select_var(int cmprType, unsigned char* var_ids, unsigned char var_count, unsigned char** newByteData, size_t *outSize);
+int SZ_compress_ts(int cmprType, unsigned char** newByteData, size_t *outSize);
+void SZ_decompress_ts_select_var(unsigned char* var_ids, unsigned char var_count, unsigned char *bytes, size_t bytesLength);
 void SZ_decompress_ts(unsigned char *bytes, size_t byteLength);
 
 void SZ_Finalize();

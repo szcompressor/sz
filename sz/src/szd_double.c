@@ -18,7 +18,8 @@
 #include "szd_double_ts.h"
 #include "utility.h"
 
-int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, unsigned char* cmpBytes, size_t cmpSize, int compressionType, double* hist_data)
+int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, unsigned char* cmpBytes, 
+size_t cmpSize, int compressionType, double* hist_data)
 {
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
@@ -86,13 +87,13 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 		if(tdps->raBytes_size > 0) //v2.0
 		{
 			if (dim == 1)
-				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode, 0, NULL);
+				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode, 0, hist_data);
 			else if(dim == 2)
-				decompressDataSeries_double_2D_nonblocked_with_blocked_regression(newData, r2, r1, tdps->raBytes);
+				decompressDataSeries_double_2D_nonblocked_with_blocked_regression(newData, r2, r1, tdps->raBytes, hist_data);
 			else if(dim == 3)
-				decompressDataSeries_double_3D_nonblocked_with_blocked_regression(newData, r3, r2, r1, tdps->raBytes);
+				decompressDataSeries_double_3D_nonblocked_with_blocked_regression(newData, r3, r2, r1, tdps->raBytes, hist_data);
 			else if(dim == 4)
-				decompressDataSeries_double_3D_nonblocked_with_blocked_regression(newData, r4*r3, r2, r1, tdps->raBytes);
+				decompressDataSeries_double_3D_nonblocked_with_blocked_regression(newData, r4*r3, r2, r1, tdps->raBytes, hist_data);
 			else
 			{
 				printf("Error: currently support only at most 4 dimensions!\n");
@@ -126,7 +127,7 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 	return status;
 }
 
-void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps) 
+void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, double* hist_data, TightDataPointStorageD* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
@@ -216,7 +217,7 @@ void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, Tigh
 	
 #ifdef HAVE_TIMECMPR	
 	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
-		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+		memcpy(hist_data, (*data), dataSeriesLength*sizeof(double));
 #endif	
 	
 	free(leadNum);
@@ -224,7 +225,7 @@ void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, Tigh
 	return;
 }
 
-void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps) 
+void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, double* hist_data, TightDataPointStorageD* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	//printf("tdps->intervals=%d, exe_params->intvRadius=%d\n", tdps->intervals, exe_params->intvRadius);
@@ -531,7 +532,7 @@ void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDa
 
 #ifdef HAVE_TIMECMPR	
 	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
-		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+		memcpy(hist_data, (*data), dataSeriesLength*sizeof(double));
 #endif	
 
 	free(leadNum);
@@ -539,7 +540,7 @@ void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDa
 	return;
 }
 
-void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps) 
+void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t r3, double* hist_data, TightDataPointStorageD* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
@@ -1075,7 +1076,7 @@ void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t 
 
 #ifdef HAVE_TIMECMPR	
 	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
-		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+		memcpy(hist_data, (*data), dataSeriesLength*sizeof(double));
 #endif	
 
 	free(leadNum);
@@ -1083,7 +1084,7 @@ void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t 
 	return;
 }
 
-void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageD* tdps)
+void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, double* hist_data, TightDataPointStorageD* tdps)
 {
 	updateQuantizationInfo(tdps->intervals);
 	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
@@ -2644,13 +2645,13 @@ void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightData
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(multisteps->compressionType == 0) //snapshot
-						decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
+						decompressDataSeries_double_1D(data, dataSeriesLength, hist_data, tdps);
 					else
 						decompressDataSeries_double_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
 #endif
-					decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
+					decompressDataSeries_double_1D(data, dataSeriesLength, hist_data, tdps);
 			}
 			else 
 			{
@@ -2684,13 +2685,13 @@ void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPoi
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(compressionType == 0) //snapshot
-						decompressDataSeries_double_2D(data, r1, r2, tdps);
+						decompressDataSeries_double_2D(data, r1, r2, hist_data, tdps);
 					else
 						decompressDataSeries_double_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
 #endif						
-					decompressDataSeries_double_2D(data, r1, r2, tdps);
+					decompressDataSeries_double_2D(data, r1, r2, hist_data, tdps);
 			}
 			else 
 				//decompressDataSeries_double_2D_pwr(data, r1, r2, tdps);
@@ -2721,14 +2722,14 @@ void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, T
 #ifdef HAVE_TIMECMPR				
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
-					if(multisteps->compressionType == 0) //snapshot
-						decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
+					if(compressionType == 0) //snapshot
+						decompressDataSeries_double_3D(data, r1, r2, r3, hist_data, tdps);
 					else
 						decompressDataSeries_double_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
 #endif						
-					decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
+					decompressDataSeries_double_3D(data, r1, r2, r3, hist_data, tdps);
 			}
 			else 
 			{
@@ -2762,13 +2763,13 @@ void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, s
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(multisteps->compressionType == 0)
-						decompressDataSeries_double_4D(data, r1, r2, r3, r4, tdps);
+						decompressDataSeries_double_4D(data, r1, r2, r3, r4, hist_data, tdps);
 					else
 						decompressDataSeries_double_1D_ts(data, r1*r2*r3*r4, hist_data, tdps);					
 				}
 				else
 #endif				
-					decompressDataSeries_double_4D(data, r1, r2, r3, r4, tdps);
+					decompressDataSeries_double_4D(data, r1, r2, r3, r4, hist_data, tdps);
 			}
 			else 
 			{
@@ -2785,7 +2786,7 @@ void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, s
 	}
 }
 
-void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, unsigned char* comp_data){
+void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, unsigned char* comp_data, double* hist_data){
 
 	size_t dim0_offset = r2;
 	size_t num_elements = r1 * r2;
@@ -3114,6 +3115,12 @@ void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** 
 			}
 		}
 	}
+	
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(hist_data, (*data), num_elements*sizeof(double));
+#endif	
+	
 	free(coeff_result_type);
 
 	free(indicator);
@@ -3121,7 +3128,7 @@ void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** 
 }
 
 
-void decompressDataSeries_double_3D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data){
+void decompressDataSeries_double_3D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data, double* hist_data){
 
 	size_t dim0_offset = r2 * r3;
 	size_t dim1_offset = r3;
@@ -5494,6 +5501,11 @@ void decompressDataSeries_double_3D_nonblocked_with_blocked_regression(double** 
 			}
 		}
 	}
+
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(hist_data, (*data), num_elements*sizeof(double));
+#endif	
 
 	free(coeff_result_type);
 

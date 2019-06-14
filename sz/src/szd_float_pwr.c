@@ -1353,7 +1353,7 @@ void decompressDataSeries_float_1D_pwrgroup(float** data, size_t dataSeriesLengt
 
 void decompressDataSeries_float_1D_pwr_pre_log(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps) {
 
-	decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
+	decompressDataSeries_float_1D(data, dataSeriesLength, NULL, tdps);
 	float threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;
@@ -1377,7 +1377,7 @@ void decompressDataSeries_float_1D_pwr_pre_log(float** data, size_t dataSeriesLe
 void decompressDataSeries_float_2D_pwr_pre_log(float** data, size_t r1, size_t r2, TightDataPointStorageF* tdps) {
 
 	size_t dataSeriesLength = r1 * r2;
-	decompressDataSeries_float_2D(data, r1, r2, tdps);
+	decompressDataSeries_float_2D(data, r1, r2, NULL, tdps);
 	float threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;
@@ -1401,7 +1401,7 @@ void decompressDataSeries_float_2D_pwr_pre_log(float** data, size_t r1, size_t r
 void decompressDataSeries_float_3D_pwr_pre_log(float** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageF* tdps) {
 
 	size_t dataSeriesLength = r1 * r2 * r3;
-	decompressDataSeries_float_3D(data, r1, r2, r3, tdps);
+	decompressDataSeries_float_3D(data, r1, r2, r3, NULL, tdps);
 	float threshold = tdps->minLogValue;
 	if(tdps->pwrErrBoundBytes_size > 0){
 		unsigned char * signs;

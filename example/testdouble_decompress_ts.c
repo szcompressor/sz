@@ -72,7 +72,7 @@ int main(int argc, char * argv[])
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
     double *data = (double*)malloc(sizeof(double)*dataLength);
     float *data_out = (float*)malloc(sizeof(float)*dataLength);
-    SZ_registerVar("dump", SZ_DOUBLE, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar(1, "dump", SZ_DOUBLE, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
 
     if(status != SZ_SCES)
     {

@@ -436,7 +436,7 @@ void SZ_compress_args_double_StoreOriData(double* oriData, size_t dataLength, un
 }
 
 
-char SZ_compress_args_double_NoCkRngeNoGzip_1D(unsigned char** newByteData, double *oriData, 
+char SZ_compress_args_double_NoCkRngeNoGzip_1D(int cmprType, unsigned char** newByteData, double *oriData, 
 size_t dataLength, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
 {
 	char compressionType = 0;	
@@ -445,17 +445,32 @@ size_t dataLength, double realPrecision, size_t *outSize, double valueRangeSize,
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 	{
 		int timestep = sz_tsc->currentStep;
-		if(timestep % confparams_cpr->snapshotCmprStep != 0)
+		if(cmprType == SZ_PERIO_TEMPORAL_COMPRESSION)
 		{
-			tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
-			compressionType = 1; //time-series based compression 
+			if(timestep % confparams_cpr->snapshotCmprStep != 0)
+			{
+				tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
+				compressionType = 1; //time-series based compression 
+			}
+			else
+			{	
+				tdps = SZ_compress_double_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_d);
+				compressionType = 0; //snapshot-based compression
+				multisteps->lastSnapshotStep = timestep;
+			}					
 		}
-		else
-		{	
+		else if(cmprType == SZ_FORCE_SNAPSHOT_COMPRESSION)
+		{
 			tdps = SZ_compress_double_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_d);
 			compressionType = 0; //snapshot-based compression
-			multisteps->lastSnapshotStep = timestep;
-		}		
+			multisteps->lastSnapshotStep = timestep;			
+		}
+		else if(cmprType == SZ_FORCE_TEMPORAL_COMPRESSION)
+		{
+			tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
+			compressionType = 1; //time-series based compression 			
+		}
+
 	}
 	else
 #endif
@@ -709,7 +724,7 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
  * Note: @r1 is high dimension
  * 		 @r2 is low dimension 
  * */
-char SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, double *oriData, size_t r1, size_t r2, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
+char SZ_compress_args_double_NoCkRngeNoGzip_2D(int cmprType, unsigned char** newByteData, double *oriData, size_t r1, size_t r2, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
 {
 	size_t dataLength = r1*r2;
 	char compressionType = 0;	
@@ -718,17 +733,31 @@ char SZ_compress_args_double_NoCkRngeNoGzip_2D(unsigned char** newByteData, doub
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 	{
 		int timestep = sz_tsc->currentStep;
-		if(timestep % confparams_cpr->snapshotCmprStep != 0)
+		if(cmprType == SZ_PERIO_TEMPORAL_COMPRESSION)
 		{
-			tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
-			compressionType = 1; //time-series based compression 
+			if(timestep % confparams_cpr->snapshotCmprStep != 0)
+			{
+				tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
+				compressionType = 1; //time-series based compression 
+			}
+			else
+			{	
+				tdps = SZ_compress_double_2D_MDQ(oriData, r1, r2, realPrecision, valueRangeSize, medianValue_d);
+				compressionType = 0; //snapshot-based compression
+				multisteps->lastSnapshotStep = timestep;
+			}					
 		}
-		else
-		{	
+		else if(cmprType == SZ_FORCE_SNAPSHOT_COMPRESSION)
+		{
 			tdps = SZ_compress_double_2D_MDQ(oriData, r1, r2, realPrecision, valueRangeSize, medianValue_d);
 			compressionType = 0; //snapshot-based compression
-			multisteps->lastSnapshotStep = timestep;
-		}		
+			multisteps->lastSnapshotStep = timestep;			
+		}
+		else if(cmprType == SZ_FORCE_TEMPORAL_COMPRESSION)
+		{
+			tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
+			compressionType = 1; //time-series based compression 			
+		}
 	}
 	else
 #endif
@@ -1099,7 +1128,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 }
 
 
-char SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
+char SZ_compress_args_double_NoCkRngeNoGzip_3D(int cmprType, unsigned char** newByteData, double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
 {
 	size_t dataLength = r1*r2*r3;
 	char compressionType = 0;	
@@ -1108,28 +1137,50 @@ char SZ_compress_args_double_NoCkRngeNoGzip_3D(unsigned char** newByteData, doub
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 	{
 		int timestep = sz_tsc->currentStep;
-		if(timestep % confparams_cpr->snapshotCmprStep != 0)
+		if(cmprType == SZ_PERIO_TEMPORAL_COMPRESSION)
+		{
+			if(timestep % confparams_cpr->snapshotCmprStep != 0)
+			{
+				tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
+				compressionType = 1; //time-series based compression 
+			}
+			else
+			{	
+				if(sz_with_regression == SZ_NO_REGRESSION)	
+					tdps = SZ_compress_double_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_d);
+				else
+					*newByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r1, r2, r3, realPrecision, outSize);
+				compressionType = 0; //snapshot-based compression
+				multisteps->lastSnapshotStep = timestep;
+			}
+		}
+		else if(cmprType == SZ_FORCE_SNAPSHOT_COMPRESSION)
+		{
+			if(sz_with_regression == SZ_NO_REGRESSION)	
+				tdps = SZ_compress_double_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_d);
+			else
+				*newByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r1, r2, r3, realPrecision, outSize);
+			compressionType = 0; //snapshot-based compression
+			multisteps->lastSnapshotStep = timestep;			
+		}
+		else if(cmprType == SZ_FORCE_TEMPORAL_COMPRESSION)
 		{
 			tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
-			compressionType = 1; //time-series based compression 
-		}
-		else
-		{	
-			tdps = SZ_compress_double_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_d);
-			compressionType = 0; //snapshot-based compression
-			multisteps->lastSnapshotStep = timestep;
+			compressionType = 1; //time-series based compression 			
 		}		
 	}
 	else
 #endif
 		tdps = SZ_compress_double_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_d);		
-
-	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
-
-	if(*outSize>3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + sizeof(double)*dataLength)
-		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
-
-	free_TightDataPointStorageD(tdps);
+	
+	if(tdps!=NULL)
+	{
+		convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
+		if(*outSize>3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + sizeof(double)*dataLength)
+			SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
+		free_TightDataPointStorageD(tdps);
+	}	
+	
 	return compressionType;
 }
 
@@ -2450,7 +2501,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio)
 	return status;
 }*/
 
-int SZ_compress_args_double(unsigned char** newByteData, double *oriData, 
+int SZ_compress_args_double(int cmprType, unsigned char** newByteData, double *oriData, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio)
 {
@@ -2523,11 +2574,11 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
-					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_1D(cmprType, &tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
 #endif
 					{
-						SZ_compress_args_double_NoCkRngeNoGzip_1D(&tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+						SZ_compress_args_double_NoCkRngeNoGzip_1D(cmprType, &tmpByteData, oriData, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 						if(tmpOutSize>=dataLength*sizeof(double) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
 							SZ_compress_args_double_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);
 					}
@@ -2545,12 +2596,12 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)			
-					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_2D(&tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_2D(cmprType, &tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
 #endif
 				{	
 					if(sz_with_regression == SZ_NO_REGRESSION)
-						SZ_compress_args_double_NoCkRngeNoGzip_2D(&tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+						SZ_compress_args_double_NoCkRngeNoGzip_2D(cmprType, &tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 					else 
 					{
 						tmpByteData = SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize);
@@ -2572,12 +2623,12 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			else
 #ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
-					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_3D(cmprType, &tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
 #endif
 				{
 					if(sz_with_regression == SZ_NO_REGRESSION)
-						SZ_compress_args_double_NoCkRngeNoGzip_3D(&tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
+						SZ_compress_args_double_NoCkRngeNoGzip_3D(cmprType, &tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 					else 
 					{
 						tmpByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize);
@@ -5487,6 +5538,12 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 
 unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t * comp_size){
 
+#ifdef HAVE_TIMECMPR	
+	double* decData = NULL;
+	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+		decData = (double*)(multisteps->hist_data);
+#endif
+
 	unsigned int quantization_intervals;
 	double sz_sample_correct_freq = -1;//0.5; //-1
 	double dense_pos;
@@ -5686,6 +5743,12 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 				for(size_t k=0; k<num_z; k++){
 					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
 
+#ifdef HAVE_TIMECMPR
+					size_t offset_z = 0;
+					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+					size_t block_offset = offset_x * dim0_offset + offset_y * dim1_offset + offset_z;
+#endif
+
 					/*sampling and decide which predictor*/
 					{
 						// sample point [1, 1, 1] [1, 1, 4] [1, 4, 1] [1, 4, 4] [4, 1, 1] [4, 1, 4] [4, 4, 1] [4, 4, 4]
@@ -5785,6 +5848,13 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										pred = curData;
 										unpredictable_data[block_unpredictable_count ++] = curData;
 									}
+									
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = pred;
+#endif									
+									
 									if((jj == current_blockcount_y - 1) || (kk == current_blockcount_z - 1)){
 										// assign value to block surfaces
 										pb_pos[ii * strip_dim0_offset + jj * strip_dim1_offset + kk] = pred;
@@ -5822,6 +5892,12 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										pred = curData;
 										unpredictable_data[block_unpredictable_count ++] = curData;
 									}
+
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = pred;
+#endif		
 
 									if((jj == current_blockcount_y - 1) || (kk == current_blockcount_z - 1)){
 										// assign value to block surfaces
@@ -5885,6 +5961,13 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 											unpredictable_data[unpredictable_count ++] = curData;
 										}
 									}
+									
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = *cur_pb_pos;
+#endif											
+									
 									index ++;
 									cur_pb_pos ++;
 									cur_data_pos ++;
@@ -5931,6 +6014,14 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 											unpredictable_data[unpredictable_count ++] = curData;
 										}
 									}
+									
+#ifdef HAVE_TIMECMPR
+									size_t ii = current_blockcount_x - 1;
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = *cur_pb_pos;
+#endif										
+									
 									next_pb_pos[jj * strip_dim1_offset + kk] = *cur_pb_pos;
 									index ++;
 									cur_pb_pos ++;
@@ -5991,6 +6082,12 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 				size_t strip_unpredictable_count = 0;
 				for(size_t k=0; k<num_z; k++){
 					current_blockcount_z = (k < split_index_z) ? early_blockcount_z : late_blockcount_z;
+#ifdef HAVE_TIMECMPR
+					size_t offset_z = 0;
+					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
+					size_t block_offset = offset_x * dim0_offset + offset_y * dim1_offset + offset_z;
+#endif							
+					
 					/*sampling*/
 					{
 						// sample point [1, 1, 1] [1, 1, 4] [1, 4, 1] [1, 4, 4] [4, 1, 1] [4, 1, 4] [4, 4, 1] [4, 4, 4]
@@ -6094,6 +6191,12 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										unpredictable_data[block_unpredictable_count ++] = curData;
 									}
 
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = pred;
+#endif			
+
 									if((jj == current_blockcount_y - 1) || (kk == current_blockcount_z - 1)){
 										// assign value to block surfaces
 										pb_pos[ii * strip_dim0_offset + jj * strip_dim1_offset + kk] = pred;
@@ -6131,6 +6234,12 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										pred = curData;
 										unpredictable_data[block_unpredictable_count ++] = curData;
 									}
+
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = pred;
+#endif
 
 									if((jj == current_blockcount_y - 1) || (kk == current_blockcount_z - 1)){
 										// assign value to block surfaces
@@ -6184,6 +6293,13 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										*cur_pb_pos = curData;
 										unpredictable_data[unpredictable_count ++] = curData;
 									}
+									
+#ifdef HAVE_TIMECMPR
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = *cur_pb_pos;
+#endif	
+									
 									index ++;
 									cur_pb_pos ++;
 									cur_data_pos ++;
@@ -6221,6 +6337,14 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										*cur_pb_pos = curData;
 										unpredictable_data[unpredictable_count ++] = curData;
 									}
+									
+#ifdef HAVE_TIMECMPR
+									size_t ii = current_blockcount_x - 1;
+									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
+									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
+										decData[block_offset + point_offset] = *cur_pb_pos;
+#endif											
+									
 									// assign value to next prediction buffer
 									next_pb_pos[jj * strip_dim1_offset + kk] = *cur_pb_pos;
 									index ++;
