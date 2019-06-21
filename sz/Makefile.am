@@ -25,7 +25,7 @@ endif
 if OPENMP
 libSZ_la_CFLAGS+=-fopenmp
 endif
-libSZ_la_LDFLAGS = -version-info  1:4:0
+libSZ_la_LDFLAGS = -version-info  2:1:5
 libSZ_la_LIDADD=../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a
 libSZ_la_SOURCES=src/MultiLevelCacheTable.c src/MultiLevelCacheTableWideInterval.c \
 		src/ByteToolkit.c src/dataCompression.c src/DynamicIntArray.c src/iniparser.c src/szf.c \
@@ -36,7 +36,7 @@ libSZ_la_SOURCES=src/MultiLevelCacheTable.c src/MultiLevelCacheTableWideInterval
 		src/sz_float.c src/sz_double.c src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c\
 		src/sz_uint8.c src/sz_uint16.c src/sz_uint32.c src/sz_uint64.c src/szd_uint8.c src/szd_uint16.c src/szd_uint32.c src/szd_uint64.c\
 		src/szd_float.c src/szd_double.c src/szd_int8.c src/szd_int16.c src/szd_int32.c src/szd_int64.c src/sz.c\
-		src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c src/szd_double_pwr.c src/ArithmeticCoding.c src/CacheTable.c
+		src/sz_float_pwr.c src/sz_double_pwr.c src/szd_float_pwr.c src/szd_double_pwr.c src/ArithmeticCoding.c src/CacheTable.c\
 		src/sz_interface.F90 src/rw_interface.F90
 libSZ_la_LINK=$(AM_V_CC)$(LIBTOOL) --tag=FC --mode=link $(FCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 else
