@@ -537,7 +537,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@	$(am__append_1) $(am__append_2) $(am__append_3) \
 @FORTRAN_TRUE@	$(am__append_4) $(am__append_5) $(am__append_6)
 @FORTRAN_FALSE@libSZ_la_LDFLAGS = -version-info  1:4:0
-@FORTRAN_TRUE@libSZ_la_LDFLAGS = -version-info  2:1:5
+@FORTRAN_TRUE@libSZ_la_LDFLAGS = -version-info  2:1:0
 @FORTRAN_FALSE@libSZ_la_LIDADD = ../zlib/.libs/libzlib.a ../zlib/.libs/libzstd.a
 @FORTRAN_TRUE@libSZ_la_LIDADD = ../zlib/.libs/libzlib.a ../zstd/.libs/libzstd.a
 @FORTRAN_FALSE@libSZ_la_SOURCES = src/MultiLevelCacheTable.c \

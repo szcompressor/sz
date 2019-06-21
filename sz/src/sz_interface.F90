@@ -1023,7 +1023,8 @@ MODULE SZ
 		R4 = SIZE(VAR,4)
 		R5 = SIZE(VAR,5)
 
-		CALL SZ_batchAddVar_d5_Float(varID, varName, len(trim(varName)), VAR, ErrBoundMode, AbsErrBound, RelBoundRatio, R1, R2, R3, R4, R5)
+		CALL SZ_batchAddVar_d5_Float(varID, varName, len(trim(varName)), VAR, ErrBoundMode, AbsErrBound, RelBoundRatio, R1, R2, &
+                R3, R4, R5)
 	END SUBROUTINE SZ_BatchAddVar_d5_Fortran_REAL_K4
 
 !------batch add double
@@ -1099,7 +1100,8 @@ MODULE SZ
 		R4 = SIZE(VAR,4)
 		R5 = SIZE(VAR,5)
 
-		CALL SZ_batchAddVar_d5_Double(varID, varName, len(trim(varName)), VAR, ErrBoundMode, AbsErrBound, RelBoundRatio, R1, R2, R3, R4, R5)
+		CALL SZ_batchAddVar_d5_Double(varID, varName, len(trim(varName)), VAR, ErrBoundMode, AbsErrBound, RelBoundRatio, & 
+		R1, R2, R3, R4, R5)
 	END SUBROUTINE SZ_BatchAddVar_d5_Fortran_REAL_K8
 
 	SUBROUTINE SZ_GetVarDim(varName, DIMEN, R1, R2, R3, R4, R5)
