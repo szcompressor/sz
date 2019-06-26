@@ -47,7 +47,7 @@ void usage()
 	printf("* print compression results: \n");
 	printf("	-a : print compression results such as distortions\n");
 	printf("* examples: \n");
-	printf("	sz_zc -f -i ~/Data/Hurricane-ISA/CLOUDf48.bin.dat -3 500 500 100 -v CLOUDf48 -y \"SZ(1E-3)\" -C zc.config -M REL -R 1E-3\n");
+	printf("	sz_zc -f -i ~/Data/Hurricane-ISA/CLOUDf48.bin.dat -3 500 500 100 -v CLOUDf48 -y \"SZ(1E-3):CLOUDf48\" -C zc.config -M REL -R 1E-3\n");
 	exit(0);
 }
 
