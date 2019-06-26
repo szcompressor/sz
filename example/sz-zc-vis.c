@@ -235,6 +235,8 @@ int main(int argc, char* argv[])
 	SZ_Init(conPath);	
 	ZC_Init(zcConPath);
 
+	plot_dec_data = 1;
+
 	int errorBoundMode = 0;
 	if(strcmp(errBoundMode, "ABS")==0)
 		errorBoundMode = ABS;
