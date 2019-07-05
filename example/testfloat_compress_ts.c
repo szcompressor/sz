@@ -45,7 +45,7 @@ int main(int argc, char * argv[])
     if(argc < 4)
     {
 		printf("Test case: testfloat_compress_ts [config_file] [varName] [srcDir] [dimension sizes...]\n");
-		printf("Example: testfloat_compress_ts sz.config CLOUDf /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
+		printf("Example: testfloat_compress_ts sz.config QCLOUDf /home/sdi/Data/Hurricane-ISA/consecutive-steps 500 500 100\n");
 		exit(0);
     }
    
@@ -69,11 +69,15 @@ int main(int argc, char * argv[])
 		exit(0);
     sprintf(outputDir, "%s", oriDir);
    
+    char varName2[100];
+    sprintf(varName2, "%s2",varName);
     char oriFilePath[600];
     size_t nbEle;
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
     float *data = (float*)malloc(sizeof(float)*dataLength);
-    SZ_registerVar(varName, SZ_FLOAT, data, confparams_cpr->errorBoundMode, confparams_cpr->absErrBound, confparams_cpr->relBoundRatio, confparams_cpr->pw_relBoundRatio, r5, r4, r3, r2, r1);
+    float *data2 = (float*)malloc(sizeof(float)*dataLength);
+    SZ_registerVar(1, varName, SZ_FLOAT, data, confparams_cpr->errorBoundMode, confparams_cpr->absErrBound, confparams_cpr->relBoundRatio, confparams_cpr->pw_relBoundRatio, r5, r4, r3, r2, r1);
+    SZ_registerVar(2, varName2, SZ_FLOAT, data2, confparams_cpr->errorBoundMode, confparams_cpr->absErrBound, confparams_cpr->relBoundRatio, confparams_cpr->pw_relBoundRatio, r5, r4, r3, r2, r1);
 
     if(status != SZ_SCES)
     {
@@ -83,17 +87,18 @@ int main(int argc, char * argv[])
    
     size_t outSize; 
     unsigned char *bytes = NULL;
-    for(i=1;i<63;i++)
+    for(i=1;i<20;i++)
 	{
 		printf("simulation time step %d\n", i);
-		sprintf(oriFilePath, "%s/QCLOUDf%02d.bin.dat", oriDir, i);
+		sprintf(oriFilePath, "%s/%s%02d.bin.dat", oriDir, varName, i);
 		float *data_ = readFloatData(oriFilePath, &nbEle, &status);
 		memcpy(data, data_, nbEle*sizeof(float));
+		memcpy(data2, data_, nbEle*sizeof(float));
 		cost_start();
-		SZ_compress_ts(&bytes, &outSize);
+		SZ_compress_ts(SZ_PERIO_TEMPORAL_COMPRESSION, &bytes, &outSize);
 		cost_end();
 		printf("timecost=%f\n",totalCost); 
-		sprintf(outputFilePath, "%s/%s_%02d.dat.sz2", outputDir, varName, i);
+		sprintf(outputFilePath, "%s/%s%02d.bin.dat.sz2", outputDir, varName, i);
 		printf("writing compressed data to %s\n", outputFilePath);
 		writeByteData(bytes, outSize, outputFilePath, &status); 
 		free(bytes);

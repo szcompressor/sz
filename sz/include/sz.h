@@ -56,6 +56,9 @@
 #include "sz_float_ts.h"
 #include "szd_float_ts.h"
 #include "utility.h"
+#include "CacheTable.h"
+#include "MultiLevelCacheTable.h"
+#include "MultiLevelCacheTableWideInterval.h"
 
 #ifdef _WIN32
 #define PATH_SEPARATOR ';'
@@ -178,6 +181,9 @@ typedef struct sz_params
 	
 	int snapshotCmprStep; //perform single-snapshot-based compression if time_step == snapshotCmprStep
 	int predictionMode;
+
+	int accelerate_pw_rel_compression;
+	int plus_bits;
 	
 	int randomAccess;
 } sz_params;
@@ -292,22 +298,24 @@ void filloutDimArray(size_t* dim, size_t r5, size_t r4, size_t r3, size_t r2, si
 
 size_t compute_total_batch_size();
 
-void SZ_registerVar(char* varName, int dataType, void* data, 
+void SZ_registerVar(int var_id, char* varName, int dataType, void* data, 
 			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio, 
 			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
+
+int SZ_deregisterVar_ID(int var_id);
 int SZ_deregisterVar(char* varName);
 //int SZ_deregisterAllVars();
 
 
-#ifdef HAVE_TIMECMPR
-int SZ_compress_ts(unsigned char** newByteData, size_t *outSize);
+int SZ_compress_ts_select_var(int cmprType, unsigned char* var_ids, unsigned char var_count, unsigned char** newByteData, size_t *outSize);
+int SZ_compress_ts(int cmprType, unsigned char** newByteData, size_t *outSize);
+void SZ_decompress_ts_select_var(unsigned char* var_ids, unsigned char var_count, unsigned char *bytes, size_t bytesLength);
 void SZ_decompress_ts(unsigned char *bytes, size_t byteLength);
-#endif
 
 void SZ_Finalize();
 
 void convertSZParamsToBytes(sz_params* params, unsigned char* result);
-sz_params* convertBytesToSZParams(unsigned char* bytes);
+void convertBytesToSZParams(unsigned char* bytes, sz_params* params);
 
 #ifdef __cplusplus
 }

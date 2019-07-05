@@ -129,14 +129,20 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 	exe_params->SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
 	int errorBoundMode = ABS;
 	
-	sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
+	if(confparams_dec==NULL)
+	{
+		confparams_dec = (sz_params*)malloc(sizeof(sz_params));
+		memset(confparams_dec, 0, sizeof(sz_params));
+	}	
+	convertBytesToSZParams(&(flatBytes[index]), confparams_dec);
+	/*sz_params* params = convertBytesToSZParams(&(flatBytes[index]));
 	int mode = confparams_dec->szMode;
 	int losslessCompressor = confparams_dec->losslessCompressor;
 	if(confparams_dec!=NULL)
 		free(confparams_dec);
 	confparams_dec = params;
 	confparams_dec->szMode = mode;
-	confparams_dec->losslessCompressor = losslessCompressor;
+	confparams_dec->losslessCompressor = losslessCompressor;*/
 	
 	index += MetaDataByteLength; //20	
 	
@@ -155,14 +161,7 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 	else if(same==1)
 	{
 		(*this)->allSameData = 1;
-		size_t exactDataBytesLength = flatBytesLength - 32;//32=3 + 1 + MetaDataByteLength - 8 (initialized SZ_TYPE_LENGTH);
-		if(exactDataBytesLength>0)
-			(*this)->exactDataBytes = (unsigned char*)malloc(sizeof(unsigned char)*exactDataBytesLength);
-		else
-			(*this)->exactDataBytes = NULL;
-			
-		for(i = 0;i<exactDataBytesLength;i++)
-			(*this)->exactDataBytes[i] = flatBytes[index++];
+		(*this)->exactDataBytes = &(flatBytes[index]);
 		return errorBoundMode;
 	}
 	else

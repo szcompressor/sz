@@ -9,7 +9,7 @@ float absEB = 1E-4;
 int main(int argc, char * argv[])
 {
     size_t r5=0,r4=0,r3=0,r2=0,r1=0;
-    char outDir[640], oriFilePath[640], outputFilePath[640];
+    char oriFilePath[640];
     char *cfgFile;
     
     if(argc < 3)
@@ -39,13 +39,13 @@ int main(int argc, char * argv[])
 	exit(0);
    
     size_t nbEle;
-    float *oriData, *decompData;
+    float *oriData = NULL, *decompData = NULL;
 
     oriData = readFloatData(oriFilePath, &nbEle, &status);
     if(status != SZ_SCES)
     {
-	printf("Error: data file %s cannot be read!\n", oriFilePath);
-	exit(0);
+		printf("Error: data file %s cannot be read!\n", oriFilePath);
+		exit(0);
     }
   
     size_t outSize; 

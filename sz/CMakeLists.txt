@@ -62,6 +62,9 @@ add_library (SZ SHARED
   src/szd_uint8.c
   src/szf.c
   src/utility.c
+  src/CacheTable.c
+  src/MultiLevelCacheTable.c
+  src/MultiLevelCacheTableWideInterval.c
   )
 target_include_directories(SZ 
   PUBLIC 
@@ -81,4 +84,3 @@ install (TARGETS SZ EXPORT SZConfig
   )
 install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sz)
 install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sz)
-

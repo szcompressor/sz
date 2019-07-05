@@ -45,7 +45,7 @@ void usage()
 	printf("* error control: (the error control parameters here will overwrite the setting in sz.config)\n");
 	printf("	-M <error bound mode> : 10 options as follows. \n");
 	printf("		ABS (absolute error bound)\n");
-	printf("		REL (value range based error bound\n");
+	printf("		REL (value range based error bound)\n");
 	printf("		ABS_AND_REL (using min{ABS, REL})\n");
 	printf("		ABS_OR_REL (using max{ABS, REL})\n");
 	printf("		PSNR (peak signal-to-noise ratio)\n");
@@ -532,6 +532,8 @@ int main(int argc, char* argv[])
 					if(ori_data[i]!=0)
 					{
 						relerr = err/fabs(ori_data[i]);
+						//if(relerr>0.1)
+						//{printf("i=%zu, %.30G\n", i, relerr); break;}
 						if(maxpw_relerr<relerr)
 							maxpw_relerr = relerr;
 					}
@@ -559,7 +561,7 @@ int main(int argc, char* argv[])
 				printf ("Max relative error = %f\n", diffMax/(Max-Min));
 				printf ("Max pw relative error = %f\n", maxpw_relerr);
 				printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
-				printf ("acEff=%f\n", acEff);	
+				printf ("Pearson Correlation Coefficient = %f\n", acEff);	
 				printf ("compressionRatio=%f\n", compressionRatio);
 				
 				free(ori_data);
@@ -736,7 +738,7 @@ int main(int argc, char* argv[])
 				printf ("Max relative error = %f\n", diffMax/(Max-Min));
 				printf ("Max pw relative error = %f\n", maxpw_relerr);
 				printf ("PSNR = %f, NRMSE = %.20G\n", psnr,nrmse);
-				printf ("acEff = %f\n", acEff);
+				printf ("Pearson Correlation Coefficient = %f\n", acEff);
 				printf ("compressionRatio = %f\n", compressionRatio);
 				
 				free(ori_data);

@@ -15,7 +15,7 @@ HDF5CC		= h5cc
 # Compiling using shared library
 #SZFLAG 	= -I$(SZPATH)/include -L$(SZPATH)/lib -lSZ
 # Compiling using static library
-SZFLAG 	= -I$(SZPATH)/include $(SZPATH)/lib/libSZ.a $(SZPATH)/lib/libzlib.a $(SZPATH)/lib/libzstd.a -lm
+SZFLAG 	= -I$(SZPATH)/include $(SZPATH)/lib/libSZ.a $(SZPATH)/lib/libzlib.a $(SZPATH)/lib/libzstd.a -lm -Wl,-rpath,$(SZPATH)/lib
 GSLFLAG = -I$(GSLPATH)/include $(GSLPATH)/lib/libgsl.a
 NETCDFFLAG = -I$(NETCDFPATH)/include -lnetcdf
 
@@ -23,6 +23,9 @@ NETCDFFLAG = -I$(NETCDFPATH)/include -lnetcdf
 ##   TARGETS
 all: 		sz testint_compress testint_decompress testfloat_compress testfloat_decompress testdouble_compress testdouble_decompress
 #all: 		testdouble_compress_f testdouble_decompress_f testdouble_batch_compress_f
+
+#testfloat_compress_ts:	testfloat_compress_ts.c
+#	$(CC)  -g -O3 -o testfloat_compress_ts testfloat_compress_ts.c $(SZFLAG)
 
 testint_compress:	testint_compress.c
 	$(CC)  -g -O3 -o testint_compress testint_compress.c $(SZFLAG)

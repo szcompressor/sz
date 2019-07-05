@@ -155,10 +155,15 @@ float calculate_delta_t(size_t size){
 
 int is_lossless_compressed_data(unsigned char* compressedBytes, size_t cmpSize)
 {
+#if ZSTD_VERSION_NUMBER >= 10300
 	unsigned long long frameContentSize = ZSTD_getFrameContentSize(compressedBytes, cmpSize);
 	if(frameContentSize != ZSTD_CONTENTSIZE_ERROR)
 		return ZSTD_COMPRESSOR;
-	
+#else
+	unsigned long long frameContentSize = ZSTD_getDecompressedSize(compressedBytes, cmpSize);
+	if(frameContentSize != 0)
+		return ZSTD_COMPRESSOR;
+#endif
 	int flag = isZlibFormat(compressedBytes[0], compressedBytes[1]);
 	if(flag)
 		return GZIP_COMPRESSOR;

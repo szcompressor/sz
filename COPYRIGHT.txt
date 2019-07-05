@@ -1,6 +1,6 @@
 Copyright © 2016 , UChicago Argonne, LLC
 All Rights Reserved
-[SZ, Version 1.4]
+[SZ, Version 2.1]
 Sheng Di
 Dingwen Tao
 Xin Liang

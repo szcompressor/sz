@@ -1,6 +1,6 @@
 /**
  *  @file szd_double.c
- *  @author Sheng Di and Dingwen Tao
+ *  @author Sheng Di, Dingwen Tao, Xin Liang, Xiangyu Zou, Tao Lu, Wen Xia, Xuan Wang, Weizhe Zhang
  *  @date Aug, 2016
  *  @brief 
  *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
@@ -18,7 +18,8 @@
 #include "szd_double_ts.h"
 #include "utility.h"
 
-int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, unsigned char* cmpBytes, size_t cmpSize)
+int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, unsigned char* cmpBytes, 
+size_t cmpSize, int compressionType, double* hist_data)
 {
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
@@ -86,32 +87,32 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 		if(tdps->raBytes_size > 0) //v2.0
 		{
 			if (dim == 1)
-				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode);
+				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode, 0, hist_data);
 			else if(dim == 2)
-				decompressDataSeries_double_2D_nonblocked_with_blocked_regression(newData, r2, r1, tdps->raBytes);
+				decompressDataSeries_double_2D_nonblocked_with_blocked_regression(newData, r2, r1, tdps->raBytes, hist_data);
 			else if(dim == 3)
-				decompressDataSeries_double_3D_nonblocked_with_blocked_regression(newData, r3, r2, r1, tdps->raBytes);
+				decompressDataSeries_double_3D_nonblocked_with_blocked_regression(newData, r3, r2, r1, tdps->raBytes, hist_data);
 			else if(dim == 4)
-				decompressDataSeries_double_3D_nonblocked_with_blocked_regression(newData, r4*r3, r2, r1, tdps->raBytes);
+				decompressDataSeries_double_3D_nonblocked_with_blocked_regression(newData, r4*r3, r2, r1, tdps->raBytes, hist_data);
 			else
 			{
 				printf("Error: currently support only at most 4 dimensions!\n");
 				status = SZ_DERR;
 			}	
 		}
-		else //1.4.13
+		else //1.4.13 or time-based compression
 		{
 			if (dim == 1)
-				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode);
+				getSnapshotData_double_1D(newData,r1,tdps, errBoundMode, compressionType, hist_data);
 			else
 			if (dim == 2)
-				getSnapshotData_double_2D(newData,r2,r1,tdps, errBoundMode);
+				getSnapshotData_double_2D(newData,r2,r1,tdps, errBoundMode, compressionType, hist_data);
 			else
 			if (dim == 3)
-				getSnapshotData_double_3D(newData,r3,r2,r1,tdps, errBoundMode);
+				getSnapshotData_double_3D(newData,r3,r2,r1,tdps, errBoundMode, compressionType, hist_data);
 			else
 			if (dim == 4)
-				getSnapshotData_double_4D(newData,r4,r3,r2,r1,tdps, errBoundMode);			
+				getSnapshotData_double_4D(newData,r4,r3,r2,r1,tdps, errBoundMode, compressionType, hist_data);			
 			else
 			{
 				printf("Error: currently support only at most 4 dimensions!\n");
@@ -126,7 +127,7 @@ int SZ_decompress_args_double(double** newData, size_t r5, size_t r4, size_t r3,
 	return status;
 }
 
-void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps) 
+void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, double* hist_data, TightDataPointStorageD* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
@@ -216,7 +217,7 @@ void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, Tigh
 	
 #ifdef HAVE_TIMECMPR	
 	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
-		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+		memcpy(hist_data, (*data), dataSeriesLength*sizeof(double));
 #endif	
 	
 	free(leadNum);
@@ -224,7 +225,7 @@ void decompressDataSeries_double_1D(double** data, size_t dataSeriesLength, Tigh
 	return;
 }
 
-void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps) 
+void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, double* hist_data, TightDataPointStorageD* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	//printf("tdps->intervals=%d, exe_params->intvRadius=%d\n", tdps->intervals, exe_params->intvRadius);
@@ -531,7 +532,7 @@ void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDa
 
 #ifdef HAVE_TIMECMPR	
 	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
-		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+		memcpy(hist_data, (*data), dataSeriesLength*sizeof(double));
 #endif	
 
 	free(leadNum);
@@ -539,7 +540,7 @@ void decompressDataSeries_double_2D(double** data, size_t r1, size_t r2, TightDa
 	return;
 }
 
-void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps) 
+void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t r3, double* hist_data, TightDataPointStorageD* tdps) 
 {
 	updateQuantizationInfo(tdps->intervals);
 	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
@@ -1075,7 +1076,7 @@ void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t 
 
 #ifdef HAVE_TIMECMPR	
 	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
-		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+		memcpy(hist_data, (*data), dataSeriesLength*sizeof(double));
 #endif	
 
 	free(leadNum);
@@ -1083,7 +1084,7 @@ void decompressDataSeries_double_3D(double** data, size_t r1, size_t r2, size_t 
 	return;
 }
 
-void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageD* tdps)
+void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, double* hist_data, TightDataPointStorageD* tdps)
 {
 	updateQuantizationInfo(tdps->intervals);
 	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
@@ -1645,7 +1646,990 @@ void decompressDataSeries_double_4D(double** data, size_t r1, size_t r2, size_t 
 	return;
 }
 
-void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps, int errBoundMode) 
+/*MSST19*/
+void decompressDataSeries_double_1D_MSST19(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps) 
+{
+	updateQuantizationInfo(tdps->intervals);
+	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+								// in resiMidBits, p is to track the
+								// byte_index of resiMidBits, l is for
+								// leadNum
+	unsigned char* leadNum;
+	//double interval = tdps->realPrecision*2;
+	
+	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
+	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
+
+	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
+	
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree_MSST19(huffmanTree, tdps->typeArray, dataSeriesLength, type, tdps->max_bits);
+	//decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
+	unsigned char preBytes[8];
+	unsigned char curBytes[8];
+	
+	memset(preBytes, 0, 8);
+
+	size_t curByteIndex = 0;
+	int reqBytesLength, resiBitsLength, resiBits; 
+	unsigned char leadingNum;	
+	double exactData, predValue = 0;
+	reqBytesLength = tdps->reqLength/8;
+	resiBitsLength = tdps->reqLength%8;
+
+	//double threshold = tdps->minLogValue;
+	double* precisionTable = (double*)malloc(sizeof(double) * exe_params->intvCapacity);
+	double inv = 2.0-pow(2, -(tdps->plus_bits));
+	for(int i=0; i<exe_params->intvCapacity; i++){
+		double test = pow((1+tdps->realPrecision), inv*(i - exe_params->intvRadius));
+		precisionTable[i] = test;
+	}
+
+	int type_;
+	for (i = 0; i < dataSeriesLength; i++) {
+		type_ = type[i];
+		switch (type_) {
+		case 0:
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data	
+			memset(curBytes, 0, 8);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+			
+			exactData = bytesToDouble(curBytes);
+			(*data)[i] = exactData;
+			memcpy(preBytes,curBytes,8);
+			predValue = (*data)[i];
+			break;
+		default:
+			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
+			//predValue = (*data)[i-1];
+			predValue = fabs(predValue) * precisionTable[type_];
+			(*data)[i] = predValue;
+			break;
+		}
+	}
+	
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+#endif	
+	free(precisionTable);
+	free(leadNum);
+	free(type);
+	return;
+}
+
+void decompressDataSeries_double_2D_MSST19(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps) 
+{
+	updateQuantizationInfo(tdps->intervals);
+	
+	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	// in resiMidBits, p is to track the
+	// byte_index of resiMidBits, l is for
+	// leadNum
+	size_t dataSeriesLength = r1*r2;
+
+	unsigned char* leadNum;
+	//double realPrecision = tdps->realPrecision;
+
+	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
+
+	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
+
+    int* type = (int*)malloc(dataSeriesLength*sizeof(int));
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree_MSST19(huffmanTree, tdps->typeArray, dataSeriesLength, type, tdps->max_bits);
+	//decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
+
+	unsigned char preBytes[8];
+	unsigned char curBytes[8];
+
+	memset(preBytes, 0, 8);
+
+	size_t curByteIndex = 0;
+	int reqBytesLength, resiBitsLength, resiBits; 
+	unsigned char leadingNum;	
+	double exactData;
+	int type_;
+
+    double* precisionTable = (double*)malloc(sizeof(double) * exe_params->intvCapacity);
+    double inv = 2.0-pow(2, -(tdps->plus_bits));
+    for(int i=0; i<exe_params->intvCapacity; i++){
+        double test = pow((1+tdps->realPrecision), inv*(i - exe_params->intvRadius));
+        precisionTable[i] = test;
+    }
+
+    reqBytesLength = tdps->reqLength/8;
+	resiBitsLength = tdps->reqLength%8;
+	//medianValue = tdps->medianValue;
+	
+	double pred1D, pred2D;
+	size_t ii, jj;
+
+	/* Process Row-0, data 0 */
+
+	// compute resiBits
+	resiBits = 0;
+	if (resiBitsLength != 0) {
+		int kMod8 = k % 8;
+		int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+		if (rightMovSteps > 0) {
+			int code = getRightMovingCode(kMod8, resiBitsLength);
+			resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+		} else if (rightMovSteps < 0) {
+			int code1 = getLeftMovingCode(kMod8);
+			int code2 = getRightMovingCode(kMod8, resiBitsLength);
+			int leftMovSteps = -rightMovSteps;
+			rightMovSteps = 8 - leftMovSteps;
+			resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+			p++;
+			resiBits = resiBits
+					| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+		} else // rightMovSteps == 0
+		{
+			int code = getRightMovingCode(kMod8, resiBitsLength);
+			resiBits = (tdps->residualMidBits[p] & code);
+			p++;
+		}
+		k += resiBitsLength;
+	}
+
+	// recover the exact data
+	memset(curBytes, 0, 8);
+	leadingNum = leadNum[l++];
+	memcpy(curBytes, preBytes, leadingNum);
+	for (j = leadingNum; j < reqBytesLength; j++)
+		curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+	if (resiBitsLength != 0) {
+		unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+		curBytes[reqBytesLength] = resiByte;
+	}
+
+	exactData = bytesToDouble(curBytes);
+	(*data)[0] = exactData;
+	memcpy(preBytes,curBytes,8);
+
+	/* Process Row-0, data 1 */
+	type_ = type[1]; 
+	if (type_ != 0)
+	{
+		pred1D = (*data)[0];
+		(*data)[1] = fabs(pred1D) * precisionTable[type_];
+	}
+	else
+	{
+		// compute resiBits
+		resiBits = 0;
+		if (resiBitsLength != 0) {
+			int kMod8 = k % 8;
+			int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+			if (rightMovSteps > 0) {
+				int code = getRightMovingCode(kMod8, resiBitsLength);
+				resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+			} else if (rightMovSteps < 0) {
+				int code1 = getLeftMovingCode(kMod8);
+				int code2 = getRightMovingCode(kMod8, resiBitsLength);
+				int leftMovSteps = -rightMovSteps;
+				rightMovSteps = 8 - leftMovSteps;
+				resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+				p++;
+				resiBits = resiBits
+						| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+			} else // rightMovSteps == 0
+			{
+				int code = getRightMovingCode(kMod8, resiBitsLength);
+				resiBits = (tdps->residualMidBits[p] & code);
+				p++;
+			}
+			k += resiBitsLength;
+		}
+
+		// recover the exact data
+		memset(curBytes, 0, 8);
+		leadingNum = leadNum[l++];
+		memcpy(curBytes, preBytes, leadingNum);
+		for (j = leadingNum; j < reqBytesLength; j++)
+			curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+		if (resiBitsLength != 0) {
+			unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+			curBytes[reqBytesLength] = resiByte;
+		}
+
+		exactData = bytesToDouble(curBytes);
+		(*data)[1] = exactData;
+		memcpy(preBytes,curBytes,8);
+	}
+
+	/* Process Row-0, data 2 --> data r2-1 */
+	for (jj = 2; jj < r2; jj++)
+	{
+		type_ = type[jj];
+		if (type_ != 0)
+		{
+			pred1D = (*data)[jj-1] * (*data)[jj-1] / (*data)[jj-2];
+			(*data)[jj] = fabs(pred1D) * precisionTable[type_];
+		}
+		else
+		{
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data
+			memset(curBytes, 0, 8);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+
+			exactData = bytesToDouble(curBytes);
+			(*data)[jj] = exactData;
+			memcpy(preBytes,curBytes,8);
+		}
+	}
+
+	size_t index;
+	/* Process Row-1 --> Row-r1-1 */
+	for (ii = 1; ii < r1; ii++)
+	{
+		/* Process row-ii data 0 */
+		index = ii*r2;
+
+		type_ = type[index];
+		if (type_ != 0)
+		{
+			pred1D = (*data)[index-r2];		
+			(*data)[index] = fabs(pred1D) * precisionTable[type_];
+		}
+		else
+		{
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data
+			memset(curBytes, 0, 8);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+
+			exactData = bytesToDouble(curBytes);
+			(*data)[index] = exactData;
+			memcpy(preBytes,curBytes,8);
+		}
+
+		/* Process row-ii data 1 --> r2-1*/
+		for (jj = 1; jj < r2; jj++)
+		{
+			index = ii*r2+jj;
+			pred2D = (*data)[index-1] * (*data)[index-r2] / (*data)[index-r2-1];
+
+			type_ = type[index];
+			if (type_ != 0)
+			{
+				(*data)[index] = fabs(pred2D) * precisionTable[type_];
+			}
+			else
+			{
+				// compute resiBits
+				resiBits = 0;
+				if (resiBitsLength != 0) {
+					int kMod8 = k % 8;
+					int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+					if (rightMovSteps > 0) {
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+					} else if (rightMovSteps < 0) {
+						int code1 = getLeftMovingCode(kMod8);
+						int code2 = getRightMovingCode(kMod8, resiBitsLength);
+						int leftMovSteps = -rightMovSteps;
+						rightMovSteps = 8 - leftMovSteps;
+						resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+						p++;
+						resiBits = resiBits
+								| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+					} else // rightMovSteps == 0
+					{
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code);
+						p++;
+					}
+					k += resiBitsLength;
+				}
+
+				// recover the exact data
+				memset(curBytes, 0, 8);
+				leadingNum = leadNum[l++];
+				memcpy(curBytes, preBytes, leadingNum);
+				for (j = leadingNum; j < reqBytesLength; j++)
+					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+				if (resiBitsLength != 0) {
+					unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+					curBytes[reqBytesLength] = resiByte;
+				}
+
+				exactData = bytesToDouble(curBytes);
+				(*data)[index] = exactData;
+				memcpy(preBytes,curBytes,8);
+			}
+		}
+	}
+
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+#endif	
+
+	free(leadNum);
+	free(type);
+	return;
+}
+
+void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps) 
+{
+	updateQuantizationInfo(tdps->intervals);
+	size_t j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+	// in resiMidBits, p is to track the
+	// byte_index of resiMidBits, l is for
+	// leadNum
+	size_t dataSeriesLength = r1*r2*r3;
+	size_t r23 = r2*r3;
+	unsigned char* leadNum;
+	//double realPrecision = tdps->realPrecision;
+
+	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
+
+	*data = (double*)malloc(sizeof(double)*dataSeriesLength);
+	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
+
+	double* precisionTable = (double*)malloc(sizeof(double) * exe_params->intvCapacity);
+	double inv = 2.0-pow(2, -(tdps->plus_bits));
+	for(int i=0; i<exe_params->intvCapacity; i++){
+		double test = pow((1+tdps->realPrecision), inv*(i - exe_params->intvRadius));
+		precisionTable[i] = test;
+	}
+
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree_MSST19(huffmanTree, tdps->typeArray, dataSeriesLength, type, tdps->max_bits);
+	//decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);
+
+	unsigned char preBytes[8];
+	unsigned char curBytes[8];
+
+	memset(preBytes, 0, 8);
+	size_t curByteIndex = 0;
+	int reqBytesLength, resiBitsLength, resiBits;
+	unsigned char leadingNum;
+	double exactData;
+	int type_;
+
+	reqBytesLength = tdps->reqLength/8;
+	resiBitsLength = tdps->reqLength%8;
+	
+	double pred1D, pred2D, pred3D;
+	double temp;
+	double temp2;
+	size_t ii, jj, kk;
+
+	///////////////////////////	Process layer-0 ///////////////////////////
+	/* Process Row-0 data 0*/
+	// compute resiBits
+	resiBits = 0;
+	if (resiBitsLength != 0) {
+		int kMod8 = k % 8;
+		int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+		if (rightMovSteps > 0) {
+			int code = getRightMovingCode(kMod8, resiBitsLength);
+			resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+		} else if (rightMovSteps < 0) {
+			int code1 = getLeftMovingCode(kMod8);
+			int code2 = getRightMovingCode(kMod8, resiBitsLength);
+			int leftMovSteps = -rightMovSteps;
+			rightMovSteps = 8 - leftMovSteps;
+			resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+			p++;
+			resiBits = resiBits
+					| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+		} else // rightMovSteps == 0
+		{
+			int code = getRightMovingCode(kMod8, resiBitsLength);
+			resiBits = (tdps->residualMidBits[p] & code);
+			p++;
+		}
+		k += resiBitsLength;
+	}
+
+	// recover the exact data
+	memset(curBytes, 0, 8);
+	leadingNum = leadNum[l++];
+	memcpy(curBytes, preBytes, leadingNum);
+	for (j = leadingNum; j < reqBytesLength; j++)
+		curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+	if (resiBitsLength != 0) {
+		unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+		curBytes[reqBytesLength] = resiByte;
+	}
+	exactData = bytesToDouble(curBytes);
+	(*data)[0] = exactData;
+	memcpy(preBytes,curBytes,8);
+
+	/* Process Row-0, data 1 */
+	pred1D = (*data)[0];
+
+	type_ = type[1];
+	if (type_ != 0)
+	{
+		(*data)[1] = fabs(pred1D) * precisionTable[type_];
+	}
+	else
+	{
+		// compute resiBits
+		resiBits = 0;
+		if (resiBitsLength != 0) {
+			int kMod8 = k % 8;
+			int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+			if (rightMovSteps > 0) {
+				int code = getRightMovingCode(kMod8, resiBitsLength);
+				resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+			} else if (rightMovSteps < 0) {
+				int code1 = getLeftMovingCode(kMod8);
+				int code2 = getRightMovingCode(kMod8, resiBitsLength);
+				int leftMovSteps = -rightMovSteps;
+				rightMovSteps = 8 - leftMovSteps;
+				resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+				p++;
+				resiBits = resiBits
+						| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+			} else // rightMovSteps == 0
+			{
+				int code = getRightMovingCode(kMod8, resiBitsLength);
+				resiBits = (tdps->residualMidBits[p] & code);
+				p++;
+			}
+			k += resiBitsLength;
+		}
+
+		// recover the exact data
+		memset(curBytes, 0, 8);
+		leadingNum = leadNum[l++];
+		memcpy(curBytes, preBytes, leadingNum);
+		for (j = leadingNum; j < reqBytesLength; j++)
+			curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+		if (resiBitsLength != 0) {
+			unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+			curBytes[reqBytesLength] = resiByte;
+		}
+
+		exactData = bytesToDouble(curBytes);
+		(*data)[1] = exactData;
+		memcpy(preBytes,curBytes,8);
+	}
+	/* Process Row-0, data 2 --> data r3-1 */
+	for (jj = 2; jj < r3; jj++)
+	{
+		temp = (*data)[jj-1];
+		pred1D = temp * ( *data)[jj-1] / (*data)[jj-2];
+
+		type_ = type[jj];
+		if (type_ != 0)
+		{
+			(*data)[jj] = fabsf(pred1D) * precisionTable[type_];
+		}
+		else
+		{
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data
+			memset(curBytes, 0, 8);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+
+			exactData = bytesToDouble(curBytes);
+			(*data)[jj] = exactData;
+			memcpy(preBytes,curBytes,8);
+		}
+	}
+
+	size_t index;
+	/* Process Row-1 --> Row-r2-1 */
+	for (ii = 1; ii < r2; ii++)
+	{
+		/* Process row-ii data 0 */
+		index = ii*r3;
+		pred1D = (*data)[index-r3];
+
+		type_ = type[index];
+		if (type_ != 0)
+		{
+			(*data)[index] = fabsf(pred1D) * precisionTable[type_];
+		}
+		else
+		{
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data
+			memset(curBytes, 0, 8);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+
+			exactData = bytesToDouble(curBytes);
+			(*data)[index] = exactData;
+			memcpy(preBytes,curBytes,8);
+		}
+
+		/* Process row-ii data 1 --> r3-1*/
+		for (jj = 1; jj < r3; jj++)
+		{
+			index = ii*r3+jj;
+			temp = (*data)[index-1];
+			pred2D = temp * (*data)[index-r3] / (*data)[index-r3-1];
+
+			type_ = type[index];
+			if (type_ != 0)
+			{
+			    //double ppp = precisionTable[type_];
+			    //double test = fabsf(pred2D) * precisionTable[type_];
+				(*data)[index] = fabsf(pred2D) * precisionTable[type_];
+			}
+			else
+			{
+				// compute resiBits
+				resiBits = 0;
+				if (resiBitsLength != 0) {
+					int kMod8 = k % 8;
+					int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+					if (rightMovSteps > 0) {
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+					} else if (rightMovSteps < 0) {
+						int code1 = getLeftMovingCode(kMod8);
+						int code2 = getRightMovingCode(kMod8, resiBitsLength);
+						int leftMovSteps = -rightMovSteps;
+						rightMovSteps = 8 - leftMovSteps;
+						resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+						p++;
+						resiBits = resiBits
+								| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+					} else // rightMovSteps == 0
+					{
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code);
+						p++;
+					}
+					k += resiBitsLength;
+				}
+
+				// recover the exact data
+				memset(curBytes, 0, 8);
+				leadingNum = leadNum[l++];
+				memcpy(curBytes, preBytes, leadingNum);
+				for (j = leadingNum; j < reqBytesLength; j++)
+					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+				if (resiBitsLength != 0) {
+					unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+					curBytes[reqBytesLength] = resiByte;
+				}
+
+				exactData = bytesToDouble(curBytes);
+				(*data)[index] = exactData;
+				memcpy(preBytes,curBytes,8);
+			}
+		}
+	}
+
+	///////////////////////////	Process layer-1 --> layer-r1-1 ///////////////////////////
+
+	for (kk = 1; kk < r1; kk++)
+	{
+		/* Process Row-0 data 0*/
+		index = kk*r23;
+		pred1D = (*data)[index-r23];
+
+		type_ = type[index];
+		if (type_ != 0)
+		{
+			(*data)[index] = fabsf(pred1D) * precisionTable[type_];
+		}
+		else
+		{
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data
+			memset(curBytes, 0, 8);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+
+			exactData = bytesToDouble(curBytes);
+			(*data)[index] = exactData;
+			memcpy(preBytes,curBytes,8);
+		}
+
+		/* Process Row-0 data 1 --> data r3-1 */
+		for (jj = 1; jj < r3; jj++)
+		{
+			index = kk*r23+jj;
+			temp = (*data)[index-1];
+			pred2D = temp * (*data)[index-r23] / (*data)[index-r23-1];
+
+			type_ = type[index];
+			if (type_ != 0)
+			{
+				(*data)[index] = fabsf(pred2D) * precisionTable[type_];
+			}
+			else
+			{
+				// compute resiBits
+				resiBits = 0;
+				if (resiBitsLength != 0) {
+					int kMod8 = k % 8;
+					int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+					if (rightMovSteps > 0) {
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+					} else if (rightMovSteps < 0) {
+						int code1 = getLeftMovingCode(kMod8);
+						int code2 = getRightMovingCode(kMod8, resiBitsLength);
+						int leftMovSteps = -rightMovSteps;
+						rightMovSteps = 8 - leftMovSteps;
+						resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+						p++;
+						resiBits = resiBits
+								| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+					} else // rightMovSteps == 0
+					{
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code);
+						p++;
+					}
+					k += resiBitsLength;
+				}
+
+				// recover the exact data
+				memset(curBytes, 0, 8);
+				leadingNum = leadNum[l++];
+				memcpy(curBytes, preBytes, leadingNum);
+				for (j = leadingNum; j < reqBytesLength; j++)
+					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+				if (resiBitsLength != 0) {
+					unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+					curBytes[reqBytesLength] = resiByte;
+				}
+
+				exactData = bytesToDouble(curBytes);
+				(*data)[index] = exactData;
+				memcpy(preBytes,curBytes,8);
+			}
+		}
+
+		/* Process Row-1 --> Row-r2-1 */
+		for (ii = 1; ii < r2; ii++)
+		{
+			/* Process Row-i data 0 */
+			index = kk*r23 + ii*r3;
+			temp = (*data)[index-r3];
+			pred2D = temp * (*data)[index-r23] / (*data)[index-r23-r3];
+
+			type_ = type[index];
+			if (type_ != 0)
+			{
+				(*data)[index] = fabsf(pred2D) * precisionTable[type_];
+			}
+			else
+			{
+				// compute resiBits
+				resiBits = 0;
+				if (resiBitsLength != 0) {
+					int kMod8 = k % 8;
+					int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+					if (rightMovSteps > 0) {
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+					} else if (rightMovSteps < 0) {
+						int code1 = getLeftMovingCode(kMod8);
+						int code2 = getRightMovingCode(kMod8, resiBitsLength);
+						int leftMovSteps = -rightMovSteps;
+						rightMovSteps = 8 - leftMovSteps;
+						resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+						p++;
+						resiBits = resiBits
+								| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+					} else // rightMovSteps == 0
+					{
+						int code = getRightMovingCode(kMod8, resiBitsLength);
+						resiBits = (tdps->residualMidBits[p] & code);
+						p++;
+					}
+					k += resiBitsLength;
+				}
+
+				// recover the exact data
+				memset(curBytes, 0, 8);
+				leadingNum = leadNum[l++];
+				memcpy(curBytes, preBytes, leadingNum);
+				for (j = leadingNum; j < reqBytesLength; j++)
+					curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+				if (resiBitsLength != 0) {
+					unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+					curBytes[reqBytesLength] = resiByte;
+				}
+
+				exactData = bytesToDouble(curBytes);
+				(*data)[index] = exactData;
+				memcpy(preBytes,curBytes,8);
+			}
+
+			/* Process Row-i data 1 --> data r3-1 */
+			for (jj = 1; jj < r3; jj++)
+			{
+				index = kk*r23 + ii*r3 + jj;
+				//pred3D = (*data)[index-1] + (*data)[index-r3] + (*data)[index-r23]
+				//	- (*data)[index-r3-1] - (*data)[index-r23-r3] - (*data)[index-r23-1] + (*data)[index-r23-r3-1];
+				temp = (*data)[index-1];
+				temp2 = (*data)[index-r3-1];
+				pred3D = temp * (*data)[index-r3] * (*data)[index-r23] * (*data)[index-r23-r3-1] / (temp2 * (*data)[index-r23-r3] * (*data)[index-r23-1]);
+
+				type_ = type[index];				
+				if (type_ != 0)
+				{
+					(*data)[index] = fabsf(pred3D) * precisionTable[type_];	
+				}
+				else
+				{
+					// compute resiBits
+					resiBits = 0;
+					if (resiBitsLength != 0) {
+						int kMod8 = k % 8;
+						int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+						if (rightMovSteps > 0) {
+							int code = getRightMovingCode(kMod8, resiBitsLength);
+							resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+						} else if (rightMovSteps < 0) {
+							int code1 = getLeftMovingCode(kMod8);
+							int code2 = getRightMovingCode(kMod8, resiBitsLength);
+							int leftMovSteps = -rightMovSteps;
+							rightMovSteps = 8 - leftMovSteps;
+							resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+							p++;
+							resiBits = resiBits
+									| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+						} else // rightMovSteps == 0
+						{
+							int code = getRightMovingCode(kMod8, resiBitsLength);
+							resiBits = (tdps->residualMidBits[p] & code);
+							p++;
+						}
+						k += resiBitsLength;
+					}
+
+					// recover the exact data
+					memset(curBytes, 0, 8);
+					leadingNum = leadNum[l++];
+					memcpy(curBytes, preBytes, leadingNum);
+					for (j = leadingNum; j < reqBytesLength; j++)
+						curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+					if (resiBitsLength != 0) {
+						unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+						curBytes[reqBytesLength] = resiByte;
+					}
+
+					exactData = bytesToDouble(curBytes);
+					(*data)[index] = exactData;
+					memcpy(preBytes,curBytes,8);
+				}
+			}
+		}
+	}
+	
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(double));
+#endif		
+
+	free(leadNum);
+	free(type);
+	return;
+}
+
+void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightDataPointStorageD* tdps, int errBoundMode, int compressionType, double* hist_data) 
 {
 	size_t i;
 	if (tdps->allSameData) {
@@ -1661,56 +2645,30 @@ void getSnapshotData_double_1D(double** data, size_t dataSeriesLength, TightData
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(multisteps->compressionType == 0) //snapshot
-						decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
+						decompressDataSeries_double_1D(data, dataSeriesLength, hist_data, tdps);
 					else
-						decompressDataSeries_double_1D_ts(data, dataSeriesLength, multisteps, tdps);					
+						decompressDataSeries_double_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
-#endif								
-					decompressDataSeries_double_1D(data, dataSeriesLength, tdps);
+#endif
+					decompressDataSeries_double_1D(data, dataSeriesLength, hist_data, tdps);
 			}
 			else 
 			{
-				decompressDataSeries_double_1D_pwr_pre_log(data, dataSeriesLength, tdps);
+				if(confparams_dec->accelerate_pw_rel_compression)
+					decompressDataSeries_double_1D_pwr_pre_log_MSST19(data, dataSeriesLength, tdps);
+				else
+					decompressDataSeries_double_1D_pwr_pre_log(data, dataSeriesLength, tdps);
 				//decompressDataSeries_double_1D_pwrgroup(data, dataSeriesLength, tdps);
 			}
 			return;
 		} else {
-			*data = (double*)malloc(sizeof(double)*dataSeriesLength);
-			// insert the reserved values
-			//int[] rtypes = TypeManager.convertByteArray2IntArray_fast_1b(
-			//		dataSeriesLength, rtypeArray);
-			int* rtypes;
-			int validLength = computeBitNumRequired(dataSeriesLength);
-			decompressBitArraybySimpleLZ77(&rtypes, tdps->rtypeArray, tdps->rtypeArray_size, dataSeriesLength, validLength);
-			size_t count = 0;
-			for (i = 0; i < dataSeriesLength; i++) {
-				if (rtypes[i] == 1)
-					(*data)[i] = tdps->reservedValue;
-				else
-					count++;
-			}
-			// get the decompressed data
-			double* decmpData;
-			if(errBoundMode < PW_REL)
-				decompressDataSeries_double_1D(&decmpData, dataSeriesLength, tdps);
-			else 
-				//decompressDataSeries_double_1D_pwr(&decmpData, dataSeriesLength, tdps);
-				decompressDataSeries_double_1D_pwr_pre_log(&decmpData, dataSeriesLength, tdps);
-			// insert the decompressed data
-			size_t k = 0;
-			for (i = 0; i < dataSeriesLength; i++) {
-				if (rtypes[i] == 0) {
-					(*data)[i] = decmpData[k++];
-				}
-			}
-			free(decmpData);
-			free(rtypes);
+			//TODO
 		}
 	}
 }
 
-void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps, int errBoundMode) 
+void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPointStorageD* tdps, int errBoundMode, int compressionType, double* hist_data)  
 {
 	size_t i;
 	size_t dataSeriesLength = r1*r2;
@@ -1726,55 +2684,29 @@ void getSnapshotData_double_2D(double** data, size_t r1, size_t r2, TightDataPoi
 #ifdef HAVE_TIMECMPR				
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
-					if(multisteps->compressionType == 0) //snapshot
-						decompressDataSeries_double_2D(data, r1, r2, tdps);
+					if(compressionType == 0) //snapshot
+						decompressDataSeries_double_2D(data, r1, r2, hist_data, tdps);
 					else
-						decompressDataSeries_double_1D_ts(data, dataSeriesLength, multisteps, tdps);					
+						decompressDataSeries_double_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
 #endif						
-					decompressDataSeries_double_2D(data, r1, r2, tdps);
+					decompressDataSeries_double_2D(data, r1, r2, hist_data, tdps);
 			}
 			else 
 				//decompressDataSeries_double_2D_pwr(data, r1, r2, tdps);
-				decompressDataSeries_double_2D_pwr_pre_log(data, r1, r2, tdps);
+				if(confparams_dec->accelerate_pw_rel_compression)
+					decompressDataSeries_double_2D_pwr_pre_log_MSST19(data, r1, r2, tdps);
+				else
+					decompressDataSeries_double_2D_pwr_pre_log(data, r1, r2, tdps);
 			return;
 		} else {
-			*data = (double*)malloc(sizeof(double)*dataSeriesLength);
-			// insert the reserved values
-			//int[] rtypes = TypeManager.convertByteArray2IntArray_fast_1b(
-			//		dataSeriesLength, rtypeArray);
-			int* rtypes;
-			int validLength = computeBitNumRequired(dataSeriesLength);
-			decompressBitArraybySimpleLZ77(&rtypes, tdps->rtypeArray, tdps->rtypeArray_size, dataSeriesLength, validLength);
-			size_t count = 0;
-			for (i = 0; i < dataSeriesLength; i++) {
-				if (rtypes[i] == 1)
-					(*data)[i] = tdps->reservedValue;
-				else
-					count++;
-			}
-			// get the decompressed data
-			double* decmpData;
-			if(errBoundMode < PW_REL)
-				decompressDataSeries_double_2D(&decmpData, r1, r2, tdps);
-			else 
-				//decompressDataSeries_double_2D_pwr(&decmpData, r1, r2, tdps);
-				decompressDataSeries_double_2D_pwr_pre_log(&decmpData, r1, r2, tdps);
-			// insert the decompressed data
-			size_t k = 0;
-			for (i = 0; i < dataSeriesLength; i++) {
-				if (rtypes[i] == 0) {
-					(*data)[i] = decmpData[k++];
-				}
-			}
-			free(decmpData);
-			free(rtypes);
+			//TODO
 		}
 	}
 }
 
-void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps, int errBoundMode) 
+void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, TightDataPointStorageD* tdps, int errBoundMode, int compressionType, double* hist_data) 
 {
 	size_t i;
 	size_t dataSeriesLength = r1*r2*r3;
@@ -1790,55 +2722,31 @@ void getSnapshotData_double_3D(double** data, size_t r1, size_t r2, size_t r3, T
 #ifdef HAVE_TIMECMPR				
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
-					if(multisteps->compressionType == 0) //snapshot
-						decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
+					if(compressionType == 0) //snapshot
+						decompressDataSeries_double_3D(data, r1, r2, r3, hist_data, tdps);
 					else
-						decompressDataSeries_double_1D_ts(data, dataSeriesLength, multisteps, tdps);					
+						decompressDataSeries_double_1D_ts(data, dataSeriesLength, hist_data, tdps);					
 				}
 				else
 #endif						
-					decompressDataSeries_double_3D(data, r1, r2, r3, tdps);
+					decompressDataSeries_double_3D(data, r1, r2, r3, hist_data, tdps);
 			}
 			else 
+			{
 				//decompressDataSeries_double_3D_pwr(data, r1, r2, r3, tdps);
-				decompressDataSeries_double_3D_pwr_pre_log(data, r1, r2, r3, tdps);
+				if(confparams_dec->accelerate_pw_rel_compression)
+					decompressDataSeries_double_3D_pwr_pre_log_MSST19(data, r1, r2, r3, tdps);
+				else
+					decompressDataSeries_double_3D_pwr_pre_log(data, r1, r2, r3, tdps);
+			}	
 			return;
 		} else {
-			*data = (double*)malloc(sizeof(double)*dataSeriesLength);
-			// insert the reserved values
-			//int[] rtypes = TypeManager.convertByteArray2IntArray_fast_1b(
-			//		dataSeriesLength, rtypeArray);
-			int* rtypes;
-			int validLength = computeBitNumRequired(dataSeriesLength);
-			decompressBitArraybySimpleLZ77(&rtypes, tdps->rtypeArray, tdps->rtypeArray_size, dataSeriesLength, validLength);
-			size_t count = 0;
-			for (i = 0; i < dataSeriesLength; i++) {
-				if (rtypes[i] == 1)
-					(*data)[i] = tdps->reservedValue;
-				else
-					count++;
-			}
-			// get the decompressed data
-			double* decmpData;
-			if(errBoundMode < PW_REL)
-				decompressDataSeries_double_3D(&decmpData, r1, r2, r3, tdps);
-			else 
-				//decompressDataSeries_double_3D_pwr(&decmpData, r1, r2, r3, tdps);			
-				decompressDataSeries_double_3D_pwr_pre_log(&decmpData, r1, r2, r3, tdps);			
-			// insert the decompressed data
-			size_t k = 0;
-			for (i = 0; i < dataSeriesLength; i++) {
-				if (rtypes[i] == 0) {
-					(*data)[i] = decmpData[k++];
-				}
-			}
-			free(decmpData);
-			free(rtypes);
+			//TODO
 		}
 	}
 }
 
-void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageD* tdps, int errBoundMode)
+void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, size_t r4, TightDataPointStorageD* tdps, int errBoundMode, int compressionType, double* hist_data)
 {
 	size_t i;
 	size_t dataSeriesLength = r1*r2*r3*r4;
@@ -1855,57 +2763,30 @@ void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, s
 				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
 				{
 					if(multisteps->compressionType == 0)
-						decompressDataSeries_double_4D(data, r1, r2, r3, r4, tdps);
+						decompressDataSeries_double_4D(data, r1, r2, r3, r4, hist_data, tdps);
 					else
-						decompressDataSeries_double_1D_ts(data, r1*r2*r3*r4, multisteps, tdps);					
+						decompressDataSeries_double_1D_ts(data, r1*r2*r3*r4, hist_data, tdps);					
 				}
 				else
 #endif				
-					decompressDataSeries_double_4D(data, r1, r2, r3, r4, tdps);
+					decompressDataSeries_double_4D(data, r1, r2, r3, r4, hist_data, tdps);
 			}
 			else 
 			{
 				//decompressDataSeries_double_3D_pwr(data, r1*r2, r3, r4, tdps);
-				decompressDataSeries_double_3D_pwr_pre_log(data, r1*r2, r3, r4, tdps);
-				//ToDO
-				//decompressDataSeries_double_4D_pwr(data, r1, r2, r3, r4, tdps);
+				if(confparams_dec->accelerate_pw_rel_compression)
+					decompressDataSeries_double_3D_pwr_pre_log_MSST19(data, r1*r2, r3, r4, tdps);
+				else
+					decompressDataSeries_double_3D_pwr_pre_log(data, r1*r2, r3, r4, tdps);
 			}					
 			return;
 		} else {
-			*data = (double*)malloc(sizeof(double)*dataSeriesLength);
-			int* rtypes;
-			int validLength = computeBitNumRequired(dataSeriesLength);
-			decompressBitArraybySimpleLZ77(&rtypes, tdps->rtypeArray, tdps->rtypeArray_size, dataSeriesLength, validLength);
-			size_t count = 0;
-			for (i = 0; i < dataSeriesLength; i++) {
-				if (rtypes[i] == 1)
-					(*data)[i] = tdps->reservedValue;
-				else
-					count++;
-			}
-			// get the decompressed data
-			double* decmpData;
-			if(errBoundMode < PW_REL)
-				decompressDataSeries_double_4D(&decmpData, r1, r2, r3, r4, tdps);
-			else
-				//decompressDataSeries_double_3D_pwr(&decmpData, r1*r2, r3, r4, tdps);
-				decompressDataSeries_double_3D_pwr_pre_log(&decmpData, r1*r2, r3, r4, tdps);
-				//ToDo
-				//decompressDataSeries_double_4D_pwr(&decmpData, r1, r2, r3, r4, tdps);
-			// insert the decompressed data
-			size_t k = 0;
-			for (i = 0; i < dataSeriesLength; i++) {
-				if (rtypes[i] == 0) {
-					(*data)[i] = decmpData[k++];
-				}
-			}
-			free(decmpData);
-			free(rtypes);
+			//TODO
 		}
 	}
 }
 
-void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, unsigned char* comp_data){
+void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, unsigned char* comp_data, double* hist_data){
 
 	size_t dim0_offset = r2;
 	size_t num_elements = r1 * r2;
@@ -2234,6 +3115,12 @@ void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** 
 			}
 		}
 	}
+	
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(hist_data, (*data), num_elements*sizeof(double));
+#endif	
+	
 	free(coeff_result_type);
 
 	free(indicator);
@@ -2241,7 +3128,7 @@ void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** 
 }
 
 
-void decompressDataSeries_double_3D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data){
+void decompressDataSeries_double_3D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data, double* hist_data){
 
 	size_t dim0_offset = r2 * r3;
 	size_t dim1_offset = r3;
@@ -4614,6 +5501,11 @@ void decompressDataSeries_double_3D_nonblocked_with_blocked_regression(double** 
 			}
 		}
 	}
+
+#ifdef HAVE_TIMECMPR	
+	if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+		memcpy(hist_data, (*data), num_elements*sizeof(double));
+#endif	
 
 	free(coeff_result_type);
 

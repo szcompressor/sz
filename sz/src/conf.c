@@ -86,6 +86,8 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 	else //=0
 		sysEndianType = BIG_ENDIAN_SYSTEM;
     
+    confparams_cpr->plus_bits = 3;
+    
     if(sz_cfgFile == NULL)
     {
 		dataEndianType = LITTLE_ENDIAN_DATA;
@@ -112,6 +114,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		confparams_cpr->psnr = 90;
 		confparams_cpr->absErrBound = 1E-4;
 		confparams_cpr->relBoundRatio = 1E-4;
+		confparams_cpr->accelerate_pw_rel_compression = 1;
 		
 		confparams_cpr->pw_relBoundRatio = 1E-3;
 		confparams_cpr->segment_size = 36;
@@ -328,6 +331,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		confparams_cpr->psnr = (double)iniparser_getdouble(ini, "PARAMETER:psnr", 0);
 		confparams_cpr->pw_relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:pw_relBoundRatio", 0);
 		confparams_cpr->segment_size = (int)iniparser_getint(ini, "PARAMETER:segment_size", 0);
+		confparams_cpr->accelerate_pw_rel_compression = (int)iniparser_getint(ini, "PARAMETER:accelerate_pw_rel_compression", 1);
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:pwr_type", "MIN");
 		
@@ -396,14 +400,14 @@ void initSZ_TSC()
 {
 	sz_tsc = (sz_tsc_metadata*)malloc(sizeof(sz_tsc_metadata));
 	memset(sz_tsc, 0, sizeof(sz_tsc_metadata));
-	sprintf(sz_tsc->metadata_filename, "sz_tsc_metainfo.txt");
+	/*sprintf(sz_tsc->metadata_filename, "sz_tsc_metainfo.txt");
 	sz_tsc->metadata_file = fopen(sz_tsc->metadata_filename, "wb");
 	if (sz_tsc->metadata_file == NULL)
 	{
 		printf("Failed to open sz_tsc_metainfo.txt file for writing metainfo.\n");
 		exit(1);
 	}
-	fputs("#metadata of the time-step based compression\n", sz_tsc->metadata_file);	
+	fputs("#metadata of the time-step based compression\n", sz_tsc->metadata_file);	*/
 }
 
 /*double fabs(double value)

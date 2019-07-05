@@ -344,6 +344,7 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 		
 	retval = 1;
 done:
+	free(cd_values);
 	return retval;
 }
 
@@ -553,7 +554,7 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 		//printf("compression time = %lf, compression rate = %lf\n", totalCost, 1.0*nbEle*sizeof(float)/totalCost);
 	}
 	
-	H5Z_SZ_Finalize();
+	//H5Z_SZ_Finalize();
 	return *buf_size;
 }
 

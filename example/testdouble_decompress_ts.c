@@ -71,29 +71,35 @@ int main(int argc, char * argv[])
     size_t byteLen = 0;
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
     double *data = (double*)malloc(sizeof(double)*dataLength);
-    SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    float *data_out = (float*)malloc(sizeof(float)*dataLength);
+    SZ_registerVar(1, "dump", SZ_DOUBLE, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
 
     if(status != SZ_SCES)
     {
 		printf("Error: data file %s cannot be read!\n", oriFilePath);
 		exit(0);
     }
-   
+  
+    int j = 0;
     for(i=1;i<20;i++)
-	{
-		printf("simulation time step %d\n", i);
-		sprintf(cmprFilePath, "%s/QCLOUDf%02d.bin.dat.sz2", outputDir, i);
-		unsigned char *bytes = readByteData(cmprFilePath, &byteLen, &status);
-		cost_start();
-		SZ_decompress_ts(bytes, byteLen);
-		cost_end();
-		printf("timecost=%f\n",totalCost); 
-		sprintf(outputFilePath, "%s/QCLOUDf%02d.bin.dat.sz2.out", outputDir, i);
-		printf("writing decompressed data to %s\n", outputFilePath);
-		writeDoubleData_inBytes(data, dataLength, outputFilePath, &status);
-		free(bytes);
-	}
-    
+        {
+                printf("simulation time step %d\n", i);
+                sprintf(cmprFilePath, "%s/QCLOUDf%02d-double.bin.dat.sz2", outputDir, i);
+                printf("compressed data file: %s\n", cmprFilePath);
+                unsigned char *bytes = readByteData(cmprFilePath, &byteLen, &status);
+                cost_start();
+                SZ_decompress_ts(bytes, byteLen);
+                cost_end();
+                printf("timecost=%f\n",totalCost);
+                sprintf(outputFilePath, "%s/QCLOUDf%02d-double.bin.dat.sz2.out", outputDir, i);
+                printf("writing decompressed data to %s\n", outputFilePath);
+		for(j=0;j<dataLength;j++)
+			data_out[j] = (float)data[j];
+                writeFloatData_inBytes(data_out, dataLength, outputFilePath, &status);
+                free(bytes);
+        }
+
+
     printf("done\n");
     free(data);
     SZ_Finalize();
