@@ -7,11 +7,14 @@
 *** Other Contributors: Robert Underwood, Sihuan Li, Ali M. Gok, Xiangyu Zou, Tao Lu, Wen Xia, Xuan Wang, Weizhe Zhang ***
 
 *** Citations ***
- If you mention SZ in your paper, please cite the following references:
+If you mention SZ in your paper, please cite the following references:
 
 SZ 0.1-0.15: Sheng Di, Franck Cappello, "Fast Error-bounded Lossy HPC Data Compression with SZ," in IEEE International Parallel and Distributed Processing Symposium (IPDPS 2016), 2016.
+
 SZ 1.0-1.4.13: Dingwen Tao, Sheng Di, Franck Cappello, "A Novel Algorithm for Significantly Improving Lossy Compression of Scientific Data Sets, " in IEEE International Parallel and Distributed Processing Symposium (IPDPS 2017), Orlando, Florida, 2017.
+
 SZ 2.0+: Xin Liang, Sheng Di, Dingwen Tao, Zizhong Chen, Franck Cappello, "Error-Controlled Lossy Compression Optimized for High Compression Ratios of Scientific Datasets", in IEEE International Conference on Big Data (Bigdata 2018), Seattle, 2018.
+
 Point-wise relative error bound mode (i.e., PW_REL): Xin Liang, Sheng Di, Dingwen Tao, Zizhong Chen, Franck Cappello, "Efficient Transformation Scheme for Lossy Data Compression with Point-wise Relative Error Bound", in IEEE International Conference on Clustering Computing (CLUSTER 2018), Belfast, UK, 2018. (Best Paper)
 
 =================================
