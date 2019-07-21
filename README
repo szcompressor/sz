@@ -9,9 +9,9 @@
 *** Citations ***
 If you mention SZ in your paper, please cite the following references:
 
-SZ 0.1-0.15: Sheng Di, Franck Cappello, "Fast Error-bounded Lossy HPC Data Compression with SZ," in IEEE International Parallel and Distributed Processing Symposium (IPDPS 2016), Chicago, IL, USA, 2016.
+SZ 0.1-0.15: Sheng Di, Franck Cappello, "Fast Error-bounded Lossy HPC Data Compression with SZ", in IEEE International Parallel and Distributed Processing Symposium (IPDPS 2016), Chicago, IL, USA, 2016.
 
-SZ 1.0-1.4.13: Dingwen Tao, Sheng Di, Franck Cappello, "A Novel Algorithm for Significantly Improving Lossy Compression of Scientific Data Sets, " in IEEE International Parallel and Distributed Processing Symposium (IPDPS 2017), Orlando, Florida, USA, 2017.
+SZ 1.0-1.4.13: Dingwen Tao, Sheng Di, Franck Cappello, "Significantly Improving Lossy Compression for Scientific Data Sets Based on Multidimensional Prediction and Error-Controlled Quantization", in IEEE International Parallel and Distributed Processing Symposium (IPDPS 2017), Orlando, Florida, USA, 2017.
 
 SZ 2.0+: Xin Liang, Sheng Di, Dingwen Tao, Zizhong Chen, Franck Cappello, "Error-Controlled Lossy Compression Optimized for High Compression Ratios of Scientific Datasets", in IEEE International Conference on Big Data (Bigdata 2018), Seattle, WA, USA, 2018.
 
