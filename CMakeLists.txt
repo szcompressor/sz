@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.14)
-project (sz)
+project (SZ VERSION 2.1.5)
 enable_testing()
 
 include(GNUInstallDirs)
@@ -56,6 +56,7 @@ if(PKG_CONFIG_FOUND)
   else()
     add_library(ZSTD ALIAS PkgConfig::ZSTD)
   endif()
+
 else()
   set(USE_PACKAGED_ZLIB 1)
   set(USE_PACKAGED_ZSTD 1)
@@ -85,3 +86,9 @@ add_subdirectory (example)
 add_subdirectory (test)
 add_subdirectory (swig)
 
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/sz.pc.in
+  ${CMAKE_BINARY_DIR}/sz.pc
+  @ONLY
+)
+install(FILES ${CMAKE_BINARY_DIR}/sz.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/share/pkgconfig)
