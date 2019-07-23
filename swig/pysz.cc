@@ -38,26 +38,28 @@
 #include <zlib.h>
 
 ConfigBuilder::ConfigBuilder() {
-  building.params.absErrBound = 1e-4;
+  SZ_Init(nullptr);
+  building.params.absErrBound = confparams_cpr->absErrBound;
   building.params.dataType = SZ_FLOAT;
   building.params.errorBoundMode = ABS;
-  building.params.gzipMode = Z_BEST_SPEED;
-  building.params.losslessCompressor = ZSTD_COMPRESSOR;
-  building.params.maxRangeRadius = 32768;
-  building.params.max_quant_intervals = 65536;
-  building.params.predThreshold = 0.99;
-  building.params.predictionMode = SZ_PREVIOUS_VALUE_ESTIMATE;
-  building.params.psnr = 80;
-  building.params.pw_relBoundRatio = 1e-2;
-  building.params.pwr_type = SZ_PWR_MIN_TYPE;
-  building.params.quantization_intervals = 0;
-  building.params.randomAccess = 0;
-  building.params.relBoundRatio = 1e-4;
-  building.params.sampleDistance = 100;
-  building.params.segment_size = 25;
-  building.params.snapshotCmprStep = 5;
-  building.params.sol_ID = SZ;
-  building.params.szMode = SZ_BEST_SPEED;
+  building.params.gzipMode = confparams_cpr->gzipMode;
+  building.params.losslessCompressor = confparams_cpr->losslessCompressor;
+  building.params.maxRangeRadius = confparams_cpr->maxRangeRadius;
+  building.params.max_quant_intervals = confparams_cpr->max_quant_intervals;
+  building.params.predThreshold = confparams_cpr->predThreshold;
+  building.params.predictionMode = confparams_cpr->predictionMode;
+  building.params.psnr = confparams_cpr->psnr;
+  building.params.pw_relBoundRatio = confparams_cpr->pw_relBoundRatio;
+  building.params.pwr_type = confparams_cpr->pwr_type;
+  building.params.quantization_intervals = confparams_cpr->quantization_intervals;
+  building.params.randomAccess = confparams_cpr->randomAccess;
+  building.params.relBoundRatio = confparams_cpr->relBoundRatio;
+  building.params.sampleDistance = confparams_cpr->sampleDistance;
+  building.params.segment_size = confparams_cpr->segment_size;
+  building.params.snapshotCmprStep = confparams_cpr->snapshotCmprStep;
+  building.params.sol_ID = confparams_cpr->sol_ID;
+  building.params.szMode = confparams_cpr->szMode;
+  SZ_Finalize();
 }
 
 
