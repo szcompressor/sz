@@ -39,26 +39,7 @@
 
 ConfigBuilder::ConfigBuilder() {
   SZ_Init(nullptr);
-  building.params.absErrBound = confparams_cpr->absErrBound;
-  building.params.dataType = SZ_FLOAT;
-  building.params.errorBoundMode = ABS;
-  building.params.gzipMode = confparams_cpr->gzipMode;
-  building.params.losslessCompressor = confparams_cpr->losslessCompressor;
-  building.params.maxRangeRadius = confparams_cpr->maxRangeRadius;
-  building.params.max_quant_intervals = confparams_cpr->max_quant_intervals;
-  building.params.predThreshold = confparams_cpr->predThreshold;
-  building.params.predictionMode = confparams_cpr->predictionMode;
-  building.params.psnr = confparams_cpr->psnr;
-  building.params.pw_relBoundRatio = confparams_cpr->pw_relBoundRatio;
-  building.params.pwr_type = confparams_cpr->pwr_type;
-  building.params.quantization_intervals = confparams_cpr->quantization_intervals;
-  building.params.randomAccess = confparams_cpr->randomAccess;
-  building.params.relBoundRatio = confparams_cpr->relBoundRatio;
-  building.params.sampleDistance = confparams_cpr->sampleDistance;
-  building.params.segment_size = confparams_cpr->segment_size;
-  building.params.snapshotCmprStep = confparams_cpr->snapshotCmprStep;
-  building.params.sol_ID = confparams_cpr->sol_ID;
-  building.params.szMode = confparams_cpr->szMode;
+  building.params = *confparams_cpr;
   SZ_Finalize();
 }
 
@@ -83,6 +64,8 @@ ConfigBuilder& ConfigBuilder::segment_size(int value) noexcept { building.params
 ConfigBuilder& ConfigBuilder::snapshotCmprStep(int value) noexcept { building.params.snapshotCmprStep = value; return *this; }
 ConfigBuilder& ConfigBuilder::sol_ID(int value) noexcept { building.params.sol_ID = value; return *this; }
 ConfigBuilder& ConfigBuilder::szMode(int value) noexcept { building.params.szMode = value; return *this; }
+ConfigBuilder& ConfigBuilder::accelerate_pw_rel_compression(int value) noexcept { building.params.accelerate_pw_rel_compression = value; return *this; }
+ConfigBuilder& ConfigBuilder::plus_bits(int value) noexcept { building.params.plus_bits = value; return *this; }
 Config ConfigBuilder::build() { return building;} 
 
 Compressor::Compressor(Config config) {

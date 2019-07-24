@@ -50,5 +50,13 @@ class SZTypeToTypeID
 
 MAKE_TYPE_TO_ID(float, SZ_FLOAT);
 MAKE_TYPE_TO_ID(double, SZ_DOUBLE);
+MAKE_TYPE_TO_ID(uint8_t, SZ_UINT8);
+MAKE_TYPE_TO_ID(int8_t, SZ_INT8);
+MAKE_TYPE_TO_ID(uint16_t, SZ_UINT16);
+MAKE_TYPE_TO_ID(int16_t, SZ_INT16);
+MAKE_TYPE_TO_ID(uint32_t, SZ_UINT32);
+MAKE_TYPE_TO_ID(int32_t, SZ_INT32);
+MAKE_TYPE_TO_ID(uint64_t, SZ_UINT64);
+MAKE_TYPE_TO_ID(int64_t, SZ_INT64);
 
 //TODO add the other types as they are supported by the dispatch method

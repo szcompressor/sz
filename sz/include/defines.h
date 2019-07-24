@@ -1,8 +1,8 @@
 #pragma once
 #define SZ_VERNUM 0x0200
 #define SZ_VER_MAJOR 2
-#define SZ_VER_MINOR 0
-#define SZ_VER_BUILD 2
+#define SZ_VER_MINOR 1
+#define SZ_VER_BUILD 5
 #define SZ_VER_REVISION 0
 
 #define PASTRI 103

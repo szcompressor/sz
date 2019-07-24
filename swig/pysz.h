@@ -71,6 +71,8 @@ class ConfigBuilder {
 	ConfigBuilder& snapshotCmprStep(int value) noexcept;
 	ConfigBuilder& sol_ID(int value) noexcept;
 	ConfigBuilder& szMode(int value) noexcept;
+  ConfigBuilder& accelerate_pw_rel_compression(int value) noexcept;
+  ConfigBuilder& plus_bits(int value) noexcept;
   private:
   Config building;
 };
