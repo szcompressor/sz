@@ -54,7 +54,7 @@ import_array();
 namespace std {
   %template(vectori8) vector<int8_t>;
   %template(vectori16) vector<int16_t>;
-  %template(vectori32) vector<int32_t>;
+  %template(vectori32) vector<int>;
   %template(vectori64) vector<int64_t>;
   %template(vectorui8) vector<uint8_t>;
   %template(vectorui16) vector<uint16_t>;
@@ -216,6 +216,7 @@ namespace std {
     __Decompress = {
       numpy.dtype('float32'): DecompressFloat,
       numpy.float32: DecompressFloat,
+
       numpy.dtype('float64'): DecompressDouble,
       numpy.float64: DecompressDouble,
 
@@ -247,7 +248,7 @@ namespace std {
 
     def Decompress(self, bytes, dims, dtype):
       try:
-        values = self.__Decompress[dtype](self, bytes, dims)
+        values = self.__Decompress[dtype](self, bytes, list(dims))
         return self.numpy.reshape(values, dims)
       except KeyError as e:
         raise TypeError("type {} not supported".format(i.args[0]))
