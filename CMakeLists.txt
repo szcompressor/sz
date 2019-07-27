@@ -36,23 +36,24 @@ if(TAGS)
 		)
 endif()
 
-include_directories (
-	${CMAKE_CURRENT_SOURCE_DIR}/sz/include 
-	${CMAKE_CURRENT_SOURCE_DIR}/sz/include 
-	${CMAKE_CURRENT_SOURCE_DIR}/zlib 
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd 
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/common 
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/compress
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/decompress
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/deprecated
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/dictBuilder
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/dll
-	${CMAKE_CURRENT_SOURCE_DIR}/zstd/legacy
-	)
-# include_directories (${ZLIB_INCLUDE_DIRS})
+find_package (ZLIB)
+if (ZLIB_FOUND)
+  include_directories (${ZLIB_INCLUDE_DIRS})
+else ()
+  set (ZLIB_LIBRARIES zlib)
+  add_subdirectory (zlib)
+endif ()
 
-add_subdirectory (zlib)
-add_subdirectory (zstd)
+find_package (ZSTD)
+if (ZSTD_FOUND)
+  include_directories (${ZSTD_INCLUDE_DIRS})
+else ()
+  set (ZSTD_LIBRARIES zstd)
+  add_subdirectory (zstd)
+endif ()
+
+include_directories (${CMAKE_CURRENT_SOURCE_DIR}/sz/include)
+
 add_subdirectory (sz)
 add_subdirectory (example)
 #add_subdirectory (test)
