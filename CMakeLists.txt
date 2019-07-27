@@ -16,14 +16,14 @@ set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set (LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
-find_package (FFTW)
+#find_package (FFTW)
 if (FFTW_FOUND)
   include_directories (${FFTW_INCLUDES})
   add_definitions (-DHAVE_FFTW3)
 endif ()
 
-find_package (NETCDF)
-if (NETCDF_FOUND)
+#find_package (netCDF)
+if (netCDF_FOUND)
   include_directories (${NETCDF_INCLUDE_DIRS})
 endif ()
 
