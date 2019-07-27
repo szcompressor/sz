@@ -1,7 +1,11 @@
 aux_source_directory(src sz_sources)
 
 add_library (SZ SHARED ${sz_sources})
-target_link_libraries (SZ zlib zstd)
+target_link_libraries (SZ ${ZLIB_LIBRARIES} ${ZSTD_LIBRARIES})
+if (UNIX)
+  target_link_libraries (SZ m)
+endif ()
+
 target_compile_options(SZ
 	PRIVATE $<$<CONFIG:Debug>:-O3 -Wall -Wextra -Wpedantic -Wno-unused-parameter>
 	)

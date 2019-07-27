@@ -1,3 +1,13 @@
+include_directories (
+  ${CMAKE_CURRENT_SOURCE_DIR}/
+  ${CMAKE_CURRENT_SOURCE_DIR}/common
+  ${CMAKE_CURRENT_SOURCE_DIR}/compress
+  ${CMAKE_CURRENT_SOURCE_DIR}/decompress
+  ${CMAKE_CURRENT_SOURCE_DIR}/deprecated
+  ${CMAKE_CURRENT_SOURCE_DIR}/dictBuilder
+  ${CMAKE_CURRENT_SOURCE_DIR}/dll
+  ${CMAKE_CURRENT_SOURCE_DIR}/legacy)
+
 set(zstd_sources
 ./decompress/zstd_decompress.c
 ./decompress/huf_decompress.c
