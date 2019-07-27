@@ -10,4 +10,4 @@ target_compile_options(SZ
 	PRIVATE $<$<CONFIG:Debug>:-O3 -Wall -Wextra -Wpedantic -Wno-unused-parameter>
 	)
 
-install (TARGETS SZ LIBRARY DESTINATION lib ARCHIVE DESTINATION lib )
+install (TARGETS SZ LIBRARY DESTINATION lib ARCHIVE DESTINATION lib RUNTIME DESTINATION bin)
