@@ -1,4 +1,11 @@
 cmake_minimum_required (VERSION 3.1.3)
+
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the build type")
+
+if (POLICY CMP0025)
+  cmake_policy (SET CMP0025 NEW)
+endif()
+
 project (sz)
 enable_testing()
 
