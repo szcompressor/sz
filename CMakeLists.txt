@@ -2,8 +2,8 @@ cmake_minimum_required (VERSION 3.1.3)
 project (sz)
 enable_testing()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -std=c99 -lm -fopenmp")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11 -lm -fopenmp")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -std=c99 -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11 -fopenmp")
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
