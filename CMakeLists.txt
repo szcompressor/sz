@@ -9,9 +9,9 @@ endif()
 project (sz)
 enable_testing()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -std=c99 -fopenmp")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11 -fopenmp")
+find_package (OpenMP REQUIRED)
 
+set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
