@@ -14,7 +14,6 @@
 #include <stdint.h>
 #include <sys/time.h>      /* For gettimeofday(), in microseconds */
 #include <time.h>          /* For time(), in seconds */
-#include "iniparser.h"
 #include "CompressElement.h"
 #include "DynamicByteArray.h"
 #include "DynamicIntArray.h"
