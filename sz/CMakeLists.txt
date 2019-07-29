@@ -1,14 +1,18 @@
 aux_source_directory(src sz_sources)
 
 add_library (SZ SHARED ${sz_sources})
-target_link_libraries (SZ ${ZLIB_LIBRARIES} ${ZSTD_LIBRARIES})
+target_link_libraries (SZ PRIVATE ${ZLIB_LIBRARIES} ${ZSTD_LIBRARIES})
 if (UNIX)
-  target_link_libraries (SZ m)
+  target_link_libraries (SZ PUBLIC m)
 endif ()
 
 target_compile_options(SZ
 	PRIVATE $<$<CONFIG:Debug>:-O3 -Wall -Wextra -Wpedantic -Wno-unused-parameter>
 	)
+if (OPENMP_FOUND)
+  target_compile_options (SZ PRIVATE ${OpenMP_C_FLAGS})
+  target_link_libraries (SZ PRIVATE ${OpenMP_C_LIBRARIES})
+endif ()
 
 install (TARGETS SZ LIBRARY DESTINATION lib ARCHIVE DESTINATION lib RUNTIME DESTINATION bin)
 
