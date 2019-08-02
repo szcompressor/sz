@@ -11,9 +11,9 @@
 
 SZ 2.0+: Xin Liang, Sheng Di, Dingwen Tao, Zizhong Chen, Franck Cappello, "Error-Controlled Lossy Compression Optimized for High Compression Ratios of Scientific Datasets", in IEEE International Conference on Big Data (Bigdata 2018), Seattle, WA, USA, 2018.
 
-SZ 1.0-1.4.13: Dingwen Tao, Sheng Di, Franck Cappello, "Significantly Improving Lossy Compression for Scientific Data Sets Based on Multidimensional Prediction and Error-Controlled Quantization", in IEEE International Parallel and Distributed Processing Symposium (IPDPS 2017), Orlando, Florida, USA, 2017.
+SZ 1.4.0-1.4.13: Dingwen Tao, Sheng Di, Franck Cappello, "Significantly Improving Lossy Compression for Scientific Data Sets Based on Multidimensional Prediction and Error-Controlled Quantization", in IEEE International Parallel and Distributed Processing Symposium (IPDPS 2017), Orlando, Florida, USA, 2017.
 
-SZ 0.1-0.15: Sheng Di, Franck Cappello, "Fast Error-bounded Lossy HPC Data Compression with SZ", in IEEE International Parallel and Distributed Processing Symposium (IPDPS 2016), Chicago, IL, USA, 2016.
+SZ 0.1-1.0: Sheng Di, Franck Cappello, "Fast Error-bounded Lossy HPC Data Compression with SZ", in IEEE International Parallel and Distributed Processing Symposium (IPDPS 2016), Chicago, IL, USA, 2016.
 
 Point-wise relative error bound mode (i.e., PW_REL): Xin Liang, Sheng Di, Dingwen Tao, Zizhong Chen, Franck Cappello, "Efficient Transformation Scheme for Lossy Data Compression with Point-wise Relative Error Bound", in IEEE International Conference on Clustering Computing (CLUSTER 2018), Belfast, UK, 2018. (Best Paper)
 
