@@ -2222,7 +2222,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 		type_ = type[jj];
 		if (type_ != 0)
 		{
-			(*data)[jj] = fabsf(pred1D) * precisionTable[type_];
+			(*data)[jj] = fabs(pred1D) * precisionTable[type_];
 		}
 		else
 		{
@@ -2280,7 +2280,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 		type_ = type[index];
 		if (type_ != 0)
 		{
-			(*data)[index] = fabsf(pred1D) * precisionTable[type_];
+			(*data)[index] = fabs(pred1D) * precisionTable[type_];
 		}
 		else
 		{
@@ -2336,9 +2336,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 			type_ = type[index];
 			if (type_ != 0)
 			{
-			    //double ppp = precisionTable[type_];
-			    //double test = fabsf(pred2D) * precisionTable[type_];
-				(*data)[index] = fabsf(pred2D) * precisionTable[type_];
+				(*data)[index] = fabs(pred2D) * precisionTable[type_];
 			}
 			else
 			{
@@ -2397,7 +2395,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 		type_ = type[index];
 		if (type_ != 0)
 		{
-			(*data)[index] = fabsf(pred1D) * precisionTable[type_];
+			(*data)[index] = fabs(pred1D) * precisionTable[type_];
 		}
 		else
 		{
@@ -2453,7 +2451,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				(*data)[index] = fabsf(pred2D) * precisionTable[type_];
+				(*data)[index] = fabs(pred2D) * precisionTable[type_];
 			}
 			else
 			{
@@ -2511,7 +2509,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 			type_ = type[index];
 			if (type_ != 0)
 			{
-				(*data)[index] = fabsf(pred2D) * precisionTable[type_];
+				(*data)[index] = fabs(pred2D) * precisionTable[type_];
 			}
 			else
 			{
@@ -2570,7 +2568,7 @@ void decompressDataSeries_double_3D_MSST19(double** data, size_t r1, size_t r2, 
 				type_ = type[index];				
 				if (type_ != 0)
 				{
-					(*data)[index] = fabsf(pred3D) * precisionTable[type_];	
+					(*data)[index] = fabs(pred3D) * precisionTable[type_];	
 				}
 				else
 				{

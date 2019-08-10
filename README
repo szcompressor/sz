@@ -160,3 +160,9 @@ SZ 2.0.0.0: Significantly improve the compression quality for the high-compressi
 SZ 2.0.1.0: Further improve the compression quality for high-compression cases than 2.0.0.0. Moreover, improve point-wise relative error bounded compression.
 SZ 2.0.2.0: Further improve the compression/decompression rate and also compression ratio (by 10-20%), by replacing Zlib by Zstd as default setting.
 SZ 2.1: Significantly improve the compressoin speed for point-wise relative error bound (please see our paper published in MSST19 for details)
+SZ 2.1.1: We accelerated compression for absolute error bound slightly. We fixed the compilation issue for OSX.
+SZ 2.1.2: Fix memory a little memory leak for point-wise relative error bound Remove a useless step (optimization of # quantization bins) for point-wise relative error bound mode, such that the compression rate is further improved (3%).
+SZ 2.1.4.1: Fix a few bugs which were introduced when integrating fast point-wise relative error bounded compression. The bugs could cause unbounded decompression and slow speed, especially for 1D datasets. CMakeLists are also revised to enable SZ to be compiled on Cray system such as Cori.
+SZ 2.1.4.2: Revise a bug in 2.1.4.2: The bug happened only when the data size is too small (smaller than a datablock such as 6x6x6) for 2D and 3D cases.
+SZ 2.1.5: Fix some bugs in temporal compression and support random-access variable selection for compression/decompression. Fix compilation bug for Fortran version. 
+SZ 2.1.6: Fix a bug (error couldn't be bounded) happening when setting point-wise relative error bound for 3D double-precision data.
