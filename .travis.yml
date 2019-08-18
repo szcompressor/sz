@@ -18,14 +18,6 @@ matrix:
             - libnetcdf-dev 
     - osx_image: xcode11
       os: osx
-      addons:
-        homebrew:
-        taps: homebrew/cask-versions
-        casks: 
-          - fftw
-          - zstd
-          - ctags
-          - netcdf
       env: PATH=/usr/local/bin:$PATH
 install:
     - mkdir build
@@ -34,12 +26,29 @@ install:
       if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
         cmake -DCMAKE_INSTALL_PREFIX=$HOME ..
       else
-        # alias ctags='/usr/local/bin/ctags'
         brew install ctags
-        which ctags
         cmake -DCMAKE_INSTALL_PREFIX=$HOME ..
       fi
     - make 
     - make install
+    - |
+        ./bin/testdouble_compress ../example/sz.config ../example/testdata/x86/testdouble_8_8_8_128.dat 8 8 8 128
+        if [ ! -f ../example/testdata/x86/testdouble_8_8_8_128.dat.sz ]; then
+           exit 1
+        fi
+        ./bin/testdouble_decompress ../example/sz.config ../example/testdata/x86/testdouble_8_8_8_128.dat.sz 8 8 8 128
+        if [ ! -f ../example/testdata/x86/testdouble_8_8_8_128.dat.sz.out ]; then
+           exit 1
+        fi
+    - |
+        ./bin/testdouble_compress ../example/sz.config ../example/testdata/x86/testdouble_8_8_128.dat 8 8 128
+        if [ ! -f ../example/testdata/x86/testdouble_8_8_128.dat.sz ]; then
+           exit 1
+        fi
+        ./bin/testdouble_decompress ../example/sz.config ../example/testdata/x86/testdouble_8_8_128.dat.sz 8 8 128
+        if [ ! -f ../example/testdata/x86/testdouble_8_8_128.dat.sz.out ]; then
+           exit 1
+        fi
 script:
-    - echo
+    -
+
