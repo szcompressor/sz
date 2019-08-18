@@ -9,7 +9,7 @@ endif()
 project (sz)
 enable_testing()
 
-find_package (OpenMP REQUIRED)
+find_package (OpenMP)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 14)
