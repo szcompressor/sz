@@ -1,10 +1,54 @@
-language: c
-compiler: gcc
+sudo: false
 
-before_install:
-- cd test/travis-ci && ./getData.sh && cd -
-  
-script: 
-- ./configure && make
-- cd example && ./test.sh && cd -
-- cd test/travis-ci && ./test.sh && cd -
+language: c
+
+matrix:
+  include:
+    - dist: xenial
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test     # For gcc 4.9, 5 and 7
+          packages:
+            - gcc-7
+            - gfortran-7
+            - zstd
+            - exuberant-ctags
+            - libnetcdf-dev 
+    - osx_image: xcode11
+      os: osx
+      env: PATH=/usr/local/bin:$PATH
+install:
+    - mkdir build
+    - cd build
+    - |
+      if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME ..
+      else
+        brew install ctags
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME ..
+      fi
+    - make 
+    - make install
+    - |
+        ./bin/testdouble_compress ../example/sz.config ../example/testdata/x86/testdouble_8_8_8_128.dat 8 8 8 128
+        if [ ! -f ../example/testdata/x86/testdouble_8_8_8_128.dat.sz ]; then
+           exit 1
+        fi
+        ./bin/testdouble_decompress ../example/sz.config ../example/testdata/x86/testdouble_8_8_8_128.dat.sz 8 8 8 128
+        if [ ! -f ../example/testdata/x86/testdouble_8_8_8_128.dat.sz.out ]; then
+           exit 1
+        fi
+    - |
+        ./bin/testdouble_compress ../example/sz.config ../example/testdata/x86/testdouble_8_8_128.dat 8 8 128
+        if [ ! -f ../example/testdata/x86/testdouble_8_8_128.dat.sz ]; then
+           exit 1
+        fi
+        ./bin/testdouble_decompress ../example/sz.config ../example/testdata/x86/testdouble_8_8_128.dat.sz 8 8 128
+        if [ ! -f ../example/testdata/x86/testdouble_8_8_128.dat.sz.out ]; then
+           exit 1
+        fi
+script:
+    -
+

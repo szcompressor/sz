@@ -9,7 +9,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _OPENMP
 #include "omp.h"
+#endif
 #include "sz.h"
 
 #ifndef _SZ_OMP_H
