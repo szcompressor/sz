@@ -1,4 +1,4 @@
-SZ (version 2.1.6): Error-bounded Lossy Compressor for HPC Data
+SZ: Error-bounded Lossy Compressor for HPC Data
 =====
  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
        See COPYRIGHT in top-level directory.
@@ -67,7 +67,7 @@ The options are shown below.
 	* ABS_OR_REL: take both of the two bounds into account. The compression errors will be limited using either absErrBound or relBoundRatio*rangesize. That is, only one bound is required to be met.
 	* PW_REL: take "point-wise relative error bound" in the compression. 
 
-##Decompression
+## Decompression
 
 * ./test_decompress testdouble_8_8_8_128.dat.sz 8 8 8 128
 * ./test_decompress testdouble_8_8_128.dat.sz 8 8 128
