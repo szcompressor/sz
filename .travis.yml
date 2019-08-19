@@ -2,6 +2,9 @@ sudo: false
 
 language: c
 
+before_install:
+- cd test/travis-ci && ./getData.sh && cd -
+
 matrix:
   include:
     - dist: xenial
@@ -50,10 +53,8 @@ install:
            exit 1
         fi
 
-before_install:
-- cd test/travis-ci && ./getData.sh && cd -
-
 script:
+- cd ..
 - ./configure && make
 - cd example && ./test.sh && cd -
 - cd test/travis-ci && ./test.sh && cd -
