@@ -1417,7 +1417,7 @@ char SZ_compress_args_float_NoCkRngeNoGzip_3D(int cmprType, unsigned char** newB
 			}
 			else
 			{
-				if(sz_with_regression == SZ_NO_REGRESSION)	
+				if(confparams_cpr->withRegression == SZ_NO_REGRESSION)	
 					tdps = SZ_compress_float_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_f);
 				else
 					*newByteData = SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(oriData, r1, r2, r3, realPrecision, outSize);
@@ -1427,7 +1427,7 @@ char SZ_compress_args_float_NoCkRngeNoGzip_3D(int cmprType, unsigned char** newB
 		}
 		else if(cmprType == SZ_FORCE_SNAPSHOT_COMPRESSION)
 		{
-			if(sz_with_regression == SZ_NO_REGRESSION)	
+			if(confparams_cpr->withRegression == SZ_NO_REGRESSION)	
 				tdps = SZ_compress_float_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_f);
 			else
 				*newByteData = SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(oriData, r1, r2, r3, realPrecision, outSize);
@@ -2888,7 +2888,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					if(confparams_cpr->randomAccess == 0)
 					{
 #endif							
-						if(sz_with_regression == SZ_NO_REGRESSION)
+						if(confparams_cpr->withRegression == SZ_NO_REGRESSION)
 							SZ_compress_args_float_NoCkRngeNoGzip_2D(cmprType, &tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 						else 
 						{
@@ -2924,7 +2924,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					if(confparams_cpr->randomAccess == 0)
 					{
 #endif						
-						if(sz_with_regression == SZ_NO_REGRESSION)
+						if(confparams_cpr->withRegression == SZ_NO_REGRESSION)
 							SZ_compress_args_float_NoCkRngeNoGzip_3D(cmprType, &tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 						else 
 						{
@@ -2956,7 +2956,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 				else
 #endif
 				{
-					if(sz_with_regression == SZ_NO_REGRESSION)
+					if(confparams_cpr->withRegression == SZ_NO_REGRESSION)
 						SZ_compress_args_float_NoCkRngeNoGzip_4D(&tmpByteData, oriData, r4, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 					else 
 					{

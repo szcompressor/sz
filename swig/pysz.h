@@ -43,14 +43,17 @@
 
 struct Config {
   sz_params params;
+  std::string app;
 };
 
 
 class ConfigBuilder {
   public:
   ConfigBuilder();
+  ConfigBuilder(std::string const& config_file_path);
   Config build();
 
+	ConfigBuilder& app(std::string app) noexcept;
 	ConfigBuilder& absErrBound(double value) noexcept;
 	ConfigBuilder& dataType(int value) noexcept;
 	ConfigBuilder& errorBoundMode(int  value) noexcept;
@@ -85,7 +88,6 @@ class Compressor {
    * global state
    */
   Compressor(Config config);
-  Compressor(std::string const& config);
   ~Compressor();
   
   Compressor(Compressor const&)=delete;
@@ -99,50 +101,56 @@ class Compressor {
   //
 
   template<class T>
-  std::string Compress1(T* data, size_t r1) {
+  std::string Compress1(T* data, size_t r1, void* params=nullptr) {
     size_t outsize = 0;
-    char* tmp = reinterpret_cast<char*>(SZ_compress(SZTypeToTypeID<T>::value, data, &outsize, 0, 0, 0, 0, r1));
+    int status;
+    char* tmp = reinterpret_cast<char*>(SZ_compress_customize(app.c_str(), params, SZTypeToTypeID<T>::value, data, 0, 0, 0, 0, r1, &outsize, &status));
     return std::string(tmp, outsize);
   }
   template<class T>
-  std::string Compress2(T* data, size_t r1, size_t r2) {
+  std::string Compress2(T* data, size_t r1, size_t r2, void* params=nullptr) {
+    int status;
     size_t outsize = 0;
-    auto tmp = reinterpret_cast<char*>(SZ_compress(SZTypeToTypeID<T>::value, data, &outsize, 0, 0, 0, r2, r1));
+    auto tmp = reinterpret_cast<char*>(SZ_compress_customize(app.c_str(), params, SZTypeToTypeID<T>::value, data, 0, 0, 0, r2, r1, &outsize, &status));
     return std::string(tmp, outsize);
   }
   template<class T>
-  std::string Compress3(T* data, size_t r1, size_t r2, size_t r3) {
+  std::string Compress3(T* data, size_t r1, size_t r2, size_t r3, void* params=nullptr) {
+    int status;
     size_t outsize = 0;
-    auto tmp = reinterpret_cast<char*>(SZ_compress(SZTypeToTypeID<T>::value, data, &outsize, 0, 0, r3, r2, r1));
+    auto tmp = reinterpret_cast<char*>(SZ_compress_customize(app.c_str(), params, SZTypeToTypeID<T>::value, data, 0, 0, r3, r2, r1, &outsize, &status));
     return std::string(tmp, outsize);
   }
   template<class T>
-  std::string Compress4(T* data, size_t r1, size_t r2, size_t r3, size_t r4) {
+  std::string Compress4(T* data, size_t r1, size_t r2, size_t r3, size_t r4, void* params=nullptr) {
+    int status;
     size_t outsize = 0;
-    auto tmp = reinterpret_cast<char*>(SZ_compress(SZTypeToTypeID<T>::value, data, &outsize, 0, r4, r3, r2, r1));
+    auto tmp = reinterpret_cast<char*>(SZ_compress_customize(app.c_str(), params, SZTypeToTypeID<T>::value, data, 0, r4, r3, r2, r1, &outsize, &status));
     return std::string(tmp, outsize);
 
   }
 
   template<class T>
-  std::vector<T> Decompress(std::string data, std::vector<int> r) {
+  std::vector<T> Decompress(std::string data, std::vector<int> r, void* params=nullptr) {
     T* decompressed = nullptr;
     size_t len = 0;
+    int status;
     switch(r.size()) {
       case 1:
-        decompressed = (T*)SZ_decompress(SZTypeToTypeID<T>::value, (unsigned char*)(data.c_str()), data.length(), 0,0,0,0,r[0]);
+
+        decompressed = (T*)SZ_decompress_customize(app.c_str(), params, SZTypeToTypeID<T>::value, (unsigned char*)(data.c_str()), data.length(), 0,0,0,0,r[0], &status);
         len = r[0];
         break;
       case 2:
-        decompressed = (T*)SZ_decompress(SZTypeToTypeID<T>::value, (unsigned char*)(data.c_str()), data.length(), 0,0,0,r[1],r[0]);
+        decompressed = (T*)SZ_decompress_customize(app.c_str(), params, SZTypeToTypeID<T>::value, (unsigned char*)(data.c_str()), data.length(), 0,0,0,r[1],r[0], &status);
         len = r[0]*r[1];
         break;
       case 3:
-        decompressed = (T*)SZ_decompress(SZTypeToTypeID<T>::value, (unsigned char*)(data.c_str()), data.length(), 0,0,r[2],r[1],r[0]);
+        decompressed = (T*)SZ_decompress_customize(app.c_str(), params, SZTypeToTypeID<T>::value, (unsigned char*)(data.c_str()), data.length(), 0,0,r[2],r[1],r[0], &status);
         len = r[0]*r[1]*r[2];
         break;
       case 4:
-        decompressed = (T*)SZ_decompress(SZTypeToTypeID<T>::value, (unsigned char*)(data.c_str()), data.length(), 0,r[3],r[2],r[1],r[0]);
+        decompressed = (T*)SZ_decompress_customize(app.c_str(), params, SZTypeToTypeID<T>::value, (unsigned char*)(data.c_str()), data.length(), 0,r[3],r[2],r[1],r[0], &status);
         len = r[0]*r[1]*r[2]*r[3];
         break;
       default:
@@ -150,4 +158,7 @@ class Compressor {
     }
     return std::vector<T>(decompressed, decompressed+len);
   }
+
+  private:
+  std::string app;
 };

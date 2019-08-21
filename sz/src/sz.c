@@ -1,3 +1,6 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
 /**
  *  @file sz.c
  *  @author Sheng Di and Dingwen Tao
@@ -36,8 +39,6 @@ sz_params *confparams_cpr = NULL; //used for compression
 sz_params *confparams_dec = NULL; //used for decompression 
 
 sz_exedata *exe_params = NULL;
-
-int sz_with_regression = SZ_WITH_LINEAR_REGRESSION; //SZ_NO_REGRESSION
 
 /*following global variables are desgined for time-series based compression*/
 /*sz_varset is not used in the single-snapshot data compression*/
@@ -1150,6 +1151,23 @@ void SZ_Finalize()
 //#endif
 }
 
+/**
+ *
+ * Inits the compressor for SZ_compress_customize
+ *
+ * with SZ_Init(NULL) if not previously initialized and no params passed
+ * with SZ_InitParam(userPara) otherwise if params are passed
+ * and doesn't not initialize otherwise
+ *
+ * @param sz_params* userPara : the user configuration or null
+ * @param sz_params* confparams : the current configuration
+ */
+static void sz_maybe_init_with_user_params(struct sz_params* userPara, struct sz_params* current_params) {
+		if(userPara==NULL && current_params == NULL)
+			SZ_Init(NULL);
+		else if(userPara != NULL)
+			SZ_Init_Params((sz_params*)userPara);
+}
 
 /**
  * 
@@ -1168,27 +1186,20 @@ void SZ_Finalize()
  * @param int *status : the execution status of the compression operation (success: SZ_SCES or fail: SZ_NSCS)
  * 
  * */
-unsigned char* SZ_compress_customize(char* cmprName, void* userPara, int dataType, void* data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, int *status)
+unsigned char* SZ_compress_customize(const char* appName, void* userPara, int dataType, void* data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, int *status)
 {
 	unsigned char* result = NULL;
-	if(strcmp(cmprName, "SZ2.0")==0 || strcmp(cmprName, "SZ")==0)
+	if(strcmp(appName, "SZ2.0")==0 || strcmp(appName, "SZ")==0)
 	{
-		if(userPara==NULL)
-			SZ_Init(NULL);
-		else
-			SZ_Init_Params((sz_params*)userPara);
 		
+    sz_maybe_init_with_user_params(userPara, confparams_cpr);
 		result = SZ_compress(dataType, data, outSize, r5, r4, r3, r2, r1);
 		*status = SZ_SCES;
 	}
-	else if(strcmp(cmprName, "SZ1.4")==0)
+	else if(strcmp(appName, "SZ1.4")==0)
 	{
-		if(userPara==NULL)
-			SZ_Init(NULL);
-		else
-			SZ_Init_Params((sz_params*)userPara);
-		
-		sz_with_regression = SZ_NO_REGRESSION;
+    sz_maybe_init_with_user_params(userPara, confparams_cpr);
+		confparams_cpr->withRegression = SZ_NO_REGRESSION;
 		
 		result = SZ_compress(dataType, data, outSize, r5, r4, r3, r2, r1);
 		*status = SZ_SCES;		
@@ -1217,10 +1228,10 @@ unsigned char* SZ_compress_customize(char* cmprName, void* userPara, int dataTyp
  * @param int *status : the execution status of the compression operation (success: SZ_SCES or fail: SZ_NSCS)
  * 
  * */
-void* SZ_decompress_customize(char* cmprName, void* userPara, int dataType, unsigned char* bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, int *status)
+void* SZ_decompress_customize(const char* appName, void* userPara, int dataType, unsigned char* bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, int *status)
 {
 	void* result = NULL;
-	if(strcmp(cmprName, "SZ2.0")==0 || strcmp(cmprName, "SZ")==0 || strcmp(cmprName, "SZ1.4")==0)
+	if(strcmp(appName, "SZ2.0")==0 || strcmp(appName, "SZ")==0 || strcmp(appName, "SZ1.4")==0)
 	{
 		result = SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
 		* status = SZ_SCES;
@@ -1231,3 +1242,6 @@ void* SZ_decompress_customize(char* cmprName, void* userPara, int dataType, unsi
 	}
 	return result;	
 }
+#ifdef __cplusplus
+}
+#endif

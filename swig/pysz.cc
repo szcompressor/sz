@@ -40,10 +40,18 @@
 ConfigBuilder::ConfigBuilder() {
   SZ_Init(nullptr);
   building.params = *confparams_cpr;
+  building.app = "SZ";
+  SZ_Finalize();
+}
+
+ConfigBuilder::ConfigBuilder(std::string const& config_file_path) {
+  SZ_Init(config_file_path.c_str());
+  building.params = *confparams_cpr;
   SZ_Finalize();
 }
 
 
+ConfigBuilder& ConfigBuilder::app(std::string app) noexcept { building.app = app; return *this; }
 ConfigBuilder& ConfigBuilder::absErrBound(double value) noexcept { building.params.absErrBound = value; return *this; }
 ConfigBuilder& ConfigBuilder::dataType(int value) noexcept { building.params.dataType = value; return *this; }
 ConfigBuilder& ConfigBuilder::errorBoundMode(int  value) noexcept { building.params.errorBoundMode = value; return *this; }
@@ -68,7 +76,7 @@ ConfigBuilder& ConfigBuilder::accelerate_pw_rel_compression(int value) noexcept 
 ConfigBuilder& ConfigBuilder::plus_bits(int value) noexcept { building.params.plus_bits = value; return *this; }
 Config ConfigBuilder::build() { return building;} 
 
-Compressor::Compressor(Config config) {
+Compressor::Compressor(Config config): app(config.app) {
   int ret = SZ_Init_Params(&config.params);
   if(ret != SZ_SCES) {
     std::ostringstream ss;
@@ -76,17 +84,6 @@ Compressor::Compressor(Config config) {
     throw std::runtime_error(ss.str());
   }
 }
-
-
-Compressor::Compressor(std::string const& configfile) {
-  int ret = SZ_Init(configfile.c_str());
-  if(ret != SZ_SCES) {
-    std::ostringstream ss;
-    ss << "SZ Init Error: " << ret;
-    throw std::runtime_error(ss.str());
-  }
-}
-
 
 Compressor::~Compressor() {
   SZ_Finalize();

@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  *  @file sz.h
  *  @author Sheng Di
@@ -65,9 +69,6 @@
 #define PATH_SEPARATOR ':'
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 //typedef char int8_t;
 //typedef unsigned char uint8_t;
@@ -185,6 +186,7 @@ typedef struct sz_params
 	int plus_bits;
 	
 	int randomAccess;
+  int withRegression;
 } sz_params;
 
 typedef struct sz_metadata
@@ -228,7 +230,6 @@ extern int sysEndianType; //*sysEndianType is actually set automatically.
 extern sz_params *confparams_cpr;
 extern sz_params *confparams_dec;
 extern sz_exedata *exe_params;
-extern int sz_with_regression;
 
 //------------------------------------------------
 extern SZ_VarSet* sz_varset;
@@ -316,12 +317,12 @@ void SZ_Finalize();
 void convertSZParamsToBytes(sz_params* params, unsigned char* result);
 void convertBytesToSZParams(unsigned char* bytes, sz_params* params);
 
-unsigned char* SZ_compress_customize(char* appName, void* userPara, int dataType, void* data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, int *status);
+unsigned char* SZ_compress_customize(const char* appName, void* userPara, int dataType, void* data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, int *status);
 
-void* SZ_decompress_customize(char* appName, void* userPara, int dataType, unsigned char* bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, int* status);
+void* SZ_decompress_customize(const char* appName, void* userPara, int dataType, unsigned char* bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, int* status);
+
+#endif /* ----- #ifndef _SZ_H  ----- */
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* ----- #ifndef _SZ_H  ----- */
