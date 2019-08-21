@@ -1149,3 +1149,85 @@ void SZ_Finalize()
 //		fclose(sz_tsc->metadata_file);
 //#endif
 }
+
+
+/**
+ * 
+ * The interface for the user-customized compression method 
+ * 
+ * @param char* comprName : the name of the specific compression approach
+ * @param void* userPara : the pointer of the user-customized data stracture containing the cusotmized compressors' requried input parameters
+ * @param int dataType : data type (SZ_FLOAT, SZ_DOUBLE, SZ_INT8, SZ_UINT8, SZ_INT16, SZ_UINT16, ....)
+ * @param void* data : input dataset
+ * @param size_t r5 : the size of dimension 5
+ * @param size_t r4 : the size of dimension 4
+ * @param size_t r3 : the size of dimension 3
+ * @param size_t r2 : the size of dimension 2
+ * @param size_t r1 : the size of dimension 1
+ * @param size_t outSize : the number of bytes after compression
+ * @param int *status : the execution status of the compression operation (success: SZ_CUST_SUC or fail: SZ_CUST_ERR)
+ * 
+ * */
+unsigned char* SZ_compress_customize(char* cmprName, void* userPara, int dataType, void* data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, int *status)
+{
+	unsigned char* result = NULL;
+	if(strcmp(cmprName, "SZ2.0")==0 || strcmp(cmprName, "SZ")==0)
+	{
+		if(userPara==NULL)
+			SZ_Init(NULL);
+		else
+			SZ_Init_Params((sz_params*)userPara);
+		
+		result = SZ_compress(dataType, data, outSize, r5, r4, r3, r2, r1);
+		*status = SZ_CUST_SUC;
+	}
+	else if(strcmp(cmprName, "SZ1.4")==0)
+	{
+		if(userPara==NULL)
+			SZ_Init(NULL);
+		else
+			SZ_Init_Params((sz_params*)userPara);
+		
+		sz_with_regression = SZ_NO_REGRESSION;
+		
+		result = SZ_compress(dataType, data, outSize, r5, r4, r3, r2, r1);
+		*status = SZ_CUST_SUC;		
+	}
+	else
+	{
+		*status = SZ_CUST_ERR;
+	}
+	return result;
+}
+
+
+/**
+ * 
+ * The interface for the user-customized decompression method 
+ * 
+ * @param char* comprName : the name of the specific compression approach
+ * @param void* userPara : the pointer of the user-customized data stracture containing the cusotmized compressors' requried input parameters
+ * @param int dataType : data type (SZ_FLOAT, SZ_DOUBLE, SZ_INT8, SZ_UINT8, SZ_INT16, SZ_UINT16, ....)
+ * @param unsigned char* bytes : input bytes (the compressed data)
+ * @param size_t r5 : the size of dimension 5
+ * @param size_t r4 : the size of dimension 4
+ * @param size_t r3 : the size of dimension 3
+ * @param size_t r2 : the size of dimension 2
+ * @param size_t r1 : the size of dimension 1
+ * @param int *status : the execution status of the compression operation (success: SZ_CUST_SUC or fail: SZ_CUST_ERR)
+ * 
+ * */
+void* SZ_decompress_customize(char* cmprName, void* userPara, int dataType, unsigned char* bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, int *status)
+{
+	void* result = NULL;
+	if(strcmp(cmprName, "SZ2.0")==0 || strcmp(cmprName, "SZ")==0 || strcmp(cmprName, "SZ1.4")==0)
+	{
+		result = SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		* status = SZ_CUST_SUC;
+	}
+	else
+	{
+		*status = SZ_CUST_ERR;
+	}
+	return result;	
+}

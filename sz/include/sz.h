@@ -82,11 +82,14 @@ extern "C" {
 #define SZ_VER_MAJOR 2
 #define SZ_VER_MINOR 1
 #define SZ_VER_BUILD 6
-#define SZ_VER_REVISION 1
+#define SZ_VER_REVISION 2
 
 #define PASTRI 103
-#define HZ 102
+#define HZ 102 //deprecated
 #define SZ 101
+
+#define SZ_CUST_ERR 1
+#define SZ_CUST_SUC 0
 
 //prediction mode of temporal dimension based compression
 #define SZ_PREVIOUS_VALUE_ESTIMATE 0
@@ -400,6 +403,10 @@ void SZ_Finalize();
 
 void convertSZParamsToBytes(sz_params* params, unsigned char* result);
 void convertBytesToSZParams(unsigned char* bytes, sz_params* params);
+
+unsigned char* SZ_compress_customize(char* appName, void* userPara, int dataType, void* data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, int *status);
+
+void* SZ_decompress_customize(char* appName, void* userPara, int dataType, unsigned char* bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, int* status);
 
 #ifdef __cplusplus
 }
