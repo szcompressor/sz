@@ -4,9 +4,14 @@ enable_testing()
 
 include(GNUInstallDirs)
 
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the build type")
+
+if (POLICY CMP0025)
+  cmake_policy (SET CMP0025 NEW)
+endif()
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_EXTENSIONS OFF)
-
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -18,14 +23,14 @@ set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set (LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
-find_package (FFTW)
+#find_package (FFTW)
 if (FFTW_FOUND)
   include_directories (${FFTW_INCLUDES})
   add_definitions (-DHAVE_FFTW3)
 endif ()
 
-find_package (NETCDF)
-if (NETCDF_FOUND)
+#find_package (netCDF)
+if (netCDF_FOUND)
   include_directories (${NETCDF_INCLUDE_DIRS})
 endif ()
 
@@ -80,7 +85,6 @@ if(TAGS)
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
 endif()
-
 
 add_subdirectory (sz)
 add_subdirectory (example)

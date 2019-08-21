@@ -2202,8 +2202,6 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 			if (state)
 			{
 				type[index] = state;
-				//double temp1 = precisionTable[state];
-				//double temp = fabsf(pred2D) * precisionTable[state];
 				P1[index] = fabs(pred2D) * precisionTable[state];
 				//hit++;
 			}
@@ -4232,7 +4230,7 @@ unsigned int optimize_intervals_double_3D_opt_MSST19(double *oriData, size_t r1,
 	while(data_pos - oriData < len){
 		totalSampleSize++;
 		pred_value = data_pos[-1] + data_pos[-r3] + data_pos[-r23] - data_pos[-1-r23] - data_pos[-r3-1] - data_pos[-r3-r23] + data_pos[-r3-r23-1];
-		pred_err = fabsf(*data_pos / pred_value);
+		pred_err = fabs(*data_pos / pred_value);
 		radiusIndex = fabs(log2(pred_err)/divider+0.5);
 		if(radiusIndex>=confparams_cpr->maxRangeRadius)
 		{

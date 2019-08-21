@@ -1,4 +1,3 @@
-
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/include/sz_opencl_config.h.in
 	${CMAKE_CURRENT_BINARY_DIR}/include/sz_opencl_config.h @ONLY)
 
