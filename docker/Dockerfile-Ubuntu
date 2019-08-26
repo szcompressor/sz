@@ -1,0 +1,30 @@
+FROM ubuntu:18.04
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+        coreutils \
+        libcunit1-dev \
+        exuberant-ctags \
+        libfftw3-dev \
+        libomp-dev \
+        libpocl-dev \
+        libzstd1-dev \
+        libnetcdf-dev \
+        ninja-build \
+        ocl-icd-opencl-dev \
+        opencl-clhpp-headers \
+        python3-pip \
+        python3-numpy \
+        swig \
+        gcc \
+        g++ \
+        zlib1g-dev && \
+    apt-get clean all
+RUN pip3 install cmake
+COPY . /build/
+WORKDIR /build/
+RUN rm -rf build && \
+    mkdir -p build && \
+    cd build && \
+    cmake -G Ninja .. && \
+    ninja 

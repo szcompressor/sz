@@ -123,7 +123,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		
 		confparams_cpr->snapshotCmprStep = 5;
 		
-		sz_with_regression = SZ_WITH_LINEAR_REGRESSION;
+		confparams_cpr->withRegression = SZ_WITH_LINEAR_REGRESSION;
 	
 		confparams_cpr->randomAccess = 0; //0: no random access , 1: support random access
 	
@@ -239,9 +239,9 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:withLinearRegression", "YES");
 		if(strcmp(modeBuf, "YES")==0 || strcmp(modeBuf, "yes")==0)
-			sz_with_regression = SZ_WITH_LINEAR_REGRESSION;
+			confparams_cpr->withRegression = SZ_WITH_LINEAR_REGRESSION;
 		else
-			sz_with_regression = SZ_NO_REGRESSION;
+			confparams_cpr->withRegression = SZ_NO_REGRESSION;
 		
 		modeBuf = iniparser_getstring(ini, "PARAMETER:gzipMode", "Gzip_BEST_SPEED");
 		if(modeBuf==NULL)

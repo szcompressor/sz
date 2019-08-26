@@ -1,0 +1,28 @@
+FROM fedora:29
+RUN dnf update -y && \
+    dnf install -y \
+        pocl-devel && \
+    dnf install -y  \
+        CUnit-devel \
+        clang \
+        clang-libs \
+        cmake \
+        ctags \
+        fftw-devel \
+        gcc \
+        libomp-devel \
+        libzstd-devel \
+        netcdf-devel \
+        ninja-build \
+        ocl-icd-devel \
+        swig \
+        zlib-devel && \
+    dnf clean all
+COPY . /build/
+WORKDIR /build/
+RUN dnf install -y python3-devel python-numpy python3-numpy
+RUN rm -rf build && \
+    mkdir -p build && \
+    cd build && \
+    cmake .. -G Ninja -DBUILD_PYTHON_WRAPPER=on && \
+    ninja

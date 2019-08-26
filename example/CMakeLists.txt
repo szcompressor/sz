@@ -19,11 +19,8 @@ target_link_libraries (testdouble_decompress SZ)
 add_executable (sz sz.c)
 target_link_libraries (sz SZ)
 
-#add_executable (opencl_test opencl_test)
-#target_link_libraries (opencl_test SZ ${OpenCL_LIBRARIES})
-
 install (TARGETS testint_compress testint_decompress testfloat_compress testfloat_decompress
 	testdouble_compress testdouble_decompress sz
-         RUNTIME DESTINATION bin)
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 
