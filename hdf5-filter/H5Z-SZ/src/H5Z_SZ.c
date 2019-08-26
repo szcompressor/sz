@@ -351,7 +351,7 @@ done:
 
 static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned int cd_values[], size_t nbytes, size_t* buf_size, void** buf)
 {
-//	printf("start in H5Z_filter_sz\n");
+	//printf("start in H5Z_filter_sz\n");
 	//H5Z_SZ_Init_Default();
 	
 	size_t r1 = 0, r2 = 0, r3 = 0, r4 = 0, r5 = 0;
@@ -367,7 +367,10 @@ static size_t H5Z_filter_sz(unsigned int flags, size_t cd_nelmts, const unsigned
 		printf("cd_values[%d]=%u\n", i, cd_values[i]);
 	printf("dimSize=%d, r1=%u, r2=%u, r3=%u, r4=%u, r5=%u\n", dimSize, r1, r2, r3, r4, r5);*/
 	size_t nbEle = computeDataLength(r5, r4, r3, r2, r1); 
-	
+
+	if(nbEle < 20)
+		return nbytes;
+
 	if (flags & H5Z_FLAG_REVERSE) 
 	{ 
 		//cost_start();
