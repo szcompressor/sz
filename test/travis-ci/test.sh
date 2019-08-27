@@ -5,6 +5,8 @@ export PATH=$exeDir:$PATH
 
 dataDir=${2:-SZ-travis-testdata-master/travis-testdata}
 #cp "$exeDir/sz.config" $dataDir
+echo "pwd: " $(pwd)
+echo "exeDir" ${exeDir}
 
 echo ------------------------------- CESM-ATM-Tylor --------------------------------
 app=CESM-ATM-Tylor
@@ -33,7 +35,7 @@ do
 	sz -x -f -i $filepath -s ${filepath}.sz -3 388 185 320 -a
 done
 
-cp ../../example/sz.config .
+cp ../../../example/sz.config .
 app=EXAFEL
 errs="1E-1 1E-3 1E-5"
 filepath=$dataDir/$app/smd-cxif5315-r169-calib-fde.i16

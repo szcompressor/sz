@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.12.4)
+cmake_minimum_required (VERSION 3.10.2)
 
 #disable in-source builds
 set (CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -8,7 +8,6 @@ set (CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 project (sz 
   VERSION 2.1.6.2
   DESCRIPTION "SZ Error Bounded Lossy Compressor"
-  HOMEPAGE_URL "https://github.com/disheng222/sz"
   LANGUAGES C CXX
   )
 enable_testing()
@@ -34,6 +33,7 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #generate tags for the project if tags exist
 find_program(TAGS ctags)
@@ -51,11 +51,15 @@ find_package(PkgConfig)
 pkg_search_module(FFTW3 IMPORTED_TARGET fftw3)
 pkg_search_module(ZSTD  IMPORTED_TARGET libzstd)
 
+#by default pass no 3rd party exports
+set(thirdparty_export "")
+
 if(ZSTD_FOUND)
   set(ZSTD_dep PkgConfig::ZSTD)
 else()
   add_subdirectory(zstd)
   set(ZSTD_dep ZSTD)
+  list(APPEND thirdparty_export "ZSTD")
 endif()
 
 find_package(ZLIB)
@@ -64,6 +68,7 @@ if(ZLIB_FOUND)
 else()
   add_subdirectory(zlib)
   set(ZLIB_dep ZLIB)
+  list(APPEND thirdparty_export "ZLIB")
 endif()
 
 find_package(OpenMP)
@@ -94,6 +99,25 @@ endif()
 option(BUILD_PASTRI "build the pastri code" OFF)
 option(BUILD_TIMECMPR "build the time based compression code" OFF)
 option(BUILD_RANDOMACCESS "build the random access code" OFF)
+option(BUILD_DOCKER_CONTAINERS "build docker containers for testing" OFF)
+if(BUILD_DOCKER_CONTAINERS)
+  
+  foreach(CONTAINER Centos Fedora Ubuntu Travis)
+    set(BuildSentinel ${CMAKE_BINARY_DIR}/${CONTAINER}-built)
+    set(Dockerfile docker/Dockerfile-${CONTAINER})
+    string(TOLOWER "sz${CONTAINER}" CONTAINER_TAG)
+    add_custom_command(OUTPUT ${BuildSentinel}
+      COMMAND docker build -t ${CONTAINER_TAG} -f ${Dockerfile} .
+      COMMAND touch ${BuildSentinel}
+      MAIN_DEPENDENCY ${Dockerfile}
+      DEPENDS SZ
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      COMMENT "DOCKER ${Dockerfile}"
+      )
+    list(APPEND DOCKER_CONTAINERS ${BuildSentinel})
+  endforeach()
+  add_custom_target(docker DEPENDS ${DOCKER_CONTAINERS} COMMENT "building docker containers")
+endif()
 
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/sz.pc.in

@@ -17,7 +17,9 @@ matrix:
             - gcc-7
             - gfortran-7
             - zstd
+            - libzstd1-dev
             - exuberant-ctags
+            - libcunit1-dev 
             - libnetcdf-dev 
     - osx_image: xcode11
       os: osx
@@ -26,32 +28,15 @@ install:
     - mkdir build
     - cd build
     - |
-      if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME ..
-      else
+      if [[ "${TRAVIS_OS_NAME}" != "linux" ]]; then
         brew install ctags
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME ..
+        brew install cunit
+        brew install pkg-config
       fi
+    - cmake -DCMAKE_INSTALL_PREFIX=$HOME -DBUILD_TESTS=ON -DBUILD_INTEGRATION_TESTS=ON ..
     - make 
     - make install
-    - |
-        ./bin/testdouble_compress ../example/sz.config ../example/testdata/x86/testdouble_8_8_8_128.dat 8 8 8 128
-        if [ ! -f ../example/testdata/x86/testdouble_8_8_8_128.dat.sz ]; then
-           exit 1
-        fi
-        ./bin/testdouble_decompress ../example/testdata/x86/testdouble_8_8_8_128.dat.sz 8 8 8 128
-        if [ ! -f ../example/testdata/x86/testdouble_8_8_8_128.dat.sz.out ]; then
-           exit 1
-        fi
-    - |
-        ./bin/testdouble_compress ../example/sz.config ../example/testdata/x86/testdouble_8_8_128.dat 8 8 128
-        if [ ! -f ../example/testdata/x86/testdouble_8_8_128.dat.sz ]; then
-           exit 1
-        fi
-        ./bin/testdouble_decompress ../example/testdata/x86/testdouble_8_8_128.dat.sz 8 8 128
-        if [ ! -f ../example/testdata/x86/testdouble_8_8_128.dat.sz.out ]; then
-           exit 1
-        fi
+    - make test
 
 script:
 - cd ..

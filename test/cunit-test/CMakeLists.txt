@@ -1,8 +1,8 @@
 include(FindPkgConfig)
-pkg_search_module(CUNIT REQUIRED cunit)
+pkg_search_module(CUNIT REQUIRED IMPORTED_TARGET cunit)
 
 add_library(cunit_extras CUnit_Array.c)
-target_link_libraries(cunit_extras PUBLIC ${CUNIT_LDFLAGS})
+target_link_libraries(cunit_extras PUBLIC PkgConfig::CUNIT)
 
 function(make_sz_cunit_test binary source)
 	add_executable(${binary} ${source})
