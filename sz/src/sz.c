@@ -37,8 +37,6 @@ sz_params *confparams_dec = NULL; //used for decompression
 
 sz_exedata *exe_params = NULL;
 
-int sz_with_regression = SZ_WITH_LINEAR_REGRESSION; //SZ_NO_REGRESSION
-
 /*following global variables are desgined for time-series based compression*/
 /*sz_varset is not used in the single-snapshot data compression*/
 SZ_VarSet* sz_varset = NULL;
@@ -1152,6 +1150,25 @@ void SZ_Finalize()
 
 
 /**
+ *
+ * Inits the compressor for SZ_compress_customize
+ *
+ * with SZ_Init(NULL) if not previously initialized and no params passed
+ * with SZ_InitParam(userPara) otherwise if params are passed
+ * and doesn't not initialize otherwise
+ *
+ * @param sz_params* userPara : the user configuration or null
+ * @param sz_params* confparams : the current configuration
+ */
+static void sz_maybe_init_with_user_params(struct sz_params* userPara, struct sz_params* current_params) {
+		if(userPara==NULL && current_params == NULL)
+			SZ_Init(NULL);
+		else if(userPara != NULL)
+			SZ_Init_Params((sz_params*)userPara);
+}
+
+
+/**
  * 
  * The interface for the user-customized compression method 
  * 
@@ -1165,37 +1182,29 @@ void SZ_Finalize()
  * @param size_t r2 : the size of dimension 2
  * @param size_t r1 : the size of dimension 1
  * @param size_t outSize : the number of bytes after compression
- * @param int *status : the execution status of the compression operation (success: SZ_CUST_SUC or fail: SZ_CUST_ERR)
+ * @param int *status : the execution status of the compression operation (success: SZ_SCES or fail: SZ_NSCS)
  * 
  * */
-unsigned char* SZ_compress_customize(char* cmprName, void* userPara, int dataType, void* data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, int *status)
+unsigned char* SZ_compress_customize(const char* cmprName, void* userPara, int dataType, void* data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, int *status)
 {
 	unsigned char* result = NULL;
 	if(strcmp(cmprName, "SZ2.0")==0 || strcmp(cmprName, "SZ")==0)
 	{
-		if(userPara==NULL)
-			SZ_Init(NULL);
-		else
-			SZ_Init_Params((sz_params*)userPara);
-		
+		sz_maybe_init_with_user_params(userPara, confparams_cpr);
 		result = SZ_compress(dataType, data, outSize, r5, r4, r3, r2, r1);
-		*status = SZ_CUST_SUC;
+		*status = SZ_SCES;
 	}
 	else if(strcmp(cmprName, "SZ1.4")==0)
 	{
-		if(userPara==NULL)
-			SZ_Init(NULL);
-		else
-			SZ_Init_Params((sz_params*)userPara);
-		
-		sz_with_regression = SZ_NO_REGRESSION;
+		sz_maybe_init_with_user_params(userPara, confparams_cpr);
+		confparams_cpr->withRegression = SZ_NO_REGRESSION;
 		
 		result = SZ_compress(dataType, data, outSize, r5, r4, r3, r2, r1);
-		*status = SZ_CUST_SUC;		
+		*status = SZ_SCES;		
 	}
 	else
 	{
-		*status = SZ_CUST_ERR;
+		*status = SZ_NSCS;
 	}
 	return result;
 }
@@ -1214,20 +1223,20 @@ unsigned char* SZ_compress_customize(char* cmprName, void* userPara, int dataTyp
  * @param size_t r3 : the size of dimension 3
  * @param size_t r2 : the size of dimension 2
  * @param size_t r1 : the size of dimension 1
- * @param int *status : the execution status of the compression operation (success: SZ_CUST_SUC or fail: SZ_CUST_ERR)
+ * @param int *status : the execution status of the compression operation (success: SZ_SCES or fail: SZ_NSCS)
  * 
  * */
-void* SZ_decompress_customize(char* cmprName, void* userPara, int dataType, unsigned char* bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, int *status)
+void* SZ_decompress_customize(const char* cmprName, void* userPara, int dataType, unsigned char* bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, int *status)
 {
 	void* result = NULL;
 	if(strcmp(cmprName, "SZ2.0")==0 || strcmp(cmprName, "SZ")==0 || strcmp(cmprName, "SZ1.4")==0)
 	{
 		result = SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
-		* status = SZ_CUST_SUC;
+		* status = SZ_SCES;
 	}
 	else
 	{
-		*status = SZ_CUST_ERR;
+		*status = SZ_NSCS;
 	}
 	return result;	
 }
