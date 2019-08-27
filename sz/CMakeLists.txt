@@ -61,7 +61,7 @@ add_library (SZ SHARED
 target_include_directories(SZ 
   PUBLIC 
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:sz>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sz>
   )
 
 target_link_libraries (SZ PUBLIC ${ZLIB_dep} ${ZSTD_dep} m)
@@ -85,7 +85,7 @@ if(BUILD_RANDOMACCESS)
   target_compile_definitions(SZ PUBLIC HAVE_RANDOMACCESS)
 endif()
 
-install (TARGETS SZ EXPORT SZConfig
+install (TARGETS SZ ${thirdparty_export} EXPORT SZConfig
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

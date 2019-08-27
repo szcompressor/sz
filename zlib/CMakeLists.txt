@@ -1,13 +1,29 @@
-aux_source_directory(. zlib_sources)
+add_library(ZLIB SHARED 
+  ./gzclose.c
+  ./uncompr.c
+  ./trees.c
+  ./gzread.c
+  ./adler32.c
+  ./gzwrite.c
+  ./compress.c
+  ./inftrees.c
+  ./crc32.c
+  ./inffast.c
+  ./zutil.c
+  ./gzlib.c
+  ./infback.c
+  ./inflate.c
+  ./deflate.c
+  )
 
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(ZLIB
+  PUBLIC 
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  )
 
-add_library (ZLIB SHARED ${zlib_sources})
-target_link_libraries (zlib ${zlib_dependencies})
+install(TARGETS ZLIB EXPORT ZLIBConfig
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ARCHIVE
+  DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-install (TARGETS zlib LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-
-set (zlib_headers
-      crc32.h  deflate.h  gzguts.h  inffast.h  inffixed.h  inflate.h  inftrees.h  trees.h  zconf.h  zlib.h  zutil.h  )
-
-install (FILES ${zlib_headers} DESTINATION include)
+install(FILES zlib.h zconf.h DESTINATION include)
+export(TARGETS ZLIB FILE ZLIBConfig.cmake)
