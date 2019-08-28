@@ -331,24 +331,24 @@ am__can_run_installinfo = \
   esac
 am__include_HEADERS_DIST = include/MultiLevelCacheTable.h \
 	include/MultiLevelCacheTableWideInterval.h \
-	include/CacheTable.h include/CompressElement.h \
-	include/DynamicDoubleArray.h include/rw.h include/conf.h \
-	include/dataCompression.h include/dictionary.h \
-	include/DynamicFloatArray.h include/VarSet.h include/sz.h \
-	include/Huffman.h include/ByteToolkit.h include/sz_float.h \
-	include/sz_double.h include/callZlib.h include/iniparser.h \
-	include/TypeManager.h include/sz_int8.h include/sz_int16.h \
-	include/sz_int32.h include/sz_int64.h include/szd_int8.h \
-	include/szd_int16.h include/szd_int32.h include/szd_int64.h \
-	include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h \
-	include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h \
-	include/szd_uint32.h include/szd_uint64.h \
-	include/sz_float_pwr.h include/sz_double_pwr.h \
-	include/szd_float.h include/szd_double.h \
-	include/szd_float_pwr.h include/szd_double_pwr.h \
-	include/sz_float_ts.h include/szd_float_ts.h \
-	include/sz_double_ts.h include/szd_double_ts.h \
-	include/utility.h include/sz_opencl.h \
+	include/CacheTable.h include/defines.h \
+	include/CompressElement.h include/DynamicDoubleArray.h \
+	include/rw.h include/conf.h include/dataCompression.h \
+	include/dictionary.h include/DynamicFloatArray.h \
+	include/VarSet.h include/sz.h include/Huffman.h \
+	include/ByteToolkit.h include/sz_float.h include/sz_double.h \
+	include/callZlib.h include/iniparser.h include/TypeManager.h \
+	include/sz_int8.h include/sz_int16.h include/sz_int32.h \
+	include/sz_int64.h include/szd_int8.h include/szd_int16.h \
+	include/szd_int32.h include/szd_int64.h include/sz_uint8.h \
+	include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h \
+	include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h \
+	include/szd_uint64.h include/sz_float_pwr.h \
+	include/sz_double_pwr.h include/szd_float.h \
+	include/szd_double.h include/szd_float_pwr.h \
+	include/szd_double_pwr.h include/sz_float_ts.h \
+	include/szd_float_ts.h include/sz_double_ts.h \
+	include/szd_double_ts.h include/utility.h include/sz_opencl.h \
 	include/DynamicByteArray.h include/DynamicIntArray.h \
 	include/TightDataPointStorageI.h \
 	include/TightDataPointStorageD.h \
@@ -507,7 +507,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
-@FORTRAN_FALSE@include_HEADERS = include/MultiLevelCacheTable.h include/MultiLevelCacheTableWideInterval.h include/CacheTable.h\
+@FORTRAN_FALSE@include_HEADERS = include/MultiLevelCacheTable.h include/MultiLevelCacheTableWideInterval.h include/CacheTable.h include/defines.h\
 @FORTRAN_FALSE@		include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
 @FORTRAN_FALSE@		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h\
 @FORTRAN_FALSE@		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\
@@ -518,7 +518,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
 @FORTRAN_FALSE@		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/ArithmeticCoding.h include/sz_omp.h
 
-@FORTRAN_TRUE@include_HEADERS = include/MultiLevelCacheTable.h include/MultiLevelCacheTableWideInterval.h include/CacheTable.h\
+@FORTRAN_TRUE@include_HEADERS = include/MultiLevelCacheTable.h include/MultiLevelCacheTableWideInterval.h include/CacheTable.h include/defines.h\
 @FORTRAN_TRUE@		include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
 @FORTRAN_TRUE@		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h include/szf.h\
 @FORTRAN_TRUE@		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\

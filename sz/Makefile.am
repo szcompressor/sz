@@ -3,7 +3,7 @@
 
 AUTOMAKE_OPTIONS=foreign
 if FORTRAN
-include_HEADERS=include/MultiLevelCacheTable.h include/MultiLevelCacheTableWideInterval.h include/CacheTable.h\
+include_HEADERS=include/MultiLevelCacheTable.h include/MultiLevelCacheTableWideInterval.h include/CacheTable.h include/defines.h\
 		include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
 		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h include/szf.h\
 		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\
@@ -40,7 +40,7 @@ libSZ_la_SOURCES=src/MultiLevelCacheTable.c src/MultiLevelCacheTableWideInterval
 		src/sz_interface.F90 src/rw_interface.F90
 libSZ_la_LINK=$(AM_V_CC)$(LIBTOOL) --tag=FC --mode=link $(FCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 else
-include_HEADERS=include/MultiLevelCacheTable.h include/MultiLevelCacheTableWideInterval.h include/CacheTable.h\
+include_HEADERS=include/MultiLevelCacheTable.h include/MultiLevelCacheTableWideInterval.h include/CacheTable.h include/defines.h\
 		include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
 		include/dictionary.h include/DynamicFloatArray.h include/VarSet.h include/sz.h include/Huffman.h include/ByteToolkit.h\
 		include/sz_float.h include/sz_double.h include/callZlib.h include/iniparser.h include/TypeManager.h\
