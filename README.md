@@ -94,6 +94,37 @@ The interfaces are listed below. More details can be found in the user guide.
 
 Please see doc/use-guide for details
 
+### Python Interface
+
+The python bindings requires some additional dependencies:
+
+- python with development libraries
+- numpy with development libraries
+- swig-3.0.12 or newer
+- cmake-3.14 or newer
+
+To use the python interface, autotools is not supported.  You should compile with CMake instead as follows:
+
+```bash
+# if you are working in a python virtual envionment, source it here
+# otherwise cmake will detect the wrong numpy version which can cause
+# segmentation faults and other bizzare errors
+source bin/actiate
+
+mkdir build
+cd build
+#you can specify other cmake arguments such as CMAKE_INSTALL_PREFIX here
+cmake .. -DBUILD_PYTHON_WRAPPER=ON
+cmake --build .
+
+#for system wide installation sudo is required
+sudo cmake --install .
+```
+
+An example usage file can be found in `example/test.py`
+
+Additional documentation can be found using the `help` function in python.
+
 
 ## Limitation of this version
 
