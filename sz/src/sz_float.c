@@ -4472,9 +4472,14 @@ unsigned int optimize_intervals_float_2D_opt_MSST19(float *oriData, size_t r1, s
     float divider = log2(1+realPrecision)*2;
 	size_t n1_count = 1; // count i sum
 	size_t len = r1 * r2;
+	uint64_t counter = 0;
 	while(data_pos - oriData < len){
 		totalSampleSize++;
 		pred_value = data_pos[-1] + data_pos[-r2] - data_pos[-r2-1];
+		if(*data_pos == 0){
+            data_pos += confparams_cpr->sampleDistance;
+            continue;
+		}
 		pred_err = fabs(pred_value / *data_pos);
 		radiusIndex = (unsigned long)fabs(log2(pred_err)/divider+0.5);
 		if(radiusIndex>=confparams_cpr->maxRangeRadius)
@@ -4490,10 +4495,11 @@ unsigned int optimize_intervals_float_2D_opt_MSST19(float *oriData, size_t r1, s
 			if(offset_count == 0) offset_count ++;
 		}
 		else data_pos += confparams_cpr->sampleDistance;
+		counter++;
 	}
 
 	//compute the appropriate number
-	size_t targetCount = totalSampleSize*confparams_cpr->predThreshold;
+	size_t targetCount = counter * confparams_cpr->predThreshold ;//totalSampleSize*confparams_cpr->predThreshold;
 	size_t sum = 0;
 	for(i=0;i<confparams_cpr->maxRangeRadius;i++)
 	{
