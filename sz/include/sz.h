@@ -2,7 +2,7 @@
  *  @file sz.h
  *  @author Sheng Di
  *  @date April, 2015
- *  @brief Header file for the whole detector.
+ *  @brief Header file for the whole compressor.
  *  (C) 2015 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
  *      See COPYRIGHT in top-level directory.
  */

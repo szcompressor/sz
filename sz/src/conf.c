@@ -303,6 +303,8 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 			confparams_cpr->errorBoundMode=ABS;
 		else if(strcmp(errBoundMode, "REL")==0||strcmp(errBoundMode,"rel")==0)
 			confparams_cpr->errorBoundMode=REL;
+		else if(strcmp(errBoundMode, "VR_REL")==0||strcmp(errBoundMode, "vr_rel")==0)
+			confparams_cpr->errorBoundMode=REL;
 		else if(strcmp(errBoundMode, "ABS_AND_REL")==0||strcmp(errBoundMode, "abs_and_rel")==0)
 			confparams_cpr->errorBoundMode=ABS_AND_REL;
 		else if(strcmp(errBoundMode, "ABS_OR_REL")==0||strcmp(errBoundMode, "abs_or_rel")==0)

@@ -47,7 +47,7 @@ void usage()
 	printf("* error control: (the error control parameters here will overwrite the setting in sz.config)\n");
 	printf("	-M <error bound mode> : 10 options as follows. \n");
 	printf("		ABS (absolute error bound)\n");
-	printf("		REL (value range based error bound)\n");
+	printf("		REL (value range based error bound, so a.k.a., VR_REL)\n");
 	printf("		ABS_AND_REL (using min{ABS, REL})\n");
 	printf("		ABS_OR_REL (using max{ABS, REL})\n");
 	printf("		PSNR (peak signal-to-noise ratio)\n");
@@ -298,7 +298,7 @@ int main(int argc, char* argv[])
 		int errorBoundMode = 0;
 		if(strcmp(errBoundMode, "ABS")==0)
 			errorBoundMode = ABS;
-		else if(strcmp(errBoundMode, "REL")==0)
+		else if(strcmp(errBoundMode, "REL")==0||strcmp(errBoundMode, "VR_REL")==0)
 			errorBoundMode = REL;
 		else if(strcmp(errBoundMode, "ABS_AND_REL")==0)
 			errorBoundMode = ABS_AND_REL;

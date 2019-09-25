@@ -1,3 +1,12 @@
+/**
+ *  @file defines.h
+ *  @author Sheng Di
+ *  @date July, 2019
+ *  @brief Header file for the dataCompression.c.
+ *  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
+ *      See COPYRIGHT in top-level directory.
+ */
+
 #ifndef _SZ_DEFINES_H
 #define _SZ_DEFINES_H
 
@@ -18,6 +27,7 @@
 
 #define ABS 0
 #define REL 1
+#define VR_REL 1  //alternative name to REL
 #define ABS_AND_REL 2
 #define ABS_OR_REL 3
 #define PSNR 4
