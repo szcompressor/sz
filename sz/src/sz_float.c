@@ -347,7 +347,7 @@ unsigned int optimize_intervals_float_4D(float *oriData, size_t r1, size_t r2, s
 }
 
 TightDataPointStorageF* SZ_compress_float_1D_MDQ(float *oriData, 
-size_t dataLength, double realPrecision, float valueRangeSize, float medianValue_f)
+size_t dataLength, float realPrecision, float valueRangeSize, float medianValue_f)
 {
 #ifdef HAVE_TIMECMPR	
 	float* decData = NULL;
@@ -416,22 +416,24 @@ size_t dataLength, double realPrecision, float valueRangeSize, float medianValue
 		decData[1] = vce->data;
 #endif
 	int state;
-	double checkRadius;
+	float checkRadius;
 	float curData;
 	float pred = last3CmprsData[0];
 	float predAbsErr;
 	checkRadius = (exe_params->intvCapacity-1)*realPrecision;
-	double interval = 2*realPrecision;
+	float interval = 2*realPrecision;
+	
+	float recip_precision = 1/realPrecision;
 	
 	for(i=2;i<dataLength;i++)
 	{	
 		curData = spaceFillingValue[i];
 		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
 		//pred = last3CmprsData[0];
-		predAbsErr = fabs(curData - pred);	
+		predAbsErr = fabsf(curData - pred);	
 		if(predAbsErr<checkRadius)
 		{
-			state = (predAbsErr/realPrecision+1)/2;
+			state = ((int)(predAbsErr*recip_precision+1))>>1;
 			if(curData>=pred)
 			{
 				type[i] = exe_params->intvRadius+state;
@@ -600,7 +602,7 @@ size_t dataLength, double realPrecision, size_t *outSize, float valueRangeSize, 
 	return compressionType;
 }
 
-TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size_t r2, double realPrecision, float valueRangeSize, float medianValue_f)
+TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size_t r2, float realPrecision, float valueRangeSize, float medianValue_f)
 {
 #ifdef HAVE_TIMECMPR
 	float* decData = NULL;	
@@ -620,7 +622,7 @@ TightDataPointStorageF* SZ_compress_float_2D_MDQ(float *oriData, size_t r1, size
 	int reqLength;
 	float pred1D, pred2D;
 	float diff = 0.0;
-	double itvNum = 0;
+	float itvNum = 0;
 	float *P0, *P1;
 		
 	size_t dataLength = r1*r2;	
@@ -933,7 +935,7 @@ char SZ_compress_args_float_NoCkRngeNoGzip_2D(int cmprType, unsigned char** newB
 	return compressionType;
 }
 
-TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, float valueRangeSize, float medianValue_f)
+TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size_t r2, size_t r3, float realPrecision, float valueRangeSize, float medianValue_f)
 {
 #ifdef HAVE_TIMECMPR	
 	float* decData = NULL;
@@ -953,7 +955,7 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 	int reqLength;
 	float pred1D, pred2D, pred3D;
 	float diff = 0.0;
-	double itvNum = 0;
+	float itvNum = 0;
 	float *P0, *P1;
 
 	size_t dataLength = r1*r2*r3;
@@ -4647,8 +4649,9 @@ unsigned int optimize_intervals_float_3D_opt(float *oriData, size_t r1, size_t r
 	return powerOf2;
 }
 
-size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, size_t dim_0, size_t dim_1, size_t dim_2, size_t block_dim_0, size_t block_dim_1, size_t block_dim_2, double realPrecision, float * P0, float * P1, int * type, float * unpredictable_data){
+size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, size_t dim_0, size_t dim_1, size_t dim_2, size_t block_dim_0, size_t block_dim_1, size_t block_dim_2, float realPrecision, float * P0, float * P1, int * type, float * unpredictable_data){
 
+	float recip_realPrecision = 1/realPrecision;
 	size_t dim0_offset = dim_1 * dim_2;
 	size_t dim1_offset = dim_2;
 
@@ -4677,21 +4680,21 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 	float * cur_data_pos = block_ori_data;
 	float curData;
 	float pred1D, pred2D, pred3D;
-	double itvNum;
-	double diff;
+	float itvNum;
+	float diff;
 	size_t i, j, k;
 	size_t r23 = r2*r3;
 	// Process Row-0 data 0
 	pred1D = mean[0];
 	curData = *cur_data_pos;
 	diff = curData - pred1D;
-	itvNum = fabs(diff)/realPrecision + 1;
+	itvNum = fabsf(diff)*recip_realPrecision + 1;
 	if (itvNum < exe_params->intvCapacity){
 		if (diff < 0) itvNum = -itvNum;
 		type[0] = (int) (itvNum/2) + exe_params->intvRadius;
 		P1[0] = pred1D + 2 * (type[0] - exe_params->intvRadius) * realPrecision;
 		//ganrantee comporession error against the case of machine-epsilon
-		if(fabs(curData-P1[0])>realPrecision){	
+		if(fabsf(curData-P1[0])>realPrecision){	
 			type[0] = 0;
 			P1[0] = curData;
 			unpredictable_data[unpredictable_count ++] = curData;
@@ -4707,13 +4710,13 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 	pred1D = P1[0];
 	curData = cur_data_pos[1];
 	diff = curData - pred1D;
-	itvNum = fabs(diff)/realPrecision + 1;
+	itvNum = fabsf(diff)*recip_realPrecision + 1;
 	if (itvNum < exe_params->intvCapacity){
 		if (diff < 0) itvNum = -itvNum;
 		type[1] = (int) (itvNum/2) + exe_params->intvRadius;
 		P1[1] = pred1D + 2 * (type[1] - exe_params->intvRadius) * realPrecision;
 		//ganrantee comporession error against the case of machine-epsilon
-		if(fabs(curData-P1[1])>realPrecision){	
+		if(fabsf(curData-P1[1])>realPrecision){	
 			type[1] = 0;
 			P1[1] = curData;	
 			unpredictable_data[unpredictable_count ++] = curData;
@@ -4729,13 +4732,13 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 		pred1D = 2*P1[j-1] - P1[j-2];
 		curData = cur_data_pos[j];
 		diff = curData - pred1D;
-		itvNum = fabs(diff)/realPrecision + 1;
+		itvNum = fabsf(diff)*recip_realPrecision + 1;
 		if (itvNum < exe_params->intvCapacity){
 			if (diff < 0) itvNum = -itvNum;
 			type[j] = (int) (itvNum/2) + exe_params->intvRadius;
 			P1[j] = pred1D + 2 * (type[j] - exe_params->intvRadius) * realPrecision;
 			//ganrantee comporession error against the case of machine-epsilon
-			if(fabs(curData-P1[j])>realPrecision){	
+			if(fabsf(curData-P1[j])>realPrecision){	
 				type[j] = 0;
 				P1[j] = curData;	
 				unpredictable_data[unpredictable_count ++] = curData;
@@ -4759,7 +4762,7 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 		curData = *cur_data_pos;
 		diff = curData - pred1D;
 
-		itvNum = fabs(diff)/realPrecision + 1;
+		itvNum = fabsf(diff)*recip_realPrecision + 1;
 
 		if (itvNum < exe_params->intvCapacity)
 		{
@@ -4768,7 +4771,7 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 			P1[index] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 			
 			//ganrantee comporession error against the case of machine-epsilon
-			if(fabs(curData-P1[index])>realPrecision)
+			if(fabsf(curData-P1[index])>realPrecision)
 			{	
 				type[index] = 0;
 				P1[index] = curData;	
@@ -4791,7 +4794,7 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 			curData = cur_data_pos[j];
 			diff = curData - pred2D;
 
-			itvNum = fabs(diff)/realPrecision + 1;
+			itvNum = fabsf(diff)*recip_realPrecision + 1;
 
 			if (itvNum < exe_params->intvCapacity)
 			{
@@ -4800,7 +4803,7 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 				P1[index] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				
 				//ganrantee comporession error against the case of machine-epsilon
-				if(fabs(curData-P1[index])>realPrecision)
+				if(fabsf(curData-P1[index])>realPrecision)
 				{	
 					type[index] = 0;
 					P1[index] = curData;	
@@ -4827,14 +4830,14 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 		pred1D = P1[0];
 		curData = *cur_data_pos;
 		diff = curData - pred1D;
-		itvNum = fabs(diff)/realPrecision + 1;
+		itvNum = fabsf(diff)*recip_realPrecision + 1;
 		if (itvNum < exe_params->intvCapacity)
 		{
 			if (diff < 0) itvNum = -itvNum;
 			type[index] = (int) (itvNum/2) + exe_params->intvRadius;
 			P0[0] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 			//ganrantee comporession error against the case of machine-epsilon
-			if(fabs(curData-P0[0])>realPrecision)
+			if(fabsf(curData-P0[0])>realPrecision)
 			{	
 				type[index] = 0;
 				P0[0] = curData;	
@@ -4855,14 +4858,14 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 			pred2D = P0[j-1] + P1[j] - P1[j-1];
 			curData = cur_data_pos[j];
 			diff = curData - pred2D;
-			itvNum = fabs(diff)/realPrecision + 1;
+			itvNum = fabsf(diff)*recip_realPrecision + 1;
 			if (itvNum < exe_params->intvCapacity)
 			{
 				if (diff < 0) itvNum = -itvNum;
 				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
 				P0[j] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				//ganrantee comporession error against the case of machine-epsilon
-				if(fabs(curData-P0[j])>realPrecision)
+				if(fabsf(curData-P0[j])>realPrecision)
 				{	
 					type[index] = 0;
 					P0[j] = curData;	
@@ -4889,7 +4892,7 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 			curData = *cur_data_pos;
 			diff = curData - pred2D;
 
-			itvNum = fabs(diff)/realPrecision + 1;
+			itvNum = fabsf(diff)*recip_realPrecision + 1;
 
 			if (itvNum < exe_params->intvCapacity)
 			{
@@ -4897,7 +4900,7 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
 				P0[index2D] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				//ganrantee comporession error against the case of machine-epsilon
-				if(fabs(curData-P0[index2D])>realPrecision)
+				if(fabsf(curData-P0[index2D])>realPrecision)
 				{	
 					type[index] = 0;
 					P0[index2D] = curData;	
@@ -4921,7 +4924,7 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 				curData = cur_data_pos[j];
 				diff = curData - pred3D;
 
-				itvNum = fabs(diff)/realPrecision + 1;
+				itvNum = fabsf(diff)*recip_realPrecision + 1;
 
 				if (itvNum < exe_params->intvCapacity)
 				{
@@ -4930,7 +4933,7 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 					P0[index2D] = pred3D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 					
 					//ganrantee comporession error against the case of machine-epsilon
-					if(fabs(curData-P0[index2D])>realPrecision)
+					if(fabsf(curData-P0[index2D])>realPrecision)
 					{	
 						type[index] = 0;
 						P0[index2D] = curData;	
@@ -4955,6 +4958,7 @@ size_t SZ_compress_float_3D_MDQ_RA_block(float * block_ori_data, float * mean, s
 
 	return unpredictable_count;
 }
+
 
 unsigned int optimize_intervals_float_2D_opt(float *oriData, size_t r1, size_t r2, double realPrecision)
 {	
@@ -5457,8 +5461,9 @@ unsigned int optimize_intervals_float_2D_with_freq_and_dense_pos(float *oriData,
 
 // 2D:  modified for higher performance
 #define MIN(a, b) a<b? a : b
-unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(float *oriData, size_t r1, size_t r2, double realPrecision, size_t * comp_size){
+unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(float *oriData, size_t r1, size_t r2, float realPrecision, size_t * comp_size){
 
+	float recip_realPrecision = 1/realPrecision;
 	unsigned int quantization_intervals;
 	float sz_sample_correct_freq = -1;//0.5; //-1
 	float dense_pos;
@@ -5523,7 +5528,7 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 				float fx = 0.0;
 				float fy = 0.0;
 				float f = 0;
-				double sum_x; 
+				float sum_x; 
 				float curData;
 				for(size_t i=0; i<current_blockcount_x; i++){
 					sum_x = 0;
@@ -5548,7 +5553,7 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 	}
 
 	//Compress coefficient arrays
-	double precision_a, precision_b, precision_c;
+	float precision_a, precision_b, precision_c;
 	float rel_param_err = 0.15/3;
 	precision_a = rel_param_err * realPrecision / late_blockcount_x;
 	precision_b = rel_param_err * realPrecision / late_blockcount_y;
@@ -5558,10 +5563,10 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 	use_mean = 0;
 	if(use_mean){
 		// compute mean
-		double sum = 0.0;
+		float sum = 0.0;
 		size_t mean_count = 0;
 		for(size_t i=0; i<num_elements; i++){
-			if(fabs(oriData[i] - dense_pos) < realPrecision){
+			if(fabsf(oriData[i] - dense_pos) < realPrecision){
 				sum += oriData[i];
 				mean_count ++;
 			}
@@ -5570,7 +5575,7 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 	}
 
 
-	double tmp_realPrecision = realPrecision;
+	float tmp_realPrecision = realPrecision;
 
 	// use two prediction buffers for higher performance
 	float * unpredictable_data = result_unpredictable_data;
@@ -5603,8 +5608,11 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 	int * coeff_result_type = (int *) malloc(num_blocks*3*sizeof(int));
 	float * coeff_unpred_data[3];
 	float * coeff_unpredictable_data = (float *) malloc(num_blocks*3*sizeof(float));
-	double precision[3];
+	float precision[3], recip_precision[3];
 	precision[0] = precision_a, precision[1] = precision_b, precision[2] = precision_c;
+	//compute the recip_precision
+	recip_precision[0] = 1/precision_a, recip_precision[1] = 1/precision_b, recip_precision[2] = 1/precision_c;	
+	
 	for(int i=0; i<3; i++){
 		coeff_type[i] = coeff_result_type + i * num_blocks;
 		coeff_unpred_data[i] = coeff_unpredictable_data + i * num_blocks;
@@ -5644,16 +5652,16 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
 						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c];							
-						err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-						err_reg += fabs(pred_reg - curData);
+						err_sz += MIN(fabsf(pred_sz - curData) + noise, fabsf(mean - curData));
+						err_reg += fabsf(pred_reg - curData);
 
 						bmi = block_size - i;
 						cur_data_pos = data_pos + i*dim0_offset + bmi;
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
 						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c];							
-						err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-						err_reg += fabs(pred_reg - curData);								
+						err_sz += MIN(fabsf(pred_sz - curData) + noise, fabsf(mean - curData));
+						err_reg += fabsf(pred_reg - curData);								
 					}
 					use_reg = (err_reg < err_sz);
 				}
@@ -5662,17 +5670,17 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 					{
 						/*predict coefficients in current block via previous reg_block*/
 						float cur_coeff;
-						double diff, itvNum;
+						float diff, itvNum;
 						for(int e=0; e<3; e++){
 							cur_coeff = reg_params_pos[e*num_blocks];
 							diff = cur_coeff - last_coeffcients[e];
-							itvNum = fabs(diff)/precision[e] + 1;
+							itvNum = fabsf(diff)*recip_precision[e] + 1;
 							if (itvNum < coeff_intvCapacity_sz){
 								if (diff < 0) itvNum = -itvNum;
 								coeff_type[e][coeff_index] = (int) (itvNum/2) + coeff_intvRadius;
 								last_coeffcients[e] = last_coeffcients[e] + 2 * (coeff_type[e][coeff_index] - coeff_intvRadius) * precision[e];
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){	
+								if(fabsf(cur_coeff - last_coeffcients[e])>precision[e]){	
 									coeff_type[e][coeff_index] = 0;
 									last_coeffcients[e] = cur_coeff;	
 									coeff_unpred_data[e][coeff_unpredictable_count[e] ++] = cur_coeff;
@@ -5688,8 +5696,8 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 					}
 					float curData;
 					float pred;
-					double itvNum;
-					double diff;
+					float itvNum;
+					float diff;
 					size_t index = 0;
 					size_t block_unpredictable_count = 0;
 					float * cur_data_pos = data_pos;
@@ -5698,13 +5706,13 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 							curData = *cur_data_pos;
 							pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2];
 							diff = curData - pred;
-							itvNum = fabs(diff)/realPrecision + 1;
+							itvNum = fabsf(diff)*recip_realPrecision + 1;
 							if (itvNum < intvCapacity){
 								if (diff < 0) itvNum = -itvNum;
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabsf(curData - pred)>realPrecision){	
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
@@ -5724,13 +5732,13 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 							curData = *cur_data_pos;
 							pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2];
 							diff = curData - pred;
-							itvNum = fabs(diff)/realPrecision + 1;
+							itvNum = fabsf(diff)*recip_realPrecision + 1;
 							if (itvNum < intvCapacity){
 								if (diff < 0) itvNum = -itvNum;
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabsf(curData - pred)>realPrecision){	
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
@@ -5756,13 +5764,13 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 							curData = *cur_data_pos;
 							pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2];
 							diff = curData - pred;
-							itvNum = fabs(diff)/realPrecision + 1;
+							itvNum = fabsf(diff)*recip_realPrecision + 1;
 							if (itvNum < intvCapacity){
 								if (diff < 0) itvNum = -itvNum;
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabsf(curData - pred)>realPrecision){	
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
@@ -5784,13 +5792,13 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 							curData = *cur_data_pos;
 							pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2];
 							diff = curData - pred;
-							itvNum = fabs(diff)/realPrecision + 1;
+							itvNum = fabsf(diff)*recip_realPrecision + 1;
 							if (itvNum < intvCapacity){
 								if (diff < 0) itvNum = -itvNum;
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabsf(curData - pred)>realPrecision){	
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
@@ -5824,12 +5832,12 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 					float * cur_data_pos = data_pos;
 					float curData;
 					float pred2D;
-					double itvNum, diff;
+					float itvNum, diff;
 					size_t index = 0;
 					for(size_t ii=0; ii<current_blockcount_x - 1; ii++){
 						for(size_t jj=0; jj<current_blockcount_y; jj++){
 							curData = *cur_data_pos;
-							if(fabs(curData - mean) <= realPrecision){
+							if(fabsf(curData - mean) <= realPrecision){
 								// adjust type[index] to intvRadius for coherence with freq in reg
 								type[index] = intvRadius;
 								*cur_pb_pos = mean;
@@ -5838,14 +5846,14 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 							{
 								pred2D = cur_pb_pos[-1] + cur_pb_pos[-strip_dim0_offset] - cur_pb_pos[-strip_dim0_offset - 1];
 								diff = curData - pred2D;
-								itvNum = fabs(diff)/realPrecision + 1;
+								itvNum = fabsf(diff)*recip_realPrecision + 1;
 								if (itvNum < intvCapacity_sz){
 									if (diff < 0) itvNum = -itvNum;
 									type[index] = (int) (itvNum/2) + intvRadius;
 									*cur_pb_pos = pred2D + 2 * (type[index] - intvRadius) * tmp_realPrecision;
 									if(type[index] <= intvRadius) type[index] -= 1;
 									//ganrantee comporession error against the case of machine-epsilon
-									if(fabs(curData - *cur_pb_pos)>tmp_realPrecision){	
+									if(fabsf(curData - *cur_pb_pos)>tmp_realPrecision){	
 										type[index] = 0;
 										*cur_pb_pos = curData;	
 										unpredictable_data[unpredictable_count ++] = curData;
@@ -5869,7 +5877,7 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 						// ii == current_blockcount_x - 1
 						for(size_t jj=0; jj<current_blockcount_y; jj++){
 							curData = *cur_data_pos;
-							if(fabs(curData - mean) <= realPrecision){
+							if(fabsf(curData - mean) <= realPrecision){
 								// adjust type[index] to intvRadius for coherence with freq in reg
 								type[index] = intvRadius;
 								*cur_pb_pos = mean;
@@ -5878,14 +5886,14 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 							{
 								pred2D = cur_pb_pos[-1] + cur_pb_pos[-strip_dim0_offset] - cur_pb_pos[-strip_dim0_offset - 1];
 								diff = curData - pred2D;
-								itvNum = fabs(diff)/realPrecision + 1;
+								itvNum = fabsf(diff)*recip_realPrecision + 1;
 								if (itvNum < intvCapacity_sz){
 									if (diff < 0) itvNum = -itvNum;
 									type[index] = (int) (itvNum/2) + intvRadius;
 									*cur_pb_pos = pred2D + 2 * (type[index] - intvRadius) * tmp_realPrecision;
 									if(type[index] <= intvRadius) type[index] -= 1;
 									//ganrantee comporession error against the case of machine-epsilon
-									if(fabs(curData - *cur_pb_pos)>tmp_realPrecision){	
+									if(fabsf(curData - *cur_pb_pos)>tmp_realPrecision){	
 										type[index] = 0;
 										*cur_pb_pos = curData;	
 										unpredictable_data[unpredictable_count ++] = curData;
@@ -5953,16 +5961,16 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
 						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c];							
-						err_sz += fabs(pred_sz - curData) + noise;
-						err_reg += fabs(pred_reg - curData);
+						err_sz += fabsf(pred_sz - curData) + noise;
+						err_reg += fabsf(pred_reg - curData);
 
 						bmi = block_size - i;
 						cur_data_pos = data_pos + i*dim0_offset + bmi;
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
 						pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c];							
-						err_sz += fabs(pred_sz - curData) + noise;
-						err_reg += fabs(pred_reg - curData);								
+						err_sz += fabsf(pred_sz - curData) + noise;
+						err_reg += fabsf(pred_reg - curData);								
 					}
 					use_reg = (err_reg < err_sz);
 				}
@@ -5971,17 +5979,17 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 					{
 						/*predict coefficients in current block via previous reg_block*/
 						float cur_coeff;
-						double diff, itvNum;
+						float diff, itvNum;
 						for(int e=0; e<3; e++){
 							cur_coeff = reg_params_pos[e*num_blocks];
 							diff = cur_coeff - last_coeffcients[e];
-							itvNum = fabs(diff)/precision[e] + 1;
+							itvNum = fabsf(diff)/precision[e] + 1;
 							if (itvNum < coeff_intvCapacity_sz){
 								if (diff < 0) itvNum = -itvNum;
 								coeff_type[e][coeff_index] = (int) (itvNum/2) + coeff_intvRadius;
 								last_coeffcients[e] = last_coeffcients[e] + 2 * (coeff_type[e][coeff_index] - coeff_intvRadius) * precision[e];
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){	
+								if(fabsf(cur_coeff - last_coeffcients[e])>precision[e]){	
 									coeff_type[e][coeff_index] = 0;
 									last_coeffcients[e] = cur_coeff;	
 									coeff_unpred_data[e][coeff_unpredictable_count[e] ++] = cur_coeff;
@@ -5997,8 +6005,8 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 					}
 					float curData;
 					float pred;
-					double itvNum;
-					double diff;
+					float itvNum;
+					float diff;
 					size_t index = 0;
 					size_t block_unpredictable_count = 0;
 					float * cur_data_pos = data_pos;
@@ -6007,13 +6015,13 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 							curData = *cur_data_pos;
 							pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2];
 							diff = curData - pred;
-							itvNum = fabs(diff)/realPrecision + 1;
+							itvNum = fabsf(diff)*recip_realPrecision + 1;
 							if (itvNum < intvCapacity){
 								if (diff < 0) itvNum = -itvNum;
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabsf(curData - pred)>realPrecision){	
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
@@ -6034,13 +6042,13 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 							curData = *cur_data_pos;
 							pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2];
 							diff = curData - pred;
-							itvNum = fabs(diff)/realPrecision + 1;
+							itvNum = fabsf(diff)*recip_realPrecision + 1;
 							if (itvNum < intvCapacity){
 								if (diff < 0) itvNum = -itvNum;
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabsf(curData - pred)>realPrecision){	
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
@@ -6066,13 +6074,13 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 							curData = *cur_data_pos;
 							pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2];
 							diff = curData - pred;
-							itvNum = fabs(diff)/realPrecision + 1;
+							itvNum = fabsf(diff)*recip_realPrecision + 1;
 							if (itvNum < intvCapacity){
 								if (diff < 0) itvNum = -itvNum;
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabsf(curData - pred)>realPrecision){	
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
@@ -6095,13 +6103,13 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 							curData = *cur_data_pos;
 							pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2];
 							diff = curData - pred;
-							itvNum = fabs(diff)/realPrecision + 1;
+							itvNum = fabsf(diff)*recip_realPrecision + 1;
 							if (itvNum < intvCapacity){
 								if (diff < 0) itvNum = -itvNum;
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabsf(curData - pred)>realPrecision){	
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
@@ -6135,7 +6143,7 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 					float * cur_data_pos = data_pos;
 					float curData;
 					float pred2D;
-					double itvNum, diff;
+					float itvNum, diff;
 					size_t index = 0;
 					for(size_t ii=0; ii<current_blockcount_x - 1; ii++){
 						for(size_t jj=0; jj<current_blockcount_y; jj++){
@@ -6143,13 +6151,13 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 
 							pred2D = cur_pb_pos[-1] + cur_pb_pos[-strip_dim0_offset] - cur_pb_pos[-strip_dim0_offset - 1];
 							diff = curData - pred2D;
-							itvNum = fabs(diff)/realPrecision + 1;
+							itvNum = fabsf(diff)*recip_realPrecision + 1;
 							if (itvNum < intvCapacity_sz){
 								if (diff < 0) itvNum = -itvNum;
 								type[index] = (int) (itvNum/2) + intvRadius;
 								*cur_pb_pos = pred2D + 2 * (type[index] - intvRadius) * tmp_realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - *cur_pb_pos)>tmp_realPrecision){	
+								if(fabsf(curData - *cur_pb_pos)>tmp_realPrecision){	
 									type[index] = 0;
 									*cur_pb_pos = curData;	
 									unpredictable_data[unpredictable_count ++] = curData;
@@ -6176,13 +6184,13 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 
 							pred2D = cur_pb_pos[-1] + cur_pb_pos[-strip_dim0_offset] - cur_pb_pos[-strip_dim0_offset - 1];
 							diff = curData - pred2D;
-							itvNum = fabs(diff)/realPrecision + 1;
+							itvNum = fabsf(diff)*recip_realPrecision + 1;
 							if (itvNum < intvCapacity_sz){
 								if (diff < 0) itvNum = -itvNum;
 								type[index] = (int) (itvNum/2) + intvRadius;
 								*cur_pb_pos = pred2D + 2 * (type[index] - intvRadius) * tmp_realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - *cur_pb_pos)>tmp_realPrecision){	
+								if(fabsf(curData - *cur_pb_pos)>tmp_realPrecision){	
 									type[index] = 0;
 									*cur_pb_pos = curData;	
 									unpredictable_data[unpredictable_count ++] = curData;
@@ -6235,7 +6243,7 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 
 	unsigned int meta_data_offset = 3 + 1 + MetaDataByteLength;
 	// total size 										metadata		  # elements   real precision		intervals	nodeCount		huffman 	 	block index 						unpredicatable count						mean 					 	unpred size 				elements
-	unsigned char * result = (unsigned char *) calloc(meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(double) + sizeof(int) + sizeof(int) + 5*treeByteSize + 3*num_blocks*sizeof(int) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(float) + total_unpred * sizeof(float) + num_elements * sizeof(int), 1);
+	unsigned char * result = (unsigned char *) calloc(meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(float) + sizeof(int) + sizeof(int) + 5*treeByteSize + 3*num_blocks*sizeof(int) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(float) + total_unpred * sizeof(float) + num_elements * sizeof(int), 1);
 	unsigned char * result_pos = result;
 	initRandomAccessBytes(result_pos);
 	result_pos += meta_data_offset;
@@ -6245,8 +6253,8 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 	
 	intToBytes_bigEndian(result_pos, block_size);
 	result_pos += sizeof(int);
-	doubleToBytes(result_pos, realPrecision);
-	result_pos += sizeof(double);
+	floatToBytes(result_pos, realPrecision);
+	result_pos += sizeof(float);
 	intToBytes_bigEndian(result_pos, quantization_intervals);
 	result_pos += sizeof(int);
 	intToBytes_bigEndian(result_pos, treeByteSize);
@@ -6278,8 +6286,8 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 			nodeCount = nodeCount*2-1;
 			unsigned char *treeBytes;
 			unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(huffmanTree, nodeCount, &treeBytes);
-			doubleToBytes(result_pos, precision[e]);
-			result_pos += sizeof(double);
+			floatToBytes(result_pos, precision[e]);
+			result_pos += sizeof(float);
 			intToBytes_bigEndian(result_pos, coeff_intvRadius);
 			result_pos += sizeof(int);
 			intToBytes_bigEndian(result_pos, treeByteSize);
@@ -6323,6 +6331,8 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 
 	return result;
 }
+
+
 
 unsigned int optimize_intervals_float_3D_with_freq_and_dense_pos(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, float * dense_pos, float * max_freq, float * mean_freq)
 {	
@@ -6455,13 +6465,15 @@ unsigned int optimize_intervals_float_3D_with_freq_and_dense_pos(float *oriData,
 
 
 // 3D:  modified for higher performance
-unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t * comp_size){
+unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(float *oriData, size_t r1, size_t r2, size_t r3, float realPrecision, size_t * comp_size){
 
 #ifdef HAVE_TIMECMPR	
 	float* decData = NULL;
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData = (float*)(multisteps->hist_data);
 #endif
+
+	float recip_realPrecision = 1/realPrecision;
 
 	unsigned int quantization_intervals;
 	float sz_sample_correct_freq = -1;//0.5; //-1
@@ -6562,7 +6574,7 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 	}
 	
 	//Compress coefficient arrays
-	double precision_a, precision_b, precision_c, precision_d;
+	float precision_a, precision_b, precision_c, precision_d;
 	float rel_param_err = 0.025;
 	precision_a = rel_param_err * realPrecision / late_blockcount_x;
 	precision_b = rel_param_err * realPrecision / late_blockcount_y;
@@ -6582,10 +6594,10 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 	float mean = 0;
 	if(use_mean){
 		// compute mean
-		double sum = 0.0;
+		float sum = 0.0;
 		size_t mean_count = 0;
 		for(size_t i=0; i<num_elements; i++){
-			if(fabs(oriData[i] - dense_pos) < realPrecision){
+			if(fabsf(oriData[i] - dense_pos) < realPrecision){
 				sum += oriData[i];
 				mean_count ++;
 			}
@@ -6593,7 +6605,7 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 		if(mean_count > 0) mean = sum / mean_count;
 	}
 
-	double tmp_realPrecision = realPrecision;
+	float tmp_realPrecision = realPrecision;
 
 	// use two prediction buffers for higher performance
 	float * unpredictable_data = result_unpredictable_data;
@@ -6630,8 +6642,10 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 	int * coeff_result_type = (int *) malloc(num_blocks*4*sizeof(int));
 	float * coeff_unpred_data[4];
 	float * coeff_unpredictable_data = (float *) malloc(num_blocks*4*sizeof(float));
-	double precision[4];
+	float precision[4], recip_precision[4];
 	precision[0] = precision_a, precision[1] = precision_b, precision[2] = precision_c, precision[3] = precision_d;
+	recip_precision[0] = 1/precision_a, recip_precision[1] = 1/precision_b, recip_precision[2] = 1/precision_c, recip_precision[3] = 1/precision_d;
+	
 	for(int i=0; i<4; i++){
 		coeff_type[i] = coeff_result_type + i * num_blocks;
 		coeff_unpred_data[i] = coeff_unpredictable_data + i * num_blocks;
@@ -6680,30 +6694,30 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
 							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-							err_reg += fabs(pred_reg - curData);
+							err_sz += MIN(fabsf(pred_sz - curData) + noise, fabsf(mean - curData));
+							err_reg += fabsf(pred_reg - curData);
 
 							bmi = block_size - i;
 							cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + bmi;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
 							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-							err_reg += fabs(pred_reg - curData);								
+							err_sz += MIN(fabsf(pred_sz - curData) + noise, fabsf(mean - curData));
+							err_reg += fabsf(pred_reg - curData);								
 
 							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + i;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
 							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-							err_reg += fabs(pred_reg - curData);								
+							err_sz += MIN(fabsf(pred_sz - curData) + noise, fabsf(mean - curData));
+							err_reg += fabsf(pred_reg - curData);								
 
 							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + bmi;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
 							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-							err_reg += fabs(pred_reg - curData);
+							err_sz += MIN(fabsf(pred_sz - curData) + noise, fabsf(mean - curData));
+							err_reg += fabsf(pred_reg - curData);
 						}
 						use_reg = (err_reg < err_sz);
 					}
@@ -6711,17 +6725,17 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 						{
 							/*predict coefficients in current block via previous reg_block*/
 							float cur_coeff;
-							double diff, itvNum;
+							float diff, itvNum;
 							for(int e=0; e<4; e++){
 								cur_coeff = reg_params_pos[e*num_blocks];
 								diff = cur_coeff - last_coeffcients[e];
-								itvNum = fabs(diff)/precision[e] + 1;
+								itvNum = fabsf(diff)*recip_precision[e] + 1;
 								if (itvNum < coeff_intvCapacity_sz){
 									if (diff < 0) itvNum = -itvNum;
 									coeff_type[e][coeff_index] = (int) (itvNum/2) + coeff_intvRadius;
 									last_coeffcients[e] = last_coeffcients[e] + 2 * (coeff_type[e][coeff_index] - coeff_intvRadius) * precision[e];
 									//ganrantee comporession error against the case of machine-epsilon
-									if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){	
+									if(fabsf(cur_coeff - last_coeffcients[e])>precision[e]){	
 										coeff_type[e][coeff_index] = 0;
 										last_coeffcients[e] = cur_coeff;	
 										coeff_unpred_data[e][coeff_unpredictable_count[e] ++] = cur_coeff;
@@ -6737,8 +6751,8 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 						}
 						float curData;
 						float pred;
-						double itvNum;
-						double diff;
+						float itvNum;
+						float diff;
 						size_t index = 0;
 						size_t block_unpredictable_count = 0;
 						float * cur_data_pos = data_pos;
@@ -6748,13 +6762,13 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 									curData = *cur_data_pos;
 									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];									
 									diff = curData - pred;
-									itvNum = fabs(diff)/tmp_realPrecision + 1;
+									itvNum = fabsf(diff)*recip_realPrecision + 1;
 									if (itvNum < intvCapacity){
 										if (diff < 0) itvNum = -itvNum;
 										type[index] = (int) (itvNum/2) + intvRadius;
 										pred = pred + 2 * (type[index] - intvRadius) * tmp_realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - pred)>tmp_realPrecision){	
+										if(fabsf(curData - pred)>tmp_realPrecision){	
 											type[index] = 0;
 											pred = curData;
 											unpredictable_data[block_unpredictable_count ++] = curData;
@@ -6792,13 +6806,13 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 									curData = *cur_data_pos;
 									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];									
 									diff = curData - pred;
-									itvNum = fabs(diff)/tmp_realPrecision + 1;
+									itvNum = fabsf(diff)*recip_realPrecision + 1;
 									if (itvNum < intvCapacity){
 										if (diff < 0) itvNum = -itvNum;
 										type[index] = (int) (itvNum/2) + intvRadius;
-										pred = pred + 2 * (type[index] - intvRadius) * tmp_realPrecision;
+										pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - pred)>tmp_realPrecision){	
+										if(fabsf(curData - pred)>realPrecision){	
 											type[index] = 0;
 											pred = curData;
 											unpredictable_data[block_unpredictable_count ++] = curData;
@@ -6842,14 +6856,14 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 						float * cur_data_pos = data_pos;
 						float curData;
 						float pred3D;
-						double itvNum, diff;
+						float itvNum, diff;
 						size_t index = 0;
 						for(size_t ii=0; ii<current_blockcount_x - 1; ii++){
 							for(size_t jj=0; jj<current_blockcount_y; jj++){
 								for(size_t kk=0; kk<current_blockcount_z; kk++){
 
 									curData = *cur_data_pos;
-									if(fabs(curData - mean) <= realPrecision){
+									if(fabsf(curData - mean) <= realPrecision){
 										// adjust type[index] to intvRadius for coherence with freq in reg
 										type[index] = intvRadius;
 										*cur_pb_pos = mean;
@@ -6859,14 +6873,14 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 										pred3D = cur_pb_pos[-1] + cur_pb_pos[-strip_dim1_offset]+ cur_pb_pos[-strip_dim0_offset] - cur_pb_pos[-strip_dim1_offset - 1]
 												 - cur_pb_pos[-strip_dim0_offset - 1] - cur_pb_pos[-strip_dim0_offset - strip_dim1_offset] + cur_pb_pos[-strip_dim0_offset - strip_dim1_offset - 1];
 										diff = curData - pred3D;
-										itvNum = fabs(diff)/realPrecision + 1;
+										itvNum = fabsf(diff)*recip_realPrecision + 1;
 										if (itvNum < intvCapacity_sz){
 											if (diff < 0) itvNum = -itvNum;
 											type[index] = (int) (itvNum/2) + intvRadius;
-											*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * tmp_realPrecision;
+											*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
 											if(type[index] <= intvRadius) type[index] -= 1;
 											//ganrantee comporession error against the case of machine-epsilon
-											if(fabs(curData - *cur_pb_pos)>tmp_realPrecision){	
+											if(fabsf(curData - *cur_pb_pos)>realPrecision){	
 												type[index] = 0;
 												*cur_pb_pos = curData;	
 												unpredictable_data[unpredictable_count ++] = curData;
@@ -6901,7 +6915,7 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 								for(size_t kk=0; kk<current_blockcount_z; kk++){
 
 									curData = *cur_data_pos;
-									if(fabs(curData - mean) <= realPrecision){
+									if(fabsf(curData - mean) <= realPrecision){
 										// adjust type[index] to intvRadius for coherence with freq in reg
 										type[index] = intvRadius;
 										*cur_pb_pos = mean;
@@ -6911,14 +6925,14 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 										pred3D = cur_pb_pos[-1] + cur_pb_pos[-strip_dim1_offset]+ cur_pb_pos[-strip_dim0_offset] - cur_pb_pos[-strip_dim1_offset - 1]
 												 - cur_pb_pos[-strip_dim0_offset - 1] - cur_pb_pos[-strip_dim0_offset - strip_dim1_offset] + cur_pb_pos[-strip_dim0_offset - strip_dim1_offset - 1];
 										diff = curData - pred3D;
-										itvNum = fabs(diff)/realPrecision + 1;
+										itvNum = fabsf(diff)*recip_realPrecision + 1;
 										if (itvNum < intvCapacity_sz){
 											if (diff < 0) itvNum = -itvNum;
 											type[index] = (int) (itvNum/2) + intvRadius;
-											*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * tmp_realPrecision;
+											*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
 											if(type[index] <= intvRadius) type[index] -= 1;
 											//ganrantee comporession error against the case of machine-epsilon
-											if(fabs(curData - *cur_pb_pos)>tmp_realPrecision){	
+											if(fabsf(curData - *cur_pb_pos)>realPrecision){	
 												type[index] = 0;
 												*cur_pb_pos = curData;	
 												unpredictable_data[unpredictable_count ++] = curData;
@@ -7016,30 +7030,30 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
 							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-							err_sz += fabs(pred_sz - curData) + noise;
-							err_reg += fabs(pred_reg - curData);
+							err_sz += fabsf(pred_sz - curData) + noise;
+							err_reg += fabsf(pred_reg - curData);
 
 							bmi = block_size - i;
 							cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + bmi;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
 							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-							err_sz += fabs(pred_sz - curData) + noise;
-							err_reg += fabs(pred_reg - curData);								
+							err_sz += fabsf(pred_sz - curData) + noise;
+							err_reg += fabsf(pred_reg - curData);								
 
 							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + i;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
 							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
-							err_sz += fabs(pred_sz - curData) + noise;
-							err_reg += fabs(pred_reg - curData);								
+							err_sz += fabsf(pred_sz - curData) + noise;
+							err_reg += fabsf(pred_reg - curData);								
 
 							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + bmi;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
 							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
-							err_sz += fabs(pred_sz - curData) + noise;
-							err_reg += fabs(pred_reg - curData);
+							err_sz += fabsf(pred_sz - curData) + noise;
+							err_reg += fabsf(pred_reg - curData);
 						}
 						use_reg = (err_reg < err_sz);
 
@@ -7049,17 +7063,17 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 						{
 							/*predict coefficients in current block via previous reg_block*/
 							float cur_coeff;
-							double diff, itvNum;
+							float diff, itvNum;
 							for(int e=0; e<4; e++){
 								cur_coeff = reg_params_pos[e*num_blocks];
 								diff = cur_coeff - last_coeffcients[e];
-								itvNum = fabs(diff)/precision[e] + 1;
+								itvNum = fabsf(diff)/precision[e] + 1;
 								if (itvNum < coeff_intvCapacity_sz){
 									if (diff < 0) itvNum = -itvNum;
 									coeff_type[e][coeff_index] = (int) (itvNum/2) + coeff_intvRadius;
 									last_coeffcients[e] = last_coeffcients[e] + 2 * (coeff_type[e][coeff_index] - coeff_intvRadius) * precision[e];
 									//ganrantee comporession error against the case of machine-epsilon
-									if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){	
+									if(fabsf(cur_coeff - last_coeffcients[e])>precision[e]){	
 										coeff_type[e][coeff_index] = 0;
 										last_coeffcients[e] = cur_coeff;	
 										coeff_unpred_data[e][coeff_unpredictable_count[e] ++] = cur_coeff;
@@ -7075,8 +7089,8 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 						}
 						float curData;
 						float pred;
-						double itvNum;
-						double diff;
+						float itvNum;
+						float diff;
 						size_t index = 0;
 						size_t block_unpredictable_count = 0;
 						float * cur_data_pos = data_pos;
@@ -7087,13 +7101,13 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 									curData = *cur_data_pos;
 									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];									
 									diff = curData - pred;
-									itvNum = fabs(diff)/tmp_realPrecision + 1;
+									itvNum = fabsf(diff)*recip_realPrecision + 1;
 									if (itvNum < intvCapacity){
 										if (diff < 0) itvNum = -itvNum;
 										type[index] = (int) (itvNum/2) + intvRadius;
-										pred = pred + 2 * (type[index] - intvRadius) * tmp_realPrecision;
+										pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - pred)>tmp_realPrecision){	
+										if(fabsf(curData - pred)>realPrecision){	
 											type[index] = 0;
 											pred = curData;
 											unpredictable_data[block_unpredictable_count ++] = curData;
@@ -7132,13 +7146,13 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 									curData = *cur_data_pos;
 									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];									
 									diff = curData - pred;
-									itvNum = fabs(diff)/tmp_realPrecision + 1;
+									itvNum = fabsf(diff)*recip_realPrecision + 1;
 									if (itvNum < intvCapacity){
 										if (diff < 0) itvNum = -itvNum;
 										type[index] = (int) (itvNum/2) + intvRadius;
-										pred = pred + 2 * (type[index] - intvRadius) * tmp_realPrecision;
+										pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - pred)>tmp_realPrecision){	
+										if(fabsf(curData - pred)>realPrecision){	
 											type[index] = 0;
 											pred = curData;
 											unpredictable_data[block_unpredictable_count ++] = curData;
@@ -7181,7 +7195,7 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 						float * cur_data_pos = data_pos;
 						float curData;
 						float pred3D;
-						double itvNum, diff;
+						float itvNum, diff;
 						size_t index = 0;
 						for(size_t ii=0; ii<current_blockcount_x - 1; ii++){
 							for(size_t jj=0; jj<current_blockcount_y; jj++){
@@ -7191,13 +7205,13 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 									pred3D = cur_pb_pos[-1] + cur_pb_pos[-strip_dim1_offset]+ cur_pb_pos[-strip_dim0_offset] - cur_pb_pos[-strip_dim1_offset - 1]
 											 - cur_pb_pos[-strip_dim0_offset - 1] - cur_pb_pos[-strip_dim0_offset - strip_dim1_offset] + cur_pb_pos[-strip_dim0_offset - strip_dim1_offset - 1];
 									diff = curData - pred3D;
-									itvNum = fabs(diff)/realPrecision + 1;
+									itvNum = fabsf(diff)*recip_realPrecision + 1;
 									if (itvNum < intvCapacity_sz){
 										if (diff < 0) itvNum = -itvNum;
 										type[index] = (int) (itvNum/2) + intvRadius;
-										*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * tmp_realPrecision;
+										*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - *cur_pb_pos)>tmp_realPrecision){	
+										if(fabsf(curData - *cur_pb_pos)>realPrecision){	
 											type[index] = 0;
 											*cur_pb_pos = curData;	
 											unpredictable_data[unpredictable_count ++] = curData;
@@ -7234,13 +7248,13 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 									pred3D = cur_pb_pos[-1] + cur_pb_pos[-strip_dim1_offset]+ cur_pb_pos[-strip_dim0_offset] - cur_pb_pos[-strip_dim1_offset - 1]
 											 - cur_pb_pos[-strip_dim0_offset - 1] - cur_pb_pos[-strip_dim0_offset - strip_dim1_offset] + cur_pb_pos[-strip_dim0_offset - strip_dim1_offset - 1];
 									diff = curData - pred3D;
-									itvNum = fabs(diff)/realPrecision + 1;
+									itvNum = fabsf(diff)*recip_realPrecision + 1;
 									if (itvNum < intvCapacity_sz){
 										if (diff < 0) itvNum = -itvNum;
 										type[index] = (int) (itvNum/2) + intvRadius;
-										*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * tmp_realPrecision;
+										*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - *cur_pb_pos)>tmp_realPrecision){	
+										if(fabsf(curData - *cur_pb_pos)>realPrecision){	
 											type[index] = 0;
 											*cur_pb_pos = curData;	
 											unpredictable_data[unpredictable_count ++] = curData;
@@ -7314,7 +7328,7 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 
 	unsigned int meta_data_offset = 3 + 1 + MetaDataByteLength;
 	// total size 										metadata		  # elements     real precision		intervals	nodeCount		huffman 	 	block index 						unpredicatable count						mean 					 	unpred size 				elements
-	unsigned char * result = (unsigned char *) calloc(meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(double) + sizeof(int) + sizeof(int) + 5*treeByteSize + 4*num_blocks*sizeof(int) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(float) + total_unpred * sizeof(float) + num_elements * sizeof(int), 1);
+	unsigned char * result = (unsigned char *) calloc(meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(float) + sizeof(int) + sizeof(int) + 5*treeByteSize + 4*num_blocks*sizeof(int) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(float) + total_unpred * sizeof(float) + num_elements * sizeof(int), 1);
 	unsigned char * result_pos = result;
 	initRandomAccessBytes(result_pos);
 	
@@ -7325,8 +7339,8 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 
 	intToBytes_bigEndian(result_pos, block_size);
 	result_pos += sizeof(int);
-	doubleToBytes(result_pos, realPrecision);
-	result_pos += sizeof(double);
+	floatToBytes(result_pos, realPrecision);
+	result_pos += sizeof(float);
 	intToBytes_bigEndian(result_pos, quantization_intervals);
 	result_pos += sizeof(int);
 	intToBytes_bigEndian(result_pos, treeByteSize);
@@ -7357,8 +7371,8 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 			nodeCount = nodeCount*2-1;
 			unsigned char *treeBytes;
 			unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(huffmanTree, nodeCount, &treeBytes);
-			doubleToBytes(result_pos, precision[e]);
-			result_pos += sizeof(double);
+			floatToBytes(result_pos, precision[e]);
+			result_pos += sizeof(float);
 			intToBytes_bigEndian(result_pos, coeff_intvRadius);
 			result_pos += sizeof(int);
 			intToBytes_bigEndian(result_pos, treeByteSize);
@@ -7401,6 +7415,7 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 	*comp_size = totalEncodeSize;
 	return result;
 }
+
 
 unsigned char * SZ_compress_float_3D_MDQ_random_access_with_blocked_regression(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t * comp_size){
 

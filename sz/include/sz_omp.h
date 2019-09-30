@@ -25,7 +25,7 @@ unsigned char * SZ_compress_float_1D_MDQ_openmp(float *oriData, size_t r1, doubl
 
 unsigned char * SZ_compress_float_2D_MDQ_openmp(float *oriData, size_t r1, size_t r2, double realPrecision, size_t * comp_size);
 
-unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t * comp_size);
+unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_t r2, size_t r3, float realPrecision, size_t * comp_size);
 
 void decompressDataSeries_float_1D_openmp(float** data, size_t r1, unsigned char* comp_data);
 

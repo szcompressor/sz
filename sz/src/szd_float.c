@@ -141,7 +141,7 @@ void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, float*
 								// byte_index of resiMidBits, l is for
 								// leadNum
 	unsigned char* leadNum;
-	double interval = tdps->realPrecision*2;
+	float interval = tdps->realPrecision*2;
 	
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
@@ -215,7 +215,7 @@ void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, float*
 		default:
 			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
 			predValue = (*data)[i-1];
-			(*data)[i] = predValue + (type_-exe_params->intvRadius)*interval;
+			(*data)[i] = predValue + (float)(type_-exe_params->intvRadius)*interval;
 			break;
 		}
 		//printf("%.30G\n",(*data)[i]);
@@ -3103,8 +3103,8 @@ void decompressDataSeries_float_2D_nonblocked_with_blocked_regression(float** da
 
 	size_t num_blocks = num_x * num_y;
 
-	double realPrecision = bytesToDouble(comp_data_pos);
-	comp_data_pos += sizeof(double);
+	float realPrecision = bytesToFloat(comp_data_pos);
+	comp_data_pos += sizeof(float);
 	unsigned int intervals = bytesToInt_bigEndian(comp_data_pos);
 	comp_data_pos += sizeof(int);
 
@@ -3141,12 +3141,12 @@ void decompressDataSeries_float_2D_nonblocked_with_blocked_regression(float** da
 	int coeff_intvRadius[3];
 	int * coeff_result_type = (int *) malloc(num_blocks*3*sizeof(int));
 	int * coeff_type[3];
-	double precision[3];
+	float precision[3];
 	float * coeff_unpred_data[3];
 	if(reg_count > 0){
 		for(int i=0; i<3; i++){
-			precision[i] = bytesToDouble(comp_data_pos);
-			comp_data_pos += sizeof(double);
+			precision[i] = bytesToFloat(comp_data_pos);
+			comp_data_pos += sizeof(float);
 			coeff_intvRadius[i] = bytesToInt_bigEndian(comp_data_pos);
 			comp_data_pos += sizeof(int);
 			unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);
@@ -3448,8 +3448,8 @@ void decompressDataSeries_float_3D_nonblocked_with_blocked_regression(float** da
 
 	size_t num_blocks = num_x * num_y * num_z;
 
-	double realPrecision = bytesToDouble(comp_data_pos);
-	comp_data_pos += sizeof(double);
+	float realPrecision = bytesToFloat(comp_data_pos);
+	comp_data_pos += sizeof(float);
 	unsigned int intervals = bytesToInt_bigEndian(comp_data_pos);
 	comp_data_pos += sizeof(int);
 
@@ -3484,12 +3484,12 @@ void decompressDataSeries_float_3D_nonblocked_with_blocked_regression(float** da
 	int coeff_intvRadius[4];
 	int * coeff_result_type = (int *) malloc(num_blocks*4*sizeof(int));
 	int * coeff_type[4];
-	double precision[4];
+	float precision[4];
 	float * coeff_unpred_data[4];
 	if(reg_count > 0){
 		for(int i=0; i<4; i++){
-			precision[i] = bytesToDouble(comp_data_pos);
-			comp_data_pos += sizeof(double);
+			precision[i] = bytesToFloat(comp_data_pos);
+			comp_data_pos += sizeof(float);
 			coeff_intvRadius[i] = bytesToInt_bigEndian(comp_data_pos);
 			comp_data_pos += sizeof(int);
 			unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);

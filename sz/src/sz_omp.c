@@ -51,9 +51,9 @@ void sz_set_num_threads(int nthreads){
 #endif
 }
 
-unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t * comp_size){
+unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_t r2, size_t r3, float realPrecision, size_t * comp_size){
 
-	double elapsed_time = 0.0;
+	float elapsed_time = 0.0;
 
 	elapsed_time = -sz_wtime();
 	unsigned int quantization_intervals;
@@ -207,8 +207,8 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 
 	intToBytes_bigEndian(result_pos, thread_num);
 	result_pos += 4;
-	doubleToBytes(result_pos, realPrecision);
-	result_pos += 8;
+	floatToBytes(result_pos, realPrecision);
+	result_pos += sizeof(float);
 	intToBytes_bigEndian(result_pos, quantization_intervals);
 	result_pos += 4;
 	intToBytes_bigEndian(result_pos, treeByteSize);
@@ -372,6 +372,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 			}
 		}
 	}
+	
 	printf("number of blocks: %zu %zu %zu, thread_num %d\n", num_x, num_y, num_z, thread_num);
 	sz_set_num_threads(thread_num);
 	size_t split_index_x, split_index_y, split_index_z;
@@ -387,10 +388,10 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 	int * result_type = (int *) malloc(num_elements * sizeof(int));
 	size_t * block_offset = (size_t *) malloc(num_blocks * sizeof(size_t));
 
-	double realPrecision = bytesToDouble(comp_data_pos);
-	comp_data_pos += 8;
+	float realPrecision = bytesToFloat(comp_data_pos);
+	comp_data_pos += sizeof(float);
 	unsigned int intervals = bytesToInt_bigEndian(comp_data_pos);
-	comp_data_pos += 4;
+	comp_data_pos += sizeof(float);
 
 	size_t stateNum = intervals*2;
 	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
@@ -399,7 +400,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 	// exe_params->intvRadius = (int)((tdps->intervals - 1)/ 2);
 
 	unsigned int tree_size = bytesToInt_bigEndian(comp_data_pos);
-	comp_data_pos += 4;
+	comp_data_pos += sizeof(unsigned int);
 	size_t huffman_nodes = bytesToInt_bigEndian(comp_data_pos);
 	huffmanTree->allNodes = huffman_nodes;
 	// printf("Reconstruct huffman tree with node count %ld\n", nodeCount);
