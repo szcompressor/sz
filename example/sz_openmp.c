@@ -453,8 +453,25 @@ int main(int argc, char* argv[])
 				}
 				else if(parallelMode==1)//openMP
 				{
-					printf("Error: current openMP version supports only float datatype\n");
-					exit(0);
+					if(r5>0)
+						r3 = r5*r4*r3;
+					else if(r4>0)
+						r3 = r4*r3;
+					if(confparams_cpr->errorBoundMode!=ABS)
+					{
+						printf("Error: current version supports only absolute error bound (errorBoundMode=%d)\n", confparams_cpr->errorBoundMode);
+						exit(0);
+					}
+					
+					cost_start_omp();
+					if(r2==0)
+						bytes = SZ_compress_double_1D_MDQ_openmp(data, r1, confparams_cpr->absErrBound, &outSize);
+					else if(r3==0)
+						bytes = SZ_compress_double_2D_MDQ_openmp(data, r2, r1, confparams_cpr->absErrBound, &outSize);
+					else //3d
+						bytes = SZ_compress_double_3D_MDQ_openmp(data, r3, r2, r1, confparams_cpr->absErrBound, &outSize);
+					printf("outSize=%zu\n", outSize);
+					cost_end_omp();	
 				}
 
 				if(cmpPath == NULL)

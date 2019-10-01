@@ -29,6 +29,8 @@ unsigned int optimize_intervals_double_3D_opt(double *oriData, size_t r1, size_t
 unsigned int optimize_intervals_double_2D_opt(double *oriData, size_t r1, size_t r2, double realPrecision);
 unsigned int optimize_intervals_double_1D_opt(double *oriData, size_t dataLength, double realPrecision);
 
+size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean, size_t dim_0, size_t dim_1, size_t dim_2, size_t block_dim_0, size_t block_dim_1, size_t block_dim_2, double realPrecision, double * P0, double * P1, int * type, double * unpredictable_data);
+
 unsigned int optimize_intervals_double_1D_opt_MSST19(double *oriData, size_t dataLength, double realPrecision);
 unsigned int optimize_intervals_double_2D_opt_MSST19(double *oriData, size_t r1, size_t r2, double realPrecision);
 unsigned int optimize_intervals_double_3D_opt_MSST19(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision);

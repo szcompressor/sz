@@ -2784,6 +2784,159 @@ void getSnapshotData_double_4D(double** data, size_t r1, size_t r2, size_t r3, s
 	}
 }
 
+size_t decompressDataSeries_double_3D_RA_block(double * data, double mean, size_t dim_0, size_t dim_1, size_t dim_2, size_t block_dim_0, size_t block_dim_1, size_t block_dim_2, double realPrecision, int * type, double * unpredictable_data)
+{
+	size_t dim0_offset = dim_1 * dim_2;
+	size_t dim1_offset = dim_2;
+
+	size_t unpredictable_count = 0;
+	size_t r1, r2, r3;
+	r1 = block_dim_0;
+	r2 = block_dim_1;
+	r3 = block_dim_2;
+
+	double * cur_data_pos = data;
+	double * last_row_pos;
+	double pred1D, pred2D, pred3D;
+	size_t i, j, k;
+	size_t r23 = r2*r3;
+	int type_;
+	// Process Row-0 data 0
+	pred1D = mean;
+	type_ = type[0];
+	// printf("Type 0 %d, mean %.4f\n", type_, mean);
+	if (type_ != 0){
+		cur_data_pos[0] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
+	}
+	else{
+		cur_data_pos[0] = unpredictable_data[unpredictable_count ++];
+	}
+
+	/* Process Row-0 data 1*/
+	pred1D = cur_data_pos[0];
+	type_ = type[1];
+	if (type_ != 0){
+		cur_data_pos[1] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
+	}
+	else{
+		cur_data_pos[1] = unpredictable_data[unpredictable_count ++];
+	}
+    /* Process Row-0 data 2 --> data r3-1 */
+	for (j = 2; j < r3; j++){
+		pred1D = 2*cur_data_pos[j-1] - cur_data_pos[j-2];
+		type_ = type[j];
+		if (type_ != 0){
+			cur_data_pos[j] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
+		}
+		else{
+			cur_data_pos[j] = unpredictable_data[unpredictable_count ++];
+		}
+	}
+
+	last_row_pos = cur_data_pos;
+	cur_data_pos += dim1_offset;
+
+	/* Process Row-1 --> Row-r2-1 */
+	size_t index;
+	for (i = 1; i < r2; i++)
+	{
+		/* Process row-i data 0 */
+		index = i*r3;	
+		pred1D = last_row_pos[0];
+		type_ = type[index];
+		if (type_ != 0){
+			cur_data_pos[0] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
+		}
+		else{
+			cur_data_pos[0] = unpredictable_data[unpredictable_count ++];
+		}
+		/* Process row-i data 1 --> data r3-1*/
+		for (j = 1; j < r3; j++)
+		{
+			index = i*r3+j;
+			pred2D = cur_data_pos[j-1] + last_row_pos[j] - last_row_pos[j-1];
+			type_ = type[index];
+			if (type_ != 0){
+				cur_data_pos[j] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
+			}
+			else{
+				cur_data_pos[j] = unpredictable_data[unpredictable_count ++];
+			}
+			// printf("pred2D %.2f cur_data %.2f last_row_data %.2f %.2f, result %.2f\n", pred2D, cur_data_pos[j-1], last_row_pos[j], last_row_pos[j-1], cur_data_pos[j]);
+			// getchar();
+		}
+		last_row_pos = cur_data_pos;
+		cur_data_pos += dim1_offset;
+	}
+	cur_data_pos += dim0_offset - r2 * dim1_offset;
+	///////////////////////////	Process layer-1 --> layer-r1-1 ///////////////////////////
+
+	for (k = 1; k < r1; k++)
+	{
+		/* Process Row-0 data 0*/
+		index = k*r23;
+		pred1D = cur_data_pos[- dim0_offset];
+		type_ = type[index];
+		if (type_ != 0){
+			cur_data_pos[0] = pred1D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
+		}
+		else{
+			cur_data_pos[0] = unpredictable_data[unpredictable_count ++];
+		}
+	    /* Process Row-0 data 1 --> data r3-1 */
+		for (j = 1; j < r3; j++)
+		{
+			//index = k*r2*r3+j;
+			index ++;
+			pred2D = cur_data_pos[j-1] + cur_data_pos[j - dim0_offset] - cur_data_pos[j - 1 - dim0_offset];
+			type_ = type[index];
+			if (type_ != 0){
+				cur_data_pos[j] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
+			}
+			else{
+				cur_data_pos[j] = unpredictable_data[unpredictable_count ++];
+			}
+		}
+		last_row_pos = cur_data_pos;
+		cur_data_pos += dim1_offset;
+
+	    /* Process Row-1 --> Row-r2-1 */
+		for (i = 1; i < r2; i++)
+		{
+			/* Process Row-i data 0 */
+			index = k*r23 + i*r3;
+			pred2D = last_row_pos[0] + cur_data_pos[- dim0_offset] - last_row_pos[- dim0_offset];
+			type_ = type[index];
+			if (type_ != 0){
+				cur_data_pos[0] = pred2D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
+			}
+			else{
+				cur_data_pos[0] = unpredictable_data[unpredictable_count ++];
+			}
+
+			/* Process Row-i data 1 --> data r3-1 */
+			for (j = 1; j < r3; j++)
+			{
+				//index = k*r2*r3 + i*r3 + j;			
+				index ++;
+				pred3D = cur_data_pos[j-1] + last_row_pos[j]+ cur_data_pos[j - dim0_offset] - last_row_pos[j-1] - last_row_pos[j - dim0_offset] - cur_data_pos[j-1 - dim0_offset] + last_row_pos[j-1 - dim0_offset];
+				type_ = type[index];
+				if (type_ != 0){
+					cur_data_pos[j] = pred3D + 2 * (type_ - exe_params->intvRadius) * realPrecision;
+				}
+				else{
+					cur_data_pos[j] = unpredictable_data[unpredictable_count ++];
+				}
+			}
+			last_row_pos = cur_data_pos;
+			cur_data_pos += dim1_offset;
+		}
+		cur_data_pos += dim0_offset - r2 * dim1_offset;
+	}
+
+	return unpredictable_count;
+}
+
 void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, unsigned char* comp_data, double* hist_data){
 
 	size_t dim0_offset = r2;
