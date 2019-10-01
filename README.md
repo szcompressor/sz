@@ -3,8 +3,8 @@ SZ: Error-bounded Lossy Compressor for HPC Data
  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
        See COPYRIGHT in top-level directory.
 
-* Major Authors: Sheng Di, Dingwen Tao, Xin Liang ***
-* Supervisor: Franck Cappello ***
+* Major Authors: Sheng Di, Dingwen Tao, Xin Liang 
+* Supervisor: Franck Cappello 
 * Other Contributors: Robert Underwood, Sihuan Li, Ali M. Gok, Xiangyu Zou, Wen Xia
 
 ## Citations
@@ -18,7 +18,9 @@ SZ: Error-bounded Lossy Compressor for HPC Data
 
 * Point-wise relative error bound mode (i.e., PW_REL): Xin Liang, Sheng Di, Dingwen Tao, Zizhong Chen, Franck Cappello, "[An Efficient Transformation Scheme for Lossy Data Compression with Point-wise Relative Error Bound](https://ieeexplore.ieee.org/document/8514879)", in IEEE International Conference on Clustering Computing (CLUSTER 2018), Belfast, UK, 2018. (Best Paper)
 
-This document simply introduces how to install and use the SZ compressor. More details can be found in doc/userguide.pdf.
+This document simply introduces how to install and use the SZ compressor. More details can be found in doc/userguide.pdf. 
+
+*OpenCL version can be found in the package, while this is a deprecated code for **GPU**. The optimized GPU code (in Cuda and Kokkos) is under developement, to be released later.*
 
 ## Installation
 
