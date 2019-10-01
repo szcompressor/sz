@@ -3,8 +3,8 @@ SZ: Error-bounded Lossy Compressor for HPC Data
  (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
        See COPYRIGHT in top-level directory.
 
-* Major Authors: Sheng Di, Dingwen Tao, Xin Liang ***
-* Supervisor: Franck Cappello ***
+* Major Authors: Sheng Di, Dingwen Tao, Xin Liang 
+* Supervisor: Franck Cappello 
 * Other Contributors: Robert Underwood, Sihuan Li, Ali M. Gok, Xiangyu Zou, Wen Xia
 
 ## Citations
@@ -20,7 +20,7 @@ SZ: Error-bounded Lossy Compressor for HPC Data
 
 This document simply introduces how to install and use the SZ compressor. More details can be found in doc/userguide.pdf. 
 
-*OpenCL version can be found in the package, while this is a deprecated code for GPU. The optimized GPU code (in Cuda and Kokkos) is under developement, to be released later.*
+*OpenCL version can be found in the package, while this is a deprecated code for **GPU**. The optimized GPU code (in Cuda and Kokkos) is under developement, to be released later.*
 
 ## Installation
 
