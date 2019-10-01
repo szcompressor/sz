@@ -20,7 +20,7 @@ SZ: Error-bounded Lossy Compressor for HPC Data
 
 This document simply introduces how to install and use the SZ compressor. More details can be found in doc/userguide.pdf. 
 
-*OpenMP/OpenCL version can be found in the package, but this is not a recommended code for GPU. The optimized GPU code is under developement, to be released later.*
+*OpenCL version can be found in the package, while this is a deprecated code for GPU. The optimized GPU code (in Cuda and Kokkos) is under developement, to be released later.*
 
 ## Installation
 
