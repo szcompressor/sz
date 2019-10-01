@@ -18,7 +18,7 @@ SZ: Error-bounded Lossy Compressor for HPC Data
 
 * Point-wise relative error bound mode (i.e., PW_REL): Xin Liang, Sheng Di, Dingwen Tao, Zizhong Chen, Franck Cappello, "[An Efficient Transformation Scheme for Lossy Data Compression with Point-wise Relative Error Bound](https://ieeexplore.ieee.org/document/8514879)", in IEEE International Conference on Clustering Computing (CLUSTER 2018), Belfast, UK, 2018. (Best Paper)
 
-This document simply introduces how to install and use the SZ compressor. More details can be found in doc/userguide.pdf.
+This document simply introduces how to install and use the SZ compressor. More details can be found in doc/userguide.pdf. OpenMP/OpenCL version can be found in the package, but this is not a recommended code for GPU. The optimized GPU code is under developement, to be released later.
 
 ## Installation
 
