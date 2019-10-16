@@ -8,7 +8,7 @@ SZ: Error-bounded Lossy Compressor for HPC Data
 * Other Contributors: Robert Underwood, Sihuan Li, Ali M. Gok, Xiangyu Zou, Wen Xia
 
 ## Citations
-`Kindly note: If you mention SZ in your paper, the most appropriate citation is including these three references (Bigdata2018, IPDPS2017 and IPDPS2016), because they cover the whole design and implementation of the latest version of SZ.
+**Kindly note**: If you mention SZ in your paper, the most appropriate citation is including these three references (***Bigdata2018, IPDPS2017 and IPDPS2016***), because they cover the whole design and implementation of the latest version of SZ.**
 
 * SZ 2.0+: Xin Liang, Sheng Di, Dingwen Tao, Zizhong Chen, Franck Cappello, "[Error-Controlled Lossy Compression Optimized for High Compression Ratios of Scientific Datasets](https://ieeexplore.ieee.org/document/8622520)", in IEEE International Conference on Big Data (Bigdata 2018), Seattle, WA, USA, 2018.
 
