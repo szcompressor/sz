@@ -345,7 +345,7 @@ inline short getExponent_double(double value)
 	return (short)expValue;
 }
 
-short getPrecisionReqLength_double(double precision)
+inline short getPrecisionReqLength_double(double precision)
 {
 	ldouble lbuf;
 	lbuf.value = precision;
@@ -871,16 +871,15 @@ void put_codes_to_output(unsigned int buf, int bitSize, unsigned char** p, int* 
 	}
 }
 
-
 void convertSZParamsToBytes(sz_params* params, unsigned char* result)
 {
 	//unsigned char* result = (unsigned char*)malloc(16);
-	unsigned char buf;
+	unsigned char buf = 0;
 	//flag1: exe_params->optQuantMode(1bit), dataEndianType(1bit), sysEndianType(1bit), conf_params->szMode (1bit), conf_params->gzipMode (2bits), pwrType (2bits)
 	buf = exe_params->optQuantMode;
 	buf = (buf << 1) | dataEndianType;
 	buf = (buf << 1) | sysEndianType;
-	buf = (buf << 1) | params->szMode;
+	buf = (buf << 2) | params->szMode;
 	
 	int tmp = 0;
 	switch(params->gzipMode)
@@ -896,7 +895,7 @@ void convertSZParamsToBytes(sz_params* params, unsigned char* result)
 		break;
 	}
 	buf = (buf << 2) | tmp;
-	buf = (buf << 2) |  params->pwr_type;
+	//buf = (buf << 2) |  params->pwr_type; //deprecated
 	result[0] = buf;
 	
     //sampleDistance; //2 bytes
@@ -958,17 +957,16 @@ void convertSZParamsToBytes(sz_params* params, unsigned char* result)
 		int32ToBytes_bigEndian(&result[16], params->quantization_intervals);
 }
 
-sz_params* convertBytesToSZParams(unsigned char* bytes)
+void convertBytesToSZParams(unsigned char* bytes, sz_params* params)
 {
-	sz_params* params = (sz_params*)malloc(sizeof(struct sz_params));
 	unsigned char flag1 = bytes[0];
-	exe_params->optQuantMode = flag1 >> 7;
-	dataEndianType = (flag1 & 0x7f) >> 7;
-	sysEndianType = (flag1 & 0x3f) >> 7;
+	exe_params->optQuantMode = (flag1 & 0x40) >> 6;
+	dataEndianType = (flag1 & 0x20) >> 5;
+	//sysEndianType = (flag1 & 0x10) >> 4;
 	
-	params->szMode = (flag1 & 0x1f) >> 7;
+	params->szMode = (flag1 & 0x0c) >> 2;
 	
-	int tmp = (flag1 & 0x0f) >> 6;
+	int tmp = (flag1 & 0x03);
 	switch(tmp)
 	{
 	case 0:
@@ -982,7 +980,7 @@ sz_params* convertBytesToSZParams(unsigned char* bytes)
 		break;
 	}
 	
-	params->pwr_type = (flag1 & 0x03) >> 6;
+	//params->pwr_type = (flag1 & 0x03) >> 0;
 
 	params->sampleDistance = bytesToInt16_bigEndian(&bytes[1]);
 	
@@ -1035,5 +1033,4 @@ sz_params* convertBytesToSZParams(unsigned char* bytes)
 		params->max_quant_intervals = 0;
 		params->quantization_intervals = bytesToInt32_bigEndian(&bytes[16]);  
 	}
-	return params;
 }
