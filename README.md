@@ -130,7 +130,7 @@ Additional documentation can be found using the `help` function in python.
 
 ## Limitation of this version
 
-SZ is not suitable for compressing tiny datastes (such as the size <10KB)
+SZ is not suitable for compressing tiny datasets (such as the size <10KB)
 
 ## Version history
 
