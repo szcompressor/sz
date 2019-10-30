@@ -1205,7 +1205,8 @@ unsigned char* SZ_compress_customize(const char* cmprName, void* userPara, int d
 	}
   else if(strcmp(cmprName, "ExaFEL")==0){
     assert(dataType==SZ_FLOAT);
-    result = exafelSZ_Compress(data,userPara,outSize);
+    assert(r5==0);
+    result = exafelSZ_Compress(userPara,data, r4, r3, r2, r1,outSize);
     *status = SZ_SCES;
   }
 	else
@@ -1242,7 +1243,8 @@ void* SZ_decompress_customize(const char* cmprName, void* userPara, int dataType
 	}
   else if(strcmp(cmprName, "ExaFEL")==0){
     assert(dataType==SZ_FLOAT);
-    result = exafelSZ_Decompress(bytes,userPara,byteLength);
+    assert(r5==0);
+    result = exafelSZ_Decompress(userPara,bytes, r4, r3, r2, r1,byteLength);
     *status = SZ_SCES;
   }
 	else

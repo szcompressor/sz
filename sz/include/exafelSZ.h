@@ -1,8 +1,6 @@
 #ifndef EXAFELSZ_H
 #define EXAFELSZ_H
 
-#include <sz.h>
-
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -16,15 +14,10 @@ typedef struct exafelSZ_params{
   //uint8_t szBlockSize; //Currently unused
   uint8_t peakSize; //MUST BE ODD AND NOT EVEN! Each peak will have size of: (peakSize x peakSize)
   
-  // string origFilename;
-  // string compFilename;
-  // string roiFilename;
-  // string roniFilename;
-   
-  uint64_t nEvents;
-  uint64_t panels;
-  uint64_t rows;
-  uint64_t cols;
+  // uint64_t nEvents;
+  // uint64_t panels;
+  // uint64_t rows;
+  // uint64_t cols;
   
   //CALCULATED VARIBALES:
   uint64_t binnedRows;
@@ -33,11 +26,13 @@ typedef struct exafelSZ_params{
 
 } exafelSZ_params;
 
-unsigned char * exafelSZ_Compress(void* _origData,
-                       void* _pr,
+unsigned char * exafelSZ_Compress(void* _pr,
+                       void* _origData,
+                       size_t events, size_t panels, size_t rows, size_t cols,
                        size_t *compressedSize);
-void* exafelSZ_Decompress(unsigned char*_compressedBuffer,
-                         void *_pr,
+void* exafelSZ_Decompress(void *_pr,
+                         unsigned char*_compressedBuffer,
+                         size_t events, size_t panels, size_t rows, size_t cols,
                          size_t compressedSize);
 
 

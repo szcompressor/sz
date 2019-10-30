@@ -16,6 +16,7 @@ add_library (SZ SHARED
   src/MultiLevelCacheTable.c
   src/MultiLevelCacheTableWideInterval.c
   src/pastri.c
+  src/exafelSZ.c
   src/rw.c
   src/rwf.c
   src/sz.c

@@ -58,6 +58,7 @@
 #include "CacheTable.h"
 #include "MultiLevelCacheTable.h"
 #include "MultiLevelCacheTableWideInterval.h"
+#include "exafelSZ.h"
 
 #ifdef _WIN32
 #define PATH_SEPARATOR ';'
