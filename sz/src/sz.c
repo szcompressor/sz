@@ -23,6 +23,7 @@
 #include "Huffman.h"
 #include "conf.h"
 #include "utility.h"
+#include "exafelSZ.h"
 //#include "CurveFillingCompressStorage.h"
 
 int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
@@ -1202,6 +1203,11 @@ unsigned char* SZ_compress_customize(const char* cmprName, void* userPara, int d
 		result = SZ_compress(dataType, data, outSize, r5, r4, r3, r2, r1);
 		*status = SZ_SCES;		
 	}
+  else if(strcmp(cmprName, "ExaFEL")==0){
+    assert(dataType==SZ_FLOAT);
+    result = exafelSZ_Compress(data,userPara,outSize);
+    *status = SZ_SCES;
+  }
 	else
 	{
 		*status = SZ_NSCS;
@@ -1234,6 +1240,11 @@ void* SZ_decompress_customize(const char* cmprName, void* userPara, int dataType
 		result = SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
 		* status = SZ_SCES;
 	}
+  else if(strcmp(cmprName, "ExaFEL")==0){
+    assert(dataType==SZ_FLOAT);
+    result = exafelSZ_Decompress(bytes,userPara,byteLength);
+    *status = SZ_SCES;
+  }
 	else
 	{
 		*status = SZ_NSCS;
