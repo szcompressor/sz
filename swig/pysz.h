@@ -37,7 +37,9 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <algorithm>
 #include "sz.h"
+#include "exafelSZ.h"
 #include "pysz_private.h"
 
 
@@ -78,6 +80,46 @@ class ConfigBuilder {
   ConfigBuilder& plus_bits(int value) noexcept;
   private:
   Config building;
+};
+
+
+class ExaFELConfigBuilder {
+  public:
+  exafelSZ_params* build() { 
+    exafelSZ_params* params = new exafelSZ_params;
+    params->peaks = new uint8_t [peaks.size()];
+    params->calibPanel = new uint8_t [calibPanel.size()];
+    std::copy(std::begin(peaks), std::end(peaks), params->peaks);
+    std::copy(std::begin(calibPanel), std::end(calibPanel), params->calibPanel);
+    params->binSize = binSize;
+    params->tolerance = tolerance;
+    params->szDim = szDim;
+    params->peakSize = peakSize;
+    return params;
+  }
+
+  int binSize; //Binning: (pr->binSize x pr->binSize) to (1 x 1)
+  double tolerance; //SZ pr->tolerance
+  int szDim; //1D/2D/3D compression/decompression
+  int peakSize; //MUST BE ODD AND NOT EVEN! Each peak will have size of: (peakSize x peakSize)
+
+
+  static void free(exafelSZ_params* params) {
+    delete[] params->peaks;
+    delete[] params->calibPanel;
+    delete params;
+  }
+
+  void setPeaks(std::vector<uint8_t> const& peaks) {
+    this->peaks = peaks;
+  }
+  void setCalibPanel(std::vector<uint8_t> const& calibPanel) {
+    this->calibPanel = calibPanel;
+  }
+
+  private:
+  std::vector<uint8_t> peaks;
+  std::vector<uint8_t> calibPanel;
 };
 
 class Compressor {

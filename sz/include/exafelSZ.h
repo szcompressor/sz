@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef EXAFELSZ_H
 #define EXAFELSZ_H
 
@@ -36,4 +40,8 @@ void* exafelSZ_Decompress(void *_pr,
                          size_t compressedSize);
 
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

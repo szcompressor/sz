@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "sz.h"
 
 void exafelSZ_params_process(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols){
@@ -511,3 +515,6 @@ void* exafelSZ_Decompress(void *_pr,
   return ((void*)decompressedBuffer);
 }
 
+#ifdef __cplusplus
+}
+#endif
