@@ -41,6 +41,8 @@
 #define SWIG_PYTHON_STRICT_BYTE_CHAR
 #include "pysz.h"
 #include "defines.h"
+#include <vector>
+#include <cstdint>
 %}
 
 %init %{
@@ -108,6 +110,9 @@ namespace std {
 
 %include "pysz.h"
 %include "defines.h"
+%ignore ExaFELConfigBuilder::peaks;
+%ignore ExaFELConfigBuilder::calibPanel;
+%newobject ExaFELConfigBuilder::build;
 
 %extend Compressor {
   %template(CompressFloat1) Compress1<float>;
@@ -241,14 +246,14 @@ namespace std {
       numpy.int64: DecompressInt64,
     }
 
-    def Compress(self, array):
+    def Compress(self, array, userparams=None):
       length = len(array.shape)
       dtype = array.dtype
-      return self.__Compress[length, dtype](self, array)
+      return self.__Compress[length, dtype](self, array, userparams)
 
-    def Decompress(self, bytes, dims, dtype):
+    def Decompress(self, bytes, dims, dtype, userparams=None):
       try:
-        values = self.__Decompress[dtype](self, bytes, list(dims))
+        values = self.__Decompress[dtype](self, bytes, list(dims), userparams)
         return self.numpy.reshape(values, dims)
       except KeyError as e:
         raise TypeError("type {} not supported".format(i.args[0]))
