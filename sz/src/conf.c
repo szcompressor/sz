@@ -165,13 +165,15 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		confparams_cpr->sol_ID = SZ;
 	else if(strcmp(sol_name, "PASTRI")==0)
 		confparams_cpr->sol_ID = PASTRI;
+	else if(strcmp(sol_name, "SZ_Transpose")==0)
+		confparams_cpr->sol_ID = SZ_Transpose;
 	else{
 		printf("[SZ] Error: wrong solution name (please check sz.config file)\n");
 		iniparser_freedict(ini);
 		return SZ_NSCS;
 	}
 	
-	if(confparams_cpr->sol_ID==SZ)
+	if(confparams_cpr->sol_ID==SZ || confparams_cpr->sol_ID==SZ_Transpose)
 	{
 		int max_quant_intervals = iniparser_getint(ini, "PARAMETER:max_quant_intervals", 65536);
 		confparams_cpr->max_quant_intervals = max_quant_intervals;

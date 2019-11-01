@@ -70,7 +70,10 @@ size_t cmpSize, int compressionType, float* hist_data)
 		}	
 	}
 	else
-		szTmpBytes = cmpBytes;
+		szTmpBytes = cmpBytes;	
+		
+	confparams_dec->sol_ID = szTmpBytes[4+14]; //szTmpBytes: version(3bytes), samebyte(1byte), [14]:sol_ID=SZ or SZ_Transpose
+		
 	//TODO: convert szTmpBytes to data array.
 	TightDataPointStorageF* tdps;
 	int errBoundMode = new_TightDataPointStorageF_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
@@ -92,7 +95,11 @@ size_t cmpSize, int compressionType, float* hist_data)
 				(*newData)[i] = bytesToFloat(p);
 		}		
 	}
-	else 
+	else if(confparams_dec->sol_ID==SZ_Transpose)
+	{
+		getSnapshotData_float_1D(newData,dataLength,tdps, errBoundMode, 0, hist_data);		
+	}
+	else //confparams_dec->sol_ID==SZ
 	{
 		if(tdps->raBytes_size > 0) //v2.0
 		{

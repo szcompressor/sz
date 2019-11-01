@@ -948,8 +948,10 @@ void convertSZParamsToBytes(sz_params* params, unsigned char* result)
 		break;		
 	}
    
-    //segment_size  // 2 bytes
-    int16ToBytes_bigEndian(&result[14], (short)(params->segment_size));
+    //compressor
+    result[14] = (unsigned char)params->sol_ID;
+    
+    //int16ToBytes_bigEndian(&result[14], (short)(params->segment_size));
     
     if(exe_params->optQuantMode==1)
 		int32ToBytes_bigEndian(&result[16], params->max_quant_intervals);
@@ -1021,7 +1023,8 @@ void convertBytesToSZParams(unsigned char* bytes, sz_params* params)
 	}
 	
     //segment_size  // 2 bytes
-    params->segment_size = bytesToInt16_bigEndian(&bytes[14]);	
+    //params->segment_size = bytesToInt16_bigEndian(&bytes[14]);	
+    params->sol_ID = (int)(bytes[14]);
     
     if(exe_params->optQuantMode==1)
     {

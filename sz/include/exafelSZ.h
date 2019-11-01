@@ -1,9 +1,8 @@
+#ifndef EXAFELSZ_H
+#define EXAFELSZ_H
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifndef EXAFELSZ_H
-#define EXAFELSZ_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -30,18 +29,24 @@ typedef struct exafelSZ_params{
 
 } exafelSZ_params;
 
+
+void exafelSZ_params_process(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols);
+void exafelSZ_params_checkDecomp(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols);
+void exafelSZ_params_checkComp(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols);
+
 unsigned char * exafelSZ_Compress(void* _pr,
-                       void* _origData,
-                       size_t events, size_t panels, size_t rows, size_t cols,
-                       size_t *compressedSize);
+                         void* _origData,
+                        size_t events, size_t panels, size_t rows, size_t cols,
+                        size_t *compressedSize);
+					   
 void* exafelSZ_Decompress(void *_pr,
                          unsigned char*_compressedBuffer,
                          size_t events, size_t panels, size_t rows, size_t cols,
                          size_t compressedSize);
 
-
-#endif
-
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* ----- #ifndef _EXAFELSZ_H  ----- */
+

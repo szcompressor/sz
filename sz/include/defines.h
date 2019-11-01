@@ -19,6 +19,7 @@
 #define PASTRI 103
 #define HZ 102 //deprecated
 #define SZ 101
+#define SZ_Transpose 104
 
 //prediction mode of temporal dimension based compression
 #define SZ_PREVIOUS_VALUE_ESTIMATE 0
