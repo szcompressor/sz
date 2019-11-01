@@ -325,7 +325,13 @@ int main(int argc, char* argv[])
 				exit(0);
 			}
 			cost_start();	
-			bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
+			if(confparams_cpr->sol_ID==SZ)
+				bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
+			else if(confparams_cpr->sol_ID==SZ_Transpose)
+			{
+				int status = 0;
+				bytes = SZ_compress_customize("SZ_Transpose", NULL, SZ_FLOAT, data, r5, r4, r3, r2, r1, &outSize, &status);
+			}	
 			cost_end();
 			if(cmpPath == NULL)
 				sprintf(outputFilePath, "%s.sz", inPath);
@@ -403,7 +409,13 @@ int main(int argc, char* argv[])
 					exit(0);
 				}
 				cost_start();
-				bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
+				if(confparams_cpr->sol_ID==SZ)
+					bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
+				else if(confparams_cpr->sol_ID==SZ_Transpose)
+				{
+					int status = 0;
+					bytes = SZ_compress_customize("SZ_Transpose", NULL, SZ_DOUBLE, data, r5, r4, r3, r2, r1, &outSize, &status);
+				}				
 				cost_end();
 				if(cmpPath == NULL)
 					sprintf(outputFilePath, "%s.sz", inPath);
@@ -472,7 +484,12 @@ int main(int argc, char* argv[])
 				exit(0);
 			}
 			cost_start();
-			float *data = SZ_decompress(SZ_FLOAT, bytes, byteLength, r5, r4, r3, r2, r1);			
+			float *data = NULL;
+			float *data_ = SZ_decompress(SZ_FLOAT, bytes, byteLength, r5, r4, r3, r2, r1);
+			if(confparams_dec->sol_ID==SZ_Transpose)
+				data = detransposeData(data_, SZ_FLOAT, r5, r4, r3, r2, r1);
+			else //confparams_dec->sol_ID==SZ
+				data = data_;
 			cost_end();
 			if(decPath == NULL)
 				sprintf(outputFilePath, "%s.out", cmpPath);	
@@ -639,7 +656,12 @@ int main(int argc, char* argv[])
 					exit(0);
 				}
 				cost_start();
-				data = SZ_decompress(SZ_DOUBLE, bytes, byteLength, r5, r4, r3, r2, r1);			
+				double *data_ = SZ_decompress(SZ_DOUBLE, bytes, byteLength, r5, r4, r3, r2, r1);
+				if(confparams_dec->sol_ID==SZ_Transpose)
+					data = detransposeData(data_, SZ_DOUBLE, r5, r4, r3, r2, r1);
+				else //confparams_dec->sol_ID==SZ
+					data = data_;				
+
 				cost_end();
 				if(decPath == NULL)
 					sprintf(outputFilePath, "%s.out", cmpPath);	
