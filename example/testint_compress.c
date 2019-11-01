@@ -105,7 +105,7 @@ int main(int argc, char * argv[])
 		}
 
 		cost_start();
-		bytes = SZ_compress(SZ_INT8, data, &outSize, r5, r4, r3, r2, r1);
+		bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 		cost_end();
 		writeByteData(bytes, outSize, outputFilePath, &status);
 		if(status != SZ_SCES)
@@ -126,7 +126,13 @@ int main(int argc, char * argv[])
 		}
 
 		cost_start();
-		bytes = SZ_compress(SZ_INT16, data, &outSize, r5, r4, r3, r2, r1);
+		if(confparams_cpr->sol_ID==SZ)
+			bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
+		else if(confparams_cpr->sol_ID==SZ_Transpose)
+		{
+			int status = 0;
+			bytes = SZ_compress_customize("SZ_Transpose", NULL, dataType, data, r5, r4, r3, r2, r1, &outSize, &status);
+		}
 		cost_end();
 		writeByteData(bytes, outSize, outputFilePath, &status);
 		if(status != SZ_SCES)
@@ -147,7 +153,7 @@ int main(int argc, char * argv[])
 		}
 
 		cost_start();
-		bytes = SZ_compress(SZ_INT32, data, &outSize, r5, r4, r3, r2, r1);
+		bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 		cost_end();
 		writeByteData(bytes, outSize, outputFilePath, &status);
 		if(status != SZ_SCES)
@@ -168,7 +174,7 @@ int main(int argc, char * argv[])
 		}
 
 		cost_start();
-		bytes = SZ_compress(SZ_INT64, data, &outSize, r5, r4, r3, r2, r1);
+		bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 		cost_end();
 		writeByteData(bytes, outSize, outputFilePath, &status);
 		if(status != SZ_SCES)
@@ -189,7 +195,7 @@ int main(int argc, char * argv[])
 		}
 
 		cost_start();
-		bytes = SZ_compress(SZ_UINT8, data, &outSize, r5, r4, r3, r2, r1);
+		bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 		cost_end();
 		writeByteData(bytes, outSize, outputFilePath, &status);
 		if(status != SZ_SCES)
@@ -210,7 +216,13 @@ int main(int argc, char * argv[])
 		}
 
 		cost_start();
-		bytes = SZ_compress(SZ_UINT16, data, &outSize, r5, r4, r3, r2, r1);
+		if(confparams_cpr->sol_ID==SZ)
+			bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
+		else if(confparams_cpr->sol_ID==SZ_Transpose)
+		{
+			int status = 0;
+			bytes = SZ_compress_customize("SZ_Transpose", NULL, dataType, data, r5, r4, r3, r2, r1, &outSize, &status);
+		}
 		cost_end();
 		writeByteData(bytes, outSize, outputFilePath, &status);
 		if(status != SZ_SCES)
@@ -231,7 +243,7 @@ int main(int argc, char * argv[])
 		}
 
 		cost_start();
-		bytes = SZ_compress(SZ_UINT32, data, &outSize, r5, r4, r3, r2, r1);
+		bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 		cost_end();
 		writeByteData(bytes, outSize, outputFilePath, &status);
 		if(status != SZ_SCES)
@@ -252,7 +264,7 @@ int main(int argc, char * argv[])
 		}
 
 		cost_start();
-		bytes = SZ_compress(SZ_UINT64, data, &outSize, r5, r4, r3, r2, r1);
+		bytes = SZ_compress(dataType, data, &outSize, r5, r4, r3, r2, r1);
 		cost_end();
 		writeByteData(bytes, outSize, outputFilePath, &status);
 		if(status != SZ_SCES)

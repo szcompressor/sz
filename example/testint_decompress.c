@@ -130,7 +130,12 @@ int main(int argc, char * argv[])
 	else if(dataType == SZ_INT16)
 	{
 		cost_start();
-		int16_t *data = SZ_decompress(SZ_INT16, bytes, byteLength, r5, r4, r3, r2, r1);
+		int16_t *data = NULL;
+		int16_t *data_ = SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		if(confparams_dec->sol_ID==SZ_Transpose)
+			data = detransposeData(data_, dataType, r5, r4, r3, r2, r1);
+		else //confparams_dec->sol_ID==SZ
+			data = data_;		
 		cost_end();
 		free(bytes); 
 		
@@ -198,7 +203,12 @@ int main(int argc, char * argv[])
 	else if(dataType == SZ_UINT16)
 	{
 		cost_start();
-		uint16_t *data = SZ_decompress(SZ_UINT16, bytes, byteLength, r5, r4, r3, r2, r1);
+		uint16_t *data = NULL;
+		uint16_t *data_ = SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		if(confparams_dec->sol_ID==SZ_Transpose)
+			data = detransposeData(data_, dataType, r5, r4, r3, r2, r1);
+		else //confparams_dec->sol_ID==SZ
+			data = data_;
 		cost_end();
 		free(bytes); 
 		
