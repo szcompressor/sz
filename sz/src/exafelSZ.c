@@ -13,32 +13,33 @@ void exafelSZ_params_process(exafelSZ_params*pr,size_t nEvents, size_t panels, s
 
 void exafelSZ_params_checkDecomp(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols){
   if(pr->calibPanel==NULL){
-    // cout<<"ERROR: calibPanel is NULL : calibPanel="<<calibPanel<<endl;
+    printf("ERROR: calibPanel is NULL : calibPanel=%ld\n",(long)pr->calibPanel);
     assert(0);
   }
   if(pr->binSize<1 || pr->tolerance<0 || pr->szDim<1 || pr->szDim>3){
-    // cout<<"ERROR: Something wrong with the following:"<<endl;
-    // cout<<"binSize="<<binSize<<endl;
-    // cout<<"tolerance="<<tolerance<<endl;
-    // cout<<"szDim="<<szDim<<endl;
+    printf("ERROR: Something wrong with the following:\n");
+    printf("binSize=%d\n",(int)pr->binSize);
+    printf("tolerance=%d\n",(int)pr->tolerance);
+    printf("szDim=%d\n",(int)pr->szDim);
+    assert(0);
   }
   if(!(pr->peakSize%2)){
-    // cout<<"ERROR: peakSize = "<<peakSize<<" cannot be even. It must be odd!"<<endl;
+    printf("ERROR: peakSize = %d cannot be even. It must be odd!\n",(int)pr->peakSize);
     assert(0);
   }  
   if(nEvents<1 || panels<1 || rows<1 || cols<1){
-    // cout<<"ERROR: Something wrong with the following:"<<endl;
-    // cout<<"nEvents="<<nEvents<<endl;
-    // cout<<"panels="<<panels<<endl;
-    // cout<<"rows="<<rows<<endl;
-    // cout<<"cols="<<cols<<endl;
+    printf("ERROR: Something wrong with the following:\n");
+    printf("nEvents=%d\n",(int)nEvents);
+    printf("panels=%d\n",(int)panels);
+    printf("rows=%d\n",(int)rows);
+    printf("cols=%d\n",(int)cols);
     assert(0);
   }
 }
 
 void exafelSZ_params_checkComp(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols){
   if(pr->peaks==NULL){
-    // cout<<"ERROR: peaks is NULL : peaks="<<peaks<<endl;
+    printf("ERROR: peaks is NULL : peaks=%ld\n",(long)pr->peaks);
     assert(0);
   }
   exafelSZ_params_checkDecomp(pr,nEvents, panels, rows, cols);
@@ -125,15 +126,15 @@ unsigned char * exafelSZ_Compress(void* _pr,
       peaksBytePos+=2;
       
       if(p_>=panels){
-        // cout<<"ERROR: Peak coordinate out of bounds: Panel="<<p_<<", Valid range: 0,"<<panels-1<<endl; 
+        printf("ERROR: Peak coordinate out of bounds: Panel=%d, Valid range: 0,%d\n",(int)p_,(int)panels-1);
         assert(0);
       }
       if(r_>=rows){
-        // cout<<"ERROR: Peak coordinate out of bounds: Row="<<r_<<", Valid range: 0,"<<rows-1<<endl;
+        printf("ERROR: Peak coordinate out of bounds: Row=%d, Valid range: 0,%d\n",(int)r_,(int)rows-1);
         assert(0);
       }
       if(c_>=cols){
-        // cout<<"ERROR: Peak coordinate out of bounds: Col="<<c_<<", Valid range: 0,"<<cols-1<<endl; 
+        printf("ERROR: Peak coordinate out of bounds: Col=%d, Valid range: 0,%d\n",(int)c_,(int)cols-1);
         assert(0);
       }
       
@@ -204,8 +205,7 @@ unsigned char * exafelSZ_Compress(void* _pr,
       szComp=SZ_compress_args(SZ_FLOAT, binnedData, &szCompressedSize, ABS, pr->tolerance, 0, 0, 0, 0, nEvents * panels, pr->binnedRows, pr->binnedCols);
       break;
     default:
-      // cout<<"Wrong pr->szDim (SZ dimensions)"<<endl;
-      // cout<<"pr->szDim:"<<pr->szDim<<endl;
+      printf("ERROR: Wrong szDim : %d It must be 1,2 or 3.\n",(int)pr->szDim);
       assert(0);
   }
   
@@ -312,10 +312,11 @@ unsigned char * exafelSZ_Compress(void* _pr,
   //printf("bytePos=%d\n",bytePos);
   
   if(bytePos!=(*compressedSize)){
-    // cout<<"ERROR: bytePos = "<<bytePos<<" != "<<(*compressedSize)<<" = compressedSize"<<endl;
+    printf("ERROR: bytePos = %ld != %ld = compressedSize\n",(long)bytePos,(long)compressedSize);
     assert(0);
   }
   
+  free(szComp);
   free(roiM);
   free(roiData);
   free(binnedData);
@@ -409,13 +410,12 @@ void* exafelSZ_Decompress(void *_pr,
       for(r=0;r<rows;r++){ //Row
         for(c=0;c<cols;c++){ //Column
           if(calcIdx_2D(r,c,cols)<0 ||calcIdx_2D(r,c,cols)>=rows*cols){
-            // cout<<"ERROR: calcIdx(r,c,cols) = calcIdx("<<r<<","<<c<<","<<cols<<") = "<<calcIdx(r,c,cols)<<endl;
-            // cout<<"       NOT in the correct range: [0,"<<rows*cols-1<<"]"<<endl;
+            printf("ERROR: calcIdx_2D(r,c,cols) = calcIdx_2D(%d,%d,%d) = %d",(int)r,(int)c,(int)cols,(int)calcIdx_2D(r,c,cols));
+            printf("       is NOT in the correct range: [0,%ld]",(int)rows*cols-1);
             assert(0);
           }
           if(calcIdx_4D(e,p,r,c,panels,rows,cols)<0 ||calcIdx_4D(e,p,r,c,panels,rows,cols)>=nEvents*panels*rows*cols){
-            // cout<<"ERROR: calcIdx(e,p,r,c,panels,rows,cols) = calcIdx("<<e<<","<<p<<","<<r<<","<<c<<","<<panels<<","<<rows<<","<<cols<<") = "<<calcIdx(e,p,r,c,panels,rows,cols)<<endl;
-            // cout<<"       NOT in the correct range: [0,"<<nEvents*panels*rows*cols-1<<"]"<<endl;
+            printf("ERROR: calcIdx_4D(e,p,r,c,panels,rows,cols) = calcIdx_4D(%d,%d,%d,%d,%d,%d,%d) = %d",(int)e,(int)p,(int)r,(int)c,(int)panels,(int)rows,(int)cols,(int)calcIdx_4D(e,p,r,c,panels,rows,cols));
             assert(0);
           }
           roiM[calcIdx_4D(e,p,r,c,panels,rows,cols)]=pr->calibPanel[calcIdx_2D(r,c,cols)];
@@ -438,15 +438,15 @@ void* exafelSZ_Decompress(void *_pr,
       peaksBytePos+=2;
       
       if(p_<0 || p_>=panels){
-        // cout<<"ERROR: Peak coordinate out of bounds: Panel="<<p_<<", Valid range: 0,"<<panels-1<<endl; 
+        printf("ERROR: Peak coordinate out of bounds: Panel=%d, Valid range: 0,%d\n",(int)p_,(int)panels-1);
         assert(0);
       }
       if(r_<0 || r_>=rows){
-        // cout<<"ERROR: Peak coordinate out of bounds: Row="<<r_<<", Valid range: 0,"<<rows-1<<endl; 
+        printf("ERROR: Peak coordinate out of bounds: Row=%d, Valid range: 0,%d\n",(int)r_,(int)rows-1);
         assert(0);
       }
       if(c_<0 || c_>=cols){
-        // cout<<"ERROR: Peak coordinate out of bounds: Col="<<c_<<", Valid range: 0,"<<cols-1<<endl; 
+        printf("ERROR: Peak coordinate out of bounds: Col=%d, Valid range: 0,%d\n",(int)c_,(int)cols-1);
         assert(0);
       }
       
@@ -465,22 +465,20 @@ void* exafelSZ_Decompress(void *_pr,
   size_t _szCompressedSize=szCompressedSize;
   switch(pr->szDim){
     case 1:
-      // szDecomp=sz_decompress_3D<float>(szComp,0,0,nEvents * panels * pr->binnedRows * pr->binnedCols,pr->tolerance,szCompressedSize); //1D
       szDecomp=SZ_decompress(SZ_FLOAT,szComp,_szCompressedSize,0,0,0,0, nEvents * panels * pr->binnedRows * pr->binnedCols);
       break;
     case 2:
-      // szDecomp=sz_decompress_3D<float>(szComp,0,nEvents * panels * pr->binnedRows, pr->binnedCols,pr->tolerance,szCompressedSize); //2D
       szDecomp=SZ_decompress(SZ_FLOAT,szComp,_szCompressedSize,0,0,0, nEvents * panels * pr->binnedRows, pr->binnedCols);
       break;
     case 3:
-      // szDecomp=sz_decompress_3D<float>(szComp,nEvents * panels, pr->binnedRows, pr->binnedCols,pr->tolerance,szCompressedSize); //3D
       szDecomp=SZ_decompress(SZ_FLOAT,szComp,_szCompressedSize,0,0,nEvents * panels, pr->binnedRows, pr->binnedCols);
       break;
     default:
-      // cout<<"Wrong pr->szDim (SZ dimensions)"<<endl;
-      // cout<<"pr->szDim:"<<pr->szDim<<endl;
+      printf("ERROR: Wrong szDim : %d It must be 1,2 or 3.\n",(int)pr->szDim);
       assert(0);
   }
+  //szDecomp=(void*)malloc(nEvents*panels*rows*cols*sizeof(float));
+  
   // double max_err = 0;
   // for(int i=0; i<nEvents * panels * pr->binnedRows * pr->binnedCols; i++){
     // double err = fabs(szDecomp[i]-binnedData[i]);
@@ -488,7 +486,7 @@ void* exafelSZ_Decompress(void *_pr,
   // }
   // cout << "Max err = \t\t\t" << max_err << endl;
   
-  
+
   //De-binning:
   for(e=0;e<nEvents;e++)//Event
     for(p=0;p<panels;p++)  //Panel
@@ -511,6 +509,7 @@ void* exafelSZ_Decompress(void *_pr,
           }
   // delete [] roiM;
   free(roiM);
+  free(szDecomp);
   
   return ((void*)decompressedBuffer);
 }
