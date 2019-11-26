@@ -957,6 +957,18 @@ void convertSZParamsToBytes(sz_params* params, unsigned char* result)
 		int32ToBytes_bigEndian(&result[16], params->max_quant_intervals);
 	else
 		int32ToBytes_bigEndian(&result[16], params->quantization_intervals);
+	
+	if(params->dataType==SZ_FLOAT)
+	{
+		floatToBytes(&result[20], params->fmin);
+		floatToBytes(&result[24], params->fmax);		
+	}
+	else
+	{
+		doubleToBytes(&result[20], params->dmin);
+		doubleToBytes(&result[28], params->dmax);		
+	}
+
 }
 
 void convertBytesToSZParams(unsigned char* bytes, sz_params* params)
@@ -1036,4 +1048,16 @@ void convertBytesToSZParams(unsigned char* bytes, sz_params* params)
 		params->max_quant_intervals = 0;
 		params->quantization_intervals = bytesToInt32_bigEndian(&bytes[16]);  
 	}
+	
+	if(params->dataType==SZ_FLOAT)
+	{
+		params->fmin = bytesToFloat(&bytes[20]);
+		params->fmax = bytesToFloat(&bytes[24]);		
+	}
+	else if(params->dataType==SZ_DOUBLE)
+	{
+		params->dmin = bytesToDouble(&bytes[20]);
+		params->dmax = bytesToDouble(&bytes[28]);				
+	}
+
 }

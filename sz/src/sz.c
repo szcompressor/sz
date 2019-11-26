@@ -553,7 +553,10 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 	if(confparams_dec!=NULL)
 		free(confparams_dec);
 	confparams_dec = params;*/	
-	index += MetaDataByteLength;
+	if(confparams_dec->dataType==SZ_FLOAT)
+		index += MetaDataByteLength;
+	else if(confparams_dec->dataType==SZ_DOUBLE)
+		index += MetaDataByteLength_double;
 	
 	if(confparams_dec->dataType!=SZ_FLOAT && confparams_dec->dataType!= SZ_DOUBLE) //if this type is an Int type
 		index++; //jump to the dataLength info byte address
@@ -591,7 +594,8 @@ sz_metadata* SZ_getMetadata(unsigned char* bytes)
 				pwrErrBoundBytesL = 4;
 			}
 			
-			int offset_typearray = 3 + 1 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrErrBoundBytesL + 4 + (4 + confparams_dec->dataType*4) + 1 + 8 
+			int mdbl = confparams_dec->dataType==SZ_FLOAT?MetaDataByteLength:MetaDataByteLength_double;
+			int offset_typearray = 3 + 1 + mdbl + exe_params->SZ_SIZE_TYPE + 4 + radExpoL + segmentL + pwrErrBoundBytesL + 4 + (4 + confparams_dec->dataType*4) + 1 + 8 
 					+ exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + exe_params->SZ_SIZE_TYPE + 4;
 			defactoNBBins = bytesToInt_bigEndian(bytes+offset_typearray);			
 		}
@@ -623,9 +627,13 @@ void SZ_printMetadata(sz_metadata* metadata)
 	{
 	case SZ_FLOAT:
 		printf("Data type:                      \t FLOAT\n");
+		printf("min value of raw data:          \t %f\n", params->fmin);
+		printf("max value of raw data:          \t %f\n", params->fmax);		
 		break;
 	case SZ_DOUBLE:
 		printf("Data type:                      \t DOUBLE\n");
+		printf("min value of raw data:          \t %f\n", params->dmin);
+		printf("max value of raw data:          \t %f\n", params->dmax);	
 		break;
 	case SZ_INT8:
 		printf("Data type:                      \t INT8\n");

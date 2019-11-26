@@ -178,6 +178,9 @@ typedef struct sz_params
 	int segment_size; //only used for 2D/3D data compression with pw_relBoundRatio (deprecated)
 	int pwr_type; //only used for 2D/3D data compression with pw_relBoundRatio
 	
+	float fmin, fmax;
+	double dmin, dmax;
+	
 	int snapshotCmprStep; //perform single-snapshot-based compression if time_step == snapshotCmprStep
 	int predictionMode;
 
@@ -185,7 +188,8 @@ typedef struct sz_params
 	int plus_bits;
 	
 	int randomAccess;
-  int withRegression;
+	int withRegression;
+	
 } sz_params;
 
 typedef struct sz_metadata

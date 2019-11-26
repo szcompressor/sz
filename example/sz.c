@@ -33,10 +33,11 @@ void usage()
 	printf("* operation type:\n");
 	printf("	-z <compressed file>: the compression operation with an optionally specified output file.\n");
 	printf("                          (the compressed file will be named as <input_file>.sz if not specified)\n");
-	printf("	-x <decompressed file>: the decompression operation with an optionally specified output file.\n");
+	printf("	-x <decompressed file>: the decompression operation with an optionally specified output file\n");
 	printf("                      (the decompressed file will be named as <cmpred_file>.out if not specified)\n");
 	printf("	-p: print meta data (configuration info)\n");
 	printf("	-h: print the help information\n");
+	printf("	-v: print the version number\n");	
 	printf("* data type:\n");
 	printf("	-f: single precision (float type)\n");
 	printf("	-d: double precision (double type)\n");
@@ -119,6 +120,9 @@ int main(int argc, char* argv[])
 		{
 		case 'h':
 			usage();
+			exit(0);
+		case 'v':
+			printf("version: %d.%d.%d\n", SZ_VER_MAJOR, SZ_VER_MINOR, SZ_VER_BUILD);
 			exit(0);
 		case 'b': 
 			binaryOutput = 1;

@@ -168,7 +168,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 	else if(strcmp(sol_name, "SZ_Transpose")==0)
 		confparams_cpr->sol_ID = SZ_Transpose;
 	else{
-		printf("[SZ] Error: wrong solution name (please check sz.config file)\n");
+		printf("[SZ] Error: wrong solution name (please check sz.config file), sol=%s\n", sol_name);
 		iniparser_freedict(ini);
 		return SZ_NSCS;
 	}
