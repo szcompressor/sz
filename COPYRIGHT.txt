@@ -7,7 +7,7 @@ Xin Liang
 Franck Cappello
 Argonne National Laboratory
 
-The SZ licence is a BSD-similar license.
+SZ licence is under the BSD license. Details are shown below.
 
 OPEN SOURCE LICENSE (license number: SF-16-105)
  
