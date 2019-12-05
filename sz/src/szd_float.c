@@ -293,7 +293,7 @@ void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, float* hi
 	//	printf ("%d %d\n", r1, r2);
 
 	unsigned char* leadNum;
-	double realPrecision = tdps->realPrecision;
+	float realPrecision = tdps->realPrecision;
 
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
 
@@ -605,7 +605,7 @@ void decompressDataSeries_float_3D(float** data, size_t r1, size_t r2, size_t r3
 	size_t dataSeriesLength = r1*r2*r3;
 	size_t r23 = r2*r3;
 	unsigned char* leadNum;
-	double realPrecision = tdps->realPrecision;
+	float realPrecision = tdps->realPrecision;
 
 	//TODO
 	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
