@@ -34,7 +34,7 @@ official policies, either expressed or implied, of Robert Underwood.
 
 cmake_minimum_required(VERSION 3.14)
 find_package(SWIG)
-if(SWIG_FOUND)
+if(SWIG_FOUND AND BUILD_SHARED_LIBS)
   include(UseSWIG)
 
   find_package(Python COMPONENTS Interpreter Development NumPy)

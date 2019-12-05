@@ -45,6 +45,8 @@ if(TAGS)
 		)
 endif()
 
+option(BUILD_SHARED_LIBS "build shared libraries over static libraries" ON)
+
 #find dependencies
 include(GNUInstallDirs)
 find_package(PkgConfig)
@@ -102,7 +104,7 @@ option(BUILD_RANDOMACCESS "build the random access code" OFF)
 option(BUILD_DOCKER_CONTAINERS "build docker containers for testing" OFF)
 if(BUILD_DOCKER_CONTAINERS)
   
-  foreach(CONTAINER Centos Fedora Ubuntu Travis)
+  foreach(CONTAINER Centos Fedora Ubuntu Travis CentosPackaged)
     set(BuildSentinel ${CMAKE_BINARY_DIR}/${CONTAINER}-built)
     set(Dockerfile docker/Dockerfile-${CONTAINER})
     string(TOLOWER "sz${CONTAINER}" CONTAINER_TAG)

@@ -1,4 +1,4 @@
-add_library (SZ SHARED 
+add_library (SZ
   src/ArithmeticCoding.c
   src/ByteToolkit.c
   src/CacheTable.c

@@ -123,6 +123,8 @@ cmake --build .
 sudo cmake --install .
 ```
 
+Please note, building static libraries is incompatiable with building the python wrappers, and is building the python wrappers is disabled if `-DBUILD_SHARED_LIBS=OFF`
+
 An example usage file can be found in `example/test.py`
 
 Additional documentation can be found using the `help` function in python.
