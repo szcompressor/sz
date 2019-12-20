@@ -1,4 +1,4 @@
-add_library(ZSTD SHARED 
+add_library(zstd SHARED 
   ./common/entropy_common.c
   ./common/pool.c
   ./common/threading.c
@@ -34,7 +34,7 @@ add_library(ZSTD SHARED
   ./dictBuilder/zdict.c
   )
 
-target_include_directories(ZSTD
+target_include_directories(zstd
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
   PRIVATE
@@ -48,7 +48,7 @@ target_include_directories(ZSTD
   )
 
 
-install(TARGETS ZSTD EXPORT ZSTDConfig
+install(TARGETS zstd EXPORT ZSTDConfig
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} 
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
@@ -59,6 +59,6 @@ install(FILES
   common/zstd_errors.h 
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/
   )
-export(TARGETS ZSTD FILE ZSTDConfig.cmake)
+export(TARGETS zstd FILE ZSTDConfig.cmake)
 
 

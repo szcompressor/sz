@@ -58,8 +58,8 @@ if(ZSTD_FOUND)
   set(ZSTD_dep PkgConfig::ZSTD)
 else()
   add_subdirectory(zstd)
-  set(ZSTD_dep ZSTD)
-  list(APPEND thirdparty_export "ZSTD")
+  set(ZSTD_dep zstd)
+  list(APPEND thirdparty_export "zstd")
 endif()
 
 find_package(ZLIB)
@@ -107,7 +107,7 @@ if(BUILD_DOCKER_CONTAINERS)
     set(Dockerfile docker/Dockerfile-${CONTAINER})
     string(TOLOWER "sz${CONTAINER}" CONTAINER_TAG)
     add_custom_command(OUTPUT ${BuildSentinel}
-      COMMAND docker build -t ${CONTAINER_TAG} -f ${Dockerfile} .
+      COMMAND sudo docker build -t ${CONTAINER_TAG} -f ${Dockerfile} .
       COMMAND touch ${BuildSentinel}
       MAIN_DEPENDENCY ${Dockerfile}
       DEPENDS SZ
