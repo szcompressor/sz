@@ -4,14 +4,14 @@ extern "C" {
 
 #include "sz.h"
 
-void exafelSZ_params_process(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols){
+void exafelSZ_params_process(exafelSZ_params*pr, size_t panels, size_t rows, size_t cols){
   pr->binnedRows=(rows+pr->binSize-1)/pr->binSize;
   pr->binnedCols=(cols+pr->binSize-1)/pr->binSize;
   
   pr->peakRadius=(pr->peakSize-1)/2;
 }
 
-void exafelSZ_params_checkDecomp(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols){
+void exafelSZ_params_checkDecomp(exafelSZ_params*pr, size_t panels, size_t rows, size_t cols){
   if(pr->calibPanel==NULL){
     printf("ERROR: calibPanel is NULL : calibPanel=%ld\n",(long)pr->calibPanel);
     assert(0);
@@ -27,9 +27,9 @@ void exafelSZ_params_checkDecomp(exafelSZ_params*pr,size_t nEvents, size_t panel
     printf("ERROR: peakSize = %d cannot be even. It must be odd!\n",(int)pr->peakSize);
     assert(0);
   }  
-  if(nEvents<1 || panels<1 || rows<1 || cols<1){
+  //if(nEvents<1 || panels<1 || rows<1 || cols<1){
+  if(panels<1 || rows<1 || cols<1){
     printf("ERROR: Something wrong with the following:\n");
-    printf("nEvents=%d\n",(int)nEvents);
     printf("panels=%d\n",(int)panels);
     printf("rows=%d\n",(int)rows);
     printf("cols=%d\n",(int)cols);
@@ -37,12 +37,12 @@ void exafelSZ_params_checkDecomp(exafelSZ_params*pr,size_t nEvents, size_t panel
   }
 }
 
-void exafelSZ_params_checkComp(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols){
+void exafelSZ_params_checkComp(exafelSZ_params*pr, size_t panels, size_t rows, size_t cols){
   if(pr->peaks==NULL){
     printf("ERROR: peaks is NULL : peaks=%ld\n",(long)pr->peaks);
     assert(0);
   }
-  exafelSZ_params_checkDecomp(pr,nEvents, panels, rows, cols);
+  exafelSZ_params_checkDecomp(pr, panels, rows, cols);
 }
 
 void exafelSZ_params_print(){
@@ -87,8 +87,8 @@ unsigned char * exafelSZ_Compress(void* _pr,
   float *origData=(float*)_origData;
   exafelSZ_params *pr=(exafelSZ_params*)_pr;
   
-  exafelSZ_params_process(pr,nEvents, panels, rows, cols); 
-  exafelSZ_params_checkDecomp(pr,nEvents, panels, rows, cols); 
+  exafelSZ_params_process(pr, panels, rows, cols); 
+  exafelSZ_params_checkDecomp(pr, panels, rows, cols); 
   
   uint8_t *roiM=(uint8_t*)malloc(nEvents*panels*rows*cols) ;
   float *roiData=(float*)malloc(nEvents*panels*rows*cols*sizeof(float)) ;
@@ -334,8 +334,8 @@ void* exafelSZ_Decompress(void *_pr,
 { 
   uint8_t *compressedBuffer=(uint8_t *)_compressedBuffer;
   exafelSZ_params *pr=(exafelSZ_params *)_pr;
-  exafelSZ_params_process(pr,nEvents, panels, rows, cols); 
-  exafelSZ_params_checkDecomp(pr,nEvents, panels, rows, cols); 
+  exafelSZ_params_process(pr, panels, rows, cols); 
+  exafelSZ_params_checkDecomp(pr, panels, rows, cols); 
   
   float *decompressedBuffer=(float*)malloc(nEvents*panels*rows*cols*sizeof(float));
   
