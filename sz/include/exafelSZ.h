@@ -30,9 +30,9 @@ typedef struct exafelSZ_params{
 } exafelSZ_params;
 
 
-void exafelSZ_params_process(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols);
-void exafelSZ_params_checkDecomp(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols);
-void exafelSZ_params_checkComp(exafelSZ_params*pr,size_t nEvents, size_t panels, size_t rows, size_t cols);
+void exafelSZ_params_process(exafelSZ_params*pr, size_t panels, size_t rows, size_t cols);
+void exafelSZ_params_checkDecomp(exafelSZ_params*pr, size_t panels, size_t rows, size_t cols);
+void exafelSZ_params_checkComp(exafelSZ_params*pr, size_t panels, size_t rows, size_t cols);
 
 unsigned char * exafelSZ_Compress(void* _pr,
                          void* _origData,
