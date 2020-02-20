@@ -85,6 +85,13 @@ endif()
 if(BUILD_RANDOMACCESS)
   target_compile_definitions(SZ PUBLIC HAVE_RANDOMACCESS)
 endif()
+if(BUILD_FORTRAN)
+  enable_language(Fortran)
+  target_sources(SZ PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/rw_interface.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/sz_interface.F90
+  )
+endif()
 
 install (TARGETS SZ ${thirdparty_export} EXPORT SZConfig
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
