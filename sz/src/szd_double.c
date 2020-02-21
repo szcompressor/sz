@@ -2962,7 +2962,6 @@ size_t decompressDataSeries_double_3D_RA_block(double * data, double mean, size_
 
 void decompressDataSeries_double_2D_nonblocked_with_blocked_regression(double** data, size_t r1, size_t r2, unsigned char* comp_data, double* hist_data){
 
-	printf("decompressDataSeries_double_2D_nonblocked_with_blocked_regression\n");
 	size_t dim0_offset = r2;
 	size_t num_elements = r1 * r2;
 
