@@ -2825,6 +2825,12 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		realPrecision = confparams_cpr->absErrBound = computeABSErrBoundFromPSNR(confparams_cpr->psnr, (double)confparams_cpr->predThreshold, (double)valueRangeSize);
 		//printf("realPrecision=%lf\n", realPrecision);
 	}
+	else if(confparams_cpr->errorBoundMode==NORM) //norm error = sqrt(sum((xi-xi_)^2))
+	{
+		confparams_cpr->errorBoundMode = ABS;
+		realPrecision = confparams_cpr->absErrBound = computeABSErrBoundFromNORM_ERR(confparams_cpr->normErr, dataLength);
+		//printf("realPrecision=%lf\n", realPrecision);				
+	}
 	else
 	{
 		realPrecision = getRealPrecision_float(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
@@ -7362,6 +7368,8 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 	result_pos += indicator_size;
 	
 	//convert the lead/mid/resi to byte stream
+	
+	//printf("reg_count = %d, num_blocks = %d\n", reg_count, num_blocks);
 	if(reg_count > 0){
 		for(int e=0; e<4; e++){
 			int stateNum = 2*coeff_intvCapacity_sz;

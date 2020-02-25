@@ -174,6 +174,7 @@ typedef struct sz_params
 	double absErrBound; //absolute error bound
 	double relBoundRatio; //value range based relative error bound ratio
 	double psnr; //PSNR
+	double normErr;
 	double pw_relBoundRatio; //point-wise relative error bound
 	int segment_size; //only used for 2D/3D data compression with pw_relBoundRatio (deprecated)
 	int pwr_type; //only used for 2D/3D data compression with pw_relBoundRatio

@@ -58,6 +58,12 @@ double computeABSErrBoundFromPSNR(double psnr, double threshold, double value_ra
 	double v3 = pow(10, v2);
 	return value_range * v3;
 } 
+
+double computeABSErrBoundFromNORM_ERR(double normErr, size_t nbEle)
+{
+	return sqrt(3.0/nbEle)*normErr;
+} 
+
  
 /*-------------------------------------------------------------------------*/
 /**
@@ -323,6 +329,8 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 			confparams_cpr->errorBoundMode=REL_AND_PW_REL;
 		else if(strcmp(errBoundMode, "REL_OR_PW_REL")==0||strcmp(errBoundMode, "rel_or_pw_rel")==0)
 			confparams_cpr->errorBoundMode=REL_OR_PW_REL;
+		else if(strcmp(errBoundMode, "NORM")==0||strcmp(errBoundMode, "norm")==0)
+			confparams_cpr->errorBoundMode=NORM;
 		else
 		{
 			printf("[SZ] Error: Wrong error bound mode (please check sz.config file)\n");
@@ -333,6 +341,7 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		confparams_cpr->absErrBound = (double)iniparser_getdouble(ini, "PARAMETER:absErrBound", 0);
 		confparams_cpr->relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:relBoundRatio", 0);
 		confparams_cpr->psnr = (double)iniparser_getdouble(ini, "PARAMETER:psnr", 0);
+		confparams_cpr->normErr = (double)iniparser_getdouble(ini, "PARAMETER:normErr", 0);
 		confparams_cpr->pw_relBoundRatio = (double)iniparser_getdouble(ini, "PARAMETER:pw_relBoundRatio", 0);
 		confparams_cpr->segment_size = (int)iniparser_getint(ini, "PARAMETER:segment_size", 0);
 		confparams_cpr->accelerate_pw_rel_compression = (int)iniparser_getint(ini, "PARAMETER:accelerate_pw_rel_compression", 1);

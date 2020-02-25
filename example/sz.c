@@ -50,11 +50,13 @@ void usage()
 	printf("		ABS_AND_REL (using min{ABS, REL})\n");
 	printf("		ABS_OR_REL (using max{ABS, REL})\n");
 	printf("		PSNR (peak signal-to-noise ratio)\n");
+	printf("		NORM (norm2 error : sqrt(sum(xi-xi')^2)\n"); 
 	printf("		PW_REL (point-wise relative error bound)\n");
 	printf("	-A <absolute error bound>: specifying absolute error bound\n");
 	printf("	-R <value_range based relative error bound>: specifying relative error bound\n");
 	printf("	-P <point-wise relative error bound>: specifying point-wise relative error bound\n");
 	printf("	-S <PSNR>: specifying PSNR\n");
+	printf("	-N <normErr>: specifying normErr\n");
 	printf("* input data file:\n");
 	printf("	-i <original data file> : original data file\n");
 	printf("	-s <compressed data file> : compressed data file in decompression\n");
@@ -99,6 +101,7 @@ int main(int argc, char* argv[])
 	char* relErrorBound = NULL;
 	char* pwrErrorBound = NULL;
 	char* psnr_ = NULL;
+	char* normError = NULL;
 	
 	size_t r5 = 0;
 	size_t r4 = 0;
@@ -224,6 +227,11 @@ int main(int argc, char* argv[])
 				usage();
 			pwrErrorBound = argv[i];
 			break;
+		case 'N':
+			if (++i == argc)
+				usage();
+			normError = argv[i];
+			break;
 		case 'S': 
 			if (++i == argc)
 				usage();
@@ -286,6 +294,8 @@ int main(int argc, char* argv[])
 			errorBoundMode = PSNR;
 		else if(strcmp(errBoundMode, "PW_REL")==0)
 			errorBoundMode = PW_REL;
+		else if(strcmp(errBoundMode, "NORM")==0)
+			errorBoundMode = NORM;
 		else
 		{
 			printf("Error: wrong error bound mode setting by using the option '-M'\n");
@@ -311,6 +321,9 @@ int main(int argc, char* argv[])
 	
 		if(psnr_ != NULL)
 			confparams_cpr->psnr = atof(psnr_);
+
+		if(normError != NULL)
+			confparams_cpr->normErr = atof(normError);
 
 		size_t outSize;	
 		if(dataType == 0) //single precision
@@ -531,11 +544,12 @@ int main(int argc, char* argv[])
 				Max = ori_data[0];
 				Min = ori_data[0];
 				diffMax = fabs(data[0] - ori_data[0]);
-				double sum1 = 0, sum2 = 0;
+				double sum1 = 0, sum2 = 0, sum22 = 0;
 				for (i = 0; i < nbEle; i++)
 				{
 					sum1 += ori_data[i];
 					sum2 += data[i];
+					sum22 += data[i]*data[i];
 				}
 				double mean1 = sum1/nbEle;
 				double mean2 = sum2/nbEle;
@@ -553,7 +567,8 @@ int main(int argc, char* argv[])
 					if(ori_data[i]!=0)
 					{
 						relerr = err/fabs(ori_data[i]);
-						//if(relerr>0.1)
+						//float rerr = err/0.0020479534287005662918;
+						//if(rerr>0.001)
 						//{printf("i=%zu, %.30G\n", i, relerr); break;}
 						if(maxpw_relerr<relerr)
 							maxpw_relerr = relerr;
@@ -576,12 +591,15 @@ int main(int argc, char* argv[])
 				double psnr = 20*log10(range)-10*log10(mse);
 				double nrmse = sqrt(mse)/range;
 				double compressionRatio = 1.0*nbEle*sizeof(float)/byteLength;
-
+				double normErr = sqrt(sum);
+				double normErr_norm = normErr/sqrt(sum22);		
+		
 				printf ("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, range);
 				printf ("Max absolute error = %.10f\n", diffMax);
 				printf ("Max relative error = %f\n", diffMax/(Max-Min));
 				printf ("Max pw relative error = %f\n", maxpw_relerr);
 				printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
+				printf ("normError = %f, normErr_norm = %f\n", normErr, normErr_norm);
 				printf ("acEff=%f\n", acEff);	
 				printf ("compressionRatio=%f\n", compressionRatio);
 				
@@ -713,12 +731,13 @@ int main(int argc, char* argv[])
 				diffMax = data[0]>ori_data[0]?data[0]-ori_data[0]:ori_data[0]-data[0];
 
 				//diffMax = fabs(data[0] - ori_data[0]);
-				double sum1 = 0, sum2 = 0;
+				double sum1 = 0, sum2 = 0, sum22 = 0;
 
 				for (i = 0; i < nbEle; i++)
 				{
 					sum1 += ori_data[i];
 					sum2 += data[i];
+					sum22 += data[i]*data[i];
 				}
 				double mean1 = sum1/nbEle;
 				double mean2 = sum2/nbEle;
@@ -755,6 +774,8 @@ int main(int argc, char* argv[])
 				double mse = sum/nbEle;
 				double range = Max - Min;
 				double psnr = 20*log10(range)-10*log10(mse);
+				double normErr = sqrt(sum);
+				double normErr_norm = normErr/sqrt(sum22);
 				double nrmse = sqrt(mse)/range;
 
 				double compressionRatio = 1.0*nbEle*sizeof(double)/byteLength;
@@ -764,6 +785,7 @@ int main(int argc, char* argv[])
 				printf ("Max relative error = %f\n", diffMax/(Max-Min));
 				printf ("Max pw relative error = %f\n", maxpw_relerr);
 				printf ("PSNR = %f, NRMSE = %.20G\n", psnr,nrmse);
+				printf ("normErr = %f, normErr_norm = %f\n", normErr, normErr_norm);
 				printf ("acEff = %f\n", acEff);
 				printf ("compressionRatio = %f\n", compressionRatio);
 				

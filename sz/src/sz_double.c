@@ -2550,6 +2550,12 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		confparams_cpr->errorBoundMode = ABS;
 		realPrecision = confparams_cpr->absErrBound = computeABSErrBoundFromPSNR(confparams_cpr->psnr, (double)confparams_cpr->predThreshold, valueRangeSize);
 	}
+	else if(confparams_cpr->errorBoundMode==NORM) //norm error = sqrt(sum((xi-xi_)^2))
+	{
+		confparams_cpr->errorBoundMode = ABS;
+		realPrecision = confparams_cpr->absErrBound = computeABSErrBoundFromNORM_ERR(confparams_cpr->normErr, dataLength);
+		//printf("realPrecision=%lf\n", realPrecision);				
+	}	
 	else
 	{
 		realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
