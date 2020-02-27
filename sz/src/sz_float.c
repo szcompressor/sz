@@ -502,11 +502,11 @@ size_t dataLength, float realPrecision, float valueRangeSize, float medianValue_
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
 
 //sdi:Debug
-	int sum =0;
+/*	int sum =0;
 	for(i=0;i<dataLength;i++)
 		if(type[i]==0) sum++;
 	printf("opt_quantizations=%d, exactDataNum=%zu, sum=%d\n",quantization_intervals, exactDataNum, sum);
-	
+*/	
 	//free memory
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
