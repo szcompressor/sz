@@ -454,6 +454,7 @@ int main(int argc, char* argv[])
 		{
 			printf ("Error: -a can be only used in decompression.\n");
 		}
+		byteLength = outSize;
 	}
 	else if(isCompression == 0) //decompression
 	{
