@@ -31,7 +31,7 @@ install:
       if [[ "${TRAVIS_OS_NAME}" != "linux" ]]; then
         brew install ctags
         brew install cunit
-        brew install pkg-config
+        brew upgrade pkg-config
       fi
     - cmake -DCMAKE_INSTALL_PREFIX=$HOME -DBUILD_TESTS=ON -DBUILD_INTEGRATION_TESTS=ON ..
     - make 
