@@ -36,13 +36,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #generate tags for the project if tags exist
-find_program(TAGS ctags)
-if(TAGS)
-	add_custom_target(tags ALL
-    COMMAND ${TAGS} --exclude=${CMAKE_BINARY_DIR} -f ${CMAKE_BINARY_DIR}/tags --c++-kinds=+p --fields=+iaS -R
-		COMMENT Generating Tag files
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		)
+option(BUILD_CTAGS "enable ctags generation target" OFF)
+if(BUILD_CTAGS)
+  find_program(TAGS ctags)
+  if(TAGS)
+    add_custom_target(tags ALL
+      COMMAND ${TAGS} --exclude=${CMAKE_BINARY_DIR} -f ${CMAKE_BINARY_DIR}/tags --c++-kinds=+p --fields=+iaS -R
+      COMMENT Generating Tag files
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
+  endif()
 endif()
 
 option(BUILD_SHARED_LIBS "build shared libraries over static libraries" ON)
