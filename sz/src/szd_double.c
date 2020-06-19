@@ -127,7 +127,7 @@ size_t cmpSize, int compressionType, double* hist_data)
 		}
 	}	
 
-	if(PROTECT_VALUE_RANGE)
+	if(confparams_dec->protectValueRange)
 	{
 		double* nd = *newData;
 		double min = confparams_dec->dmin;

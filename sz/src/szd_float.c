@@ -158,7 +158,7 @@ size_t cmpSize, int compressionType, float* hist_data)
 	}
 
 	//cost_start_();	
-	if(PROTECT_VALUE_RANGE)
+	if(confparams_dec->protectValueRange)
 	{
 		float* nd = *newData;
 		float min = confparams_dec->fmin;

@@ -61,7 +61,7 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 	for (i = 0; i < 3; i++)
 		version[i] = flatBytes[index++]; //3
 	unsigned char sameRByte = flatBytes[index++]; //1
-	if(checkVersion(version)!=1)
+	if(checkVersion2(version)!=1)
 	{
 		//wrong version
 		printf("Wrong version: \nCompressed-data version (%d.%d.%d)\n",version[0], version[1], version[2]);
@@ -76,7 +76,8 @@ int new_TightDataPointStorageD_fromFlatBytes(TightDataPointStorageD **this, unsi
 	int isPW_REL = (sameRByte & 0x20)>>5;
 	exe_params->SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4;
 	//confparams_dec->randomAccess = (sameRByte & 0x02) >> 1;
-	//confparams_dec->szMode = (sameRByte & 0x06) >> 1;						//0000,0110	
+	//confparams_dec->szMode = (sameRByte & 0x06) >> 1;						//this 0000,0110	are not used for szMode any more
+	confparams_dec->protectValueRange = (sameRByte & 0x04)>>2;
 	confparams_dec->accelerate_pw_rel_compression = (sameRByte & 0x08) >> 3;
 	int errorBoundMode = ABS;
 	if(isPW_REL)
@@ -676,6 +677,8 @@ void convertTDPStoFlatBytes_double_args(TightDataPointStorageD *tdps, unsigned c
 		sameByte = (unsigned char) (sameByte | 0x40); //0100,0000, the 6th bit
 	if(confparams_cpr->errorBoundMode == PW_REL && confparams_cpr->accelerate_pw_rel_compression)
 		sameByte = (unsigned char) (sameByte | 0x08); //0000,1000, the 7th bit 	
+	if(confparams_cpr->protectValueRange)
+		sameByte = (unsigned char) (sameByte | 0x04); //0000,0100
 	if(tdps->allSameData==1)
 	{
 		size_t totalByteLength = 3 + 1 + MetaDataByteLength_double + exe_params->SZ_SIZE_TYPE + tdps->exactMidBytes_size;

@@ -683,7 +683,7 @@ void SZ_printMetadata(sz_metadata* metadata)
 		printf("szMode:                         \t SZ_BEST_SPEED (without Gzip)\n");
 		break;
 	case SZ_BEST_COMPRESSION:
-		printf("szMode:                         \t SZ_BEST_COMPRESSION (with Gzip)\n");
+		printf("szMode:                         \t SZ_BEST_COMPRESSION (with Zstd or Gzip)\n");
 		break;
 	}
 	switch(params->gzipMode)

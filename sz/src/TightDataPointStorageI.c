@@ -112,7 +112,7 @@ int new_TightDataPointStorageI_fromFlatBytes(TightDataPointStorageI **this, unsi
 	for (i = 0; i < 3; i++)
 		version[i] = flatBytes[index++]; //3
 	unsigned char sameRByte = flatBytes[index++]; //1
-	if(checkVersion(version)!=1)
+	if(checkVersion2(version)!=1)
 	{
 		//wrong version
 		printf("Wrong version: \nCompressed-data version (%d.%d.%d)\n",version[0], version[1], version[2]);

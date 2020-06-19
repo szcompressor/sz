@@ -42,7 +42,7 @@ uint64_t MLCTWI_GetMantiIndex(double value, int bits){
 }
 
 double MLTCWI_RebuildDouble(uint16_t expo, uint64_t manti, int bits){
-    double result;
+    double result = 0;
     uint64_t *ptr = (uint64_t*)&result;
     *ptr = expo;
     (*ptr) = (*ptr) << 52;

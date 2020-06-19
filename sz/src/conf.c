@@ -133,6 +133,8 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 	
 		confparams_cpr->randomAccess = 0; //0: no random access , 1: support random access
 	
+		confparams_cpr->protectValueRange = 0;
+	
 		return SZ_SCES;
 	}
     
@@ -295,6 +297,12 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 			return SZ_NSCS;
 		}		
 		
+		modeBuf = iniparser_getstring(ini, "PARAMETER:protectValueRange", "YES");
+		if(strcmp(modeBuf, "YES")==0)
+			confparams_cpr->protectValueRange = 1;
+		else
+			confparams_cpr->protectValueRange = 0;
+		
 		confparams_cpr->randomAccess = (int)iniparser_getint(ini, "PARAMETER:randomAccess", 0);
 		
 		//TODO
@@ -406,6 +414,25 @@ int checkVersion(char* version)
 	for(;i<3;i++)
 		if(version[i]!=versionNumber[i])
 			return 0;
+	return 1;
+}
+
+inline int computeVersion(int major, int minor, int revision)
+{
+	return major*10000+minor*100+revision;
+}
+
+int checkVersion2(char* version)
+{
+	int major = version[0];
+	int minor = version[1];
+	int revision = version[2];
+	
+	int preVersion = 20108;
+	int givenVersion = computeVersion(major, minor, revision);
+	//int currentVersion = computeVersion(SZ_VER_MAJOR, SZ_VER_MINOR, SZ_VER_REVISION);
+	if(givenVersion < preVersion) //only for old version (older than 2.1.8), we will check whether version is consistent exactly.
+		return checkVersion(version);
 	return 1;
 }
 

@@ -13,8 +13,8 @@
 #define SZ_VERNUM 0x0200
 #define SZ_VER_MAJOR 2
 #define SZ_VER_MINOR 1
-#define SZ_VER_BUILD 8
-#define SZ_VER_REVISION 3
+#define SZ_VER_BUILD 9
+#define SZ_VER_REVISION 0
 
 #define PASTRI 103
 #define HZ 102 //deprecated
@@ -102,7 +102,5 @@
 
 #define GZIP_COMPRESSOR 0 //i.e., ZLIB_COMPRSSOR
 #define ZSTD_COMPRESSOR 1
-
-#define PROTECT_VALUE_RANGE 0
 
 #endif /* _SZ_DEFINES_H */

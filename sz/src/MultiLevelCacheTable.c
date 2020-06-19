@@ -36,7 +36,7 @@ uint32_t MLCT_GetMantiIndex(float value, int bits){
 }
 
 float MLTC_RebuildFloat(uint8_t expo, uint32_t manti, int bits){
-    float result;
+    float result = 0;
     uint32_t *ptr = (uint32_t*)&result;
     *ptr = expo;
     (*ptr) = (*ptr) << 23;

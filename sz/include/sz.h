@@ -168,7 +168,7 @@ typedef struct sz_params
 	int losslessCompressor;
 	int sampleDistance; //2 bytes
 	float predThreshold;  // 2 bytes
-	int szMode; //* 0 (best speed) or 1 (better compression with Gzip) or 3 temporal-dimension based compression
+	int szMode; //* 0 (best speed) or 1 (better compression with Zstd/Gzip) or 3 temporal-dimension based compression
 	int gzipMode; //* four options: Z_NO_COMPRESSION, or Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION
 	int  errorBoundMode; //4bits (0.5byte), //ABS, REL, ABS_AND_REL, or ABS_OR_REL, PSNR, or PW_REL, PSNR
 	double absErrBound; //absolute error bound
@@ -179,6 +179,7 @@ typedef struct sz_params
 	int segment_size; //only used for 2D/3D data compression with pw_relBoundRatio (deprecated)
 	int pwr_type; //only used for 2D/3D data compression with pw_relBoundRatio
 	
+	int protectValueRange; //0 or 1
 	float fmin, fmax;
 	double dmin, dmax;
 	

@@ -2901,16 +2901,16 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 #endif							
 						if(confparams_cpr->withRegression == SZ_NO_REGRESSION)
 							SZ_compress_args_float_NoCkRngeNoGzip_2D(cmprType, &tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
-						else 
+						else // SZ 2.1 (2D)
 						{
-							tmpByteData = SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize);					
+							tmpByteData = SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize);//SZ 2.1 (2D)
 							if(tmpOutSize>=dataLength*sizeof(float) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
 								SZ_compress_args_float_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);						
 						}
 #ifdef HAVE_RANDOMACCESS							
 					}					
-					else //TODO Xin Liang
-						tmpByteData = SZ_compress_float_2D_MDQ_decompression_random_access_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize);		
+					else 
+						tmpByteData = SZ_compress_float_2D_MDQ_decompression_random_access_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize); 
 #endif	
 				}
 		}
@@ -2937,9 +2937,9 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 #endif						
 						if(confparams_cpr->withRegression == SZ_NO_REGRESSION)
 							SZ_compress_args_float_NoCkRngeNoGzip_3D(cmprType, &tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
-						else 
+						else  //SZ 2.1 (3D)
 						{
-							tmpByteData = SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize);
+							tmpByteData = SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize); //SZ 2.1 (3D)
 							if(tmpOutSize>=dataLength*sizeof(float) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
 								SZ_compress_args_float_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);		
 						}
@@ -2971,7 +2971,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 						SZ_compress_args_float_NoCkRngeNoGzip_4D(&tmpByteData, oriData, r4, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 					else 
 					{
-						tmpByteData = SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(oriData, r4*r3, r2, r1, realPrecision, &tmpOutSize);
+						tmpByteData = SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(oriData, r4*r3, r2, r1, realPrecision, &tmpOutSize); //SZ 2.1 4D
 						if(tmpOutSize>=dataLength*sizeof(float) + 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1)
 							SZ_compress_args_float_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);						
 					}
@@ -2982,7 +2982,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			printf("Error: doesn't support 5 dimensions for now.\n");
 			status = SZ_DERR; //dimension error
 		}
-		//Call Gzip to do the further compression.
+		//Call Zstd or Gzip to do the further compression.
 		if(confparams_cpr->szMode==SZ_BEST_SPEED)
 		{
 			*outSize = tmpOutSize;

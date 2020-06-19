@@ -60,7 +60,7 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 	for (i = 0; i < 3; i++)
 		version[i] = flatBytes[index++]; //3
 	unsigned char sameRByte = flatBytes[index++]; //1
-	if(checkVersion(version)!=1)
+	if(checkVersion2(version)!=1)
 	{
 		//wrong version
 		printf("Wrong version: \nCompressed-data version (%d.%d.%d)\n",version[0], version[1], version[2]);
@@ -74,7 +74,10 @@ int new_TightDataPointStorageF_fromFlatBytes(TightDataPointStorageF **this, unsi
 	int isPW_REL = (sameRByte & 0x20)>>5; 									//0010,0000
 	exe_params->SZ_SIZE_TYPE = ((sameRByte & 0x40)>>6)==1?8:4; 				//0100,0000
 	//confparams_dec->randomAccess = (sameRByte & 0x02) >> 1;
-	//confparams_dec->szMode = (sameRByte & 0x06) >> 1;						//0000,0110 (in fact, this szMode could be removed because convertSZParamsToBytes will overwrite it)
+	//confparams_dec->szMode = (sameRByte & 0x06) >> 1;			//0000,0110 (in fact, this szMode could be removed because convertSZParamsToBytes will overwrite it)
+	
+	confparams_dec->protectValueRange = (sameRByte & 0x04)>>2;
+	
 	confparams_dec->accelerate_pw_rel_compression = (sameRByte & 0x08) >> 3;//0000,1000
 
 	int errorBoundMode = ABS;
@@ -471,6 +474,7 @@ void convertTDPStoBytes_float(TightDataPointStorageF* tdps, unsigned char* bytes
 	}	
 }
 
+/*deprecated*/
 void convertTDPStoBytes_float_reserve(TightDataPointStorageF* tdps, unsigned char* bytes, unsigned char* dsLengthBytes, unsigned char sameByte)
 {
 	size_t i, k = 0;
@@ -599,6 +603,8 @@ void convertTDPStoFlatBytes_float(TightDataPointStorageF *tdps, unsigned char** 
 		sameByte = (unsigned char) (sameByte | 0x40); // 0100,0000, the 6th bit
 	if(confparams_cpr->errorBoundMode == PW_REL && confparams_cpr->accelerate_pw_rel_compression)
 		sameByte = (unsigned char) (sameByte | 0x08); //0000,1000
+	if(confparams_cpr->protectValueRange)
+		sameByte = (unsigned char) (sameByte | 0x04); //0000,0100
 	
 	if(tdps->allSameData==1)
 	{

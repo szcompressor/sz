@@ -691,6 +691,8 @@ int initRandomAccessBytes(unsigned char* raBytes)
 	if(confparams_cpr->randomAccess)
 		sameByte = (unsigned char) (sameByte | 0x02); // 00000010, random access
 	//sameByte = sameByte | (confparams_cpr->szMode << 1);
+	if(confparams_cpr->protectValueRange)
+		sameByte = (unsigned char) (sameByte | 0x04); //00000100, protect value range
 
 	raBytes[k++] = sameByte;
 
