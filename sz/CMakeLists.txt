@@ -20,7 +20,6 @@ add_library (SZ
   src/rw.c
   src/rwf.c
   src/sz.c
-  src/sz_cuda.cu
   src/szd_double.c
   src/szd_double_pwr.c
   src/szd_double_ts.c
