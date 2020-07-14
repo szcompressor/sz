@@ -129,8 +129,11 @@ int SZ_batchDelVar_ID_vset(SZ_VarSet* vset, int var_id)
 			free_Variable_all(q);
 			vset->count --;
 			delSuccess = SZ_SCES;
+			if(q->next==NULL) //means that q is the last variable
+				vset->lastVar = p;			
 			break;
 		}
+			
 		p = p->next;
 		q = q->next;	
 	}
