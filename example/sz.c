@@ -480,7 +480,7 @@ int main(int argc, char* argv[])
 		else
 			nbEle = r1*r2*r3*r4*r5;
 
-		if(checkFileExistance(cmpPath)==0)
+		if(checkFileExistance(cmpPath)==0 && tucker == 0)
 		{
 			printf("Error: compression file (%s) is not readable.\n", cmpPath);
 			exit(0);
@@ -650,7 +650,7 @@ int main(int argc, char* argv[])
 				else if(r3==0)
 					sprintf(dimStr2, "Ending subscripts = %zu %zu", r2-1, r1-1);
 				else if(r4==0)
-					sprintf(dimStr2, "Endi outDir[640],ng subscripts = %zu %zu %zu", r3-1, r2-1, r1-1);
+					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu", r3-1, r2-1, r1-1);
 				else if(r5==0)
 					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu %zu", r4-1, r3-1, r2-1, r1-1);
 				else
