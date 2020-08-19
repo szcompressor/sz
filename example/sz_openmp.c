@@ -520,7 +520,7 @@ int main(int argc, char* argv[])
 		else
 			nbEle = r1*r2*r3*r4*r5;
 
-		if(checkFileExistance(cmpPath)==0)
+		if(checkFileExistance(cmpPath)==0  && tucker == 0)
 		{
 			printf("Error: compression file (%s) is not readable.\n", cmpPath);
 			exit(0);
