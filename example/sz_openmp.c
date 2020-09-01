@@ -552,11 +552,11 @@ int main(int argc, char* argv[])
 			{
 				cost_start_omp();
 				if(r2==0)
-					decompressDataSeries_float_1D_openmp(&data, r1, bytes + 24);
+					decompressDataSeries_float_1D_openmp(&data, r1, bytes + 1+3+MetaDataByteLength);
 				else if(r3==0)
-					decompressDataSeries_float_2D_openmp(&data, r2, r1, bytes + 24);
+					decompressDataSeries_float_2D_openmp(&data, r2, r1, bytes + 1+3+MetaDataByteLength);
 				else
-					decompressDataSeries_float_3D_openmp(&data, r3, r2, r1, bytes + 24);
+					decompressDataSeries_float_3D_openmp(&data, r3, r2, r1, bytes + 1+3+MetaDataByteLength);
 				cost_end_omp();
 			}
 			if(decPath == NULL)
