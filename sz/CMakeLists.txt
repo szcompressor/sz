@@ -70,11 +70,6 @@ target_compile_options(SZ
 	PRIVATE $<$<CONFIG:Debug>:-Wall -Wextra -Wpedantic -Wno-unused-parameter>
 	)
 
-if(FFTW3_FOUND)
-  target_compile_definitions(SZ PUBLIC FFTW3)
-  target_link_libraries(SZ PUBLIC PkgConfig::FFTW3)
-endif()
-
 if(BUILD_PASTRI)
   target_compile_definitions(SZ PUBLIC HAVE_PASTRI)
 endif()

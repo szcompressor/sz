@@ -16,7 +16,7 @@ double sz_wtime(){
     return omp_get_wtime();
 #else
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+    clock_gettime(CLOCK_MONOTONIC, &ts);
 
     return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
 #endif

@@ -53,7 +53,6 @@ option(BUILD_SHARED_LIBS "build shared libraries over static libraries" ON)
 #find dependencies
 include(GNUInstallDirs)
 find_package(PkgConfig)
-pkg_search_module(FFTW3 IMPORTED_TARGET fftw3)
 pkg_search_module(ZSTD  IMPORTED_TARGET libzstd)
 
 #by default pass no 3rd party exports
