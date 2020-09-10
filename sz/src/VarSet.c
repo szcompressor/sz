@@ -17,9 +17,10 @@ void free_Variable_keepOriginalData(SZ_Variable* v)
 {
 	if(v->varName!=NULL)
 		free(v->varName);	
-	if(v->data!=NULL)
+	if(v->compressedBytes!=NULL)
 		free(v->compressedBytes);
-	
+	if(v->multisteps!=NULL)
+		free_multisteps(v->multisteps);	
 	free(v);
 }
 
@@ -126,7 +127,8 @@ int SZ_batchDelVar_ID_vset(SZ_VarSet* vset, int var_id)
 		if(q->var_id == var_id)
 		{
 			p->next = q->next;
-			free_Variable_all(q);
+			//free_Variable_all(q);
+			free_Variable_keepOriginalData(q);
 			vset->count --;
 			delSuccess = SZ_SCES;
 			if(q->next==NULL) //means that q is the last variable
@@ -152,7 +154,8 @@ int SZ_batchDelVar_vset(SZ_VarSet* vset, char* varName)
 		if(cmpResult==0)
 		{
 			p->next = q->next;
-			free_Variable_all(q);
+			//free_Variable_all(q);
+			free_Variable_keepOriginalData(q);
 			vset->count --;
 			delSuccess = SZ_SCES;
 			break;
