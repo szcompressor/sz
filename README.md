@@ -129,6 +129,10 @@ An example usage file can be found in `example/test.py`
 
 Additional documentation can be found using the `help` function in python.
 
+### GPU Version
+
+Please refer [this repository](https://github.com/szcompressor/cuSZ) for our GPU (CUDA) version of SZ, namely, cuSZ. Please open an issue ticket there if you have any questions or issues regarding cuSZ.
+
 
 ## Limitation of this version
 
