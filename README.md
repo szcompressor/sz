@@ -20,7 +20,7 @@ SZ: Error-bounded Lossy Compressor for HPC Data
 
 This document simply introduces how to install and use the SZ compressor. More details can be found in doc/userguide.pdf. 
 
-*OpenCL version can be found in the package, while this is a deprecated code for **GPU**. The optimized GPU code (in Cuda and Kokkos) is under developement, to be released later.*
+*OpenCL version can be found in the package, while this is a deprecated code for **GPU**. The optimized GPU code in CUDA can be found at [https://github.com/szcompressor/cuSZ](https://github.com/szcompressor/cuSZ).*
 
 ## Installation
 
@@ -129,14 +129,13 @@ An example usage file can be found in `example/test.py`
 
 Additional documentation can be found using the `help` function in python.
 
-### GPU Version
-
-Please refer to [this repository](https://github.com/szcompressor/cuSZ) for our GPU/CUDA version of SZ (called cuSZ). Please create an issue ticket there if you have any questions or issues regarding cuSZ.
-
-
 ## Limitation of this version
 
 SZ is not suitable for compressing tiny datasets (such as the size <10KB)
+
+## GPU Version
+
+Please refer to [this repository](https://github.com/szcompressor/cuSZ) for our GPU/CUDA version of SZ (called cuSZ). Please create an issue ticket there if you have any questions or issues regarding cuSZ.
 
 ## Version history
 
