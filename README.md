@@ -137,6 +137,10 @@ SZ is not suitable for compressing tiny datasets (such as the size <10KB)
 
 Please refer to [this repository](https://github.com/szcompressor/cuSZ) for our GPU/CUDA version of SZ (called cuSZ). Please create an issue ticket there if you have any questions or issues regarding cuSZ.
 
+## Performance Portable Version
+
+Please refer to [this repository](https://github.com/szcompressor/kokkosSZ) for our performance portable version of SZ (called kSZ) using [Kokkos](https://github.com/kokkos/kokkos) programming model. Please create an issue ticket there if you have any questions or issues regarding kSZ.
+
 ## Version history
 
 version		New features
