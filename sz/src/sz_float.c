@@ -6328,6 +6328,12 @@ unsigned char * SZ_compress_float_2D_MDQ_nonblocked_with_blocked_regression(floa
 	size_t typeArray_size = 0;
 	encode(huffmanTree, result_type, num_elements, result_pos, &typeArray_size);
 	result_pos += typeArray_size;
+	
+#ifdef HAVE_WRITESTATS
+	writeHuffmanInfo(treeByteSize, typeArray_size, num_elements*sizeof(float), nodeCount);
+	writeBlockInfo(use_mean, block_size, reg_count, num_blocks);
+	writeUnpredictDataCounts(total_unpred, num_elements);
+#endif	
 
 	size_t totalEncodeSize = result_pos - result;
 	free(indicator);
@@ -7364,6 +7370,7 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 	result_pos += sizeof(unsigned char);
 	memcpy(result_pos, &mean, sizeof(float));
 	result_pos += sizeof(float);
+		
 	size_t indicator_size = convertIntArray2ByteArray_fast_1b_to_result(indicator, num_blocks, result_pos);
 	result_pos += indicator_size;
 	
@@ -7421,6 +7428,11 @@ unsigned char * SZ_compress_float_3D_MDQ_nonblocked_with_blocked_regression(floa
 	free(result_type);
 	free(reg_params);
 
+#ifdef HAVE_WRITESTATS
+	writeHuffmanInfo(treeByteSize, typeArray_size, num_elements*sizeof(float), nodeCount);
+	writeBlockInfo(use_mean, block_size, reg_count, num_blocks);
+	writeUnpredictDataCounts(total_unpred, num_elements);
+#endif	
 	
 	SZ_ReleaseHuffman(huffmanTree);
 	*comp_size = totalEncodeSize;

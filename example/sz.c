@@ -71,6 +71,9 @@ void usage()
 	printf("	-4 <nx> <ny> <nz> <np>: dimensions for 4D data such as data[np][nz][ny][nx] \n");
 	printf("* print compression results: \n");
 	printf("	-a : print compression results such as distortions\n");
+#ifdef HAVE_WRITESTATS
+	printf("	-q : print the stats about the compressor (only for compression)\n");
+#endif
 	printf("* examples: \n");
 	printf("	sz -z -f -c sz.config -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128\n");
 	printf("	sz -z -f -c sz.config -M ABS -A 1E-3 -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128\n");
@@ -87,6 +90,9 @@ int main(int argc, char* argv[])
 {
 	int binaryOutput = 1;
 	int printCmpResults = 0;
+#ifdef HAVE_WRITESTATS	
+	int printStats = 0;
+#endif
 	int isCompression = -1000; //1 : compression ; 0: decompression
 	int printMeta = 0;
 	int dataType = 0; //0: single precision ; 1: double precision
@@ -136,6 +142,11 @@ int main(int argc, char* argv[])
 		case 'a':
 			printCmpResults = 1;
 			break;
+#ifdef HAVE_WRITESTATS	
+		case 'q':
+			printStats = 1;
+			break;
+#endif			
 		case 'z':
 			isCompression = 1;
 			if (i+1 < argc)
@@ -363,6 +374,11 @@ int main(int argc, char* argv[])
 			}
 			printf("compression time = %f\n", totalCost);
 			printf("compressed data file: %s\n", outputFilePath);			
+
+#ifdef HAVE_WRITESTATS	
+			if(printStats)
+				printSZStats();		
+#endif					
 		}
 		else //dataType == 1: double precision
 		{
@@ -454,7 +470,6 @@ int main(int argc, char* argv[])
 		{
 			printf ("Error: -a can be only used in decompression.\n");
 		}
-		byteLength = outSize;
 	}
 	else if(isCompression == 0) //decompression
 	{
@@ -480,7 +495,7 @@ int main(int argc, char* argv[])
 		else
 			nbEle = r1*r2*r3*r4*r5;
 
-		if(checkFileExistance(cmpPath)==0 && tucker == 0)
+		if(checkFileExistance(cmpPath)==0)
 		{
 			printf("Error: compression file (%s) is not readable.\n", cmpPath);
 			exit(0);
@@ -650,7 +665,7 @@ int main(int argc, char* argv[])
 				else if(r3==0)
 					sprintf(dimStr2, "Ending subscripts = %zu %zu", r2-1, r1-1);
 				else if(r4==0)
-					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu", r3-1, r2-1, r1-1);
+					sprintf(dimStr2, "Endi outDir[640],ng subscripts = %zu %zu %zu", r3-1, r2-1, r1-1);
 				else if(r5==0)
 					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu %zu", r4-1, r3-1, r2-1, r1-1);
 				else
