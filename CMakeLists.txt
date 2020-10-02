@@ -105,6 +105,7 @@ option(BUILD_TIMECMPR "build the time based compression code" OFF)
 option(BUILD_RANDOMACCESS "build the random access code" OFF)
 option(BUILD_DOCKER_CONTAINERS "build docker containers for testing" OFF)
 option(BUILD_FORTRAN "build the fortran interface" OFF)
+option(BUILD_STATS "record statistics for prediction" OFF)
 if(BUILD_DOCKER_CONTAINERS)
   
   foreach(CONTAINER Centos Fedora Ubuntu Travis CentosPackaged)

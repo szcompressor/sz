@@ -56,6 +56,7 @@ add_library (SZ
   src/TypeManager.c
   src/utility.c
   src/VarSet.c
+  src/sz_stats.c
 )
 
 target_include_directories(SZ 
@@ -85,6 +86,9 @@ if(BUILD_FORTRAN)
     ${CMAKE_CURRENT_SOURCE_DIR}/src/rw_interface.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sz_interface.F90
   )
+endif()
+if(BUILD_STATS)
+  target_compile_definitions(SZ PUBLIC HAVE_WRITESTATS)
 endif()
 
 install (TARGETS SZ ${thirdparty_export} EXPORT SZConfig
