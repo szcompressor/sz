@@ -12,7 +12,7 @@ include_HEADERS=include/MultiLevelCacheTable.h include/MultiLevelCacheTableWideI
 		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
 		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h include/sz_opencl.h\
 		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
-		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/exafelSZ.h include/ArithmeticCoding.h include/sz_omp.h sz.mod rw.mod
+		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/exafelSZ.h include/ArithmeticCoding.h include/sz_omp.h include/sz_stats.h sz.mod rw.mod
 lib_LTLIBRARIES=libSZ.la
 libSZ_la_CFLAGS=-I./include -I../zlib/ -I../zstd/
 if TIMECMPR
@@ -48,10 +48,13 @@ include_HEADERS=include/MultiLevelCacheTable.h include/MultiLevelCacheTableWideI
 		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
 		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h include/sz_opencl.h\
 		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
-		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/exafelSZ.h include/ArithmeticCoding.h include/sz_omp.h
+		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/exafelSZ.h include/ArithmeticCoding.h include/sz_omp.h include/sz_stats.h
 
 lib_LTLIBRARIES=libSZ.la
 libSZ_la_CFLAGS=-I./include -I../zlib -I../zstd/ 
+if WRITESTATS
+libSZ_la_CFLAGS+=-DHAVE_WRITESTATS
+endif
 if TIMECMPR
 libSZ_la_CFLAGS+=-DHAVE_TIMECMPR
 endif
@@ -81,6 +84,9 @@ libSZ_la_SOURCES+=src/sz_omp.c
 endif
 if TIMECMPR
 libSZ_la_SOURCES+=src/sz_float_ts.c src/szd_float_ts.c src/sz_double_ts.c src/szd_double_ts.c
+endif
+if WRITESTATS
+libSZ_la_SOURCES+=src/sz_stats.c
 endif
 
 libSZ_la_LINK= $(AM_V_CC)$(LIBTOOL) --tag=CC --mode=link $(CCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)

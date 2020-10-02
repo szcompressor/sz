@@ -2,6 +2,10 @@ AUTOMAKE_OPTIONS=foreign
 AM_CFLAGS = -I../sz/include -I../zlib -I../zstd $(GSL_CFLAGS) $(GSL_STATIC)
 AM_FCFLAGS = -I../sz/include -I../sz -I../zlib -I../zstd $(GSL_CFLAGS) $(GSL_STATIC)
 
+if WRITESTATS
+AM_CFLAGS += -DHAVE_WRITESTATS
+endif
+
 if OPENMP
 AM_CFLAGS += -fopenmp
 endif

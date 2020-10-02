@@ -219,7 +219,7 @@ if test "$ok" = "yes"; then
         PASTRI_FLAGS="-DHAVE_PASTRI"
 fi
 
-AC_SUBST(RANDOMACCESS_FLAGS)
+AC_SUBST(PASTRI_FLAGS)
 
 ##
 ## RANDOMACCESS
@@ -233,6 +233,21 @@ if test "$ok" = "yes"; then
 fi
 
 AC_SUBST(RANDOMACCESS_FLAGS)
+
+##
+## WRITESTATS_FLAGS
+##
+
+AC_ARG_ENABLE(writestats, [  --enable-writestats            use WRITESTATS], ok=$enableval, ok=no)
+AM_CONDITIONAL([WRITESTATS], [test "x$enable_writestats" = "xyes"])
+
+if test "$ok" = "yes"; then
+        WRITESTATS_FLAGS="-DHAVE_WRITESTATS"
+fi
+
+AC_SUBST(WRITESTATS_FLAGS)
+
+
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T

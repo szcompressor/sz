@@ -95,12 +95,14 @@ host_triplet = @host@
 @FORTRAN_TRUE@@TIMECMPR_TRUE@am__append_1 = -DHAVE_TIMECMPR
 @FORTRAN_TRUE@@RANDOMACCESS_TRUE@am__append_2 = -DHAVE_RANDOMACCESS
 @FORTRAN_TRUE@@OPENMP_TRUE@am__append_3 = -fopenmp
-@FORTRAN_FALSE@@TIMECMPR_TRUE@am__append_4 = -DHAVE_TIMECMPR
-@FORTRAN_FALSE@@RANDOMACCESS_TRUE@am__append_5 = -DHAVE_RANDOMACCESS
-@FORTRAN_FALSE@@OPENMP_TRUE@am__append_6 = -fopenmp
-@FORTRAN_FALSE@@PASTRI_TRUE@am__append_7 = src/pastri.c
-@FORTRAN_FALSE@@OPENMP_TRUE@am__append_8 = src/sz_omp.c
-@FORTRAN_FALSE@@TIMECMPR_TRUE@am__append_9 = src/sz_float_ts.c src/szd_float_ts.c src/sz_double_ts.c src/szd_double_ts.c
+@FORTRAN_FALSE@@WRITESTATS_TRUE@am__append_4 = -DHAVE_WRITESTATS
+@FORTRAN_FALSE@@TIMECMPR_TRUE@am__append_5 = -DHAVE_TIMECMPR
+@FORTRAN_FALSE@@RANDOMACCESS_TRUE@am__append_6 = -DHAVE_RANDOMACCESS
+@FORTRAN_FALSE@@OPENMP_TRUE@am__append_7 = -fopenmp
+@FORTRAN_FALSE@@PASTRI_TRUE@am__append_8 = src/pastri.c
+@FORTRAN_FALSE@@OPENMP_TRUE@am__append_9 = src/sz_omp.c
+@FORTRAN_FALSE@@TIMECMPR_TRUE@am__append_10 = src/sz_float_ts.c src/szd_float_ts.c src/sz_double_ts.c src/szd_double_ts.c
+@FORTRAN_FALSE@@WRITESTATS_TRUE@am__append_11 = src/sz_stats.c
 subdir = sz
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -160,8 +162,8 @@ am__libSZ_la_SOURCES_DIST = src/MultiLevelCacheTable.c \
 	src/szd_float_pwr.c src/szd_double_pwr.c \
 	src/ArithmeticCoding.c src/exafelSZ.c src/CacheTable.c \
 	src/pastri.c src/sz_omp.c src/sz_float_ts.c src/szd_float_ts.c \
-	src/sz_double_ts.c src/szd_double_ts.c src/szf.c src/rwf.c \
-	src/sz_interface.F90 src/rw_interface.F90
+	src/sz_double_ts.c src/szd_double_ts.c src/sz_stats.c \
+	src/szf.c src/rwf.c src/sz_interface.F90 src/rw_interface.F90
 am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@@PASTRI_TRUE@am__objects_1 = src/libSZ_la-pastri.lo
 @FORTRAN_FALSE@@OPENMP_TRUE@am__objects_2 = src/libSZ_la-sz_omp.lo
@@ -170,6 +172,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@@TIMECMPR_TRUE@	src/libSZ_la-szd_float_ts.lo \
 @FORTRAN_FALSE@@TIMECMPR_TRUE@	src/libSZ_la-sz_double_ts.lo \
 @FORTRAN_FALSE@@TIMECMPR_TRUE@	src/libSZ_la-szd_double_ts.lo
+@FORTRAN_FALSE@@WRITESTATS_TRUE@am__objects_4 =  \
+@FORTRAN_FALSE@@WRITESTATS_TRUE@	src/libSZ_la-sz_stats.lo
 @FORTRAN_FALSE@am_libSZ_la_OBJECTS =  \
 @FORTRAN_FALSE@	src/libSZ_la-MultiLevelCacheTable.lo \
 @FORTRAN_FALSE@	src/libSZ_la-MultiLevelCacheTableWideInterval.lo \
@@ -217,7 +221,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@	src/libSZ_la-ArithmeticCoding.lo \
 @FORTRAN_FALSE@	src/libSZ_la-exafelSZ.lo \
 @FORTRAN_FALSE@	src/libSZ_la-CacheTable.lo $(am__objects_1) \
-@FORTRAN_FALSE@	$(am__objects_2) $(am__objects_3)
+@FORTRAN_FALSE@	$(am__objects_2) $(am__objects_3) \
+@FORTRAN_FALSE@	$(am__objects_4)
 @FORTRAN_TRUE@am_libSZ_la_OBJECTS =  \
 @FORTRAN_TRUE@	src/libSZ_la-MultiLevelCacheTable.lo \
 @FORTRAN_TRUE@	src/libSZ_la-MultiLevelCacheTableWideInterval.lo \
@@ -264,7 +269,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_TRUE@	src/libSZ_la-CacheTable.lo src/sz_interface.lo \
 @FORTRAN_TRUE@	src/rw_interface.lo src/libSZ_la-exafelSZ.lo \
 @FORTRAN_TRUE@	$(am__objects_1) $(am__objects_2) \
-@FORTRAN_TRUE@	$(am__objects_3)
+@FORTRAN_TRUE@	$(am__objects_3) $(am__objects_4)
 libSZ_la_OBJECTS = $(am_libSZ_la_OBJECTS)
 @FORTRAN_FALSE@am_libSZ_la_rpath = -rpath $(libdir)
 @FORTRAN_TRUE@am_libSZ_la_rpath = -rpath $(libdir)
@@ -357,7 +362,7 @@ am__include_HEADERS_DIST = include/MultiLevelCacheTable.h \
 	include/TightDataPointStorageF.h include/pastriD.h \
 	include/pastriF.h include/pastriGeneral.h include/pastri.h \
 	include/exafelSZ.h include/ArithmeticCoding.h include/sz_omp.h \
-	include/szf.h sz.mod rw.mod
+	include/sz_stats.h include/szf.h sz.mod rw.mod
 HEADERS = $(include_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
@@ -446,6 +451,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
+PASTRI_FLAGS = @PASTRI_FLAGS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANDOMACCESS_FLAGS = @RANDOMACCESS_FLAGS@
 RANLIB = @RANLIB@
@@ -455,6 +461,7 @@ SHELL = @SHELL@
 STRIP = @STRIP@
 TIMECMPR_FLAGS = @TIMECMPR_FLAGS@
 VERSION = @VERSION@
+WRITESTATS_FLAGS = @WRITESTATS_FLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -518,7 +525,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
 @FORTRAN_FALSE@		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h include/sz_opencl.h\
 @FORTRAN_FALSE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
-@FORTRAN_FALSE@		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/exafelSZ.h include/ArithmeticCoding.h include/sz_omp.h
+@FORTRAN_FALSE@		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/exafelSZ.h include/ArithmeticCoding.h include/sz_omp.h include/sz_stats.h
 
 @FORTRAN_TRUE@include_HEADERS = include/MultiLevelCacheTable.h include/MultiLevelCacheTableWideInterval.h include/CacheTable.h include/defines.h\
 @FORTRAN_TRUE@		include/CompressElement.h include/DynamicDoubleArray.h include/rw.h include/conf.h include/dataCompression.h\
@@ -529,15 +536,17 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
 @FORTRAN_TRUE@		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h include/sz_opencl.h\
 @FORTRAN_TRUE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
-@FORTRAN_TRUE@		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/exafelSZ.h include/ArithmeticCoding.h include/sz_omp.h sz.mod rw.mod
+@FORTRAN_TRUE@		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/exafelSZ.h include/ArithmeticCoding.h include/sz_omp.h include/sz_stats.h sz.mod rw.mod
 
 @FORTRAN_FALSE@lib_LTLIBRARIES = libSZ.la
 @FORTRAN_TRUE@lib_LTLIBRARIES = libSZ.la
 @FORTRAN_FALSE@libSZ_la_CFLAGS = -I./include -I../zlib -I../zstd/ \
-@FORTRAN_FALSE@	$(am__append_4) $(am__append_5) $(am__append_6)
+@FORTRAN_FALSE@	$(am__append_4) $(am__append_5) $(am__append_6) \
+@FORTRAN_FALSE@	$(am__append_7)
 @FORTRAN_TRUE@libSZ_la_CFLAGS = -I./include -I../zlib/ -I../zstd/ \
 @FORTRAN_TRUE@	$(am__append_1) $(am__append_2) $(am__append_3) \
-@FORTRAN_TRUE@	$(am__append_4) $(am__append_5) $(am__append_6)
+@FORTRAN_TRUE@	$(am__append_4) $(am__append_5) $(am__append_6) \
+@FORTRAN_TRUE@	$(am__append_7)
 @FORTRAN_FALSE@libSZ_la_LDFLAGS = -version-info  1:4:0
 @FORTRAN_TRUE@libSZ_la_LDFLAGS = -version-info  2:1:0
 @FORTRAN_FALSE@libSZ_la_LIDADD = ../zlib/.libs/libzlib.a ../zlib/.libs/libzstd.a
@@ -565,8 +574,9 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@	src/sz_float_pwr.c src/sz_double_pwr.c \
 @FORTRAN_FALSE@	src/szd_float_pwr.c src/szd_double_pwr.c \
 @FORTRAN_FALSE@	src/ArithmeticCoding.c src/exafelSZ.c \
-@FORTRAN_FALSE@	src/CacheTable.c $(am__append_7) \
-@FORTRAN_FALSE@	$(am__append_8) $(am__append_9)
+@FORTRAN_FALSE@	src/CacheTable.c $(am__append_8) \
+@FORTRAN_FALSE@	$(am__append_9) $(am__append_10) \
+@FORTRAN_FALSE@	$(am__append_11)
 @FORTRAN_TRUE@libSZ_la_SOURCES = src/MultiLevelCacheTable.c \
 @FORTRAN_TRUE@	src/MultiLevelCacheTableWideInterval.c \
 @FORTRAN_TRUE@	src/ByteToolkit.c src/dataCompression.c \
@@ -591,8 +601,8 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@	src/szd_float_pwr.c src/szd_double_pwr.c \
 @FORTRAN_TRUE@	src/ArithmeticCoding.c src/CacheTable.c \
 @FORTRAN_TRUE@	src/sz_interface.F90 src/rw_interface.F90 \
-@FORTRAN_TRUE@	src/exafelSZ.c $(am__append_7) $(am__append_8) \
-@FORTRAN_TRUE@	$(am__append_9)
+@FORTRAN_TRUE@	src/exafelSZ.c $(am__append_8) $(am__append_9) \
+@FORTRAN_TRUE@	$(am__append_10) $(am__append_11)
 @FORTRAN_FALSE@libSZ_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=CC --mode=link $(CCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 @FORTRAN_TRUE@libSZ_la_LINK = $(AM_V_CC)$(LIBTOOL) --tag=FC --mode=link $(FCLD) $(libSZ_la_CFLAGS) -O3 $(libSZ_la_LDFLAGS) -o $(lib_LTLIBRARIES)
 all: all-am
@@ -777,6 +787,8 @@ src/libSZ_la-sz_double_ts.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-szd_double_ts.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-sz_stats.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-szf.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-rwf.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/sz_interface.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
@@ -830,6 +842,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_int64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_int8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_omp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_stats.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_uint16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_uint32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-sz_uint64.Plo@am__quote@
@@ -1268,6 +1281,13 @@ src/libSZ_la-szd_double_ts.lo: src/szd_double_ts.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/szd_double_ts.c' object='src/libSZ_la-szd_double_ts.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-szd_double_ts.lo `test -f 'src/szd_double_ts.c' || echo '$(srcdir)/'`src/szd_double_ts.c
+
+src/libSZ_la-sz_stats.lo: src/sz_stats.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-sz_stats.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-sz_stats.Tpo -c -o src/libSZ_la-sz_stats.lo `test -f 'src/sz_stats.c' || echo '$(srcdir)/'`src/sz_stats.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-sz_stats.Tpo src/$(DEPDIR)/libSZ_la-sz_stats.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/sz_stats.c' object='src/libSZ_la-sz_stats.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-sz_stats.lo `test -f 'src/sz_stats.c' || echo '$(srcdir)/'`src/sz_stats.c
 
 src/libSZ_la-szf.lo: src/szf.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-szf.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-szf.Tpo -c -o src/libSZ_la-szf.lo `test -f 'src/szf.c' || echo '$(srcdir)/'`src/szf.c

@@ -88,7 +88,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@OPENMP_TRUE@am__append_1 = -fopenmp
+@WRITESTATS_TRUE@am__append_1 = -DHAVE_WRITESTATS
+@OPENMP_TRUE@am__append_2 = -fopenmp
 @FORTRAN_FALSE@bin_PROGRAMS = testint_compress$(EXEEXT) \
 @FORTRAN_FALSE@	testint_decompress$(EXEEXT) \
 @FORTRAN_FALSE@	testfloat_compress$(EXEEXT) \
@@ -104,7 +105,7 @@ host_triplet = @host@
 @FORTRAN_TRUE@	testdouble_decompress$(EXEEXT) sz$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_compress_f$(EXEEXT) \
 @FORTRAN_TRUE@	testdouble_decompress_f$(EXEEXT) $(am__EXEEXT_1)
-@TIMECMPR_TRUE@am__append_2 = testfloat_compress_ts testfloat_decompress_ts testdouble_compress_ts testdouble_decompress_ts
+@TIMECMPR_TRUE@am__append_3 = testfloat_compress_ts testfloat_decompress_ts testdouble_compress_ts testdouble_decompress_ts
 subdir = example
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -387,6 +388,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
+PASTRI_FLAGS = @PASTRI_FLAGS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANDOMACCESS_FLAGS = @RANDOMACCESS_FLAGS@
 RANLIB = @RANLIB@
@@ -396,6 +398,7 @@ SHELL = @SHELL@
 STRIP = @STRIP@
 TIMECMPR_FLAGS = @TIMECMPR_FLAGS@
 VERSION = @VERSION@
+WRITESTATS_FLAGS = @WRITESTATS_FLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -451,7 +454,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
 AM_CFLAGS = -I../sz/include -I../zlib -I../zstd $(GSL_CFLAGS) \
-	$(GSL_STATIC) $(am__append_1)
+	$(GSL_STATIC) $(am__append_1) $(am__append_2)
 AM_FCFLAGS = -I../sz/include -I../sz -I../zlib -I../zstd $(GSL_CFLAGS) $(GSL_STATIC)
 
 #if GSL
