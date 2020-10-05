@@ -145,6 +145,7 @@ void usage()
 	printf("	-3 <nx> <ny> <nz> : dimensions for 3D data such as data[nz][ny][nx] \n");
 	printf("	-4 <nx> <ny> <nz> <np>: dimensions for 4D data such as data[np][nz][ny][nx] \n");
 	printf("* random access in decompression: \n");
+	printf("	-r : inidicate the compression is supporting random access decompression (only used by compression)\n");
 	printf("	-3 <nx> <ny> <nz> <sx> <sy> <sz> <ex> <ey> <ez> : dimentions for 3D data, \n");
 	printf("		<nx> <ny> <nz> are the sizes of the original total dataset along the three dimentions, respectively.\n");
 	printf("		<sx> <sy> <sz> indicate the starting data point's position.\n");
@@ -161,6 +162,9 @@ void usage()
 	printf("	sz -z -f -c sz.config -i testdata/x86/testfloat_8_8_128.dat -3 8 8 128 -M REL -R 1E-2\n");
 	printf("	sz -x -f -i testdata/x86/testfloat_8_8_128.dat -s testdata/x86/testfloat_8_8_128.dat.sz -3 8 8 128 4 4 4 8 8 8 -a\n");
 	printf("	sz -p -s testdata/x86/testdouble_8_8_128.dat.sz\n");
+	printf("  for random access: \n");
+	printf("	sz -f -z -r -i ~/Data/NYX/dark_matter_density.raw -3 512 512 512 -M ABS -A 0.001\n");
+	printf("	sz -f -x -i ~/Data/NYX/dark_matter_density.raw -3 512 512 512 64 64 64 128 128 128 -s  ~/Data/NYX/dark_matter_density.raw.sz -a\n");
 	exit(0);
 }
 
@@ -215,6 +219,9 @@ int main(int argc, char* argv[])
 		case 'h':
 			usage();
 			exit(0);
+		case 'r':
+			randomAccess = 1;
+			break;
 		case 'b': 
 			binaryOutput = 1;
 			break;
@@ -447,6 +454,7 @@ int main(int argc, char* argv[])
 				printf("Error: cannot read the input file: %s\n", inPath);
 				exit(0);
 			}
+			confparams_cpr->randomAccess = randomAccess;
 			cost_start();	
 			bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
 			cost_end();
@@ -525,6 +533,7 @@ int main(int argc, char* argv[])
 					printf("Error: cannot read the input file: %s\n", inPath);
 					exit(0);
 				}
+				confparams_cpr->randomAccess = randomAccess;
 				cost_start();
 				bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
 				cost_end();
@@ -573,7 +582,7 @@ int main(int argc, char* argv[])
 		else
 			nbEle = r1*r2*r3*r4*r5;
 
-		if(checkFileExistance(cmpPath)==0 && tucker == 0)
+		if(checkFileExistance(cmpPath)==0)
 		{
 			printf("Error: compression file (%s) is not readable.\n", cmpPath);
 			exit(0);
