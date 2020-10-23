@@ -5,7 +5,7 @@ SZ: Error-bounded Lossy Compressor for HPC Data
 
 * Major Authors: Sheng Di, Dingwen Tao, Xin Liang 
 * Supervisor: Franck Cappello 
-* Other Contributors: Robert Underwood, Sihuan Li, Ali M. Gok, Xiangyu Zou, Wen Xia
+* Other Contributors: Robert Underwood, Sihuan Li, Ali M. Gok, Cody Rivera, Xiangyu Zou, Wen Xia
 
 ## Citations
 **Kindly note: If you mention SZ in your paper, the most appropriate citation is including these three references (***BigData 2018, IPDPS 2017 and IPDPS 2016***), because they cover the whole design and implementation of the latest version of SZ**.
