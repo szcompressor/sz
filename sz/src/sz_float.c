@@ -29,6 +29,7 @@
 #include "utility.h"
 #include "CacheTable.h"
 #include "MultiLevelCacheTableWideInterval.h"
+#include "sz_stats.h"
 
 unsigned char* SZ_skip_compress_float(float* data, size_t dataLength, size_t* outSize)
 {
