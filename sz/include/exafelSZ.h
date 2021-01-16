@@ -8,7 +8,12 @@ extern "C" {
 #include <stdlib.h>
 
 typedef struct exafelSZ_params{
-  uint8_t *peaks;
+  //uint8_t *peaks;
+  uint16_t *peaksSegs;
+  uint16_t *peaksRows;
+  uint16_t *peaksCols;
+  uint64_t numPeaks;
+
   uint8_t *calibPanel;
 
   uint8_t binSize; //Binning: (pr->binSize x pr->binSize) to (1 x 1)
@@ -16,7 +21,7 @@ typedef struct exafelSZ_params{
   uint8_t szDim; //1D/2D/3D compression/decompression
   //uint8_t szBlockSize; //Currently unused
   uint8_t peakSize; //MUST BE ODD AND NOT EVEN! Each peak will have size of: (peakSize x peakSize)
-  
+ 
   // uint64_t nEvents;
   // uint64_t panels;
   // uint64_t rows;

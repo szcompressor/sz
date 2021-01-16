@@ -38,14 +38,29 @@ void exafelSZ_params_checkDecomp(exafelSZ_params*pr, size_t panels, size_t rows,
 }
 
 void exafelSZ_params_checkComp(exafelSZ_params*pr, size_t panels, size_t rows, size_t cols){
-  if(pr->peaks==NULL){
-    printf("ERROR: peaks is NULL : peaks=%ld\n",(long)pr->peaks);
+  if(pr->peaksSegs==NULL || pr->peaksRows==NULL || pr->peaksCols==NULL){
+    printf("ERROR: One or more of the following are NULL : peaksSegs , peaksRows , peaksCols\n");
     assert(0);
   }
   exafelSZ_params_checkDecomp(pr, panels, rows, cols);
 }
 
-void exafelSZ_params_print(){
+void exafelSZ_params_print(exafelSZ_params*pr){
+  printf("Configuration (exafelSZ_params) :\n");
+  printf("binSize: %d\n",pr->binSize);
+  printf("tolerance:%e\n",pr->tolerance);
+  printf("szDim:%d\n",pr->szDim);
+  printf("peakSize:%d\n",pr->peakSize);
+  //printf("nEvents:%d\n",pr->nEvents);
+  //printf("panels:%d\n",pr->panels);
+  //printf("rows:%d\n",pr->rows);
+  //printf("cols:%d\n",pr->cols);
+  printf("\n");
+  printf("CALCULATED VARIABLES\n");
+  printf("binnedRows:%d\n",pr->binnedRows);
+  printf("binnedCols:%d\n",pr->binnedCols);
+  printf("peakRadius:%d\n",pr->peakRadius);
+  printf("\n");
   // outs<<"Configuration (exafelSZ_params) : "<<endl;
   // outs<<"SMOOTHING: NO"<<"  (ROI and RONI are NOT replaced by local avg values)"<<endl;
   // outs<<"binSize:"<<binSize<<endl;
@@ -81,66 +96,103 @@ static inline size_t calcIdx_2D(int i1, int i0, int size0){
 
 unsigned char * exafelSZ_Compress(void* _pr,
                        void* _origData,
-                       size_t nEvents, size_t panels, size_t rows, size_t cols,
+                       size_t r4, size_t r3, size_t r2, size_t r1,
                        size_t *compressedSize)
 {
+  //printf("COMPRESS\n"); *compressedSize=0; return NULL;
+  size_t nEvents,panels,rows,cols;
+  if(r4==0)
+    nEvents=1;
+  else
+    nEvents=r4;
+  panels=r1;
+  rows=r2;
+  cols=r3;
+  //printf("AMG : exafelSZ_Compress : nEvents,panels,rows,cols = %d , %d , %d , %d\n",nEvents,panels,rows,cols);
+
   float *origData=(float*)_origData;
-  exafelSZ_params *pr=(exafelSZ_params*)_pr;
-  
-  exafelSZ_params_process(pr, panels, rows, cols); 
-  exafelSZ_params_checkDecomp(pr, panels, rows, cols); 
-  
+  exafelSZ_params *pr=(exafelSZ_params*)_pr;  
+
+  exafelSZ_params_process(pr, panels, rows, cols);
+  exafelSZ_params_checkComp(pr, panels, rows, cols); 
+  //exafelSZ_params_print(pr);  
+
   uint8_t *roiM=(uint8_t*)malloc(nEvents*panels*rows*cols) ;
   float *roiData=(float*)malloc(nEvents*panels*rows*cols*sizeof(float)) ;
   float *binnedData=(float*)malloc(nEvents*panels*pr->binnedRows*pr->binnedCols*sizeof(float)) ;
   //float *binnedData=(float*)malloc(nEvents*panels*rows*cols*sizeof(float)) ;
   
   size_t e,p,r,c,pk,ri,ci,br,bc,roii,bi;
-  
+  /*
+  printf("AMG : exafelSZ_Compress : pr->numPeaks = %d\n",pr->numPeaks);
+  printf("S:\n");
+  for(e=0;e<pr->numPeaks;e++)
+    printf("%d ",pr->peaksSegs[e]);
+  printf("\nR:\n");
+  for(e=0;e<pr->numPeaks;e++)
+    printf("%d ",pr->peaksRows[e]);
+  printf("\nC:\n");
+  for(e=0;e<pr->numPeaks;e++)
+    printf("%d ",pr->peaksCols[e]);
+  printf("\n");
+  */
+
   //Generate the ROI mask: NOTE: 0 means affirmative in ROI mask! This comes from the python scripts!
   //First, initialize with calibration panel:
   for(e=0;e<nEvents;e++){ //Event
     for(p=0;p<panels;p++){ //Panel
       for(r=0;r<rows;r++){ //Row
         for(c=0;c<cols;c++){ //Column
-          roiM[calcIdx_4D(e,p,r,c,panels,rows,cols)]=pr->calibPanel[calcIdx_2D(r,c,cols)];
+          //roiM[calcIdx_4D(e,p,r,c,panels,rows,cols)]=pr->calibPanel[calcIdx_2D(r,c,cols)]; //calibPanel is a single segment copied over all the event(image)
+          roiM[calcIdx_4D(e,p,r,c,panels,rows,cols)]=pr->calibPanel[calcIdx_3D(p,r,c,rows,cols)];  //calibPanel is as big as the event(image) itself
         }
       }
     }
   }
-  uint64_t peaksBytePos=0; //Position in the peaks buffer
+  //uint64_t peaksBytePos=0; //Position in the peaks buffer
   //Now process the peaks and generate the mask:
   uint64_t nPeaksTotal=0;  //Total number of peaks
   for(e=0;e<nEvents;e++){ //Event
-    uint64_t nPeaks=*(uint64_t*)(&pr->peaks[peaksBytePos]);
-    peaksBytePos+=8;
+    //uint64_t nPeaks=*(uint64_t*)(&pr->peaks[peaksBytePos]);
+    //peaksBytePos+=8;
+
     //peaksBytePos+=8;//Skip the second one! This is due to the problem in Python.
 
-    nPeaksTotal+=nPeaks;
-    for(pk=0;pk<nPeaks;pk++){
-      uint16_t p_=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Panel for the current peak
-      peaksBytePos+=2;
-      uint16_t r_=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Row for the current peak
-      peaksBytePos+=2;
-      uint16_t c_=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Col for the current peak
-      peaksBytePos+=2;
+    nPeaksTotal+=pr->numPeaks;
+    for(pk=0;pk<pr->numPeaks;pk++){
+      //uint16_t p_=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Panel for the current peak
+      //peaksBytePos+=2;
+      //uint16_t r_=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Row for the current peak
+      //peaksBytePos+=2;
+      //uint16_t c_=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Col for the current peak
+      //peaksBytePos+=2;
       
+      uint16_t p_=pr->peaksSegs[pk];
+      uint16_t r_=pr->peaksRows[pk];
+      uint16_t c_=pr->peaksCols[pk];
+
       if(p_>=panels){
         printf("ERROR: Peak coordinate out of bounds: Panel=%d, Valid range: 0,%d\n",(int)p_,(int)panels-1);
         assert(0);
+        printf("Skipping this peak...\n");
+        continue;
       }
       if(r_>=rows){
         printf("ERROR: Peak coordinate out of bounds: Row=%d, Valid range: 0,%d\n",(int)r_,(int)rows-1);
         assert(0);
+        printf("Skipping this peak...\n");
+        continue;
       }
       if(c_>=cols){
         printf("ERROR: Peak coordinate out of bounds: Col=%d, Valid range: 0,%d\n",(int)c_,(int)cols-1);
         assert(0);
+        printf("Skipping this peak...\n");
+        continue;
       }
       
       for(ri=r_-pr->peakRadius;ri<=r_+pr->peakRadius;ri++){  //ri: row index. Just a temporary variable.
         for(ci=c_-pr->peakRadius;ci<=c_+pr->peakRadius;ci++){  //ci: column index. Just a temporary variable.
-          if(ri<rows && ci<cols){  //Check whether inside bounds or not
+          if(ri<rows && ci<cols){  //Check whether inside the bounds or not
             roiM[calcIdx_4D(e,p_,ri,ci,panels,rows,cols)]=0;
           }
         }
@@ -256,24 +308,33 @@ unsigned char * exafelSZ_Compress(void* _pr,
   //printf("nPeaksTotal=%d\n",nPeaksTotal);
   //printf("bytePos=%d\n",bytePos);
   
-  peaksBytePos=0;
+  //peaksBytePos=0;
   for(e=0;e<nEvents;e++){
-    uint64_t nPeaks=*(uint64_t*)(&pr->peaks[peaksBytePos]);
-    peaksBytePos+=8;
-    //peaksBytePos+=8;//Skip the second one. This is due to the error in Python!
+    //uint64_t nPeaks=*(uint64_t*)(&pr->peaks[peaksBytePos]);
+    //peaksBytePos+=8;
+    ////peaksBytePos+=8;//Skip the second one. This is due to the error in Python!
     
-    *(uint64_t*)(&compressedBuffer[bytePos])=nPeaks;
+    //*(uint64_t*)(&compressedBuffer[bytePos])=nPeaks;
+    *(uint64_t*)(&compressedBuffer[bytePos])=pr->numPeaks;
     bytePos+=8;
-    for(pk=0;pk<nPeaks;pk++){
-      *(uint16_t*)(&compressedBuffer[bytePos])=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Panel for the current peak
+    //for(pk=0;pk<nPeaks;pk++){
+    for(pk=0;pk<pr->numPeaks;pk++){
+      //*(uint16_t*)(&compressedBuffer[bytePos])=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Panel for the current peak
+      //bytePos+=2;
+      //peaksBytePos+=2;
+      //*(uint16_t*)(&compressedBuffer[bytePos])=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Row for the current peak
+      //bytePos+=2;
+      //peaksBytePos+=2;      
+      //*(uint16_t*)(&compressedBuffer[bytePos])=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Column for the current peak
+      //bytePos+=2;
+      //peaksBytePos+=2;
+
+      *(uint16_t*)(&compressedBuffer[bytePos])=pr->peaksSegs[pk]; //Panel for the current peak
       bytePos+=2;
-      peaksBytePos+=2;
-      *(uint16_t*)(&compressedBuffer[bytePos])=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Row for the current peak
+      *(uint16_t*)(&compressedBuffer[bytePos])=pr->peaksRows[pk]; //Row for the current peak
       bytePos+=2;
-      peaksBytePos+=2;      
-      *(uint16_t*)(&compressedBuffer[bytePos])=*(uint16_t*)(&pr->peaks[peaksBytePos]); //Column for the current peak
+      *(uint16_t*)(&compressedBuffer[bytePos])=pr->peaksCols[pk]; //Column for the current peak
       bytePos+=2;
-      peaksBytePos+=2;
     }
   }
   // cout<<"peaks"<<endl;
@@ -329,9 +390,20 @@ unsigned char * exafelSZ_Compress(void* _pr,
 
 void* exafelSZ_Decompress(void *_pr,
                          unsigned char*_compressedBuffer,
-                         size_t nEvents, size_t panels, size_t rows, size_t cols,
+                         size_t r4, size_t r3, size_t r2, size_t r1,
                          size_t compressedSize)
 { 
+  size_t nEvents,panels,rows,cols;
+  if(r4==0)
+    nEvents=1;
+  else
+    nEvents=r4;
+  panels=r1;
+  rows=r2;
+  cols=r3;
+  //printf("AMG : exafelSZ_Decompress : nEvents,panels,rows,cols = %d , %d , %d , %d\n",nEvents,panels,rows,cols);
+
+  //printf("DECOMPRESS\n");return NULL;
   uint8_t *compressedBuffer=(uint8_t *)_compressedBuffer;
   exafelSZ_params *pr=(exafelSZ_params *)_pr;
   exafelSZ_params_process(pr, panels, rows, cols); 
@@ -341,7 +413,6 @@ void* exafelSZ_Decompress(void *_pr,
   
   uint8_t *roiM=(uint8_t*)malloc(nEvents*panels*rows*cols);
   size_t e,p,r,c,pk,ri,ci,br,bc;
-  
   
   /*
   Compressed Data Layout:
@@ -418,7 +489,8 @@ void* exafelSZ_Decompress(void *_pr,
             printf("ERROR: calcIdx_4D(e,p,r,c,panels,rows,cols) = calcIdx_4D(%d,%d,%d,%d,%d,%d,%d) = %d",(int)e,(int)p,(int)r,(int)c,(int)panels,(int)rows,(int)cols,(int)calcIdx_4D(e,p,r,c,panels,rows,cols));
             assert(0);
           }
-          roiM[calcIdx_4D(e,p,r,c,panels,rows,cols)]=pr->calibPanel[calcIdx_2D(r,c,cols)];
+          //roiM[calcIdx_4D(e,p,r,c,panels,rows,cols)]=pr->calibPanel[calcIdx_2D(r,c,cols)]; //calibPanel is a single segment copied over all the event(image)
+          roiM[calcIdx_4D(e,p,r,c,panels,rows,cols)]=pr->calibPanel[calcIdx_3D(p,r,c,rows,cols)];  //calibPanel is as big as the event(image) itself
         }
       }
     }
@@ -437,17 +509,23 @@ void* exafelSZ_Decompress(void *_pr,
       uint16_t c_=*(uint16_t*)(&peaks[peaksBytePos]); //Col for the current peak
       peaksBytePos+=2;
       
-      if(p_<0 || p_>=panels){
+      if(p_>=panels){
         printf("ERROR: Peak coordinate out of bounds: Panel=%d, Valid range: 0,%d\n",(int)p_,(int)panels-1);
         assert(0);
+        printf("Skipping this peak...\n");
+        continue;
       }
-      if(r_<0 || r_>=rows){
+      if(r_>=rows){
         printf("ERROR: Peak coordinate out of bounds: Row=%d, Valid range: 0,%d\n",(int)r_,(int)rows-1);
         assert(0);
+        printf("Skipping this peak...\n");
+        continue;
       }
-      if(c_<0 || c_>=cols){
+      if(c_>=cols){
         printf("ERROR: Peak coordinate out of bounds: Col=%d, Valid range: 0,%d\n",(int)c_,(int)cols-1);
         assert(0);
+        printf("Skipping this peak...\n");
+        continue;
       }
       
       for(ri=r_-pr->peakRadius;ri<=r_+pr->peakRadius;ri++){  //ri: row index. Just a temporary variable.
