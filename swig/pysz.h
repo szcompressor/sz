@@ -87,9 +87,13 @@ class ExaFELConfigBuilder {
   public:
   exafelSZ_params* build() { 
     exafelSZ_params* params = new exafelSZ_params;
-    params->peaks = new uint8_t [peaks.size()];
+    params->peaksSegs = new uint16_t [peaks.size()];
+    params->peaksRows = new uint16_t [peaks.size()];
+    params->peaksCols = new uint16_t [peaks.size()];
     params->calibPanel = new uint8_t [calibPanel.size()];
-    std::copy(std::begin(peaks), std::end(peaks), params->peaks);
+    std::copy(std::begin(peaks), std::end(peaks), params->peaksSegs);
+    std::copy(std::begin(peakRows), std::end(peakRows), params->peaksRows);
+    std::copy(std::begin(peakCols), std::end(peakCols), params->peaksCols);
     std::copy(std::begin(calibPanel), std::end(calibPanel), params->calibPanel);
     params->binSize = binSize;
     params->tolerance = tolerance;
@@ -105,20 +109,30 @@ class ExaFELConfigBuilder {
 
 
   static void free(exafelSZ_params* params) {
-    delete[] params->peaks;
+    delete[] params->peaksSegs;
+    delete[] params->peaksRows;
+    delete[] params->peaksCols;
     delete[] params->calibPanel;
     delete params;
   }
 
-  void setPeaks(std::vector<uint8_t> const& peaks) {
+  void setPeaks(std::vector<uint16_t> const& peaks) {
     this->peaks = peaks;
+  }
+  void setPeaksRows(std::vector<uint16_t> const& rows) {
+    this->peakRows = rows;
+  }
+  void setPeaksCols(std::vector<uint16_t> const& cols) {
+    this->peakCols = cols;
   }
   void setCalibPanel(std::vector<uint8_t> const& calibPanel) {
     this->calibPanel = calibPanel;
   }
 
   private:
-  std::vector<uint8_t> peaks;
+  std::vector<uint16_t> peaks;
+  std::vector<uint16_t> peakRows;
+  std::vector<uint16_t> peakCols;
   std::vector<uint8_t> calibPanel;
 };
 
