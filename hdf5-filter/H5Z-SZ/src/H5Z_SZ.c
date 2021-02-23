@@ -354,7 +354,6 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 	
 	size_t mem_cd_nelmts = 0, cd_nelmts = 0;
 	unsigned int mem_cd_values[12]; 
-	unsigned int* cd_values;
 
 	if (0 > H5Pget_filter_by_id(dcpl_id, H5Z_FILTER_SZ, &flags, &mem_cd_nelmts, mem_cd_values, 0, NULL, NULL))
 		H5Z_SZ_PUSH_AND_GOTO(H5E_PLINE, H5E_CANTGET, 0, "unable to get current SZ cd_values");
@@ -394,16 +393,16 @@ static herr_t H5Z_sz_set_local(hid_t dcpl_id, hid_t type_id, hid_t chunk_space_i
 
 	if(freshCdValues)
 	{
-	
+		unsigned int* cd_values = NULL;
 		SZ_metaDataToCdArray(&cd_nelmts, &cd_values, dataType, r5, r4, r3, r2, r1);
 		/* Now, update cd_values for the filter */
 		if (0 > H5Pmodify_filter(dcpl_id, H5Z_FILTER_SZ, flags, cd_nelmts, cd_values))
 			H5Z_SZ_PUSH_AND_GOTO(H5E_PLINE, H5E_BADVALUE, 0, "failed to modify cd_values");	
+		free(cd_values);
 	}
 
 	retval = 1;
 done:
-	free(cd_values);
 	return retval;
 }
 
