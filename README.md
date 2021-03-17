@@ -100,6 +100,11 @@ Please see doc/use-guide for details
 
 ### Python Interface
 
+**NOTE: THESE BINDINGS ARE DEPRECATED **
+
+The following information is provided for historical purposes only.
+Please consider updating to using the Python bindings for SZ provided with [LibPressio](https://github.com/codarcode/libpressio#python) instead which are more efficient and updated with new features in SZ as they are developed.
+
 The python bindings requires some additional dependencies:
 
 - python with development libraries
