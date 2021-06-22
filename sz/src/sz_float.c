@@ -2793,7 +2793,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio)
 }
 */
 
-int SZ_compress_args_float(int cmprType, unsigned char** newByteData, float *oriData, 
+int SZ_compress_args_float(int cmprType, int withRegression, unsigned char** newByteData, float *oriData, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio)
 {
@@ -2913,7 +2913,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					if(confparams_cpr->randomAccess == 0)
 					{
 #endif							
-						if(confparams_cpr->withRegression == SZ_NO_REGRESSION)
+						if(withRegression == SZ_NO_REGRESSION)
 							SZ_compress_args_float_NoCkRngeNoGzip_2D(cmprType, &tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 						else // SZ 2.1 (2D)
 						{
@@ -2949,7 +2949,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 					if(confparams_cpr->randomAccess == 0)
 					{
 #endif						
-						if(confparams_cpr->withRegression == SZ_NO_REGRESSION)
+						if(withRegression == SZ_NO_REGRESSION)
 							SZ_compress_args_float_NoCkRngeNoGzip_3D(cmprType, &tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 						else  //SZ 2.1 (3D)
 						{
@@ -2981,7 +2981,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 				else
 #endif
 				{
-					if(confparams_cpr->withRegression == SZ_NO_REGRESSION)
+					if(withRegression == SZ_NO_REGRESSION)
 						SZ_compress_args_float_NoCkRngeNoGzip_4D(&tmpByteData, oriData, r4, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 					else 
 					{

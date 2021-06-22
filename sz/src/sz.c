@@ -182,7 +182,7 @@ double relBoundRatio, double pwrBoundRatio, size_t r5, size_t r4, size_t r3, siz
 	{
 		unsigned char *newByteData = NULL;
 		
-		SZ_compress_args_float(-1, &newByteData, (float *)data, r5, r4, r3, r2, r1, 
+		SZ_compress_args_float(-1, confparams_cpr->withRegression, &newByteData, (float *)data, r5, r4, r3, r2, r1, 
 		outSize, errBoundMode, absErrBound, relBoundRatio, pwrBoundRatio);
 		
 		return newByteData;
@@ -190,7 +190,7 @@ double relBoundRatio, double pwrBoundRatio, size_t r5, size_t r4, size_t r3, siz
 	else if(dataType==SZ_DOUBLE)
 	{
 		unsigned char *newByteData;
-		SZ_compress_args_double(-1, &newByteData, (double *)data, r5, r4, r3, r2, r1, 
+		SZ_compress_args_double(-1, confparams_cpr->withRegression, &newByteData, (double *)data, r5, r4, r3, r2, r1, 
 		outSize, errBoundMode, absErrBound, relBoundRatio, pwrBoundRatio);
 		
 		return newByteData;
@@ -862,11 +862,11 @@ int SZ_compress_ts_select_var(int cmprType, unsigned char* var_ids, unsigned cha
 			multisteps = v->multisteps;
 			if(v->dataType==SZ_FLOAT)
 			{
-				SZ_compress_args_float(cmprType, &(v->compressedBytes), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &(v->compressedSize), v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
+				SZ_compress_args_float(cmprType, confparams_cpr->withRegression, &(v->compressedBytes), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &(v->compressedSize), v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
 			}
 			else if(v->dataType==SZ_DOUBLE)
 			{
-				SZ_compress_args_double(cmprType, &(v->compressedBytes), (double*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &(v->compressedSize), v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
+				SZ_compress_args_double(cmprType, confparams_cpr->withRegression, &(v->compressedBytes), (double*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &(v->compressedSize), v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
 			}
 		
 			totalSize += v->compressedSize;
@@ -929,11 +929,11 @@ int SZ_compress_ts(int cmprType, unsigned char** newByteData, size_t *outSize)
 
 		if(v->dataType==SZ_FLOAT)
 		{
-			SZ_compress_args_float(cmprType, &(v->compressedBytes), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &(v->compressedSize), v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
+			SZ_compress_args_float(cmprType, confparams_cpr->withRegression, &(v->compressedBytes), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &(v->compressedSize), v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
 		}
 		else if(v->dataType==SZ_DOUBLE)
 		{
-			SZ_compress_args_double(cmprType, &(v->compressedBytes), (double*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &(v->compressedSize), v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
+			SZ_compress_args_double(cmprType, confparams_cpr->withRegression, &(v->compressedBytes), (double*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &(v->compressedSize), v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
 		}
 		//sprintf(metadata_str, "%s:%d,%d,%zu", metadata_str, i, multisteps->lastSnapshotStep, outSize_[i]);
 		
@@ -1203,7 +1203,7 @@ static void sz_maybe_init_with_user_params(struct sz_params* userPara, struct sz
 unsigned char* SZ_compress_customize(const char* cmprName, void* userPara, int dataType, void* data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, int *status)
 {
 	unsigned char* result = NULL;
-	if(strcmp(cmprName, "SZ2.0")==0 || strcmp(cmprName, "SZ")==0)
+	if(strcmp(cmprName, "SZ2.0")==0 || strcmp(cmprName, "SZ2.1")==0 || strcmp(cmprName, "SZ")==0)
 	{
 		sz_maybe_init_with_user_params(userPara, confparams_cpr);
 		result = SZ_compress(dataType, data, outSize, r5, r4, r3, r2, r1);
@@ -1225,6 +1225,71 @@ unsigned char* SZ_compress_customize(const char* cmprName, void* userPara, int d
 		result = SZ_compress(dataType, transData, outSize, 0, 0, 0, 0, n);
 	}
     else if(strcmp(cmprName, "ExaFEL")==0){
+    	assert(dataType==SZ_FLOAT);
+    	assert(r5==0);
+    	result = exafelSZ_Compress(userPara,data, r4, r3, r2, r1,outSize);
+    	*status = SZ_SCES;
+	}
+	else
+	{
+		*status = SZ_NSCS;
+	}
+	return result;
+}
+
+unsigned char* SZ_compress_customize_threadsafe(const char* cmprName, void* userPara, int dataType, void* data, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, int *status)
+{
+	unsigned char* result = NULL;
+	if(strcmp(cmprName, "SZ2.0")==0 || strcmp(cmprName, "SZ2.1")==0 || strcmp(cmprName, "SZ")==0)
+	{
+		SZ_Init(NULL);
+		struct sz_params* para = (struct sz_params*)userPara;
+		
+		if(dataType==SZ_FLOAT)
+		{	
+			SZ_compress_args_float(-1, SZ_WITH_LINEAR_REGRESSION, &result, (float *)data, r5, r4, r3, r2, r1, 
+			outSize, para->errorBoundMode, para->absErrBound, para->relBoundRatio, para->pw_relBoundRatio);
+		}
+		else if(dataType==SZ_DOUBLE)
+		{
+			SZ_compress_args_double(-1, SZ_WITH_LINEAR_REGRESSION, &result, (double *)data, r5, r4, r3, r2, r1, 
+			outSize, para->errorBoundMode, para->absErrBound, para->relBoundRatio, para->pw_relBoundRatio);
+		}		
+
+		*status = SZ_SCES;
+		return result;
+	}
+	else if(strcmp(cmprName, "SZ1.4")==0)
+	{
+		SZ_Init(NULL);
+		struct sz_params* para = (struct sz_params*)userPara;
+		
+		if(dataType==SZ_FLOAT)
+		{	
+			SZ_compress_args_float(-1, SZ_NO_REGRESSION, &result, (float *)data, r5, r4, r3, r2, r1, 
+			outSize, para->errorBoundMode, para->absErrBound, para->relBoundRatio, para->pw_relBoundRatio);
+		}
+		else if(dataType==SZ_DOUBLE)
+		{
+			SZ_compress_args_double(-1, SZ_NO_REGRESSION, &result, (double *)data, r5, r4, r3, r2, r1, 
+			outSize, para->errorBoundMode, para->absErrBound, para->relBoundRatio, para->pw_relBoundRatio);
+		}		
+
+		*status = SZ_SCES;
+		return result;
+    }
+    else if(strcmp(cmprName, "SZ_Transpose")==0)
+    {
+		void* transData = transposeData(data, dataType, r5, r4, r3, r2, r1);
+		struct sz_params* para = (struct sz_params*)userPara;
+	
+		size_t n = computeDataLength(r5, r4, r3, r2, r1);
+		
+		result = SZ_compress_args(dataType, transData, outSize, para->errorBoundMode, para->absErrBound, para->relBoundRatio, para->pw_relBoundRatio, 0, 0, 0, 0, n);
+		
+		*status = SZ_SCES;
+	}
+    else if(strcmp(cmprName, "ExaFEL")==0){  //not sure if this part is thread safe!
     	assert(dataType==SZ_FLOAT);
     	assert(r5==0);
     	result = exafelSZ_Compress(userPara,data, r4, r3, r2, r1,outSize);
@@ -1279,4 +1344,10 @@ void* SZ_decompress_customize(const char* cmprName, void* userPara, int dataType
 		*status = SZ_NSCS;
 	}
 	return result;	
+}
+
+
+void* SZ_decompress_customize_threadsafe(const char* cmprName, void* userPara, int dataType, unsigned char* bytes, size_t byteLength, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, int *status)
+{
+	return SZ_decompress_customize(cmprName, userPara, dataType, bytes, byteLength, r5, r4, r3, r2, r1, status);
 }
