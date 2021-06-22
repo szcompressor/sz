@@ -2516,6 +2516,7 @@ int SZ_compress_args_double(int cmprType, int withRegression, unsigned char** ne
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio)
 {
+	confparams_cpr->dataType = SZ_DOUBLE;
 	confparams_cpr->errorBoundMode = errBoundMode;
 	if(errBoundMode==PW_REL)
 	{
