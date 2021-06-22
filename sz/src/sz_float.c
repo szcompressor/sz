@@ -2797,7 +2797,7 @@ int SZ_compress_args_float(int cmprType, int withRegression, unsigned char** new
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
 int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio)
 {
-	confparams_cpr->errorBoundMode = errBoundMode;
+	confparams_cpr->errorBoundMode = errBoundMode; //this is used to print the metadata if needed...
 	if(errBoundMode==PW_REL)
 	{
 		confparams_cpr->pw_relBoundRatio = pwRelBoundRatio;	
