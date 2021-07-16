@@ -2845,7 +2845,7 @@ void getSnapshotData_float_4D(float** data, size_t r1, size_t r2, size_t r3, siz
 	}
 }
 
-size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t dim_0, size_t dim_1, size_t dim_2, size_t block_dim_0, size_t block_dim_1, size_t block_dim_2, double realPrecision, int * type, float * unpredictable_data){
+size_t decompressDataSeries_float_3D_RA_block(float * data, float mean, size_t dim_0, size_t dim_1, size_t dim_2, size_t block_dim_0, size_t block_dim_1, size_t block_dim_2, float realPrecision, int * type, float * unpredictable_data){
 	int intvRadius = exe_params->intvRadius;
 	size_t dim0_offset = dim_1 * dim_2;
 	size_t dim1_offset = dim_2;
