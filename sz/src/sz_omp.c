@@ -86,19 +86,22 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 			case 0:{
 				num_x = 1 << block_thread_order;
 				num_y = 1 << block_thread_order;
-				num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
+				//num_z = 1 << block_thread_order;
 				break;
 			}
 			case 1:{
 				num_x = 1 << (block_thread_order + 1);
 				num_y = 1 << block_thread_order;
-				num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
+				//num_z = 1 << block_thread_order;
 				break;
 			}
 			case 2:{
 				num_x = 1 << (block_thread_order + 1);
 				num_y = 1 << (block_thread_order + 1);
-				num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
+				//num_z = 1 << block_thread_order;
 				break;
 			}
 		}
@@ -371,19 +374,22 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 			case 0:{
 				num_x = 1 << block_thread_order;
 				num_y = 1 << block_thread_order;
-				num_z = 1 << block_thread_order;
+				//num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
 				break;
 			}
 			case 1:{
 				num_x = 1 << (block_thread_order + 1);
 				num_y = 1 << block_thread_order;
-				num_z = 1 << block_thread_order;
+				//num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
 				break;
 			}
 			case 2:{
 				num_x = 1 << (block_thread_order + 1);
 				num_y = 1 << (block_thread_order + 1);
-				num_z = 1 << block_thread_order;
+				//num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
 				break;
 			}
 		}
@@ -577,19 +583,22 @@ unsigned char * SZ_compress_double_3D_MDQ_openmp(double *oriData, size_t r1, siz
 			case 0:{
 				num_x = 1 << block_thread_order;
 				num_y = 1 << block_thread_order;
-				num_z = 1 << block_thread_order;
+				//num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
 				break;
 			}
 			case 1:{
 				num_x = 1 << (block_thread_order + 1);
 				num_y = 1 << block_thread_order;
-				num_z = 1 << block_thread_order;
+				//num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
 				break;
 			}
 			case 2:{
 				num_x = 1 << (block_thread_order + 1);
 				num_y = 1 << (block_thread_order + 1);
-				num_z = 1 << block_thread_order;
+				//num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
 				break;
 			}
 		}
@@ -853,19 +862,22 @@ void decompressDataSeries_double_3D_openmp(double** data, size_t r1, size_t r2, 
 			case 0:{
 				num_x = 1 << block_thread_order;
 				num_y = 1 << block_thread_order;
-				num_z = 1 << block_thread_order;
+				//num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
 				break;
 			}
 			case 1:{
 				num_x = 1 << (block_thread_order + 1);
 				num_y = 1 << block_thread_order;
-				num_z = 1 << block_thread_order;
+				//num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
 				break;
 			}
 			case 2:{
 				num_x = 1 << (block_thread_order + 1);
 				num_y = 1 << (block_thread_order + 1);
-				num_z = 1 << block_thread_order;
+				//num_z = 1 << block_thread_order;
+				num_z = thread_num / (num_x * num_y);
 				break;
 			}
 		}
