@@ -665,7 +665,7 @@ int main(int argc, char* argv[])
 				else if(r3==0)
 					sprintf(dimStr2, "Ending subscripts = %zu %zu", r2-1, r1-1);
 				else if(r4==0)
-					sprintf(dimStr2, "Endi outDir[640],ng subscripts = %zu %zu %zu", r3-1, r2-1, r1-1);
+					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu", r3-1, r2-1, r1-1);
 				else if(r5==0)
 					sprintf(dimStr2, "Ending subscripts = %zu %zu %zu %zu", r4-1, r3-1, r2-1, r1-1);
 				else
