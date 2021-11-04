@@ -256,6 +256,10 @@ unsigned char * exafelSZ_Compress(void* _pr,
       // szComp=sz_compress_3D(binnedData, nEvents * panels, pr->binnedRows, pr->binnedCols, pr->tolerance, szCompressedSize); //3D
       szComp=SZ_compress_args(SZ_FLOAT, binnedData, &szCompressedSize, ABS, pr->tolerance, 0, 0, 0, 0, nEvents * panels, pr->binnedRows, pr->binnedCols);
       break;
+    case 4:
+      // trying a different grouping to attempt to improve smoothness
+      szComp=SZ_compress_args(SZ_FLOAT, binnedData, &szCompressedSize, ABS, pr->tolerance, 0, 0, 0, 0, nEvents, pr->binnedRows * panels, pr->binnedCols);
+      break;
     default:
       printf("ERROR: Wrong szDim : %d It must be 1,2 or 3.\n",(int)pr->szDim);
       assert(0);
@@ -550,6 +554,10 @@ void* exafelSZ_Decompress(void *_pr,
       break;
     case 3:
       szDecomp=SZ_decompress(SZ_FLOAT,szComp,_szCompressedSize,0,0,nEvents * panels, pr->binnedRows, pr->binnedCols);
+      break;
+    case 4:
+      // trying a different grouping to attempt to improve smoothness
+      szDecomp=SZ_decompress(SZ_FLOAT,szComp,_szCompressedSize,0,0,nEvents , pr->binnedRows * panels, pr->binnedCols);
       break;
     default:
       printf("ERROR: Wrong szDim : %d It must be 1,2 or 3.\n",(int)pr->szDim);

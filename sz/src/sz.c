@@ -1389,7 +1389,6 @@ unsigned char* SZ_compress_customize_threadsafe(const char* cmprName, void* user
 	unsigned char* result = NULL;
 	if(strcmp(cmprName, "SZ2.0")==0 || strcmp(cmprName, "SZ2.1")==0 || strcmp(cmprName, "SZ")==0)
 	{
-		SZ_Init(NULL);
 		struct sz_params* para = (struct sz_params*)userPara;
 		
 		if(dataType==SZ_FLOAT)
