@@ -150,6 +150,134 @@ size_t computeDataLength(size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 	return dataLength;
 }
 
+/**
+ * @brief		check dimension and correct it if needed
+ * @return 	0 (didn't change dimension)
+ * 					1 (dimension is changed)
+ * 					2 (dimension is problematic)
+ **/
+int filterDimension(size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t* correctedDimension)
+{
+	int dimensionCorrected = 0;
+	int dim = computeDimension(r5, r4, r3, r2, r1);
+	correctedDimension[0] = r1;
+	correctedDimension[1] = r2;
+	correctedDimension[2] = r3;
+	correctedDimension[3] = r4;
+	correctedDimension[4] = r5;
+	size_t* c = correctedDimension;
+	if(dim==1)
+	{
+		if(r1<1)
+			return 2;
+	}
+	else if(dim==2)
+	{
+		if(r2==1)
+		{
+			r2= 0;
+			dimensionCorrected = 1;
+		}	
+		if(r1==1) //remove this dimension
+		{
+			c[0] = c[1]; 
+			r2 = 0;
+			dimensionCorrected = 1;
+		}
+	}
+	else if(dim==3)
+	{
+		if(r3==1)
+		{
+			r3 = 0;
+			dimensionCorrected = 1;
+		}	
+		if(r2==1)
+		{
+			c[1] = c[2];
+			c[2] = 0;
+			dimensionCorrected = 1;
+		}
+		if(r1==1)
+		{
+			c[0] = c[1];
+			c[1] = c[2];
+			c[2] = c[3];
+			dimensionCorrected = 1;
+		}
+	}
+	else if(dim==4)
+	{
+		if(r4==1)
+		{
+			c[3] = 0;
+			dimensionCorrected = 1;
+		}
+		if(r3==1)
+		{
+			c[2] = c[3];
+			c[3] = c[4];
+			dimensionCorrected = 1;
+		}
+		if(r2==1)
+		{
+			c[1] = c[2];
+			c[2] = c[3];
+			c[3] = c[4];
+			dimensionCorrected = 1;
+		}
+		if(r1==1)
+		{
+			c[0] = c[1];
+			c[1] = c[2];
+			c[2] = c[3];
+			c[3] = c[4];
+			dimensionCorrected = 1;
+		}
+	}
+	else if(dim==5)
+	{
+		if(r5==1)
+		{
+			c[4] = 0;
+			dimensionCorrected = 1;
+		}
+		if(r4==1)
+		{
+			c[3] = c[4];
+			c[4] = 0;
+			dimensionCorrected = 1;
+		}
+		if(r3==1)
+		{
+			c[2] = c[3];
+			c[3] = c[4];
+			c[4] = 0;
+			dimensionCorrected = 1;
+		}
+		if(r2==1)
+		{
+			c[1] = c[2];
+			c[2] = c[3];
+			c[3] = c[4];
+			c[4] = 0;
+			dimensionCorrected = 1;
+		}
+		if(r1==1)
+		{
+			c[0] = c[1];
+			c[1] = c[2];
+			c[2] = c[3];
+			c[3] = c[4];
+			c[4] = 0;
+			dimensionCorrected = 1;
+		}
+	}
+	
+	return dimensionCorrected;
+	
+}
+
 /*-------------------------------------------------------------------------*/
 /**
     @brief      Perform Compression 
@@ -177,12 +305,21 @@ double relBoundRatio, double pwrBoundRatio, size_t r5, size_t r4, size_t r3, siz
 		exe_params->optQuantMode = 1;		
 	}
 	
+	//correct dimension if needed
+	size_t _r[5];
+	filterDimension(r5, r4, r3, r2, r1, _r);
+	size_t _r5 = _r[4];
+	size_t _r4 = _r[3];
+	size_t _r3 = _r[2];
+	size_t _r2 = _r[1];
+	size_t _r1 = _r[0];
+	
 	confparams_cpr->dataType = dataType;
 	if(dataType==SZ_FLOAT)
 	{
 		unsigned char *newByteData = NULL;
 		
-		SZ_compress_args_float(-1, confparams_cpr->withRegression, &newByteData, (float *)data, r5, r4, r3, r2, r1, 
+		SZ_compress_args_float(-1, confparams_cpr->withRegression, &newByteData, (float *)data, _r5, _r4, _r3, _r2, _r1, 
 		outSize, errBoundMode, absErrBound, relBoundRatio, pwrBoundRatio);
 		
 		return newByteData;
@@ -190,7 +327,7 @@ double relBoundRatio, double pwrBoundRatio, size_t r5, size_t r4, size_t r3, siz
 	else if(dataType==SZ_DOUBLE)
 	{
 		unsigned char *newByteData;
-		SZ_compress_args_double(-1, confparams_cpr->withRegression, &newByteData, (double *)data, r5, r4, r3, r2, r1, 
+		SZ_compress_args_double(-1, confparams_cpr->withRegression, &newByteData, (double *)data, _r5, _r4, _r3, _r2, _r1, 
 		outSize, errBoundMode, absErrBound, relBoundRatio, pwrBoundRatio);
 		
 		return newByteData;
@@ -198,43 +335,43 @@ double relBoundRatio, double pwrBoundRatio, size_t r5, size_t r4, size_t r3, siz
 	else if(dataType==SZ_INT64)
 	{
 		unsigned char *newByteData;
-		SZ_compress_args_int64(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		SZ_compress_args_int64(&newByteData, data, _r5, _r4, _r3, _r2, _r1, outSize, errBoundMode, absErrBound, relBoundRatio);
 		return newByteData;
 	}		
 	else if(dataType==SZ_INT32) //int type
 	{
 		unsigned char *newByteData;
-		SZ_compress_args_int32(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		SZ_compress_args_int32(&newByteData, data, _r5, _r4, _r3, _r2, _r1, outSize, errBoundMode, absErrBound, relBoundRatio);
 		return newByteData;
 	}
 	else if(dataType==SZ_INT16)
 	{
 		unsigned char *newByteData;
-		SZ_compress_args_int16(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		SZ_compress_args_int16(&newByteData, data, _r5, _r4, _r3, _r2, _r1, outSize, errBoundMode, absErrBound, relBoundRatio);
 		return newByteData;		
 	}
 	else if(dataType==SZ_INT8)
 	{
 		unsigned char *newByteData;
-		SZ_compress_args_int8(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		SZ_compress_args_int8(&newByteData, data, _r5, _r4, _r3, _r2, _r1, outSize, errBoundMode, absErrBound, relBoundRatio);
 		return newByteData;
 	}
 	else if(dataType==SZ_UINT64)
 	{
 		unsigned char *newByteData;
-		SZ_compress_args_uint64(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		SZ_compress_args_uint64(&newByteData, data, _r5, _r4, _r3, _r2, _r1, outSize, errBoundMode, absErrBound, relBoundRatio);
 		return newByteData;
 	}		
 	else if(dataType==SZ_UINT32) //int type
 	{
 		unsigned char *newByteData;
-		SZ_compress_args_uint32(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		SZ_compress_args_uint32(&newByteData, data, _r5, _r4, _r3, _r2, _r1, outSize, errBoundMode, absErrBound, relBoundRatio);
 		return newByteData;
 	}
 	else if(dataType==SZ_UINT16)
 	{
 		unsigned char *newByteData;
-		SZ_compress_args_uint16(&newByteData, data, r5, r4, r3, r2, r1, outSize, errBoundMode, absErrBound, relBoundRatio);
+		SZ_compress_args_uint16(&newByteData, data, _r5, _r4, _r3, _r2, _r1, outSize, errBoundMode, absErrBound, relBoundRatio);
 		return newByteData;		
 	}
 	else if(dataType==SZ_UINT8)
@@ -435,11 +572,21 @@ void *SZ_decompress(int dataType, unsigned char *bytes, size_t byteLength, size_
 size_t SZ_decompress_args(int dataType, unsigned char *bytes, size_t byteLength, void* decompressed_array, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 {
 	//size_t i;
-	size_t nbEle = computeDataLength(r5,r4,r3,r2,r1);
+	
+	//correct dimension if needed
+	size_t _r[5];
+	filterDimension(r5, r4, r3, r2, r1, _r);
+	size_t _r5 = _r[4];
+	size_t _r4 = _r[3];
+	size_t _r3 = _r[2];
+	size_t _r2 = _r[1];
+	size_t _r1 = _r[0];	
+	
+	size_t nbEle = computeDataLength(_r5,_r4,_r3,_r2,_r1);
 	
 	if(dataType == SZ_FLOAT)
 	{
-		float* data = (float *)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		float* data = (float *)SZ_decompress(dataType, bytes, byteLength, _r5, _r4, _r3, _r2, _r1);
 		float* data_array = (float *)decompressed_array;
 		memcpy(data_array, data, nbEle*sizeof(float));
 		//for(i=0;i<nbEle;i++)
@@ -448,7 +595,7 @@ size_t SZ_decompress_args(int dataType, unsigned char *bytes, size_t byteLength,
 	}
 	else if (dataType == SZ_DOUBLE)
 	{
-		double* data = (double *)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		double* data = (double *)SZ_decompress(dataType, bytes, byteLength, _r5, _r4, _r3, _r2, _r1);
 		double* data_array = (double *)decompressed_array;
 		memcpy(data_array, data, nbEle*sizeof(double));
 		//for(i=0;i<nbEle;i++)
@@ -457,56 +604,56 @@ size_t SZ_decompress_args(int dataType, unsigned char *bytes, size_t byteLength,
 	}
 	else if(dataType == SZ_INT8)
 	{
-		int8_t* data = (int8_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		int8_t* data = (int8_t*)SZ_decompress(dataType, bytes, byteLength, _r5, _r4, _r3, _r2, _r1);
 		int8_t* data_array = (int8_t *)decompressed_array;
 		memcpy(data_array, data, nbEle*sizeof(int8_t));
 		free(data);
 	}
 	else if(dataType == SZ_INT16)
 	{
-		int16_t* data = (int16_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		int16_t* data = (int16_t*)SZ_decompress(dataType, bytes, byteLength, _r5, _r4, _r3, _r2, _r1);
 		int16_t* data_array = (int16_t *)decompressed_array;
 		memcpy(data_array, data, nbEle*sizeof(int16_t));
 		free(data);	
 	}
 	else if(dataType == SZ_INT32)
 	{
-		int32_t* data = (int32_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		int32_t* data = (int32_t*)SZ_decompress(dataType, bytes, byteLength, _r5, _r4, _r3, _r2, _r1);
 		int32_t* data_array = (int32_t *)decompressed_array;
 		memcpy(data_array, data, nbEle*sizeof(int32_t));
 		free(data);	
 	}
 	else if(dataType == SZ_INT64)
 	{
-		int64_t* data = (int64_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		int64_t* data = (int64_t*)SZ_decompress(dataType, bytes, byteLength, _r5, _r4, _r3, _r2, _r1);
 		int64_t* data_array = (int64_t *)decompressed_array;
 		memcpy(data_array, data, nbEle*sizeof(int64_t));
 		free(data);		
 	}
 	else if(dataType == SZ_UINT8)
 	{
-		uint8_t* data = (uint8_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		uint8_t* data = (uint8_t*)SZ_decompress(dataType, bytes, byteLength, _r5, _r4, _r3, _r2, _r1);
 		uint8_t* data_array = (uint8_t *)decompressed_array;
 		memcpy(data_array, data, nbEle*sizeof(uint8_t));
 		free(data);
 	}
 	else if(dataType == SZ_UINT16)
 	{
-		uint16_t* data = (uint16_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		uint16_t* data = (uint16_t*)SZ_decompress(dataType, bytes, byteLength, _r5, _r4, _r3, _r2, _r1);
 		uint16_t* data_array = (uint16_t *)decompressed_array;
 		memcpy(data_array, data, nbEle*sizeof(uint16_t));
 		free(data);		
 	}
 	else if(dataType == SZ_UINT32)
 	{
-		uint32_t* data = (uint32_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		uint32_t* data = (uint32_t*)SZ_decompress(dataType, bytes, byteLength, _r5, _r4, _r3, _r2, _r1);
 		uint32_t* data_array = (uint32_t *)decompressed_array;
 		memcpy(data_array, data, nbEle*sizeof(uint32_t));
 		free(data);		
 	}
 	else if(dataType == SZ_UINT64)
 	{
-		uint64_t* data = (uint64_t*)SZ_decompress(dataType, bytes, byteLength, r5, r4, r3, r2, r1);
+		uint64_t* data = (uint64_t*)SZ_decompress(dataType, bytes, byteLength, _r5, _r4, _r3, _r2, _r1);
 		uint64_t* data_array = (uint64_t *)decompressed_array;
 		memcpy(data_array, data, nbEle*sizeof(uint64_t));
 		free(data);			
