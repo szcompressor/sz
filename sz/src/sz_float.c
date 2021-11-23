@@ -2853,12 +2853,18 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	}	
 	if(valueRangeSize <= realPrecision)
 	{
+#ifdef HAVE_WRITESTATS
+		writeConstantFlag(1);
+#endif	
 		if(confparams_cpr->errorBoundMode>=PW_REL && confparams_cpr->accelerate_pw_rel_compression == 1)
 			free(signs);		
 		SZ_compress_args_float_withinRange(newByteData, oriData, dataLength, outSize);
 	}
 	else
 	{
+#ifdef HAVE_WRITESTATS
+		writeConstantFlag(0);
+#endif			
 		size_t tmpOutSize = 0;
 		unsigned char* tmpByteData;
 		

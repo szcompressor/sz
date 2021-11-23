@@ -336,7 +336,6 @@ int main(int argc, char* argv[])
 		if(normError != NULL)
 			confparams_cpr->normErr = atof(normError);
 
-		size_t outSize;	
 		if(dataType == 0) //single precision
 		{
 			if(tucker)
@@ -354,18 +353,18 @@ int main(int argc, char* argv[])
 			}
 			cost_start();	
 			if(confparams_cpr->sol_ID==SZ)
-				bytes = SZ_compress(SZ_FLOAT, data, &outSize, r5, r4, r3, r2, r1);
+				bytes = SZ_compress(SZ_FLOAT, data, &byteLength, r5, r4, r3, r2, r1);
 			else if(confparams_cpr->sol_ID==SZ_Transpose)
 			{
 				int status = 0;
-				bytes = SZ_compress_customize("SZ_Transpose", NULL, SZ_FLOAT, data, r5, r4, r3, r2, r1, &outSize, &status);
+				bytes = SZ_compress_customize("SZ_Transpose", NULL, SZ_FLOAT, data, r5, r4, r3, r2, r1, &byteLength, &status);
 			}	
 			cost_end();
 			if(cmpPath == NULL)
 				sprintf(outputFilePath, "%s.sz", inPath);
 			else
 				strcpy(outputFilePath, cmpPath);
-			writeByteData(bytes, outSize, outputFilePath, &status);		
+			writeByteData(bytes, byteLength, outputFilePath, &status);		
 			free(data);
 			if(status != SZ_SCES)
 			{
@@ -443,18 +442,18 @@ int main(int argc, char* argv[])
 				}
 				cost_start();
 				if(confparams_cpr->sol_ID==SZ)
-					bytes = SZ_compress(SZ_DOUBLE, data, &outSize, r5, r4, r3, r2, r1);
+					bytes = SZ_compress(SZ_DOUBLE, data, &byteLength, r5, r4, r3, r2, r1);
 				else if(confparams_cpr->sol_ID==SZ_Transpose)
 				{
 					int status = 0;
-					bytes = SZ_compress_customize("SZ_Transpose", NULL, SZ_DOUBLE, data, r5, r4, r3, r2, r1, &outSize, &status);
+					bytes = SZ_compress_customize("SZ_Transpose", NULL, SZ_DOUBLE, data, r5, r4, r3, r2, r1, &byteLength, &status);
 				}				
 				cost_end();
 				if(cmpPath == NULL)
 					sprintf(outputFilePath, "%s.sz", inPath);
 				else
 					strcpy(outputFilePath, cmpPath);
-				writeByteData(bytes, outSize, outputFilePath, &status);		
+				writeByteData(bytes, byteLength, outputFilePath, &status);		
 				free(data);
 				if(status != SZ_SCES)
 				{
