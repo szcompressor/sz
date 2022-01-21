@@ -1,14 +1,16 @@
 SZ: Error-bounded Lossy Compressor for HPC Data
 =====
- (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
+ (C) 2016-2022 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
        See COPYRIGHT in top-level directory.
 
-* Major Authors: Sheng Di, Dingwen Tao, Xin Liang 
+* Major Authors: Sheng Di, Dingwen Tao, Xin Liang, Kai Zhao 
 * Supervisor: Franck Cappello 
 * Other Contributors: Robert Underwood, Sihuan Li, Ali M. Gok, Cody Rivera, Xiangyu Zou, Wen Xia
 
 ## Citations
 **Kindly note: If you mention SZ in your paper, the most appropriate citation is including these three references (***BigData 2018, IPDPS 2017 and IPDPS 2016***), because they cover the whole design and implementation of the latest version of SZ**.
+
+* [SZ3](https://github.com/szcompressor/SZ3): Kai Zhao, Sheng Di, Maxim Dmitriev, Thierry-Laurent D. Tonellot, Zizhong Chen, and Franck Cappello. "[Optimizing Error-Bounded Lossy Compression for Scientiﬁc Data by Dynamic Spline Interpolation](https://ieeexplore.ieee.org/document/9458791)", Proceeding of the 37th IEEE International Conference on Data Engineering (ICDE 21), Chania, Crete, Greece, Apr 19 - 22, 2021.
 
 * SZauto: Kai Zhao, Sheng Di, Xin Liang, Sihuan Li, Dingwen Tao, Zizhong Chen, and Franck Cappello. "[Significantly Improving Lossy Compression for HPC Datasets with Second-Order Prediction and Parameter Optimization](https://dl.acm.org/doi/10.1145/3369583.3392688)", Proceedings of the 29th International Symposium on High-Performance Parallel and Distributed Computing (HPDC 20), Stockholm, Sweden, 2020. (code: https://github.com/szcompressor/SZauto/)
 
