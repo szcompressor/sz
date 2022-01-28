@@ -9,6 +9,7 @@ SZ: Error-bounded Lossy Compressor for HPC Data
 
 ## Citations
 **Kindly note: If you mention SZ in your paper, the most appropriate citation is including these three references (***ICDE2021, HPDC2020 and BigData2018***), because they cover the whole design and implementation of the latest version of SZ**.
+
 **Note**: [SZ3] is released [here](https://github.com/szcompressor/SZ3). SZ3 has much higher compression ratios than SZ2 in many cases, with comparable throughput (suffering slightly degraded throughput though).
 
 * [SZ3](https://github.com/szcompressor/SZ3): Kai Zhao, Sheng Di, Maxim Dmitriev, Thierry-Laurent D. Tonellot, Zizhong Chen, and Franck Cappello. "[Optimizing Error-Bounded Lossy Compression for Scientiﬁc Data by Dynamic Spline Interpolation](https://ieeexplore.ieee.org/document/9458791)", Proceeding of the 37th IEEE International Conference on Data Engineering (ICDE 21), Chania, Crete, Greece, Apr 19 - 22, 2021.
