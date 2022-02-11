@@ -12,7 +12,9 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>      /* For gettimeofday(), in microseconds */
+#endif
 #include <time.h>          /* For time(), in seconds */
 #include "CompressElement.h"
 #include "DynamicByteArray.h"
@@ -81,7 +83,7 @@ extern "C" {
 //typedef unsigned long uint64_t;
 
 #include "defines.h"
-	
+
 //Note: the following setting should be consistent with stateNum in Huffman.h
 //#define intvCapacity 65536
 //#define intvRadius 32768
@@ -163,7 +165,7 @@ typedef struct sz_params
 {
 	int dataType;
 	unsigned int max_quant_intervals; //max number of quantization intervals for quantization
-	unsigned int quantization_intervals; 
+	unsigned int quantization_intervals;
 	unsigned int maxRangeRadius;
 	int sol_ID;// it's SZ or SZ_Transpose, unless the setting is PASTRI compression mode (./configure --enable-pastri)
 	int losslessCompressor;
@@ -179,20 +181,20 @@ typedef struct sz_params
 	double pw_relBoundRatio; //point-wise relative error bound
 	int segment_size; //only used for 2D/3D data compression with pw_relBoundRatio (deprecated)
 	int pwr_type; //only used for 2D/3D data compression with pw_relBoundRatio
-	
+
 	int protectValueRange; //0 or 1
 	float fmin, fmax;
 	double dmin, dmax;
-	
+
 	int snapshotCmprStep; //perform single-snapshot-based compression if time_step == snapshotCmprStep
 	int predictionMode;
 
 	int accelerate_pw_rel_compression;
 	int plus_bits;
-	
+
 	int randomAccess;
 	int withRegression;
-	
+
 } sz_params;
 
 typedef struct sz_metadata
@@ -208,10 +210,10 @@ typedef struct sz_metadata
 
 typedef struct sz_exedata
 {
-	char optQuantMode;	//opt Quantization (0: fixed ; 1: optimized)	
+	char optQuantMode;	//opt Quantization (0: fixed ; 1: optimized)
 	int intvCapacity; // the number of intervals for the linear-scaling quantization
 	int intvRadius;  // the number of intervals for the radius of the quantization range (intvRadius=intvCapacity/2)
-	unsigned int SZ_SIZE_TYPE; //the length (# bytes) of the size_t in the system at runtime //4 or 8: sizeof(size_t) 
+	unsigned int SZ_SIZE_TYPE; //the length (# bytes) of the size_t in the system at runtime //4 or 8: sizeof(size_t)
 } sz_exedata;
 
 /*We use a linked list to maintain time-step meta info for time-step based compression*/
@@ -223,7 +225,7 @@ typedef struct sz_tsc_metainfo
 	FILE *metadata_file;
 	unsigned char* bit_array; //sihuan added
 	size_t intersect_size; //sihuan added
-	int64_t* hist_index; //sihuan added: prestep index 
+	int64_t* hist_index; //sihuan added: prestep index
 
 } sz_tsc_metadata;
 
@@ -242,9 +244,9 @@ extern SZ_VarSet* sz_varset;
 extern sz_multisteps *multisteps; //compression based on multiple time steps (time-dimension based compression)
 extern sz_tsc_metadata *sz_tsc;
 
-//for pastri 
+//for pastri
 #ifdef PASTRI
-extern pastri_params pastri_par; 
+extern pastri_params pastri_par;
 #endif
 
 //sz.h
@@ -273,22 +275,22 @@ size_t *outSize, int errBoundMode, double absErr_Bound, double relBoundRatio);
 
 unsigned char *SZ_compress(int dataType, void *data, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
-unsigned char* SZ_compress_args(int dataType, void *data, size_t *outSize, int errBoundMode, double absErrBound, 
+unsigned char* SZ_compress_args(int dataType, void *data, size_t *outSize, int errBoundMode, double absErrBound,
 double relBoundRatio, double pwrBoundRatio, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
-int SZ_compress_args2(int dataType, void *data, unsigned char* compressed_bytes, size_t *outSize, 
-int errBoundMode, double absErrBound, double relBoundRatio, double pwrBoundRatio, 
+int SZ_compress_args2(int dataType, void *data, unsigned char* compressed_bytes, size_t *outSize,
+int errBoundMode, double absErrBound, double relBoundRatio, double pwrBoundRatio,
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
-int SZ_compress_args3(int dataType, void *data, unsigned char* compressed_bytes, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 
+int SZ_compress_args3(int dataType, void *data, unsigned char* compressed_bytes, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio,
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1,
 size_t s5, size_t s4, size_t s3, size_t s2, size_t s1,
 size_t e5, size_t e4, size_t e3, size_t e2, size_t e1);
 
-unsigned char *SZ_compress_rev_args(int dataType, void *data, void *reservedValue, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 
+unsigned char *SZ_compress_rev_args(int dataType, void *data, void *reservedValue, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio,
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
-int SZ_compress_rev_args2(int dataType, void *data, void *reservedValue, unsigned char* compressed_bytes, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio, 
+int SZ_compress_rev_args2(int dataType, void *data, void *reservedValue, unsigned char* compressed_bytes, size_t *outSize, int errBoundMode, double absErrBound, double relBoundRatio,
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 unsigned char *SZ_compress_rev(int dataType, void *data, void *reservedValue, size_t *outSize, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
@@ -305,8 +307,8 @@ void filloutDimArray(size_t* dim, size_t r5, size_t r4, size_t r3, size_t r2, si
 
 size_t compute_total_batch_size();
 
-void SZ_registerVar(int var_id, char* varName, int dataType, void* data, 
-			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio, 
+void SZ_registerVar(int var_id, char* varName, int dataType, void* data,
+			int errBoundMode, double absErrBound, double relBoundRatio, double pwRelBoundRatio,
 			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 
 int SZ_deregisterVar_ID(int var_id);

@@ -7,7 +7,7 @@
  *      See COPYRIGHT in top-level directory.
  */
 
-
+#include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -106,7 +106,7 @@ int main(int argc, char * argv[])
     //SZ_Finalize();
     
     char oriFilePath[640];
-    strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
+    strcpy(oriFilePath, zipFilePath);
     oriFilePath[strlen(zipFilePath)-3] = '\0';
     float *ori_data = readFloatData(oriFilePath, &totalNbEle, &status);
     if(status!=SZ_SCES)

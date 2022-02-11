@@ -31,9 +31,28 @@ endif()
 #compile with C-99 and standard C++14
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+#  Check for the existence of certain header files
+include (CheckIncludeFiles)
+include (CheckFunctionExists)
+CHECK_INCLUDE_FILES ("unistd.h"        HAVE_UNISTD_H)
+CHECK_INCLUDE_FILES ("sys/time.h"      HAVE_SYS_TIME_H)
+
+if (WINDOWS)
+  set (HAVE_GETTIMEOFDAY 1)
+endif ()
+
+if (MINGW OR NOT WINDOWS)
+  CHECK_FUNCTION_EXISTS (gettimeofday           HAVE_GETTIMEOFDAY)
+  CHECK_FUNCTION_EXISTS (clock_gettime          HAVE_CLOCK_GETTIME)
+endif ()
+
+# Generate the config.h file containing user settings needed by compilation
+configure_file (config.h.cmake ${CMAKE_BINARY_DIR}/config.h @ONLY)
 
 #generate tags for the project if tags exist
 option(BUILD_CTAGS "enable ctags generation target" OFF)
@@ -51,34 +70,47 @@ endif()
 option(BUILD_SHARED_LIBS "build shared libraries over static libraries" ON)
 
 #find dependencies
+option(SZ_FIND_DEPS "find dependent libraries or build ext libraries" ON)
 include(GNUInstallDirs)
-find_package(PkgConfig)
-pkg_search_module(ZSTD  IMPORTED_TARGET libzstd)
+if(SZ_FIND_DEPS)
+  find_package(PkgConfig)
+  pkg_search_module(ZSTD  IMPORTED_TARGET libzstd)
 
-#by default pass no 3rd party exports
-set(thirdparty_export "")
+  #by default pass no 3rd party exports
+  set(thirdparty_export "")
 
-if(ZSTD_FOUND)
-  set(ZSTD_dep PkgConfig::ZSTD)
+  if(ZSTD_FOUND)
+    set(ZSTD_dep PkgConfig::ZSTD)
+  else()
+    add_subdirectory(zstd)
+    set(ZSTD_dep zstd)
+    list(APPEND thirdparty_export "zstd")
+  endif()
+
+  find_package(ZLIB)
+  if(ZLIB_FOUND)
+    set(ZLIB_dep ZLIB::ZLIB)
+  else()
+    add_subdirectory(zlib)
+    set(ZLIB_dep ZLIB)
+    list(APPEND thirdparty_export "ZLIB")
+  endif()
 else()
-  add_subdirectory(zstd)
-  set(ZSTD_dep zstd)
-  list(APPEND thirdparty_export "zstd")
-endif()
-
-find_package(ZLIB)
-if(ZLIB_FOUND)
-  set(ZLIB_dep ZLIB::ZLIB)
-else()
-  add_subdirectory(zlib)
-  set(ZLIB_dep ZLIB)
-  list(APPEND thirdparty_export "ZLIB")
+    add_subdirectory(zstd)
+    set(ZSTD_dep zstd)
+    list(APPEND thirdparty_export "zstd")
+    add_subdirectory(zlib)
+    set(ZLIB_dep ZLIB)
+    list(APPEND thirdparty_export "ZLIB")
 endif()
 
 find_package(OpenMP)
 
 add_subdirectory(sz)
-add_subdirectory(example)
+option(BUILD_SZ_EXAMPLES "build sz example" OFF)
+if(BUILD_SZ_EXAMPLES)
+  add_subdirectory(example)
+endif()
 
 option(BUILD_PYTHON_WRAPPER "build python wrapper" OFF)
 if(BUILD_PYTHON_WRAPPER)

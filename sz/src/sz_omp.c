@@ -15,10 +15,19 @@ double sz_wtime(){
 #ifdef _OPENMP
     return omp_get_wtime();
 #else
+#if defined(HAVE_CLOCK_GETTIME)
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
 
-    return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
+    return (double)ts.tv_sec + ((double)ts.tv_nsec / 1000000000.0);
+#elif defined(HAVE_GETTIMEOFDAY)
+    struct timeval now_tv;
+    gettimeofday(&now_tv, NULL);
+
+    return (double)now_tv.tv_sec + ((double)now_tv.tv_usec / 1000000.0);
+#else
+    return (double)time(NULL);
+#endif
 #endif
 }
 
@@ -65,9 +74,9 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 #ifdef DEBUG
 		printf("3D number of bins: %d\nerror bound %.20f\n", quantization_intervals, realPrecision);
 #endif
-		// exit(0);		
+		// exit(0);
 		updateQuantizationInfo(quantization_intervals);
-	}	
+	}
 	else{
 		quantization_intervals = exe_params->intvCapacity;
 	}
@@ -127,7 +136,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 
 	size_t dim0_offset = r2 * r3;
 	size_t dim1_offset = r3;
-	
+
 	// printf("malloc blockinfo array start\n");
 	// fflush(stdout);
 
@@ -146,10 +155,10 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	size_t * block_offset = (size_t *) malloc(num_blocks * sizeof(size_t));
 	size_t *freq = (size_t *)malloc(thread_num*quantization_intervals*4*sizeof(size_t));
 	memset(freq, 0, thread_num*quantization_intervals*4*sizeof(size_t));
-	
+
 	size_t stateNum = quantization_intervals*2;
-	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);	
-	
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
+
 	int num_yz = num_y * num_z;
 	#pragma omp parallel for
 	for(int t=0; t<thread_num; t++){
@@ -234,13 +243,13 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	memcpy(result_pos, unpredictable_count, num_blocks * sizeof(unsigned int));
 	result_pos += num_blocks * sizeof(unsigned int);
 	memcpy(result_pos, mean, num_blocks * sizeof(float));
-	result_pos += num_blocks * sizeof(float);	
+	result_pos += num_blocks * sizeof(float);
 	// printf("unpred offset: %ld\n", result_pos - result);
 	// store unpredicable data
 	// float * unpred_pos = (float *) result_pos;
 	// for(int t=0; t<thread_num; t++){
 	// 	float * unpredictable_data = result_unpredictable_data + t * unpred_data_max_size;
-	// 	memcpy(result_pos, unpredictable_data, unpredictable_count[t] * sizeof(float));		
+	// 	memcpy(result_pos, unpredictable_data, unpredictable_count[t] * sizeof(float));
 	// 	result_pos += unpredictable_count[t]*sizeof(float);
 	// }
 	unpred_offset[0] = 0;
@@ -251,7 +260,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	for(int t=0; t<thread_num; t++){
 		int id = sz_get_thread_num();
 		float * unpredictable_data = result_unpredictable_data + id * unpred_data_max_size;
-		memcpy(result_pos + unpred_offset[id] * sizeof(float), unpredictable_data, unpredictable_count[id] * sizeof(float));		
+		memcpy(result_pos + unpred_offset[id] * sizeof(float), unpredictable_data, unpredictable_count[id] * sizeof(float));
 	}
 	result_pos += total_unpred * sizeof(float);
 
@@ -299,7 +308,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	#pragma omp parallel for
 	for(int t=0; t<thread_num; t++){
 		int id = sz_get_thread_num();
-		memcpy(result_pos + block_offset[id], encoding_buffer + t * max_num_block_elements * sizeof(int), block_pos[t]);		
+		memcpy(result_pos + block_offset[id], encoding_buffer + t * max_num_block_elements * sizeof(int), block_pos[t]);
 	}
 	result_pos += block_offset[thread_num - 1] + block_pos[thread_num - 1];
 
@@ -343,14 +352,14 @@ void decompressDataSeries_float_2D_openmp(float** data, size_t r1, size_t r2, un
 }
 
 void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, size_t r3, unsigned char* comp_data){
-	
+
 	if(confparams_dec==NULL)
 		confparams_dec = (sz_params*)malloc(sizeof(sz_params));
 	memset(confparams_dec, 0, sizeof(sz_params));
 	if(exe_params==NULL)
 		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
-	memset(exe_params, 0, sizeof(sz_exedata));	
-	
+	memset(exe_params, 0, sizeof(sz_exedata));
+
 	// printf("num_block_elements %d num_blocks %d\n", max_num_block_elements, num_blocks);
 	// fflush(stdout);
 	double elapsed_time = 0.0;
@@ -359,7 +368,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 	size_t dim0_offset = r2 * r3;
 	size_t dim1_offset = r3;
 	size_t num_elements = r1 * r2 * r3;
-	
+
 	unsigned char * comp_data_pos = comp_data;
 	//int meta_data_offset = 3 + 1 + MetaDataByteLength;
 	//comp_data_pos += meta_data_offset;
@@ -394,7 +403,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 			}
 		}
 	}
-	
+
 #ifdef DEBUG
 	printf("number of blocks: %zu %zu %zu, thread_num %d\n", num_x, num_y, num_z, thread_num);
 #endif
@@ -453,7 +462,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 	// 	printf("%.2f ", result_unpredictable_data[i]);
 	// }
 	// printf("\ntotal_unpred num: %d\n", total_unpred);
-	
+
 	// for(int i=0; i<num_blocks; i++){
 	// 	printf("%d unpred offset %ld\n", i, unpred_offset[i]);
 	// 	for(int tmp=0; tmp<10; tmp++){
@@ -526,7 +535,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 		// }
 		// printf("\n\n");
 		decompressDataSeries_float_3D_RA_block(data_pos, mean, r1, r2, r3, current_blockcount_x, current_blockcount_y, current_blockcount_z, realPrecision, type, unpredictable_data);
-	}	
+	}
 	elapsed_time += sz_wtime();
 #ifdef DEBUG
 	printf("Parallel decompress elapsed time: %.4f\n", elapsed_time);
@@ -562,9 +571,9 @@ unsigned char * SZ_compress_double_3D_MDQ_openmp(double *oriData, size_t r1, siz
 #ifdef DEBUG
 		printf("3D number of bins: %d\nerror bound %.20f\n", quantization_intervals, realPrecision);
 #endif
-		// exit(0);		
+		// exit(0);
 		updateQuantizationInfo(quantization_intervals);
-	}	
+	}
 	else{
 		quantization_intervals = exe_params->intvCapacity;
 	}
@@ -624,7 +633,7 @@ unsigned char * SZ_compress_double_3D_MDQ_openmp(double *oriData, size_t r1, siz
 
 	size_t dim0_offset = r2 * r3;
 	size_t dim1_offset = r3;
-	
+
 	// printf("malloc blockinfo array start\n");
 	// fflush(stdout);
 
@@ -643,10 +652,10 @@ unsigned char * SZ_compress_double_3D_MDQ_openmp(double *oriData, size_t r1, siz
 	size_t * block_offset = (size_t *) malloc(num_blocks * sizeof(size_t));
 	size_t *freq = (size_t *)malloc(thread_num*quantization_intervals*4*sizeof(size_t));
 	memset(freq, 0, thread_num*quantization_intervals*4*sizeof(size_t));
-	
+
 	size_t stateNum = quantization_intervals*2;
-	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);	
-	
+	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
+
 	int num_yz = num_y * num_z;
 	#pragma omp parallel for
 	for(int t=0; t<thread_num; t++){
@@ -728,18 +737,18 @@ unsigned char * SZ_compress_double_3D_MDQ_openmp(double *oriData, size_t r1, siz
 	memcpy(result_pos, unpredictable_count, num_blocks * sizeof(unsigned int));
 	result_pos += num_blocks * sizeof(unsigned int);
 	memcpy(result_pos, mean, num_blocks * sizeof(double));
-	result_pos += num_blocks * sizeof(double);	
+	result_pos += num_blocks * sizeof(double);
 
 	unpred_offset[0] = 0;
 	for(int t=1; t<thread_num; t++){
 		unpred_offset[t] = unpredictable_count[t-1] + unpred_offset[t-1];
 	}
-	
+
 	#pragma omp parallel for
 	for(int t=0; t<thread_num; t++){
 		int id = sz_get_thread_num();
 		double * unpredictable_data = result_unpredictable_data + id * unpred_data_max_size;
-		memcpy(result_pos + unpred_offset[id] * sizeof(double), unpredictable_data, unpredictable_count[id] * sizeof(double));		
+		memcpy(result_pos + unpred_offset[id] * sizeof(double), unpredictable_data, unpredictable_count[id] * sizeof(double));
 	}
 	result_pos += total_unpred * sizeof(double);
 
@@ -787,7 +796,7 @@ unsigned char * SZ_compress_double_3D_MDQ_openmp(double *oriData, size_t r1, siz
 	#pragma omp parallel for
 	for(int t=0; t<thread_num; t++){
 		int id = sz_get_thread_num();
-		memcpy(result_pos + block_offset[id], encoding_buffer + t * max_num_block_elements * sizeof(int), block_pos[t]);		
+		memcpy(result_pos + block_offset[id], encoding_buffer + t * max_num_block_elements * sizeof(int), block_pos[t]);
 	}
 	result_pos += block_offset[thread_num - 1] + block_pos[thread_num - 1];
 
@@ -837,8 +846,8 @@ void decompressDataSeries_double_3D_openmp(double** data, size_t r1, size_t r2, 
 	memset(confparams_dec, 0, sizeof(sz_params));
 	if(exe_params==NULL)
 		exe_params = (sz_exedata*)malloc(sizeof(sz_exedata));
-	memset(exe_params, 0, sizeof(sz_exedata));	
-	
+	memset(exe_params, 0, sizeof(sz_exedata));
+
 	// printf("num_block_elements %d num_blocks %d\n", max_num_block_elements, num_blocks);
 	// fflush(stdout);
 	double elapsed_time = 0.0;
@@ -847,7 +856,7 @@ void decompressDataSeries_double_3D_openmp(double** data, size_t r1, size_t r2, 
 	size_t dim0_offset = r2 * r3;
 	size_t dim1_offset = r3;
 	size_t num_elements = r1 * r2 * r3;
-	
+
 	unsigned char * comp_data_pos = comp_data;
 	//int meta_data_offset = 3 + 1 + MetaDataByteLength;
 	//comp_data_pos += meta_data_offset;
@@ -882,7 +891,7 @@ void decompressDataSeries_double_3D_openmp(double** data, size_t r1, size_t r2, 
 			}
 		}
 	}
-	
+
 #ifdef DEBUG
 	printf("number of blocks: %zu %zu %zu, thread_num %d\n", num_x, num_y, num_z, thread_num);
 #endif
@@ -988,7 +997,7 @@ void decompressDataSeries_double_3D_openmp(double** data, size_t r1, size_t r2, 
 		double mean = mean_pos[id];
 
 		decompressDataSeries_double_3D_RA_block(data_pos, mean, r1, r2, r3, current_blockcount_x, current_blockcount_y, current_blockcount_z, realPrecision, type, unpredictable_data);
-	}	
+	}
 	elapsed_time += sz_wtime();
 #ifdef DEBUG
 	printf("Parallel decompress elapsed time: %.4f\n", elapsed_time);
@@ -1032,12 +1041,12 @@ void Huffman_init_openmp(HuffmanTree* huffmanTree, int *s, size_t length, int th
 	}
 
 	for (i = 0; i < huffmanTree->allNodes; i++)
-		if (freq[i]) 
+		if (freq[i])
 			qinsert(huffmanTree, new_node(huffmanTree, freq[i], i, 0, 0));
- 
-	while (huffmanTree->qend > 2) 
+
+	while (huffmanTree->qend > 2)
 		qinsert(huffmanTree, new_node(huffmanTree, 0, 0, qremove(huffmanTree), qremove(huffmanTree)));
- 
+
 	build_code(huffmanTree, huffmanTree->qq[1], 0, 0, 0);
 	// free(freq);
 }

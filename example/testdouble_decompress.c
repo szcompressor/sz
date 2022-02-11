@@ -7,7 +7,7 @@
  *      See COPYRIGHT in top-level directory.
  */
 
-
+#include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -104,7 +104,7 @@ int main(int argc, char * argv[])
     
 
     char oriFilePath[650];
-    strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
+    strcpy(oriFilePath, zipFilePath);
     oriFilePath[strlen(zipFilePath)-3] = '\0';
     double *ori_data = readDoubleData(oriFilePath, &totalNbEle, &status);
     if(status!=SZ_SCES)

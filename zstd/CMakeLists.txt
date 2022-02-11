@@ -1,4 +1,10 @@
-add_library(zstd SHARED 
+if (BUILD_SHARED_LIBS)
+  set (BUILD_EXT_LIBS_TYPE "SHARED")
+else ()
+  set (BUILD_EXT_LIBS_TYPE "STATIC")
+endif ()
+
+add_library(zstd ${BUILD_EXT_LIBS_TYPE} 
   ./common/entropy_common.c
   ./common/pool.c
   ./common/threading.c
@@ -45,6 +51,25 @@ target_include_directories(zstd
     ${CMAKE_CURRENT_SOURCE_DIR}/dictBuilder
     ${CMAKE_CURRENT_SOURCE_DIR}/dll
     ${CMAKE_CURRENT_SOURCE_DIR}/legacy
+  )
+if (${BUILD_EXT_LIBS_TYPE} MATCHES "SHARED")
+  set (LIB_RELEASE_NAME "zstd")
+  set (LIB_DEBUG_NAME "zstd${CMAKE_DEBUG_POSTFIX}")
+else ()
+  if (WIN32 AND NOT MINGW)
+    set (LIB_RELEASE_NAME "libzstd")
+    set (LIB_DEBUG_NAME "libzstd${CMAKE_DEBUG_POSTFIX}")
+  else ()
+    set (LIB_RELEASE_NAME "zstd")
+    set (LIB_DEBUG_NAME "zstd${CMAKE_DEBUG_POSTFIX}")
+  endif ()
+endif ()
+set_target_properties (zstd PROPERTIES
+    OUTPUT_NAME                ${LIB_RELEASE_NAME}
+#    OUTPUT_NAME_DEBUG          ${LIB_DEBUG_NAME}
+    OUTPUT_NAME_RELEASE        ${LIB_RELEASE_NAME}
+    OUTPUT_NAME_MINSIZEREL     ${LIB_RELEASE_NAME}
+    OUTPUT_NAME_RELWITHDEBINFO ${LIB_RELEASE_NAME}
   )
 
 

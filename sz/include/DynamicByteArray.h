@@ -16,7 +16,7 @@ extern "C" {
 
 #include <stdio.h>
 typedef struct DynamicByteArray
-{	
+{
 	unsigned char* array;
 	size_t size;
 	size_t capacity;
@@ -26,8 +26,8 @@ void new_DBA(DynamicByteArray **dba, size_t cap);
 void convertDBAtoBytes(DynamicByteArray *dba, unsigned char** bytes);
 void free_DBA(DynamicByteArray *dba);
 unsigned char getDBA_Data(DynamicByteArray *dba, size_t pos);
-void addDBA_Data(DynamicByteArray *dba, unsigned char value);
-void memcpyDBA_Data(DynamicByteArray *dba, unsigned char* data, size_t length);
+extern void addDBA_Data(DynamicByteArray *dba, unsigned char value);
+extern void memcpyDBA_Data(DynamicByteArray *dba, unsigned char* data, size_t length);
 
 #ifdef __cplusplus
 }

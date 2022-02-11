@@ -4,6 +4,7 @@
 #include "sz.h"
 #include "rw.h"
 #include "sz_omp.h"
+#include <sys/time.h>
 
 struct timeval startTime;
 struct timeval endTime;  /* Start and end times */

@@ -1,4 +1,10 @@
-add_library (SZ
+if (BUILD_SHARED_LIBS)
+  set (BUILD_EXT_LIBS_TYPE "SHARED")
+else ()
+  set (BUILD_EXT_LIBS_TYPE "STATIC")
+endif ()
+
+add_library (SZ ${BUILD_EXT_LIBS_TYPE}
   src/ArithmeticCoding.c
   src/ByteToolkit.c
   src/CacheTable.c
@@ -60,9 +66,30 @@ add_library (SZ
 )
 
 target_include_directories(SZ 
+  PRIVATE 
+  ${CMAKE_BINARY_DIR}
   PUBLIC 
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sz>
+  )
+if (${BUILD_EXT_LIBS_TYPE} MATCHES "SHARED")
+  set (LIB_RELEASE_NAME "SZ")
+  set (LIB_DEBUG_NAME "SZ${CMAKE_DEBUG_POSTFIX}")
+else ()
+  if (WIN32 AND NOT MINGW)
+    set (LIB_RELEASE_NAME "libSZ")
+    set (LIB_DEBUG_NAME "libSZ${CMAKE_DEBUG_POSTFIX}")
+  else ()
+    set (LIB_RELEASE_NAME "SZ")
+    set (LIB_DEBUG_NAME "SZ${CMAKE_DEBUG_POSTFIX}")
+  endif ()
+endif ()
+set_target_properties (SZ PROPERTIES
+    OUTPUT_NAME                ${LIB_RELEASE_NAME}
+#    OUTPUT_NAME_DEBUG          ${LIB_DEBUG_NAME}
+    OUTPUT_NAME_RELEASE        ${LIB_RELEASE_NAME}
+    OUTPUT_NAME_MINSIZEREL     ${LIB_RELEASE_NAME}
+    OUTPUT_NAME_RELWITHDEBINFO ${LIB_RELEASE_NAME}
   )
 
 target_link_libraries (SZ PUBLIC ${ZLIB_dep} ${ZSTD_dep} m)

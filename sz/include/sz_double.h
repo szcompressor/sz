@@ -17,8 +17,8 @@ extern "C" {
 #include <stdio.h>
 unsigned char* SZ_skip_compress_double(double* data, size_t dataLength, size_t* outSize);
 
-void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue);
-short computeReqLength_double_MSST19(double realPrecision);
+extern void computeReqLength_double(double realPrecision, short radExpo, int* reqLength, double* medianValue);
+extern short computeReqLength_double_MSST19(double realPrecision);
 
 unsigned int optimize_intervals_double_1D(double *oriData, size_t dataLength, double realPrecision);
 unsigned int optimize_intervals_double_2D(double *oriData, size_t r1, size_t r2, double realPrecision);
@@ -34,7 +34,7 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 unsigned int optimize_intervals_double_1D_opt_MSST19(double *oriData, size_t dataLength, double realPrecision);
 unsigned int optimize_intervals_double_2D_opt_MSST19(double *oriData, size_t r1, size_t r2, double realPrecision);
 unsigned int optimize_intervals_double_3D_opt_MSST19(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision);
-TightDataPointStorageD* SZ_compress_double_1D_MDQ(double *oriData, 
+TightDataPointStorageD* SZ_compress_double_1D_MDQ(double *oriData,
 size_t dataLength, double realPrecision, double valueRangeSize, double medianValue_d);
 void SZ_compress_args_double_StoreOriData(double* oriData, size_t dataLength, unsigned char** newByteData, size_t *outSize);
 
@@ -55,12 +55,12 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 
 void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *oriData, size_t dataLength, size_t *outSize);
 
-/*int SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData, 
-size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
+/*int SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData,
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize,
 int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio);*/
 
-int SZ_compress_args_double(int cmprType, int withRegression, unsigned char** newByteData, double *oriData, 
-size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
+int SZ_compress_args_double(int cmprType, int withRegression, unsigned char** newByteData, double *oriData,
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize,
 int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio);
 
 void SZ_compress_args_double_NoCkRnge_1D_subblock(unsigned char* compressedBytes, double *oriData, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d,

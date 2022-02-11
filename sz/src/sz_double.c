@@ -7,11 +7,14 @@
  *      See COPYRIGHT in top-level directory.
  */
 
+#include "config.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #include <math.h>
 #include "sz.h"
 #include "CompressElement.h"
@@ -58,7 +61,7 @@ inline short computeReqLength_double_MSST19(double realPrecision)
 }
 
 unsigned int optimize_intervals_double_1D(double *oriData, size_t dataLength, double realPrecision)
-{	
+{
 	size_t i = 0, radiusIndex;
 	double pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(confparams_cpr->maxRangeRadius*sizeof(size_t));
@@ -101,7 +104,7 @@ unsigned int optimize_intervals_double_1D(double *oriData, size_t dataLength, do
 }
 
 unsigned int optimize_intervals_double_2D(double *oriData, size_t r1, size_t r2, double realPrecision)
-{	
+{
 	size_t i,j, index;
 	size_t radiusIndex;
 	double pred_value = 0, pred_err;
@@ -121,7 +124,7 @@ unsigned int optimize_intervals_double_2D(double *oriData, size_t r1, size_t r2,
 				if(radiusIndex>=confparams_cpr->maxRangeRadius)
 					radiusIndex = confparams_cpr->maxRangeRadius - 1;
 				intervals[radiusIndex]++;
-			}			
+			}
 		}
 	}
 	//compute the appropriate number
@@ -134,7 +137,7 @@ unsigned int optimize_intervals_double_2D(double *oriData, size_t r1, size_t r2,
 			break;
 	}
 	if(i>=confparams_cpr->maxRangeRadius)
-		i = confparams_cpr->maxRangeRadius-1;	
+		i = confparams_cpr->maxRangeRadius-1;
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 	//printf("confparams_cpr->maxRangeRadius = %d, accIntervals=%d, powerOf2=%d\n", confparams_cpr->maxRangeRadius, accIntervals, powerOf2);
@@ -147,7 +150,7 @@ unsigned int optimize_intervals_double_2D(double *oriData, size_t r1, size_t r2,
 }
 
 unsigned int optimize_intervals_double_3D(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision)
-{	
+{
 	size_t i,j,k, index;
 	size_t radiusIndex;
 	size_t r23=r2*r3;
@@ -164,16 +167,16 @@ unsigned int optimize_intervals_double_3D(double *oriData, size_t r1, size_t r2,
 				if((i+j+k)%confparams_cpr->sampleDistance==0)
 				{
 					index = i*r23+j*r3+k;
-					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23] 
+					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23]
 					- oriData[index-1-r23] - oriData[index-r3-1] - oriData[index-r3-r23] + oriData[index-r3-r23-1];
 					pred_err = fabs(pred_value - oriData[index]);
 					radiusIndex = (pred_err/realPrecision+1)/2;
 					if(radiusIndex>=confparams_cpr->maxRangeRadius)
 						radiusIndex = confparams_cpr->maxRangeRadius - 1;
 					intervals[radiusIndex]++;
-				}				
+				}
 			}
-			
+
 		}
 	}
 	//compute the appropriate number
@@ -187,7 +190,7 @@ unsigned int optimize_intervals_double_3D(double *oriData, size_t r1, size_t r2,
 	}
 	if(i>=confparams_cpr->maxRangeRadius)
 		i = confparams_cpr->maxRangeRadius-1;
-		
+
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
 
@@ -254,21 +257,21 @@ unsigned int optimize_intervals_double_4D(double *oriData, size_t r1, size_t r2,
 	return powerOf2;
 }
 
-TightDataPointStorageD* SZ_compress_double_1D_MDQ(double *oriData, 
+TightDataPointStorageD* SZ_compress_double_1D_MDQ(double *oriData,
 size_t dataLength, double realPrecision, double valueRangeSize, double medianValue_d)
 {
 #ifdef HAVE_TIMECMPR
-	double* decData = NULL;	
+	double* decData = NULL;
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData = (double*)(multisteps->hist_data);
-#endif	
-	
+#endif
+
 	unsigned int quantization_intervals;
 	if(exe_params->optQuantMode==1)
 		quantization_intervals = optimize_intervals_double_1D_opt(oriData, dataLength, realPrecision);
 	else
 		quantization_intervals = exe_params->intvCapacity;
-	//updateQuantizationInfo(quantization_intervals);	
+	//updateQuantizationInfo(quantization_intervals);
 	int intvRadius = quantization_intervals/2;
 
 	size_t i;
@@ -276,43 +279,43 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	double medianValue = medianValue_d;
 	short radExpo = getExponent_double(valueRangeSize/2);
 
-	computeReqLength_double(realPrecision, radExpo, &reqLength, &medianValue);	
+	computeReqLength_double(realPrecision, radExpo, &reqLength, &medianValue);
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
-		
+
 	double* spaceFillingValue = oriData; //
-	
+
 	DynamicIntArray *exactLeadNumArray;
 	new_DIA(&exactLeadNumArray, DynArrayInitLen);
-	
+
 	DynamicByteArray *exactMidByteArray;
 	new_DBA(&exactMidByteArray, DynArrayInitLen);
-	
+
 	DynamicIntArray *resiBitArray;
 	new_DIA(&resiBitArray, DynArrayInitLen);
 
 	unsigned char preDataBytes[8];
 	longToBytes_bigEndian(preDataBytes, 0);
-	
+
 	int reqBytesLength = reqLength/8;
 	int resiBitsLength = reqLength%8;
 	double last3CmprsData[3] = {0};
 
 	DoubleValueCompressElement *vce = (DoubleValueCompressElement*)malloc(sizeof(DoubleValueCompressElement));
-	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));			
-				
-	//add the first data	
+	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
+
+	//add the first data
 	type[0] = 0;
 	compressSingleDoubleValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 	memcpy(preDataBytes,vce->curBytes,8);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	listAdd_double(last3CmprsData, vce->data);
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData[0] = vce->data;
-#endif		
-		
+#endif
+
 	//add the second data
 	type[1] = 0;
 	compressSingleDoubleValue(vce, spaceFillingValue[1], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
@@ -320,7 +323,7 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	memcpy(preDataBytes,vce->curBytes,8);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	listAdd_double(last3CmprsData, vce->data);
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData[1] = vce->data;
 #endif
@@ -334,12 +337,12 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 
 	double recip_realPrecision = 1/realPrecision;
 	for(i=2;i<dataLength;i++)
-	{				
+	{
 		//printf("%.30G\n",last3CmprsData[0]);
 		curData = spaceFillingValue[i];
 		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
 		//pred = last3CmprsData[0];
-		predAbsErr = fabs(curData - pred);	
+		predAbsErr = fabs(curData - pred);
 		if(predAbsErr<checkRadius)
 		{
 			state = (predAbsErr*recip_realPrecision+1)*0.5;
@@ -354,67 +357,67 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 				pred = pred - state*interval;
 			}
 			//listAdd_double(last3CmprsData, pred);
-#ifdef HAVE_TIMECMPR					
+#ifdef HAVE_TIMECMPR
 			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
-				decData[i] = pred;			
-#endif	
+				decData[i] = pred;
+#endif
 			continue;
 		}
-		
+
 		//unpredictable data processing
-		type[i] = 0;		
+		type[i] = 0;
 		compressSingleDoubleValue(vce, curData, realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
 		updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
 		memcpy(preDataBytes,vce->curBytes,8);
 		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
-							
+
 		//listAdd_double(last3CmprsData, vce->data);
 		pred = vce->data;
-		
+
 #ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[i] = vce->data;
-#endif	
-		
+#endif
+
 	}//end of for
-		
+
 	size_t exactDataNum = exactLeadNumArray->size;
-	
+
 	TightDataPointStorageD* tdps;
-			
-	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum, 
-			type, exactMidByteArray->array, exactMidByteArray->size,  
-			exactLeadNumArray->array,  
-			resiBitArray->array, resiBitArray->size, 
-			resiBitsLength, 
+
+	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum,
+			type, exactMidByteArray->array, exactMidByteArray->size,
+			exactLeadNumArray->array,
+			resiBitArray->array, resiBitArray->size,
+			resiBitsLength,
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
-	
-//	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d\n", 
+
+//	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d\n",
 //			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size);
-	
+
 	//free memory
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
 	free(type);
 	free(vce);
-	free(lce);	
-	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);	
-	
-	return tdps;	
+	free(lce);
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
+
+	return tdps;
 }
 
 void SZ_compress_args_double_StoreOriData(double* oriData, size_t dataLength, unsigned char** newByteData, size_t *outSize)
-{	
+{
 	int doubleSize = sizeof(double);
 	size_t k = 0, i;
 	size_t totalByteLength = 3 + MetaDataByteLength_double + exe_params->SZ_SIZE_TYPE + 1 + doubleSize*dataLength;
 	/*No need to malloc because newByteData should always already be allocated with no less totalByteLength.*/
 	//*newByteData = (unsigned char*)malloc(totalByteLength);
-	
+
 	unsigned char dsLengthBytes[8];
 	for (i = 0; i < 3; i++)//3
 		(*newByteData)[k++] = versionNumber[i];
-	
+
 	if(exe_params->SZ_SIZE_TYPE==4)//1
 		(*newByteData)[k++] = 16; //00010000
 	else
@@ -439,11 +442,11 @@ void SZ_compress_args_double_StoreOriData(double* oriData, size_t dataLength, un
 }
 
 
-char SZ_compress_args_double_NoCkRngeNoGzip_1D(int cmprType, unsigned char** newByteData, double *oriData, 
+char SZ_compress_args_double_NoCkRngeNoGzip_1D(int cmprType, unsigned char** newByteData, double *oriData,
 size_t dataLength, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
 {
-	char compressionType = 0;	
-	TightDataPointStorageD* tdps = NULL; 	
+	char compressionType = 0;
+	TightDataPointStorageD* tdps = NULL;
 #ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 	{
@@ -453,49 +456,49 @@ size_t dataLength, double realPrecision, size_t *outSize, double valueRangeSize,
 			if(timestep % confparams_cpr->snapshotCmprStep != 0)
 			{
 				tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
-				compressionType = 1; //time-series based compression 
+				compressionType = 1; //time-series based compression
 			}
 			else
-			{	
+			{
 				tdps = SZ_compress_double_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_d);
 				compressionType = 0; //snapshot-based compression
 				multisteps->lastSnapshotStep = timestep;
-			}					
+			}
 		}
 		else if(cmprType == SZ_FORCE_SNAPSHOT_COMPRESSION)
 		{
 			tdps = SZ_compress_double_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_d);
 			compressionType = 0; //snapshot-based compression
-			multisteps->lastSnapshotStep = timestep;			
+			multisteps->lastSnapshotStep = timestep;
 		}
 		else if(cmprType == SZ_FORCE_TEMPORAL_COMPRESSION)
 		{
 			tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
-			compressionType = 1; //time-series based compression 			
+			compressionType = 1; //time-series based compression
 		}
 
 	}
 	else
 #endif
-		tdps = SZ_compress_double_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_d);			
-	
+		tdps = SZ_compress_double_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, medianValue_d);
+
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
-	
+
 	if(*outSize>3 + MetaDataByteLength_double + exe_params->SZ_SIZE_TYPE + 1 + sizeof(double)*dataLength)
 		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
-	
-	free_TightDataPointStorageD(tdps);	
+
+	free_TightDataPointStorageD(tdps);
 	return compressionType;
 }
 
 TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, size_t r2, double realPrecision, double valueRangeSize, double medianValue_d)
 {
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	double* decData = NULL;
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData = (double*)(multisteps->hist_data);
-#endif	
-	
+#endif
+
 	double recip_realPrecision = 1/realPrecision;
 	unsigned int quantization_intervals;
 	if(exe_params->optQuantMode==1)
@@ -506,50 +509,50 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
 	else
 		quantization_intervals = exe_params->intvCapacity;
 	int intvRadius = quantization_intervals/2;
-	
-	size_t i,j; 
+
+	size_t i,j;
 	int reqLength;
 	double pred1D, pred2D;
 	double diff = 0.0;
 	double itvNum = 0;
 	double *P0, *P1;
-		
-	size_t dataLength = r1*r2;	
-	
+
+	size_t dataLength = r1*r2;
+
 	P0 = (double*)malloc(r2*sizeof(double));
 	memset(P0, 0, r2*sizeof(double));
 	P1 = (double*)malloc(r2*sizeof(double));
 	memset(P1, 0, r2*sizeof(double));
-		
+
 	double medianValue = medianValue_d;
 	short radExpo = getExponent_double(valueRangeSize/2);
-	computeReqLength_double(realPrecision, radExpo, &reqLength, &medianValue);	
+	computeReqLength_double(realPrecision, radExpo, &reqLength, &medianValue);
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
 	//type[dataLength]=0;
-		
+
 	double* spaceFillingValue = oriData; //
-	
+
 	DynamicIntArray *exactLeadNumArray;
 	new_DIA(&exactLeadNumArray, DynArrayInitLen);
-	
+
 	DynamicByteArray *exactMidByteArray;
 	new_DBA(&exactMidByteArray, DynArrayInitLen);
-	
+
 	DynamicIntArray *resiBitArray;
 	new_DIA(&resiBitArray, DynArrayInitLen);
-	
+
 	type[0] = 0;
-	
+
 	unsigned char preDataBytes[8];
 	longToBytes_bigEndian(preDataBytes, 0);
-	
+
 	int reqBytesLength = reqLength/8;
 	int resiBitsLength = reqLength%8;
 
 	DoubleValueCompressElement *vce = (DoubleValueCompressElement*)malloc(sizeof(DoubleValueCompressElement));
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
-			
+
 	/* Process Row-0 data 0*/
 	type[0] = 0;
 	compressSingleDoubleValue(vce, spaceFillingValue[0], realPrecision, medianValue, reqLength, reqBytesLength, resiBitsLength);
@@ -557,10 +560,10 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
 	memcpy(preDataBytes,vce->curBytes,8);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	P1[0] = vce->data;
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData[0] = vce->data;
-#endif	
+#endif
 
 	/* Process Row-0 data 1*/
 	pred1D = P1[0];
@@ -583,7 +586,7 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
 		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 		P1[1] = vce->data;
 	}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData[1] = P1[1];
 #endif
@@ -611,16 +614,16 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 			P1[j] = vce->data;
 		}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[j] = P1[j];
-#endif		
+#endif
 	}
 
 	/* Process Row-1 --> Row-r1-1 */
 	size_t index;
 	for (i = 1; i < r1; i++)
-	{	
+	{
 		/* Process row-i data 0 */
 		index = i*r2;
 		pred1D = P1[0];
@@ -643,11 +646,11 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 			P0[0] = vce->data;
 		}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[index] = P0[0];
 #endif
-									
+
 		/* Process row-i data 1 --> r2-1*/
 		for (j = 1; j < r2; j++)
 		{
@@ -673,10 +676,10 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 				P0[j] = vce->data;
 			}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 				decData[index] = P0[j];
-#endif			
+#endif
 		}
 
 		double *Pt;
@@ -684,19 +687,19 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
 		P1 = P0;
 		P0 = Pt;
 	}
-		
-	if(r2!=1)	
+
+	if(r2!=1)
 		free(P0);
 	free(P1);
 	size_t exactDataNum = exactLeadNumArray->size;
-	
+
 	TightDataPointStorageD* tdps;
-			
-	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum, 
-			type, exactMidByteArray->array, exactMidByteArray->size,  
-			exactLeadNumArray->array,  
-			resiBitArray->array, resiBitArray->size, 
-			resiBitsLength, 
+
+	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum,
+			type, exactMidByteArray->array, exactMidByteArray->size,
+			exactLeadNumArray->array,
+			resiBitArray->array, resiBitArray->size,
+			resiBitsLength,
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
 
 /*	int sum =0;
@@ -708,33 +711,33 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ(double *oriData, size_t r1, si
 		printf("%d ", type[i]);
 	printf("\n");*/
 
-//	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d\n", 
+//	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d\n",
 //			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size);
-	
+
 //	for(i = 3800;i<3844;i++)
 //		printf("exactLeadNumArray->array[%d]=%d\n",i,exactLeadNumArray->array[i]);
-	
+
 	//free memory
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	free(type);	
+	free(type);
 	free(vce);
-	free(lce);	
+	free(lce);
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
-	
+
 	return tdps;
 }
 
 /**
- * 
+ *
  * Note: @r1 is high dimension
- * 		 @r2 is low dimension 
+ * 		 @r2 is low dimension
  * */
 char SZ_compress_args_double_NoCkRngeNoGzip_2D(int cmprType, unsigned char** newByteData, double *oriData, size_t r1, size_t r2, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
 {
 	size_t dataLength = r1*r2;
-	char compressionType = 0;	
-	TightDataPointStorageD* tdps = NULL; 	
+	char compressionType = 0;
+	TightDataPointStorageD* tdps = NULL;
 #ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 	{
@@ -744,36 +747,36 @@ char SZ_compress_args_double_NoCkRngeNoGzip_2D(int cmprType, unsigned char** new
 			if(timestep % confparams_cpr->snapshotCmprStep != 0)
 			{
 				tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
-				compressionType = 1; //time-series based compression 
+				compressionType = 1; //time-series based compression
 			}
 			else
-			{	
+			{
 				tdps = SZ_compress_double_2D_MDQ(oriData, r1, r2, realPrecision, valueRangeSize, medianValue_d);
 				compressionType = 0; //snapshot-based compression
 				multisteps->lastSnapshotStep = timestep;
-			}					
+			}
 		}
 		else if(cmprType == SZ_FORCE_SNAPSHOT_COMPRESSION)
 		{
 			tdps = SZ_compress_double_2D_MDQ(oriData, r1, r2, realPrecision, valueRangeSize, medianValue_d);
 			compressionType = 0; //snapshot-based compression
-			multisteps->lastSnapshotStep = timestep;			
+			multisteps->lastSnapshotStep = timestep;
 		}
 		else if(cmprType == SZ_FORCE_TEMPORAL_COMPRESSION)
 		{
 			tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
-			compressionType = 1; //time-series based compression 			
+			compressionType = 1; //time-series based compression
 		}
 	}
 	else
 #endif
-		tdps = SZ_compress_double_2D_MDQ(oriData, r1, r2, realPrecision, valueRangeSize, medianValue_d);	
-	
+		tdps = SZ_compress_double_2D_MDQ(oriData, r1, r2, realPrecision, valueRangeSize, medianValue_d);
+
 	convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
-	
+
 	if(*outSize>3 + MetaDataByteLength_double + exe_params->SZ_SIZE_TYPE + 1 + sizeof(double)*dataLength)
-		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);	
-	
+		SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
+
 	free_TightDataPointStorageD(tdps);
 	return compressionType;
 }
@@ -784,7 +787,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 	double* decData = NULL;
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData = (double*)(multisteps->hist_data);
-#endif		
+#endif
 
 	double recip_realPrecision = 1/realPrecision;
 	unsigned int quantization_intervals;
@@ -792,12 +795,12 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 	{
 		quantization_intervals = optimize_intervals_double_3D_opt(oriData, r1, r2, r3, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
-	}	
+	}
 	else
 		quantization_intervals = exe_params->intvCapacity;
-	int intvRadius = quantization_intervals/2;	
-		
-	size_t i,j,k; 
+	int intvRadius = quantization_intervals/2;
+
+	size_t i,j,k;
 	int reqLength;
 	double pred1D, pred2D, pred3D;
 	double diff = 0.0;
@@ -813,7 +816,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 
 	double medianValue = medianValue_d;
 	short radExpo = getExponent_double(valueRangeSize/2);
-	computeReqLength_double(realPrecision, radExpo, &reqLength, &medianValue);	
+	computeReqLength_double(realPrecision, radExpo, &reqLength, &medianValue);
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
 	//type[dataLength]=0;
@@ -849,7 +852,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 	memcpy(preDataBytes,vce->curBytes,8);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	P1[0] = vce->data;
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[0] = P1[0];
 #endif
@@ -875,7 +878,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 		P1[1] = vce->data;
 	}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData[1] = P1[1];
 #endif
@@ -903,10 +906,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 			P1[j] = vce->data;
 		}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[j] = P1[j];
-#endif		
+#endif
 	}
 
 	/* Process Row-1 --> Row-r2-1 */
@@ -935,10 +938,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 			P1[index] = vce->data;
 		}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[index] = P1[index];
-#endif		
+#endif
 
 		/* Process row-i data 1 --> data r3-1*/
 		for (j = 1; j < r3; j++)
@@ -965,10 +968,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 				P1[index] = vce->data;
 			}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 				decData[index] = P1[index];
-#endif			
+#endif
 		}
 	}
 
@@ -999,7 +1002,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 			P0[0] = vce->data;
 		}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[index] = P0[0];
 #endif
@@ -1029,10 +1032,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 				P0[j] = vce->data;
 			}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 				decData[index] = P0[j];
-#endif			
+#endif
 		}
 
 	    /* Process Row-1 --> Row-r2-1 */
@@ -1062,10 +1065,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 				P0[index2D] = vce->data;
 			}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 				decData[index] = P0[index2D];
-#endif			
+#endif
 
 			/* Process Row-i data 1 --> data r3-1 */
 			for (j = 1; j < r3; j++)
@@ -1093,10 +1096,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 					addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 					P0[index2D] = vce->data;
 				}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 					decData[index] = P0[index2D];
-#endif				
+#endif
 			}
 		}
 
@@ -1116,7 +1119,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 			type, exactMidByteArray->array, exactMidByteArray->size,
 			exactLeadNumArray->array,
 			resiBitArray->array, resiBitArray->size,
-			resiBitsLength, 
+			resiBitsLength,
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
 
 //	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d\n",
@@ -1130,18 +1133,18 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 	free_DIA(resiBitArray);
 	free(type);
 	free(vce);
-	free(lce);	
-	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);	
-	
-	return tdps;	
+	free(lce);
+	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
+
+	return tdps;
 }
 
 
 char SZ_compress_args_double_NoCkRngeNoGzip_3D(int cmprType, unsigned char** newByteData, double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t *outSize, double valueRangeSize, double medianValue_d)
 {
 	size_t dataLength = r1*r2*r3;
-	char compressionType = 0;	
-	TightDataPointStorageD* tdps = NULL; 	
+	char compressionType = 0;
+	TightDataPointStorageD* tdps = NULL;
 #ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 	{
@@ -1151,11 +1154,11 @@ char SZ_compress_args_double_NoCkRngeNoGzip_3D(int cmprType, unsigned char** new
 			if(timestep % confparams_cpr->snapshotCmprStep != 0)
 			{
 				tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
-				compressionType = 1; //time-series based compression 
+				compressionType = 1; //time-series based compression
 			}
 			else
-			{	
-				if(confparams_cpr->withRegression == SZ_NO_REGRESSION)	
+			{
+				if(confparams_cpr->withRegression == SZ_NO_REGRESSION)
 					tdps = SZ_compress_double_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_d);
 				else
 					*newByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r1, r2, r3, realPrecision, outSize);
@@ -1165,31 +1168,31 @@ char SZ_compress_args_double_NoCkRngeNoGzip_3D(int cmprType, unsigned char** new
 		}
 		else if(cmprType == SZ_FORCE_SNAPSHOT_COMPRESSION)
 		{
-			if(confparams_cpr->withRegression == SZ_NO_REGRESSION)	
+			if(confparams_cpr->withRegression == SZ_NO_REGRESSION)
 				tdps = SZ_compress_double_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_d);
 			else
 				*newByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r1, r2, r3, realPrecision, outSize);
 			compressionType = 0; //snapshot-based compression
-			multisteps->lastSnapshotStep = timestep;			
+			multisteps->lastSnapshotStep = timestep;
 		}
 		else if(cmprType == SZ_FORCE_TEMPORAL_COMPRESSION)
 		{
 			tdps = SZ_compress_double_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_d);
-			compressionType = 1; //time-series based compression 			
-		}		
+			compressionType = 1; //time-series based compression
+		}
 	}
 	else
 #endif
-		tdps = SZ_compress_double_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_d);		
-	
+		tdps = SZ_compress_double_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, medianValue_d);
+
 	if(tdps!=NULL)
 	{
 		convertTDPStoFlatBytes_double(tdps, newByteData, outSize);
 		if(*outSize>3 + MetaDataByteLength_double + exe_params->SZ_SIZE_TYPE + 1 + sizeof(double)*dataLength)
 			SZ_compress_args_double_StoreOriData(oriData, dataLength, newByteData, outSize);
 		free_TightDataPointStorageD(tdps);
-	}	
-	
+	}
+
 	return compressionType;
 }
 
@@ -1206,7 +1209,7 @@ TightDataPointStorageD* SZ_compress_double_4D_MDQ(double *oriData, size_t r1, si
 		quantization_intervals = exe_params->intvCapacity;
 	int intvRadius = quantization_intervals/2;
 
-	size_t i,j,k; 
+	size_t i,j,k;
 	int reqLength;
 	double pred1D, pred2D, pred3D;
 	double diff = 0.0;
@@ -1539,14 +1542,14 @@ char SZ_compress_args_double_NoCkRngeNoGzip_4D(unsigned char** newByteData, doub
 }
 
 /*MSST19*/
-TightDataPointStorageD* SZ_compress_double_1D_MDQ_MSST19(double *oriData, 
+TightDataPointStorageD* SZ_compress_double_1D_MDQ_MSST19(double *oriData,
 size_t dataLength, double realPrecision, double valueRangeSize, double medianValue_f)
 {
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	double* decData = NULL;
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData = (double*)(multisteps->hist_data);
-#endif	
+#endif
 
 	//struct ClockPoint clockPointBuild;
 	//TimeDurationStart("build", &clockPointBuild);
@@ -1557,14 +1560,14 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 		quantization_intervals = exe_params->intvCapacity;
 	//updateQuantizationInfo(quantization_intervals);
 	int intvRadius = quantization_intervals/2;
-	
+
 	double* precisionTable = (double*)malloc(sizeof(double) * quantization_intervals);
 	double inv = 2.0-pow(2, -(confparams_cpr->plus_bits));
     for(int i=0; i<quantization_intervals; i++){
         double test = pow((1+realPrecision), inv*(i - intvRadius));
         precisionTable[i] = test;
     }
-    
+
 	struct TopLevelTableWideInterval levelTable;
     MultiLevelCacheTableWideIntervalBuild(&levelTable, precisionTable, quantization_intervals, realPrecision, confparams_cpr->plus_bits);
 
@@ -1573,25 +1576,25 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	double medianValue = medianValue_f;
 	//double medianInverse = 1 / medianValue_f;
 	//short radExpo = getExponent_double(realPrecision);
-	
-	reqLength = computeReqLength_double_MSST19(realPrecision);	
+
+	reqLength = computeReqLength_double_MSST19(realPrecision);
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
-		
+
 	double* spaceFillingValue = oriData; //
-	
+
 	DynamicIntArray *exactLeadNumArray;
 	new_DIA(&exactLeadNumArray, dataLength/2/8);
-	
+
 	DynamicByteArray *exactMidByteArray;
 	new_DBA(&exactMidByteArray, dataLength/2);
-	
+
 	DynamicIntArray *resiBitArray;
 	new_DIA(&resiBitArray, DynArrayInitLen);
-	
+
 	unsigned char preDataBytes[8];
 	intToBytes_bigEndian(preDataBytes, 0);
-	
+
 	int reqBytesLength = reqLength/8;
 	int resiBitsLength = reqLength%8;
 	double last3CmprsData[3] = {0};
@@ -1600,8 +1603,8 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 
 	DoubleValueCompressElement *vce = (DoubleValueCompressElement*)malloc(sizeof(DoubleValueCompressElement));
 	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
-				
-	//add the first data	
+
+	//add the first data
 	type[0] = 0;
 	compressSingleDoubleValue_MSST19(vce, spaceFillingValue[0], realPrecision, reqLength, reqBytesLength, resiBitsLength);
 	updateLossyCompElement_Double(vce->curBytes, preDataBytes, reqBytesLength, resiBitsLength, lce);
@@ -1609,11 +1612,11 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	listAdd_double(last3CmprsData, vce->data);
 	//miss++;
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData[0] = vce->data;
-#endif		
-		
+#endif
+
 	//add the second data
 	type[1] = 0;
 	compressSingleDoubleValue_MSST19(vce, spaceFillingValue[1], realPrecision, reqLength, reqBytesLength, resiBitsLength);
@@ -1622,7 +1625,7 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	listAdd_double(last3CmprsData, vce->data);
 	//miss++;
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData[1] = vce->data;
 #endif
@@ -1676,30 +1679,30 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 #ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[i] = vce->data;
-#endif	
-		
+#endif
+
 	}//end of for
-		
+
 //	printf("miss:%d, hit:%d\n", miss, hit);
 
 	size_t exactDataNum = exactLeadNumArray->size;
-	
+
 	TightDataPointStorageD* tdps;
-			
-	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum, 
-			type, exactMidByteArray->array, exactMidByteArray->size,  
-			exactLeadNumArray->array,  
-			resiBitArray->array, resiBitArray->size, 
+
+	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum,
+			type, exactMidByteArray->array, exactMidByteArray->size,
+			exactLeadNumArray->array,
+			resiBitArray->array, resiBitArray->size,
 			resiBitsLength,
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
     tdps->plus_bits = confparams_cpr->plus_bits;
-	
+
 	//free memory
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	free(type);	
+	free(type);
 	free(vce);
-	free(lce);	
+	free(lce);
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
 	free(precisionTable);
 	freeTopLevelTableWideInterval(&levelTable);
@@ -1709,17 +1712,17 @@ size_t dataLength, double realPrecision, double valueRangeSize, double medianVal
 TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t r1, size_t r2, double realPrecision, double valueRangeSize, double medianValue_f)
 {
 #ifdef HAVE_TIMECMPR
-	double* decData = NULL;	
+	double* decData = NULL;
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData = (double*)(multisteps->hist_data);
-#endif	
-	
+#endif
+
 	unsigned int quantization_intervals;
 	if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_double_2D_opt_MSST19(oriData, r1, r2, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
-	}	
+	}
 	else
 		quantization_intervals = exe_params->intvCapacity;
 	int intvRadius = quantization_intervals/2;
@@ -1734,44 +1737,44 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
 	struct TopLevelTableWideInterval levelTable;
 	MultiLevelCacheTableWideIntervalBuild(&levelTable, precisionTable, quantization_intervals, realPrecision, confparams_cpr->plus_bits);
 
-	size_t i,j; 
+	size_t i,j;
 	int reqLength;
 	double pred1D, pred2D;
 	//double diff = 0.0;
 	//double itvNum = 0;
 	double *P0, *P1;
 	double predRelErrRatio;
-		
-	size_t dataLength = r1*r2;	
-	
+
+	size_t dataLength = r1*r2;
+
 	P0 = (double*)malloc(r2*sizeof(double));
 	memset(P0, 0, r2*sizeof(double));
 	P1 = (double*)malloc(r2*sizeof(double));
 	memset(P1, 0, r2*sizeof(double));
-		
+
 	double medianValue = medianValue_f;
 	//double medianValueInverse = 1 / medianValue_f;
 	//short radExpo = getExponent_double(valueRangeSize/2);
-	reqLength = computeReqLength_double_MSST19(realPrecision);	
+	reqLength = computeReqLength_double_MSST19(realPrecision);
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
 	//type[dataLength]=0;
-		
+
 	double* spaceFillingValue = oriData; //
 
 	DynamicIntArray *exactLeadNumArray;
 	new_DIA(&exactLeadNumArray, DynArrayInitLen);
-	
+
 	DynamicByteArray *exactMidByteArray;
 	new_DBA(&exactMidByteArray, DynArrayInitLen);
-	
+
 	DynamicIntArray *resiBitArray;
 	new_DIA(&resiBitArray, DynArrayInitLen);
-	
+
 	type[0] = 0;
 	unsigned char preDataBytes[8];
 	intToBytes_bigEndian(preDataBytes, 0);
-	
+
 	int reqBytesLength = reqLength/8;
 	int resiBitsLength = reqLength%8;
 
@@ -1788,7 +1791,7 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
     for(int i=0; i<=range; i++){
         tables[i] = levelTable.subTables[i].table;
     }
-			
+
 	/* Process Row-0 data 0*/
 	type[0] = 0;
 	compressSingleDoubleValue_MSST19(vce, spaceFillingValue[0], realPrecision, reqLength, reqBytesLength, resiBitsLength);
@@ -1796,10 +1799,10 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
 	memcpy(preDataBytes,vce->curBytes,8);
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	P1[0] = vce->data;
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData[0] = vce->data;
-#endif	
+#endif
 
 	double curData;
 	int state;
@@ -1832,7 +1835,7 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
 		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 		P1[1] = vce->data;
 	}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData[1] = P1[1];
 #endif
@@ -1866,16 +1869,16 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 			P1[j] = vce->data;
 		}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[j] = P1[j];
-#endif		
+#endif
 	}
 
 	/* Process Row-1 --> Row-r1-1 */
 	size_t index;
 	for (i = 1; i < r1; i++)
-	{	
+	{
 		/* Process row-i data 0 */
 		index = i*r2;
 		pred1D = P1[0];
@@ -1904,11 +1907,11 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
 			addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 			P0[0] = vce->data;
 		}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[index] = P0[0];
 #endif
-									
+
 		/* Process row-i data 1 --> r2-1*/
 		for (j = 1; j < r2; j++)
 		{
@@ -1940,10 +1943,10 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
 				addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 				P0[j] = vce->data;
 			}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 				decData[index] = P0[j];
-#endif			
+#endif
 		}
 
 		double *Pt;
@@ -1951,19 +1954,19 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
 		P1 = P0;
 		P0 = Pt;
 	}
-	
+
 	if(r2!=1)
 		free(P0);
 	free(P1);
 	size_t exactDataNum = exactLeadNumArray->size;
-	
+
 	TightDataPointStorageD* tdps;
-			
-	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum, 
-			type, exactMidByteArray->array, exactMidByteArray->size,  
-			exactLeadNumArray->array,  
-			resiBitArray->array, resiBitArray->size, 
-			resiBitsLength, 
+
+	new_TightDataPointStorageD(&tdps, dataLength, exactDataNum,
+			type, exactMidByteArray->array, exactMidByteArray->size,
+			exactLeadNumArray->array,
+			resiBitArray->array, resiBitArray->size,
+			resiBitsLength,
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
 	tdps->plus_bits = confparams_cpr->plus_bits;
 
@@ -1976,23 +1979,23 @@ TightDataPointStorageD* SZ_compress_double_2D_MDQ_MSST19(double *oriData, size_t
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
 	free(precisionTable);
 	freeTopLevelTableWideInterval(&levelTable);
-	return tdps;	
+	return tdps;
 }
 
 TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, double valueRangeSize, double medianValue_f)
 {
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	double* decData = NULL;
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData = (double*)(multisteps->hist_data);
-#endif		
+#endif
 
 	unsigned int quantization_intervals;
 	if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_double_3D_opt_MSST19(oriData, r1, r2, r3, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
-	}	
+	}
 	else
 		quantization_intervals = exe_params->intvCapacity;
 	int intvRadius = quantization_intervals/2;
@@ -2023,7 +2026,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 	double medianValue = medianValue_f;
 	//double medianValueInverse = 1/ medianValue_f;
 	//short radExpo = getExponent_double(valueRangeSize/2);
-	reqLength = computeReqLength_double_MSST19(realPrecision);	
+	reqLength = computeReqLength_double_MSST19(realPrecision);
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
 
@@ -2040,7 +2043,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 
 	unsigned char preDataBytes[8];
 	longToBytes_bigEndian(preDataBytes, 0);
-	
+
 	int reqBytesLength = reqLength/8;
 	int resiBitsLength = reqLength%8;
 
@@ -2073,7 +2076,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 	addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 	P1[0] = vce->data;
 	//miss++;
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[0] = P1[0];
 #endif
@@ -2109,7 +2112,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 		P1[1] = vce->data;
 		//miss++;
 	}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData[1] = P1[1];
 #endif
@@ -2146,10 +2149,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 			P1[j] = vce->data;
 			//miss++;
 		}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[j] = P1[j];
-#endif		
+#endif
 	}
 
 	/* Process Row-1 --> Row-r2-1 */
@@ -2157,7 +2160,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 	for (i = 1; i < r2; i++)
 	{
 		/* Process row-i data 0 */
-		index = i*r3;	
+		index = i*r3;
 		pred1D = P1[index-r3];
 		curData = spaceFillingValue[index];
         predRelErrRatio = curData / pred1D;
@@ -2186,10 +2189,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 			P1[index] = vce->data;
 			//miss++;
 		}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[index] = P1[index];
-#endif		
+#endif
 
 		/* Process row-i data 1 --> data r3-1*/
 		for (j = 1; j < r3; j++)
@@ -2228,10 +2231,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 				P1[index] = vce->data;
 				//miss++;
 			}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 				decData[index] = P1[index];
-#endif			
+#endif
 		}
 	}
 
@@ -2270,7 +2273,7 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 			P0[0] = vce->data;
 			//miss++;
 		}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 		if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 			decData[index] = P0[0];
 #endif
@@ -2309,10 +2312,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 				P0[j] = vce->data;
 				//miss++;
 			}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 				decData[index] = P0[j];
-#endif			
+#endif
 		}
 
 	    /* Process Row-1 --> Row-r2-1 */
@@ -2351,10 +2354,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 				P0[index2D] = vce->data;
 				//miss++;
 			}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 			if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 				decData[index] = P0[index2D];
-#endif			
+#endif
 
 			/* Process Row-i data 1 --> data r3-1 */
 			for (j = 1; j < r3; j++)
@@ -2393,10 +2396,10 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 					P0[index2D] = vce->data;
 					//miss++;
 				}
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 					decData[index] = P0[index2D];
-#endif				
+#endif
 			}
 		}
 
@@ -2416,20 +2419,20 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ_MSST19(double *oriData, size_t
 			type, exactMidByteArray->array, exactMidByteArray->size,
 			exactLeadNumArray->array,
 			resiBitArray->array, resiBitArray->size,
-			resiBitsLength, 
+			resiBitsLength,
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
 	tdps->plus_bits = confparams_cpr->plus_bits;
 
 	//free memory
 	free_DIA(exactLeadNumArray);
 	free_DIA(resiBitArray);
-	free(type);	
+	free(type);
 	free(vce);
 	free(lce);
 	free(exactMidByteArray); //exactMidByteArray->array has been released in free_TightDataPointStorageF(tdps);
 	free(precisionTable);
-	freeTopLevelTableWideInterval(&levelTable);	
-	return tdps;	
+	freeTopLevelTableWideInterval(&levelTable);
+	return tdps;
 }
 void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *oriData, size_t dataLength, size_t *outSize)
 {
@@ -2438,7 +2441,7 @@ void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *or
 	tdps->typeArray = NULL;
 	tdps->leadNumArray = NULL;
 	tdps->residualMidBits = NULL;
-	
+
 	tdps->allSameData = 1;
 	tdps->dataSeriesLength = dataLength;
 	tdps->exactMidBytes = (unsigned char*)malloc(sizeof(unsigned char)*8);
@@ -2447,7 +2450,7 @@ void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *or
 	double value = oriData[0];
 	doubleToBytes(tdps->exactMidBytes, value);
 	tdps->exactMidBytes_size = 8;
-	
+
 	size_t tmpOutSize;
 	//unsigned char *tmpByteData;
 	convertTDPStoFlatBytes_double(tdps, newByteData, &tmpOutSize);
@@ -2456,21 +2459,21 @@ void SZ_compress_args_double_withinRange(unsigned char** newByteData, double *or
 	//*newByteData = (unsigned char*)malloc(sizeof(unsigned char)*16); //for floating-point data (1+3+4+4)
 	//memcpy(*newByteData, tmpByteData, 16);
 	*outSize = tmpOutSize;//12==3+1+8(double_size)+MetaDataByteLength_double
-	free_TightDataPointStorageD(tdps);	
+	free_TightDataPointStorageD(tdps);
 }
 
-/*int SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData, 
-size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
+/*int SZ_compress_args_double_wRngeNoGzip(unsigned char** newByteData, double *oriData,
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize,
 int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio)
 {
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	double valueRangeSize = 0, medianValue = 0;
-	
+
 	double min = computeRangeSize_double(oriData, dataLength, &valueRangeSize, &medianValue);
 	double max = min+valueRangeSize;
 	double realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
-		
+
 	if(valueRangeSize <= realPrecision)
 	{
 		SZ_compress_args_double_withinRange(newByteData, oriData, dataLength, outSize);
@@ -2482,7 +2485,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio)
 			if(errBoundMode>=PW_REL)
 			{
 				SZ_compress_args_double_NoCkRngeNoGzip_1D_pwr(newByteData, oriData, pwrErrRatio, r1, outSize, min, max);
-				//SZ_compress_args_double_NoCkRngeNoGzip_1D_pwrgroup(newByteData, oriData, r1, absErr_Bound, relBoundRatio, pwrErrRatio, valueRangeSize, medianValue, outSize);				
+				//SZ_compress_args_double_NoCkRngeNoGzip_1D_pwrgroup(newByteData, oriData, r1, absErr_Bound, relBoundRatio, pwrErrRatio, valueRangeSize, medianValue, outSize);
 			}
 			else
 				SZ_compress_args_double_NoCkRngeNoGzip_1D(newByteData, oriData, r1, realPrecision, outSize, valueRangeSize, medianValue);
@@ -2512,35 +2515,35 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwrErrRatio)
 	return status;
 }*/
 
-int SZ_compress_args_double(int cmprType, int withRegression, unsigned char** newByteData, double *oriData, 
-size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
+int SZ_compress_args_double(int cmprType, int withRegression, unsigned char** newByteData, double *oriData,
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize,
 int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRatio)
 {
 	confparams_cpr->dataType = SZ_DOUBLE;
 	confparams_cpr->errorBoundMode = errBoundMode;
 	if(errBoundMode==PW_REL)
 	{
-		confparams_cpr->pw_relBoundRatio = pwRelBoundRatio;	
+		confparams_cpr->pw_relBoundRatio = pwRelBoundRatio;
 	}
-		
+
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
-	
+
 	if(dataLength <= MIN_NUM_OF_ELEMENTS)
 	{
 		*newByteData = SZ_skip_compress_double(oriData, dataLength, outSize);
 		return status;
 	}
-	
+
 	double valueRangeSize = 0, medianValue = 0;
-	
+
 	unsigned char * signs = NULL;
 	bool positive = true;
 	double nearZero = 0.0;
 	double min = 0;
 	if(pwRelBoundRatio < 0.000009999)
 		confparams_cpr->accelerate_pw_rel_compression = 0;
-		
+
 	if(confparams_cpr->errorBoundMode == PW_REL && confparams_cpr->accelerate_pw_rel_compression == 1)
 	{
 		signs = (unsigned char *) malloc(dataLength);
@@ -2548,13 +2551,13 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		min = computeRangeSize_double_MSST19(oriData, dataLength, &valueRangeSize, &medianValue, signs, &positive, &nearZero);
 	}
 	else
-		min = computeRangeSize_double(oriData, dataLength, &valueRangeSize, &medianValue);	
+		min = computeRangeSize_double(oriData, dataLength, &valueRangeSize, &medianValue);
 	double max = min+valueRangeSize;
 	confparams_cpr->dmin = min;
 	confparams_cpr->dmax = max;
-	
-	double realPrecision = 0; 
-	
+
+	double realPrecision = 0;
+
 	if(confparams_cpr->errorBoundMode==PSNR)
 	{
 		confparams_cpr->errorBoundMode = ABS;
@@ -2564,27 +2567,27 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 	{
 		confparams_cpr->errorBoundMode = ABS;
 		realPrecision = confparams_cpr->absErrBound = computeABSErrBoundFromNORM_ERR(confparams_cpr->normErr, dataLength);
-		//printf("realPrecision=%lf\n", realPrecision);				
-	}	
+		//printf("realPrecision=%lf\n", realPrecision);
+	}
 	else
 	{
 		realPrecision = getRealPrecision_double(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
 		confparams_cpr->absErrBound = realPrecision;
-	}	
+	}
 	if(valueRangeSize <= realPrecision)
 	{
 #ifdef HAVE_WRITESTATS
 		writeConstantFlag(1);
-#endif			
+#endif
 		if(confparams_cpr->errorBoundMode>=PW_REL && confparams_cpr->accelerate_pw_rel_compression == 1)
-			free(signs);		
+			free(signs);
 		SZ_compress_args_double_withinRange(newByteData, oriData, dataLength, outSize);
 	}
 	else
 	{
 #ifdef HAVE_WRITESTATS
 		writeConstantFlag(0);
-#endif			
+#endif
 		size_t tmpOutSize = 0;
 		unsigned char* tmpByteData;
 		if (r2==0)
@@ -2621,14 +2624,14 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			}
 			else
 #ifdef HAVE_TIMECMPR
-				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)			
+				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_2D(cmprType, &tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
 #endif
-				{	
+				{
 					if(withRegression == SZ_NO_REGRESSION)
 						SZ_compress_args_double_NoCkRngeNoGzip_2D(cmprType, &tmpByteData, oriData, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
-					else 
+					else
 					{
 						tmpByteData = SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(oriData, r2, r1, realPrecision, &tmpOutSize);
 						if(tmpOutSize>=dataLength*sizeof(double) + 3 + MetaDataByteLength_double + exe_params->SZ_SIZE_TYPE + 1)
@@ -2655,15 +2658,15 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 				{
 					if(withRegression == SZ_NO_REGRESSION)
 						SZ_compress_args_double_NoCkRngeNoGzip_3D(cmprType, &tmpByteData, oriData, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
-					else 
+					else
 					{
 						tmpByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r3, r2, r1, realPrecision, &tmpOutSize);
 						if(tmpOutSize>=dataLength*sizeof(double) + 3 + MetaDataByteLength_double + exe_params->SZ_SIZE_TYPE + 1)
 							SZ_compress_args_double_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);
 					}
 				}
-					
-					
+
+
 		}
 		else
 		if (r5==0)
@@ -2677,33 +2680,33 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 			}
 			else
 #ifdef HAVE_TIMECMPR
-				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)			
+				if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 					multisteps->compressionType = SZ_compress_args_double_NoCkRngeNoGzip_4D(&tmpByteData, oriData, r4, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
 				else
-#endif	
+#endif
 				{
 					if(withRegression == SZ_NO_REGRESSION)
 						SZ_compress_args_double_NoCkRngeNoGzip_4D(&tmpByteData, oriData, r4, r3, r2, r1, realPrecision, &tmpOutSize, valueRangeSize, medianValue);
-					else 
+					else
 					{
-						tmpByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r4*r3, r2, r1, realPrecision, &tmpOutSize);								
+						tmpByteData = SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(oriData, r4*r3, r2, r1, realPrecision, &tmpOutSize);
 						if(tmpOutSize>=dataLength*sizeof(double) + 3 + MetaDataByteLength_double + exe_params->SZ_SIZE_TYPE + 1)
 							SZ_compress_args_double_StoreOriData(oriData, dataLength, &tmpByteData, &tmpOutSize);
 					}
 				}
-		
+
 		}
 		else
 		{
 			printf("Error: doesn't support 5 dimensions for now.\n");
 			status = SZ_DERR;
 		}
-				
+
 		//Call Gzip to do the further compression.
 		if(confparams_cpr->szMode==SZ_BEST_SPEED)
 		{
 			*outSize = tmpOutSize;
-			*newByteData = tmpByteData;			
+			*newByteData = tmpByteData;
 		}
 		else if(confparams_cpr->szMode==SZ_BEST_COMPRESSION || confparams_cpr->szMode==SZ_DEFAULT_COMPRESSION || confparams_cpr->szMode==SZ_TEMPORAL_COMPRESSION)
 		{
@@ -2713,7 +2716,7 @@ int errBoundMode, double absErr_Bound, double relBoundRatio, double pwRelBoundRa
 		else
 		{
 			printf("Error: Wrong setting of confparams_cpr->szMode in the double compression.\n");
-			status = SZ_MERR;	
+			status = SZ_MERR;
 		}
 	}
 
@@ -3133,7 +3136,7 @@ size_t r1, size_t s1, size_t e1)
 	//updateQuantizationInfo(quantization_intervals);
 	int intvRadius = quantization_intervals/2;
 
-	size_t i; 
+	size_t i;
 	int reqLength;
 	double medianValue = medianValue_d;
 	short radExpo = getExponent_double(valueRangeSize/2);
@@ -3258,7 +3261,7 @@ size_t r1, size_t r2, size_t s1, size_t s2, size_t e1, size_t e2)
 		quantization_intervals = exe_params->intvCapacity;
 	int intvRadius = quantization_intervals/2;
 
-	size_t i,j; 
+	size_t i,j;
 	int reqLength;
 	double pred1D, pred2D;
 	double diff = 0.0;
@@ -3466,7 +3469,7 @@ size_t r1, size_t r2, size_t r3, size_t s1, size_t s2, size_t s3, size_t e1, siz
 		quantization_intervals = exe_params->intvCapacity;
 	int intvRadius = quantization_intervals/2;
 
-	size_t i,j,k; 
+	size_t i,j,k;
 	int reqLength;
 	double pred1D, pred2D, pred3D;
 	double diff = 0.0;
@@ -3805,7 +3808,7 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 		quantization_intervals = exe_params->intvCapacity;
 	int intvRadius = quantization_intervals/2;
 
-	size_t i,j,k; 
+	size_t i,j,k;
 	int reqLength;
 	double pred1D, pred2D, pred3D;
 	double diff = 0.0;
@@ -4142,7 +4145,7 @@ size_t r1, size_t r2, size_t r3, size_t r4, size_t s1, size_t s2, size_t s3, siz
 }
 
 unsigned int optimize_intervals_double_1D_opt_MSST19(double *oriData, size_t dataLength, double realPrecision)
-{	
+{
 	size_t i = 0, radiusIndex;
 	double pred_value = 0;
 	double pred_err;
@@ -4157,14 +4160,14 @@ unsigned int optimize_intervals_double_1D_opt_MSST19(double *oriData, size_t dat
 		if(*data_pos == 0){
         		data_pos += confparams_cpr->sampleDistance;
         		continue;
-		}			
+		}
 		tempIndex++;
 		totalSampleSize++;
 		pred_value = data_pos[-1];
 		pred_err = fabs((double)*data_pos / pred_value);
 		radiusIndex = (unsigned long)fabs(log2(pred_err)/divider+0.5);
 		if(radiusIndex>=confparams_cpr->maxRangeRadius)
-			radiusIndex = confparams_cpr->maxRangeRadius - 1;			
+			radiusIndex = confparams_cpr->maxRangeRadius - 1;
 		intervals[radiusIndex]++;
 
 		data_pos += confparams_cpr->sampleDistance;
@@ -4180,19 +4183,19 @@ unsigned int optimize_intervals_double_1D_opt_MSST19(double *oriData, size_t dat
 	}
 	if(i>=confparams_cpr->maxRangeRadius)
 		i = confparams_cpr->maxRangeRadius-1;
-		
+
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
-	
+
 	if(powerOf2<64)
 		powerOf2 = 64;
-	
+
 	free(intervals);
 	return powerOf2;
 }
 
 unsigned int optimize_intervals_double_2D_opt_MSST19(double *oriData, size_t r1, size_t r2, double realPrecision)
-{	
+{
 	size_t i;
 	size_t radiusIndex;
 	double pred_value = 0, pred_err;
@@ -4210,7 +4213,7 @@ unsigned int optimize_intervals_double_2D_opt_MSST19(double *oriData, size_t r1,
 		if(*data_pos == 0){
         		data_pos += confparams_cpr->sampleDistance;
         		continue;
-		}			
+		}
 		totalSampleSize++;
 		pred_value = data_pos[-1] + data_pos[-r2] - data_pos[-r2-1];
 		pred_err = fabs(pred_value / *data_pos);
@@ -4252,7 +4255,7 @@ unsigned int optimize_intervals_double_2D_opt_MSST19(double *oriData, size_t r1,
 }
 
 unsigned int optimize_intervals_double_3D_opt_MSST19(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision)
-{	
+{
 	size_t i;
 	size_t radiusIndex;
 	size_t r23=r2*r3;
@@ -4271,7 +4274,7 @@ unsigned int optimize_intervals_double_3D_opt_MSST19(double *oriData, size_t r1,
 		if(*data_pos == 0){
         		data_pos += confparams_cpr->sampleDistance;
         		continue;
-		}	
+		}
 		totalSampleSize++;
 		pred_value = data_pos[-1] + data_pos[-r3] + data_pos[-r23] - data_pos[-1-r23] - data_pos[-r3-1] - data_pos[-r3-r23] + data_pos[-r3-r23-1];
 		pred_err = fabs(*data_pos / pred_value);
@@ -4295,7 +4298,7 @@ unsigned int optimize_intervals_double_3D_opt_MSST19(double *oriData, size_t r1,
 			if(offset_count == 0) offset_count ++;
 		}
 		else data_pos += confparams_cpr->sampleDistance;
-	}	
+	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*confparams_cpr->predThreshold;
 	size_t sum = 0;
@@ -4315,7 +4318,7 @@ unsigned int optimize_intervals_double_3D_opt_MSST19(double *oriData, size_t r1,
 	free(intervals);
 	return powerOf2;
 }
-unsigned int optimize_intervals_double_3D_opt(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision){	
+unsigned int optimize_intervals_double_3D_opt(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision){
 	size_t i;
 	size_t radiusIndex;
 	size_t r23=r2*r3;
@@ -4353,7 +4356,7 @@ unsigned int optimize_intervals_double_3D_opt(double *oriData, size_t r1, size_t
 			if(offset_count == 0) offset_count ++;
 		}
 		else data_pos += confparams_cpr->sampleDistance;
-	}	
+	}
 	//compute the appropriate number
 	size_t targetCount = totalSampleSize*confparams_cpr->predThreshold;
 	size_t sum = 0;
@@ -4405,11 +4408,11 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 		type[0] = (int) (itvNum/2) + exe_params->intvRadius;
 		P1[0] = pred1D + 2 * (type[0] - exe_params->intvRadius) * realPrecision;
 		//ganrantee comporession error against the case of machine-epsilon
-		if(fabs(curData-P1[0])>realPrecision){	
+		if(fabs(curData-P1[0])>realPrecision){
 			type[0] = 0;
 			P1[0] = curData;
 			unpredictable_data[unpredictable_count ++] = curData;
-		}		
+		}
 	}
 	else{
 		type[0] = 0;
@@ -4427,11 +4430,11 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 		type[1] = (int) (itvNum/2) + exe_params->intvRadius;
 		P1[1] = pred1D + 2 * (type[1] - exe_params->intvRadius) * realPrecision;
 		//ganrantee comporession error against the case of machine-epsilon
-		if(fabs(curData-P1[1])>realPrecision){	
+		if(fabs(curData-P1[1])>realPrecision){
 			type[1] = 0;
-			P1[1] = curData;	
+			P1[1] = curData;
 			unpredictable_data[unpredictable_count ++] = curData;
-		}		
+		}
 	}
 	else{
 		type[1] = 0;
@@ -4449,11 +4452,11 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 			type[j] = (int) (itvNum/2) + exe_params->intvRadius;
 			P1[j] = pred1D + 2 * (type[j] - exe_params->intvRadius) * realPrecision;
 			//ganrantee comporession error against the case of machine-epsilon
-			if(fabs(curData-P1[j])>realPrecision){	
+			if(fabs(curData-P1[j])>realPrecision){
 				type[j] = 0;
-				P1[j] = curData;	
+				P1[j] = curData;
 				unpredictable_data[unpredictable_count ++] = curData;
-			}			
+			}
 		}
 		else{
 			type[j] = 0;
@@ -4468,7 +4471,7 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 	for (i = 1; i < r2; i++)
 	{
 		/* Process row-i data 0 */
-		index = i*r3;	
+		index = i*r3;
 		pred1D = P1[index-r3];
 		curData = *cur_data_pos;
 		diff = curData - pred1D;
@@ -4480,14 +4483,14 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 			if (diff < 0) itvNum = -itvNum;
 			type[index] = (int) (itvNum/2) + exe_params->intvRadius;
 			P1[index] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
-			
+
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P1[index])>realPrecision)
-			{	
+			{
 				type[index] = 0;
-				P1[index] = curData;	
+				P1[index] = curData;
 				unpredictable_data[unpredictable_count ++] = curData;
-			}			
+			}
 		}
 		else
 		{
@@ -4512,14 +4515,14 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 				if (diff < 0) itvNum = -itvNum;
 				type[index] = (int) (itvNum/2) + exe_params->intvRadius;
 				P1[index] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
-				
+
 				//ganrantee comporession error against the case of machine-epsilon
 				if(fabs(curData-P1[index])>realPrecision)
-				{	
+				{
 					type[index] = 0;
-					P1[index] = curData;	
+					P1[index] = curData;
 					unpredictable_data[unpredictable_count ++] = curData;
-				}				
+				}
 			}
 			else
 			{
@@ -4549,11 +4552,11 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 			P0[0] = pred1D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 			//ganrantee comporession error against the case of machine-epsilon
 			if(fabs(curData-P0[0])>realPrecision)
-			{	
+			{
 				type[index] = 0;
-				P0[0] = curData;	
+				P0[0] = curData;
 				unpredictable_data[unpredictable_count ++] = curData;
-			}			
+			}
 		}
 		else
 		{
@@ -4577,9 +4580,9 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 				P0[j] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				//ganrantee comporession error against the case of machine-epsilon
 				if(fabs(curData-P0[j])>realPrecision)
-				{	
+				{
 					type[index] = 0;
-					P0[j] = curData;	
+					P0[j] = curData;
 					unpredictable_data[unpredictable_count ++] = curData;
 				}
 			}
@@ -4598,7 +4601,7 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 		{
 			/* Process Row-i data 0 */
 			index = k*r23 + i*r3;
-			index2D = i*r3;		
+			index2D = i*r3;
 			pred2D = P0[index2D-r3] + P1[index2D] - P1[index2D-r3];
 			curData = *cur_data_pos;
 			diff = curData - pred2D;
@@ -4612,11 +4615,11 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 				P0[index2D] = pred2D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
 				//ganrantee comporession error against the case of machine-epsilon
 				if(fabs(curData-P0[index2D])>realPrecision)
-				{	
+				{
 					type[index] = 0;
-					P0[index2D] = curData;	
+					P0[index2D] = curData;
 					unpredictable_data[unpredictable_count ++] = curData;
-				}				
+				}
 			}
 			else
 			{
@@ -4628,7 +4631,7 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 			/* Process Row-i data 1 --> data r3-1 */
 			for (j = 1; j < r3; j++)
 			{
-				//index = k*r2*r3 + i*r3 + j;			
+				//index = k*r2*r3 + i*r3 + j;
 				index ++;
 				index2D = i*r3 + j;
 				pred3D = P0[index2D-1] + P0[index2D-r3]+ P1[index2D] - P0[index2D-r3-1] - P1[index2D-r3] - P1[index2D-1] + P1[index2D-r3-1];
@@ -4642,14 +4645,14 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 					if (diff < 0) itvNum = -itvNum;
 					type[index] = (int) (itvNum/2) + exe_params->intvRadius;
 					P0[index2D] = pred3D + 2 * (type[index] - exe_params->intvRadius) * realPrecision;
-					
+
 					//ganrantee comporession error against the case of machine-epsilon
 					if(fabs(curData-P0[index2D])>realPrecision)
-					{	
+					{
 						type[index] = 0;
-						P0[index2D] = curData;	
+						P0[index2D] = curData;
 						unpredictable_data[unpredictable_count ++] = curData;
-					}					
+					}
 				}
 				else
 				{
@@ -4671,7 +4674,7 @@ size_t SZ_compress_double_3D_MDQ_RA_block(double * block_ori_data, double * mean
 }
 
 unsigned int optimize_intervals_double_2D_opt(double *oriData, size_t r1, size_t r2, double realPrecision)
-{	
+{
 	size_t i;
 	size_t radiusIndex;
 	double pred_value = 0, pred_err;
@@ -4726,7 +4729,7 @@ unsigned int optimize_intervals_double_2D_opt(double *oriData, size_t r1, size_t
 }
 
 unsigned int optimize_intervals_double_1D_opt(double *oriData, size_t dataLength, double realPrecision)
-{	
+{
 	size_t i = 0, radiusIndex;
 	double pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(confparams_cpr->maxRangeRadius*sizeof(size_t));
@@ -4740,7 +4743,7 @@ unsigned int optimize_intervals_double_1D_opt(double *oriData, size_t dataLength
 		pred_err = fabs(pred_value - *data_pos);
 		radiusIndex = (unsigned long)((pred_err/realPrecision+1)/2);
 		if(radiusIndex>=confparams_cpr->maxRangeRadius)
-			radiusIndex = confparams_cpr->maxRangeRadius - 1;			
+			radiusIndex = confparams_cpr->maxRangeRadius - 1;
 		intervals[radiusIndex]++;
 
 		data_pos += confparams_cpr->sampleDistance;
@@ -4756,20 +4759,20 @@ unsigned int optimize_intervals_double_1D_opt(double *oriData, size_t dataLength
 	}
 	if(i>=confparams_cpr->maxRangeRadius)
 		i = confparams_cpr->maxRangeRadius-1;
-		
+
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
-	
+
 	if(powerOf2<32)
 		powerOf2 = 32;
-	
+
 	free(intervals);
 	return powerOf2;
 }
 
 /*The above code is for sz 1.4.13; the following code is for sz 2.0*/
 unsigned int optimize_intervals_double_2D_with_freq_and_dense_pos(double *oriData, size_t r1, size_t r2, double realPrecision, double * dense_pos, double * max_freq, double * mean_freq)
-{	
+{
 	double mean = 0.0;
 	size_t len = r1 * r2;
 	size_t mean_distance = (int) (sqrt(len));
@@ -4892,7 +4895,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 		quantization_intervals = optimize_intervals_double_2D_with_freq_and_dense_pos(oriData, r1, r2, realPrecision, &dense_pos, &sz_sample_correct_freq, &mean_flush_freq);
 		if(mean_flush_freq > 0.5 || mean_flush_freq > sz_sample_correct_freq) use_mean = 1;
 		updateQuantizationInfo(quantization_intervals);
-	}	
+	}
 	else{
 		quantization_intervals = exe_params->intvCapacity;
 	}
@@ -4914,7 +4917,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 	size_t num_blocks = num_x * num_y;
 	size_t num_elements = r1 * r2;
 
-	size_t dim0_offset = r2;	
+	size_t dim0_offset = r2;
 
 	int * result_type = (int *) malloc(num_elements * sizeof(int));
 	size_t unpred_data_max_size = max_num_block_elements;
@@ -4945,7 +4948,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 				double fx = 0.0;
 				double fy = 0.0;
 				double f = 0;
-				double sum_x; 
+				double sum_x;
 				double curData;
 				for(size_t i=0; i<current_blockcount_x; i++){
 					sum_x = 0;
@@ -5048,7 +5051,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 			for(size_t j=0; j<num_y; j++){
 				offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
 				current_blockcount_y = (j < split_index_y) ? early_blockcount_y : late_blockcount_y;
-				
+
 				/*sampling: decide which predictor to use (regression or lorenzo)*/
 				{
 					double * cur_data_pos;
@@ -5063,7 +5066,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 						cur_data_pos = data_pos + i * dim0_offset + i;
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
-						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c];							
+						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c];
 						err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
 						err_reg += fabs(pred_reg - curData);
 
@@ -5071,9 +5074,9 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 						cur_data_pos = data_pos + i*dim0_offset + bmi;
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
-						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c];							
+						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c];
 						err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-						err_reg += fabs(pred_reg - curData);								
+						err_reg += fabs(pred_reg - curData);
 					}
 					use_reg = (err_reg < err_sz);
 				}
@@ -5092,11 +5095,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								coeff_type[e][coeff_index] = (int) (itvNum/2) + coeff_intvRadius;
 								last_coeffcients[e] = last_coeffcients[e] + 2 * (coeff_type[e][coeff_index] - coeff_intvRadius) * precision[e];
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){	
+								if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){
 									coeff_type[e][coeff_index] = 0;
-									last_coeffcients[e] = cur_coeff;	
+									last_coeffcients[e] = cur_coeff;
 									coeff_unpred_data[e][coeff_unpredictable_count[e] ++] = cur_coeff;
-								}					
+								}
 							}
 							else{
 								coeff_type[e][coeff_index] = 0;
@@ -5124,18 +5127,18 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabs(curData - pred)>realPrecision){
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
-								}		
+								}
 							}
 							else{
 								type[index] = 0;
 								pred = curData;
 								unpredictable_data[block_unpredictable_count ++] = curData;
 							}
-							index ++;	
+							index ++;
 							cur_data_pos ++;
 						}
 						/*dealing with the last jj (boundary)*/
@@ -5150,11 +5153,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabs(curData - pred)>realPrecision){
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
-								}		
+								}
 							}
 							else{
 								type[index] = 0;
@@ -5164,7 +5167,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 
 							// assign value to block surfaces
 							pb_pos[ii * strip_dim0_offset + jj] = pred;
-							index ++;	
+							index ++;
 							cur_data_pos ++;
 						}
 						cur_data_pos += dim0_offset - current_blockcount_y;
@@ -5182,11 +5185,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabs(curData - pred)>realPrecision){
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
-								}		
+								}
 							}
 							else{
 								type[index] = 0;
@@ -5195,7 +5198,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 							}
 							// assign value to next prediction buffer
 							next_pb_pos[jj] = pred;
-							index ++;	
+							index ++;
 							cur_data_pos ++;
 						}
 						/*dealing with the last jj (boundary)*/
@@ -5210,11 +5213,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabs(curData - pred)>realPrecision){
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
-								}		
+								}
 							}
 							else{
 								type[index] = 0;
@@ -5227,13 +5230,13 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 							// assign value to next prediction buffer
 							next_pb_pos[jj] = pred;
 
-							index ++;	
+							index ++;
 							cur_data_pos ++;
 						}
 					} // end ii == -1
 					unpredictable_count = block_unpredictable_count;
 					total_unpred += unpredictable_count;
-					unpredictable_data += unpredictable_count;					
+					unpredictable_data += unpredictable_count;
 					reg_count ++;
 				}// end use_reg
 				else{
@@ -5265,11 +5268,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 									*cur_pb_pos = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
 									if(type[index] <= intvRadius) type[index] -= 1;
 									//ganrantee comporession error against the case of machine-epsilon
-									if(fabs(curData - *cur_pb_pos)>realPrecision){	
+									if(fabs(curData - *cur_pb_pos)>realPrecision){
 										type[index] = 0;
-										*cur_pb_pos = curData;	
+										*cur_pb_pos = curData;
 										unpredictable_data[unpredictable_count ++] = curData;
-									}					
+									}
 								}
 								else{
 									type[index] = 0;
@@ -5305,11 +5308,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 									*cur_pb_pos = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
 									if(type[index] <= intvRadius) type[index] -= 1;
 									//ganrantee comporession error against the case of machine-epsilon
-									if(fabs(curData - *cur_pb_pos)>realPrecision){	
+									if(fabs(curData - *cur_pb_pos)>realPrecision){
 										type[index] = 0;
-										*cur_pb_pos = curData;	
+										*cur_pb_pos = curData;
 										unpredictable_data[unpredictable_count ++] = curData;
-									}					
+									}
 								}
 								else{
 									type[index] = 0;
@@ -5372,7 +5375,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 						cur_data_pos = data_pos + i * dim0_offset + i;
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
-						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c];							
+						pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c];
 						err_sz += fabs(pred_sz - curData) + noise;
 						err_reg += fabs(pred_reg - curData);
 
@@ -5380,9 +5383,9 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 						cur_data_pos = data_pos + i*dim0_offset + bmi;
 						curData = *cur_data_pos;
 						pred_sz = cur_data_pos[-1] + cur_data_pos[-dim0_offset] - cur_data_pos[-dim0_offset - 1];
-						pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c];							
+						pred_reg = reg_params_pos[0] * (i-1) + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c];
 						err_sz += fabs(pred_sz - curData) + noise;
-						err_reg += fabs(pred_reg - curData);								
+						err_reg += fabs(pred_reg - curData);
 					}
 					use_reg = (err_reg < err_sz);
 				}
@@ -5401,11 +5404,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								coeff_type[e][coeff_index] = (int) (itvNum/2) + coeff_intvRadius;
 								last_coeffcients[e] = last_coeffcients[e] + 2 * (coeff_type[e][coeff_index] - coeff_intvRadius) * precision[e];
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){	
+								if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){
 									coeff_type[e][coeff_index] = 0;
-									last_coeffcients[e] = cur_coeff;	
+									last_coeffcients[e] = cur_coeff;
 									coeff_unpred_data[e][coeff_unpredictable_count[e] ++] = cur_coeff;
-								}					
+								}
 							}
 							else{
 								coeff_type[e][coeff_index] = 0;
@@ -5433,18 +5436,18 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabs(curData - pred)>realPrecision){
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
-								}		
+								}
 							}
 							else{
 								type[index] = 0;
 								pred = curData;
 								unpredictable_data[block_unpredictable_count ++] = curData;
 							}
-							index ++;	
+							index ++;
 							cur_data_pos ++;
 						}
 						/*dealing with the last jj (boundary)*/
@@ -5460,11 +5463,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabs(curData - pred)>realPrecision){
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
-								}		
+								}
 							}
 							else{
 								type[index] = 0;
@@ -5474,7 +5477,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 
 							// assign value to block surfaces
 							pb_pos[ii * strip_dim0_offset + jj] = pred;
-							index ++;	
+							index ++;
 							cur_data_pos ++;
 						}
 						cur_data_pos += dim0_offset - current_blockcount_y;
@@ -5492,11 +5495,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabs(curData - pred)>realPrecision){
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
-								}		
+								}
 							}
 							else{
 								type[index] = 0;
@@ -5505,7 +5508,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 							}
 							// assign value to next prediction buffer
 							next_pb_pos[jj] = pred;
-							index ++;	
+							index ++;
 							cur_data_pos ++;
 						}
 						/*dealing with the last jj (boundary)*/
@@ -5521,11 +5524,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								type[index] = (int) (itvNum/2) + intvRadius;
 								pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - pred)>realPrecision){	
+								if(fabs(curData - pred)>realPrecision){
 									type[index] = 0;
 									pred = curData;
 									unpredictable_data[block_unpredictable_count ++] = curData;
-								}		
+								}
 							}
 							else{
 								type[index] = 0;
@@ -5538,13 +5541,13 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 							// assign value to next prediction buffer
 							next_pb_pos[jj] = pred;
 
-							index ++;	
+							index ++;
 							cur_data_pos ++;
 						}
 					} // end ii == -1
 					unpredictable_count = block_unpredictable_count;
 					total_unpred += unpredictable_count;
-					unpredictable_data += unpredictable_count;					
+					unpredictable_data += unpredictable_count;
 					reg_count ++;
 				}// end use_reg
 				else{
@@ -5569,11 +5572,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								type[index] = (int) (itvNum/2) + intvRadius;
 								*cur_pb_pos = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - *cur_pb_pos)>realPrecision){	
+								if(fabs(curData - *cur_pb_pos)>realPrecision){
 									type[index] = 0;
-									*cur_pb_pos = curData;	
+									*cur_pb_pos = curData;
 									unpredictable_data[unpredictable_count ++] = curData;
-								}					
+								}
 							}
 							else{
 								type[index] = 0;
@@ -5602,11 +5605,11 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 								type[index] = (int) (itvNum/2) + intvRadius;
 								*cur_pb_pos = pred2D + 2 * (type[index] - intvRadius) * realPrecision;
 								//ganrantee comporession error against the case of machine-epsilon
-								if(fabs(curData - *cur_pb_pos)>realPrecision){	
+								if(fabs(curData - *cur_pb_pos)>realPrecision){
 									type[index] = 0;
-									*cur_pb_pos = curData;	
+									*cur_pb_pos = curData;
 									unpredictable_data[unpredictable_count ++] = curData;
-								}					
+								}
 							}
 							else{
 								type[index] = 0;
@@ -5635,7 +5638,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 			tmp = cur_pb_buf;
 			cur_pb_buf = next_pb_buf;
 			next_pb_buf = tmp;
-		}// end i		
+		}// end i
 	}
 	free(prediction_buffer_1);
 	free(prediction_buffer_2);
@@ -5647,7 +5650,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 	size_t i = 0;
 	init(huffmanTree, result_type, num_elements);
 	for (i = 0; i < stateNum; i++)
-		if (huffmanTree->code[i]) nodeCount++; 
+		if (huffmanTree->code[i]) nodeCount++;
 	nodeCount = nodeCount*2-1;
 
 	unsigned char *treeBytes;
@@ -5662,7 +5665,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 
 	sizeToBytes(result_pos, num_elements);
 	result_pos += exe_params->SZ_SIZE_TYPE;
-	
+
 	intToBytes_bigEndian(result_pos, block_size);
 	result_pos += sizeof(int);
 	doubleToBytes(result_pos, realPrecision);
@@ -5684,8 +5687,8 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 
 	size_t indicator_size = convertIntArray2ByteArray_fast_1b_to_result(indicator, num_blocks, result_pos);
 	result_pos += indicator_size;
-	
-	//convert the lead/mid/resi to byte stream 	
+
+	//convert the lead/mid/resi to byte stream
 	if(reg_count>0){
 		for(int e=0; e<3; e++){
 			int stateNum = 2*coeff_intvCapacity_sz;
@@ -5694,7 +5697,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 			init(huffmanTree, coeff_type[e], reg_count);
 			size_t i = 0;
 			for (i = 0; i < huffmanTree->stateNum; i++)
-				if (huffmanTree->code[i]) nodeCount++; 
+				if (huffmanTree->code[i]) nodeCount++;
 			nodeCount = nodeCount*2-1;
 			unsigned char *treeBytes;
 			unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(huffmanTree, nodeCount, &treeBytes);
@@ -5706,7 +5709,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 			result_pos += sizeof(int);
 			intToBytes_bigEndian(result_pos, nodeCount);
 			result_pos += sizeof(int);
-			memcpy(result_pos, treeBytes, treeByteSize);		
+			memcpy(result_pos, treeBytes, treeByteSize);
 			result_pos += treeByteSize;
 			free(treeBytes);
 			size_t typeArray_size = 0;
@@ -5735,14 +5738,14 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 	writeHuffmanInfo(treeByteSize, typeArray_size, num_elements*sizeof(float), nodeCount);
 	writeBlockInfo(use_mean, block_size, reg_count, num_blocks);
 	writeUnpredictDataCounts(total_unpred, num_elements);
-#endif	
+#endif
 
 	size_t totalEncodeSize = result_pos - result;
 	free(indicator);
 	free(result_unpredictable_data);
 	free(result_type);
 	free(reg_params);
-	
+
 	SZ_ReleaseHuffman(huffmanTree);
 	*comp_size = totalEncodeSize;
 
@@ -5751,7 +5754,7 @@ unsigned char * SZ_compress_double_2D_MDQ_nonblocked_with_blocked_regression(dou
 	return result;
 }
 unsigned int optimize_intervals_double_3D_with_freq_and_dense_pos(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, double * dense_pos, double * max_freq, double * mean_freq)
-{	
+{
 	double mean = 0.0;
 	size_t len = r1 * r2 * r3;
 	size_t mean_distance = (int) (sqrt(len));
@@ -5839,7 +5842,7 @@ unsigned int optimize_intervals_double_3D_with_freq_and_dense_pos(double *oriDat
 		}
 		else data_pos += sampleDistance;
 		sample_count ++;
-	}	
+	}
 	*max_freq = freq_count * 1.0/ sample_count;
 
 	//compute the appropriate number
@@ -5883,7 +5886,7 @@ unsigned int optimize_intervals_double_3D_with_freq_and_dense_pos(double *oriDat
 
 unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(double *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t * comp_size){
 
-#ifdef HAVE_TIMECMPR	
+#ifdef HAVE_TIMECMPR
 	double* decData = NULL;
 	if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 		decData = (double*)(multisteps->hist_data);
@@ -5917,7 +5920,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 	size_t num_elements = r1 * r2 * r3;
 
 	size_t dim0_offset = r2 * r3;
-	size_t dim1_offset = r3;	
+	size_t dim1_offset = r3;
 
 	int * result_type = (int *) malloc(num_elements * sizeof(int));
 	memset(result_type, 0, num_elements*sizeof(int));
@@ -5947,7 +5950,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 				offset_x = (i < split_index_x) ? i * early_blockcount_x : i * late_blockcount_x + split_index_x;
 				offset_y = (j < split_index_y) ? j * early_blockcount_y : j * late_blockcount_y + split_index_y;
 				offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
-	
+
 				data_pos = oriData + offset_x * dim0_offset + offset_y * dim1_offset + offset_z;
 				/*Calculate regression coefficients*/
 				{
@@ -5956,7 +5959,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 					double fy = 0.0;
 					double fz = 0.0;
 					double f = 0;
-					double sum_x, sum_y; 
+					double sum_x, sum_y;
 					double curData;
 					for(size_t i=0; i<current_blockcount_x; i++){
 						sum_x = 0;
@@ -5990,7 +5993,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 			}
 		}
 	}
-	
+
 	//Compress coefficient arrays
 	double precision_a, precision_b, precision_c, precision_d;
 	double rel_param_err = 0.025;
@@ -6004,7 +6007,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 		quantization_intervals = optimize_intervals_double_3D_with_freq_and_dense_pos(oriData, r1, r2, r3, realPrecision, &dense_pos, &sz_sample_correct_freq, &mean_flush_freq);
 		if(mean_flush_freq > 0.5 || mean_flush_freq > sz_sample_correct_freq) use_mean = 1;
 		updateQuantizationInfo(quantization_intervals);
-	}	
+	}
 	else{
 		quantization_intervals = exe_params->intvCapacity;
 	}
@@ -6045,7 +6048,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 	double * cur_pb_buf_pos;
 	double * next_pb_buf_pos;
 	int intvCapacity = quantization_intervals;// exe_params->intvCapacity;
-	int intvRadius = intvCapacity/2; //exe_params->intvRadius;	
+	int intvRadius = intvCapacity/2; //exe_params->intvRadius;
 	int use_reg = 0;
 	double noise = realPrecision * 1.22;
 
@@ -6061,7 +6064,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 	double precision[4], recip_precision[4];
 	precision[0] = precision_a, precision[1] = precision_b, precision[2] = precision_c, precision[3] = precision_d;
 	recip_precision[0] = 1/precision_a, recip_precision[1] = 1/precision_b, recip_precision[2] = 1/precision_c, recip_precision[3] = 1/precision_d;
-	
+
 	for(int i=0; i<4; i++){
 		coeff_type[i] = coeff_result_type + i * num_blocks;
 		coeff_unpred_data[i] = coeff_unpredictable_data + i * num_blocks;
@@ -6111,7 +6114,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 							cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + i;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];
 							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
 							err_reg += fabs(pred_reg - curData);
 
@@ -6119,21 +6122,21 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 							cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + bmi;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];
 							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-							err_reg += fabs(pred_reg - curData);								
+							err_reg += fabs(pred_reg - curData);
 
 							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + i;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];
 							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
-							err_reg += fabs(pred_reg - curData);								
+							err_reg += fabs(pred_reg - curData);
 
 							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + bmi;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];
 							err_sz += MIN(fabs(pred_sz - curData) + noise, fabs(mean - curData));
 							err_reg += fabs(pred_reg - curData);
 						}
@@ -6153,11 +6156,11 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 									coeff_type[e][coeff_index] = (int) (itvNum/2) + coeff_intvRadius;
 									last_coeffcients[e] = last_coeffcients[e] + 2 * (coeff_type[e][coeff_index] - coeff_intvRadius) * precision[e];
 									//ganrantee comporession error against the case of machine-epsilon
-									if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){	
+									if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){
 										coeff_type[e][coeff_index] = 0;
-										last_coeffcients[e] = cur_coeff;	
+										last_coeffcients[e] = cur_coeff;
 										coeff_unpred_data[e][coeff_unpredictable_count[e] ++] = cur_coeff;
-									}					
+									}
 								}
 								else{
 									coeff_type[e][coeff_index] = 0;
@@ -6178,7 +6181,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 							for(size_t jj=0; jj<current_blockcount_y; jj++){
 								for(size_t kk=0; kk<current_blockcount_z; kk++){
 									curData = *cur_data_pos;
-									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];									
+									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];
 									diff = curData - pred;
 									itvNum = fabs(diff)*recip_realPrecision + 1;
 									if (itvNum < intvCapacity){
@@ -6186,29 +6189,29 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										type[index] = (int) (itvNum/2) + intvRadius;
 										pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - pred)>realPrecision){	
+										if(fabs(curData - pred)>realPrecision){
 											type[index] = 0;
 											pred = curData;
 											unpredictable_data[block_unpredictable_count ++] = curData;
-										}		
+										}
 									}
 									else{
 										type[index] = 0;
 										pred = curData;
 										unpredictable_data[block_unpredictable_count ++] = curData;
 									}
-									
+
 #ifdef HAVE_TIMECMPR
 									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
 									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 										decData[block_offset + point_offset] = pred;
-#endif									
-									
+#endif
+
 									if((jj == current_blockcount_y - 1) || (kk == current_blockcount_z - 1)){
 										// assign value to block surfaces
 										pb_pos[ii * strip_dim0_offset + jj * strip_dim1_offset + kk] = pred;
 									}
-									index ++;	
+									index ++;
 									cur_data_pos ++;
 								}
 								cur_data_pos += dim1_offset - current_blockcount_z;
@@ -6222,7 +6225,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 							for(size_t jj=0; jj<current_blockcount_y; jj++){
 								for(size_t kk=0; kk<current_blockcount_z; kk++){
 									curData = *cur_data_pos;
-									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];									
+									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];
 									diff = curData - pred;
 									itvNum = fabs(diff)*recip_realPrecision + 1;
 									if (itvNum < intvCapacity){
@@ -6230,11 +6233,11 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										type[index] = (int) (itvNum/2) + intvRadius;
 										pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - pred)>realPrecision){	
+										if(fabs(curData - pred)>realPrecision){
 											type[index] = 0;
 											pred = curData;
 											unpredictable_data[block_unpredictable_count ++] = curData;
-										}		
+										}
 									}
 									else{
 										type[index] = 0;
@@ -6246,7 +6249,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
 									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 										decData[block_offset + point_offset] = pred;
-#endif		
+#endif
 
 									if((jj == current_blockcount_y - 1) || (kk == current_blockcount_z - 1)){
 										// assign value to block surfaces
@@ -6263,7 +6266,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 						unpredictable_count = block_unpredictable_count;
 						strip_unpredictable_count += unpredictable_count;
 						unpredictable_data += unpredictable_count;
-						
+
 						reg_count ++;
 					}
 					else{
@@ -6298,11 +6301,11 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 											*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
 											if(type[index] <= intvRadius) type[index] -= 1;
 											//ganrantee comporession error against the case of machine-epsilon
-											if(fabs(curData - *cur_pb_pos)>realPrecision){	
+											if(fabs(curData - *cur_pb_pos)>realPrecision){
 												type[index] = 0;
-												*cur_pb_pos = curData;	
+												*cur_pb_pos = curData;
 												unpredictable_data[unpredictable_count ++] = curData;
-											}					
+											}
 										}
 										else{
 											type[index] = 0;
@@ -6310,13 +6313,13 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 											unpredictable_data[unpredictable_count ++] = curData;
 										}
 									}
-									
+
 #ifdef HAVE_TIMECMPR
 									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
 									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 										decData[block_offset + point_offset] = *cur_pb_pos;
-#endif											
-									
+#endif
+
 									index ++;
 									cur_pb_pos ++;
 									cur_data_pos ++;
@@ -6351,11 +6354,11 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 											*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
 											if(type[index] <= intvRadius) type[index] -= 1;
 											//ganrantee comporession error against the case of machine-epsilon
-											if(fabs(curData - *cur_pb_pos)>realPrecision){	
+											if(fabs(curData - *cur_pb_pos)>realPrecision){
 												type[index] = 0;
-												*cur_pb_pos = curData;	
+												*cur_pb_pos = curData;
 												unpredictable_data[unpredictable_count ++] = curData;
-											}					
+											}
 										}
 										else{
 											type[index] = 0;
@@ -6363,14 +6366,14 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 											unpredictable_data[unpredictable_count ++] = curData;
 										}
 									}
-									
+
 #ifdef HAVE_TIMECMPR
 									size_t ii = current_blockcount_x - 1;
 									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
 									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 										decData[block_offset + point_offset] = *cur_pb_pos;
-#endif										
-									
+#endif
+
 									next_pb_pos[jj * strip_dim1_offset + kk] = *cur_pb_pos;
 									index ++;
 									cur_pb_pos ++;
@@ -6385,7 +6388,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 						// change indicator
 						indicator_pos[k] = 1;
 					}// end SZ
-					
+
 					reg_params_pos ++;
 					data_pos += current_blockcount_z;
 					pb_pos += current_blockcount_z;
@@ -6435,8 +6438,8 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 					size_t offset_z = 0;
 					offset_z = (k < split_index_z) ? k * early_blockcount_z : k * late_blockcount_z + split_index_z;
 					size_t block_offset = offset_x * dim0_offset + offset_y * dim1_offset + offset_z;
-#endif							
-					
+#endif
+
 					/*sampling*/
 					{
 						// sample point [1, 1, 1] [1, 1, 4] [1, 4, 1] [1, 4, 4] [4, 1, 1] [4, 1, 4] [4, 4, 1] [4, 4, 4]
@@ -6450,7 +6453,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 							cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + i;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];
 							err_sz += fabs(pred_sz - curData) + noise;
 							err_reg += fabs(pred_reg - curData);
 
@@ -6458,21 +6461,21 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 							cur_data_pos = data_pos + i*dim0_offset + i*dim1_offset + bmi;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * i + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];
 							err_sz += fabs(pred_sz - curData) + noise;
-							err_reg += fabs(pred_reg - curData);								
+							err_reg += fabs(pred_reg - curData);
 
 							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + i;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];							
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * i + reg_params_pos[params_offset_d];
 							err_sz += fabs(pred_sz - curData) + noise;
-							err_reg += fabs(pred_reg - curData);								
+							err_reg += fabs(pred_reg - curData);
 
 							cur_data_pos = data_pos + i*dim0_offset + bmi*dim1_offset + bmi;
 							curData = *cur_data_pos;
 							pred_sz = cur_data_pos[-1] + cur_data_pos[-dim1_offset]+ cur_data_pos[-dim0_offset] - cur_data_pos[-dim1_offset - 1] - cur_data_pos[-dim0_offset - 1] - cur_data_pos[-dim0_offset - dim1_offset] + cur_data_pos[-dim0_offset - dim1_offset - 1];
-							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];							
+							pred_reg = reg_params_pos[0] * i + reg_params_pos[params_offset_b] * bmi + reg_params_pos[params_offset_c] * bmi + reg_params_pos[params_offset_d];
 							err_sz += fabs(pred_sz - curData) + noise;
 							err_reg += fabs(pred_reg - curData);
 						}
@@ -6494,11 +6497,11 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 									coeff_type[e][coeff_index] = (int) (itvNum/2) + coeff_intvRadius;
 									last_coeffcients[e] = last_coeffcients[e] + 2 * (coeff_type[e][coeff_index] - coeff_intvRadius) * precision[e];
 									//ganrantee comporession error against the case of machine-epsilon
-									if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){	
+									if(fabs(cur_coeff - last_coeffcients[e])>precision[e]){
 										coeff_type[e][coeff_index] = 0;
-										last_coeffcients[e] = cur_coeff;	
+										last_coeffcients[e] = cur_coeff;
 										coeff_unpred_data[e][coeff_unpredictable_count[e] ++] = cur_coeff;
-									}					
+									}
 								}
 								else{
 									coeff_type[e][coeff_index] = 0;
@@ -6520,7 +6523,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 								for(size_t kk=0; kk<current_blockcount_z; kk++){
 
 									curData = *cur_data_pos;
-									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];									
+									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];
 									diff = curData - pred;
 									itvNum = fabs(diff)*recip_realPrecision + 1;
 									if (itvNum < intvCapacity){
@@ -6528,11 +6531,11 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										type[index] = (int) (itvNum/2) + intvRadius;
 										pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - pred)>realPrecision){	
+										if(fabs(curData - pred)>realPrecision){
 											type[index] = 0;
 											pred = curData;
 											unpredictable_data[block_unpredictable_count ++] = curData;
-										}		
+										}
 									}
 									else{
 										type[index] = 0;
@@ -6544,13 +6547,13 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
 									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 										decData[block_offset + point_offset] = pred;
-#endif			
+#endif
 
 									if((jj == current_blockcount_y - 1) || (kk == current_blockcount_z - 1)){
 										// assign value to block surfaces
 										pb_pos[ii * strip_dim0_offset + jj * strip_dim1_offset + kk] = pred;
 									}
-									index ++;	
+									index ++;
 									cur_data_pos ++;
 								}
 								cur_data_pos += dim1_offset - current_blockcount_z;
@@ -6564,7 +6567,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 							for(size_t jj=0; jj<current_blockcount_y; jj++){
 								for(size_t kk=0; kk<current_blockcount_z; kk++){
 									curData = *cur_data_pos;
-									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];									
+									pred = last_coeffcients[0] * ii + last_coeffcients[1] * jj + last_coeffcients[2] * kk + last_coeffcients[3];
 									diff = curData - pred;
 									itvNum = fabs(diff)*recip_realPrecision + 1;
 									if (itvNum < intvCapacity){
@@ -6572,11 +6575,11 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										type[index] = (int) (itvNum/2) + intvRadius;
 										pred = pred + 2 * (type[index] - intvRadius) * realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - pred)>realPrecision){	
+										if(fabs(curData - pred)>realPrecision){
 											type[index] = 0;
 											pred = curData;
 											unpredictable_data[block_unpredictable_count ++] = curData;
-										}		
+										}
 									}
 									else{
 										type[index] = 0;
@@ -6604,7 +6607,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 						}
 						unpredictable_count = block_unpredictable_count;
 						strip_unpredictable_count += unpredictable_count;
-						unpredictable_data += unpredictable_count;						
+						unpredictable_data += unpredictable_count;
 						reg_count ++;
 					}
 					else{
@@ -6631,24 +6634,24 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										type[index] = (int) (itvNum/2) + intvRadius;
 										*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - *cur_pb_pos)>realPrecision){	
+										if(fabs(curData - *cur_pb_pos)>realPrecision){
 											type[index] = 0;
-											*cur_pb_pos = curData;	
+											*cur_pb_pos = curData;
 											unpredictable_data[unpredictable_count ++] = curData;
-										}					
+										}
 									}
 									else{
 										type[index] = 0;
 										*cur_pb_pos = curData;
 										unpredictable_data[unpredictable_count ++] = curData;
 									}
-									
+
 #ifdef HAVE_TIMECMPR
 									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
 									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 										decData[block_offset + point_offset] = *cur_pb_pos;
-#endif	
-									
+#endif
+
 									index ++;
 									cur_pb_pos ++;
 									cur_data_pos ++;
@@ -6675,25 +6678,25 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 										type[index] = (int) (itvNum/2) + intvRadius;
 										*cur_pb_pos = pred3D + 2 * (type[index] - intvRadius) * realPrecision;
 										//ganrantee comporession error against the case of machine-epsilon
-										if(fabs(curData - *cur_pb_pos)>realPrecision){	
+										if(fabs(curData - *cur_pb_pos)>realPrecision){
 											type[index] = 0;
-											*cur_pb_pos = curData;	
+											*cur_pb_pos = curData;
 											unpredictable_data[unpredictable_count ++] = curData;
-										}					
+										}
 									}
 									else{
 										type[index] = 0;
 										*cur_pb_pos = curData;
 										unpredictable_data[unpredictable_count ++] = curData;
 									}
-									
+
 #ifdef HAVE_TIMECMPR
 									size_t ii = current_blockcount_x - 1;
 									size_t point_offset = ii*dim0_offset + jj*dim1_offset + kk;
 									if(confparams_cpr->szMode == SZ_TEMPORAL_COMPRESSION)
 										decData[block_offset + point_offset] = *cur_pb_pos;
-#endif											
-									
+#endif
+
 									// assign value to next prediction buffer
 									next_pb_pos[jj * strip_dim1_offset + kk] = *cur_pb_pos;
 									index ++;
@@ -6709,7 +6712,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 						// change indicator
 						indicator_pos[k] = 1;
 					}// end SZ
-					
+
 					reg_params_pos ++;
 					data_pos += current_blockcount_z;
 					pb_pos += current_blockcount_z;
@@ -6741,7 +6744,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 	init(huffmanTree, result_type, num_elements);
 	size_t i = 0;
 	for (i = 0; i < huffmanTree->stateNum; i++)
-		if (huffmanTree->code[i]) nodeCount++; 
+		if (huffmanTree->code[i]) nodeCount++;
 	nodeCount = nodeCount*2-1;
 
 	unsigned char *treeBytes;
@@ -6752,9 +6755,9 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 	unsigned char * result = (unsigned char *) calloc(meta_data_offset + exe_params->SZ_SIZE_TYPE + sizeof(double) + sizeof(int) + sizeof(int) + 5*treeByteSize + 4*num_blocks*sizeof(int)+ num_blocks * sizeof(unsigned short) + num_blocks * sizeof(unsigned short) + num_blocks * sizeof(double) + total_unpred * sizeof(double) + num_elements * sizeof(int), 1);
 	unsigned char * result_pos = result;
 	initRandomAccessBytes(result_pos);
-	
+
 	result_pos += meta_data_offset;
-	
+
 	sizeToBytes(result_pos,num_elements); //SZ_SIZE_TYPE: 4 or 8
 	result_pos += exe_params->SZ_SIZE_TYPE;
 
@@ -6778,7 +6781,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 	result_pos += sizeof(double);
 	size_t indicator_size = convertIntArray2ByteArray_fast_1b_to_result(indicator, num_blocks, result_pos);
 	result_pos += indicator_size;
-	
+
 	//convert the lead/mid/resi to byte stream
 	if(reg_count > 0){
 		for(int e=0; e<4; e++){
@@ -6788,7 +6791,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 			init(huffmanTree, coeff_type[e], reg_count);
 			size_t i = 0;
 			for (i = 0; i < huffmanTree->stateNum; i++)
-				if (huffmanTree->code[i]) nodeCount++; 
+				if (huffmanTree->code[i]) nodeCount++;
 			nodeCount = nodeCount*2-1;
 			unsigned char *treeBytes;
 			unsigned int treeByteSize = convert_HuffTree_to_bytes_anyStates(huffmanTree, nodeCount, &treeBytes);
@@ -6800,7 +6803,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 			result_pos += sizeof(int);
 			intToBytes_bigEndian(result_pos, nodeCount);
 			result_pos += sizeof(int);
-			memcpy(result_pos, treeBytes, treeByteSize);		
+			memcpy(result_pos, treeBytes, treeByteSize);
 			result_pos += treeByteSize;
 			free(treeBytes);
 			size_t typeArray_size = 0;
@@ -6816,7 +6819,7 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 	}
 	free(coeff_result_type);
 	free(coeff_unpredictable_data);
-	
+
 	//record the number of unpredictable data and also store them
 	memcpy(result_pos, &total_unpred, sizeof(size_t));
 	result_pos += sizeof(size_t);
@@ -6835,8 +6838,8 @@ unsigned char * SZ_compress_double_3D_MDQ_nonblocked_with_blocked_regression(dou
 	writeHuffmanInfo(treeByteSize, typeArray_size, num_elements*sizeof(float), nodeCount);
 	writeBlockInfo(use_mean, block_size, reg_count, num_blocks);
 	writeUnpredictDataCounts(total_unpred, num_elements);
-#endif	
-	
+#endif
+
 	SZ_ReleaseHuffman(huffmanTree);
 	*comp_size = totalEncodeSize;
 	return result;

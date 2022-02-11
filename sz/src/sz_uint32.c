@@ -8,10 +8,13 @@
  */
 
 
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #include <math.h>
 #include "sz.h"
 #include "CompressElement.h"
@@ -24,7 +27,7 @@
 #include "utility.h"
 
 unsigned int optimize_intervals_uint32_1D(uint32_t *oriData, size_t dataLength, double realPrecision)
-{	
+{
 	size_t i = 0, radiusIndex;
 	int64_t pred_value = 0, pred_err;
 	size_t *intervals = (size_t*)malloc(confparams_cpr->maxRangeRadius*sizeof(size_t));
@@ -39,7 +42,7 @@ unsigned int optimize_intervals_uint32_1D(uint32_t *oriData, size_t dataLength, 
 			pred_err = llabs(pred_value - oriData[i]);
 			radiusIndex = (uint64_t)((pred_err/realPrecision+1)/2);
 			if(radiusIndex>=confparams_cpr->maxRangeRadius)
-				radiusIndex = confparams_cpr->maxRangeRadius - 1;			
+				radiusIndex = confparams_cpr->maxRangeRadius - 1;
 			intervals[radiusIndex]++;
 		}
 	}
@@ -54,20 +57,20 @@ unsigned int optimize_intervals_uint32_1D(uint32_t *oriData, size_t dataLength, 
 	}
 	if(i>=confparams_cpr->maxRangeRadius)
 		i = confparams_cpr->maxRangeRadius-1;
-		
+
 	unsigned int accIntervals = 2*(i+1);
 	unsigned int powerOf2 = roundUpToPowerOf2(accIntervals);
-	
+
 	if(powerOf2<32)
 		powerOf2 = 32;
-	
+
 	free(intervals);
 	//printf("accIntervals=%d, powerOf2=%d\n", accIntervals, powerOf2);
 	return powerOf2;
 }
 
 unsigned int optimize_intervals_uint32_2D(uint32_t *oriData, size_t r1, size_t r2, double realPrecision)
-{	
+{
 	size_t i,j, index;
 	size_t radiusIndex;
 	int64_t pred_value = 0, pred_err;
@@ -87,7 +90,7 @@ unsigned int optimize_intervals_uint32_2D(uint32_t *oriData, size_t r1, size_t r
 				if(radiusIndex>=confparams_cpr->maxRangeRadius)
 					radiusIndex = confparams_cpr->maxRangeRadius - 1;
 				intervals[radiusIndex]++;
-			}			
+			}
 		}
 	}
 	//compute the appropriate number
@@ -113,7 +116,7 @@ unsigned int optimize_intervals_uint32_2D(uint32_t *oriData, size_t r1, size_t r
 }
 
 unsigned int optimize_intervals_uint32_3D(uint32_t *oriData, size_t r1, size_t r2, size_t r3, double realPrecision)
-{	
+{
 	size_t i,j,k, index;
 	size_t radiusIndex;
 	size_t r23=r2*r3;
@@ -126,11 +129,11 @@ unsigned int optimize_intervals_uint32_3D(uint32_t *oriData, size_t r1, size_t r
 		for(j=1;j<r2;j++)
 		{
 			for(k=1;k<r3;k++)
-			{			
+			{
 				if((i+j+k)%confparams_cpr->sampleDistance==0)
 				{
 					index = i*r23+j*r3+k;
-					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23] 
+					pred_value = oriData[index-1] + oriData[index-r3] + oriData[index-r23]
 					- oriData[index-1-r23] - oriData[index-r3-1] - oriData[index-r3-r23] + oriData[index-r3-r23-1];
 					pred_err = llabs(pred_value - oriData[index]);
 					radiusIndex = (pred_err/realPrecision+1)/2;
@@ -160,7 +163,7 @@ unsigned int optimize_intervals_uint32_3D(uint32_t *oriData, size_t r1, size_t r
 
 	if(powerOf2<32)
 		powerOf2 = 32;
-	
+
 	free(intervals);
 	//printf("targetCount=%d, sum=%d, totalSampleSize=%d, ratio=%f, accIntervals=%d, powerOf2=%d\n", targetCount, sum, totalSampleSize, (double)sum/(double)totalSampleSize, accIntervals, powerOf2);
 	return powerOf2;
@@ -231,36 +234,36 @@ TightDataPointStorageI* SZ_compress_uint32_1D_MDQ(uint32_t *oriData, size_t data
 		quantization_intervals = optimize_intervals_uint32_1D(oriData, dataLength, realPrecision);
 	else
 		quantization_intervals = exe_params->intvCapacity;
-	updateQuantizationInfo(quantization_intervals);	
+	updateQuantizationInfo(quantization_intervals);
 	size_t i;
 
 	int* type = (int*) malloc(dataLength*sizeof(int));
-		
+
 	uint32_t* spaceFillingValue = oriData; //
-	
+
 	DynamicByteArray *exactDataByteArray;
 	new_DBA(&exactDataByteArray, DynArrayInitLen);
-		
+
 	int64_t last3CmprsData[3] = {0,0,0};
-				
-	//add the first data	
+
+	//add the first data
 	type[0] = 0;
 	compressUInt32Value(spaceFillingValue[0], minValue, byteSize, bytes);
 	memcpyDBA_Data(exactDataByteArray, bytes, byteSize);
 	listAdd_int(last3CmprsData, spaceFillingValue[0]);
-		
+
 	type[1] = 0;
 	compressUInt32Value(spaceFillingValue[1], minValue, byteSize, bytes);
 	memcpyDBA_Data(exactDataByteArray, bytes, byteSize);
 	listAdd_int(last3CmprsData, spaceFillingValue[1]);
-	//printf("%.30G\n",last3CmprsData[0]);	
-	
+	//printf("%.30G\n",last3CmprsData[0]);
+
 	int state;
 	double checkRadius = (exe_params->intvCapacity-1)*realPrecision;
 	int64_t curData;
 	uint32_t pred, predAbsErr;
 	double interval = 2*realPrecision;
-	
+
 	for(i=2;i<dataLength;i++)
 	{
 //		if(i==2869438)
@@ -268,7 +271,7 @@ TightDataPointStorageI* SZ_compress_uint32_1D_MDQ(uint32_t *oriData, size_t data
 		curData = spaceFillingValue[i];
 		//pred = 2*last3CmprsData[0] - last3CmprsData[1];
 		pred = last3CmprsData[0];
-		predAbsErr = llabs(curData - pred);	
+		predAbsErr = llabs(curData - pred);
 		if(predAbsErr<checkRadius)
 		{
 			state = (predAbsErr/realPrecision+1)/2;
@@ -284,23 +287,23 @@ TightDataPointStorageI* SZ_compress_uint32_1D_MDQ(uint32_t *oriData, size_t data
 			}
 /*			if(type[i]==0)
 				printf("err:type[%d]=0\n", i);*/
-			listAdd_int(last3CmprsData, pred);					
+			listAdd_int(last3CmprsData, pred);
 			continue;
 		}
-		
-		//unpredictable data processing		
+
+		//unpredictable data processing
 		type[i] = 0;
 		compressUInt32Value(curData, minValue, byteSize, bytes);
 		memcpyDBA_Data(exactDataByteArray, bytes, byteSize);
 		listAdd_int(last3CmprsData, curData);
 	}//end of for
-		
+
 	size_t exactDataNum = exactDataByteArray->size / byteSize;
-	
-	TightDataPointStorageI* tdps;	
-			
-	new_TightDataPointStorageI(&tdps, dataLength, exactDataNum, byteSize, 
-			type, exactDataByteArray->array, exactDataByteArray->size,  
+
+	TightDataPointStorageI* tdps;
+
+	new_TightDataPointStorageI(&tdps, dataLength, exactDataNum, byteSize,
+			type, exactDataByteArray->array, exactDataByteArray->size,
 			realPrecision, minValue, quantization_intervals, SZ_UINT32);
 
 //sdi:Debug
@@ -308,23 +311,23 @@ TightDataPointStorageI* SZ_compress_uint32_1D_MDQ(uint32_t *oriData, size_t data
 	for(i=0;i<dataLength;i++)
 		if(type[i]==0) sum++;
 	printf("opt_quantizations=%d, exactDataNum=%d, sum=%d\n",quantization_intervals, exactDataNum, sum);*/
-	
+
 	//free memory
-	free(type);	
+	free(type);
 	free(exactDataByteArray); //exactDataByteArray->array has been released in free_TightDataPointStorageF(tdps);
-	
+
 	return tdps;
 }
 
-void SZ_compress_args_uint32_StoreOriData(uint32_t* oriData, size_t dataLength, TightDataPointStorageI* tdps, 
+void SZ_compress_args_uint32_StoreOriData(uint32_t* oriData, size_t dataLength, TightDataPointStorageI* tdps,
 unsigned char** newByteData, size_t *outSize)
 {
-	int intSize=sizeof(uint32_t);	
+	int intSize=sizeof(uint32_t);
 	size_t k = 0, i;
 	tdps->isLossless = 1;
 	size_t totalByteLength = 3 + MetaDataByteLength + exe_params->SZ_SIZE_TYPE + 1 + intSize*dataLength;
 	*newByteData = (unsigned char*)malloc(totalByteLength);
-	
+
 	unsigned char dsLengthBytes[8];
 	for (i = 0; i < 3; i++)//3
 		(*newByteData)[k++] = versionNumber[i];
@@ -333,14 +336,14 @@ unsigned char** newByteData, size_t *outSize)
 		(*newByteData)[k++] = 16; //00010000
 	else
 		(*newByteData)[k++] = 80;	//01010000: 01000000 indicates the SZ_SIZE_TYPE=8
-	
+
 	convertSZParamsToBytes(confparams_cpr, &((*newByteData)[k]));
-	k = k + MetaDataByteLength;		
-	
-	sizeToBytes(dsLengthBytes,dataLength); //SZ_SIZE_TYPE: 4 or 8	
+	k = k + MetaDataByteLength;
+
+	sizeToBytes(dsLengthBytes,dataLength); //SZ_SIZE_TYPE: 4 or 8
 	for (i = 0; i < exe_params->SZ_SIZE_TYPE; i++)
 		(*newByteData)[k++] = dsLengthBytes[i];
-		
+
 	if(sysEndianType==BIG_ENDIAN_SYSTEM)
 		memcpy((*newByteData)+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE, oriData, dataLength*intSize);
 	else
@@ -348,11 +351,11 @@ unsigned char** newByteData, size_t *outSize)
 		unsigned char* p = (*newByteData)+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE;
 		for(i=0;i<dataLength;i++,p+=intSize)
 			int32ToBytes_bigEndian(p, oriData[i]);
-	}	
+	}
 	*outSize = totalByteLength;
 }
 
-void SZ_compress_args_uint32_NoCkRngeNoGzip_1D(unsigned char** newByteData, uint32_t *oriData, 
+void SZ_compress_args_uint32_NoCkRngeNoGzip_1D(unsigned char** newByteData, uint32_t *oriData,
 size_t dataLength, double realPrecision, size_t *outSize, int64_t valueRangeSize, uint32_t minValue)
 {
 	TightDataPointStorageI* tdps = SZ_compress_uint32_1D_MDQ(oriData, dataLength, realPrecision, valueRangeSize, minValue);
@@ -367,35 +370,35 @@ TightDataPointStorageI* SZ_compress_uint32_2D_MDQ(uint32_t *oriData, size_t r1, 
 {
 	unsigned char bytes[8] = {0,0,0,0,0,0,0,0};
 	int byteSize = computeByteSizePerIntValue(valueRangeSize);
-	
+
 	unsigned int quantization_intervals;
 	if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_uint32_2D(oriData, r1, r2, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
-	}	
+	}
 	else
 		quantization_intervals = exe_params->intvCapacity;
-	size_t i,j; 
+	size_t i,j;
 	int64_t pred1D, pred2D, curValue;
 	int64_t diff = 0.0;
 	double itvNum = 0;
 	uint32_t *P0, *P1;
-		
-	size_t dataLength = r1*r2;	
-	
+
+	size_t dataLength = r1*r2;
+
 	P0 = (uint32_t*)malloc(r2*sizeof(uint32_t));
 	memset(P0, 0, r2*sizeof(uint32_t));
 	P1 = (uint32_t*)malloc(r2*sizeof(uint32_t));
 	memset(P1, 0, r2*sizeof(uint32_t));
-		
+
 	int* type = (int*) malloc(dataLength*sizeof(int));
 	//type[dataLength]=0;
-		
+
 	uint32_t* spaceFillingValue = oriData; //
-	
+
 	DynamicByteArray *exactDataByteArray;
-	new_DBA(&exactDataByteArray, DynArrayInitLen);	
+	new_DBA(&exactDataByteArray, DynArrayInitLen);
 
 	type[0] = 0;
 	curValue = P1[0] = spaceFillingValue[0];
@@ -448,7 +451,7 @@ TightDataPointStorageI* SZ_compress_uint32_2D_MDQ(uint32_t *oriData, size_t r1, 
 	/* Process Row-1 --> Row-r1-1 */
 	size_t index;
 	for (i = 1; i < r1; i++)
-	{	
+	{
 		/* Process row-i data 0 */
 		index = i*r2;
 		pred1D = P1[0];
@@ -469,7 +472,7 @@ TightDataPointStorageI* SZ_compress_uint32_2D_MDQ(uint32_t *oriData, size_t r1, 
 			compressUInt32Value(curValue, minValue, byteSize, bytes);
 			memcpyDBA_Data(exactDataByteArray, bytes, byteSize);
 		}
-									
+
 		/* Process row-i data 1 --> r2-1*/
 		for (j = 1; j < r2; j++)
 		{
@@ -500,32 +503,32 @@ TightDataPointStorageI* SZ_compress_uint32_2D_MDQ(uint32_t *oriData, size_t r1, 
 		P1 = P0;
 		P0 = Pt;
 	}
-	
+
 	if(r2!=1)
 		free(P0);
-	free(P1);			
-	
+	free(P1);
+
 	size_t exactDataNum = exactDataByteArray->size;
-	
-	TightDataPointStorageI* tdps;	
-			
-	new_TightDataPointStorageI(&tdps, dataLength, exactDataNum, byteSize, 
-			type, exactDataByteArray->array, exactDataByteArray->size,  
+
+	TightDataPointStorageI* tdps;
+
+	new_TightDataPointStorageI(&tdps, dataLength, exactDataNum, byteSize,
+			type, exactDataByteArray->array, exactDataByteArray->size,
 			realPrecision, minValue, quantization_intervals, SZ_UINT32);
-			
+
 	//free memory
-	free(type);	
+	free(type);
 	free(exactDataByteArray); //exactDataByteArray->array has been released in free_TightDataPointStorageF(tdps);
-	
-	return tdps;	
+
+	return tdps;
 }
 
 /**
- * 
+ *
  * Note: @r1 is high dimension
- * 		 @r2 is low dimension 
+ * 		 @r2 is low dimension
  * */
-void SZ_compress_args_uint32_NoCkRngeNoGzip_2D(unsigned char** newByteData, uint32_t *oriData, size_t r1, size_t r2, double realPrecision, size_t *outSize, 
+void SZ_compress_args_uint32_NoCkRngeNoGzip_2D(unsigned char** newByteData, uint32_t *oriData, size_t r1, size_t r2, double realPrecision, size_t *outSize,
 int64_t valueRangeSize, uint32_t minValue)
 {
 	TightDataPointStorageI* tdps = SZ_compress_uint32_2D_MDQ(oriData, r1, r2, realPrecision, valueRangeSize, minValue);
@@ -535,30 +538,30 @@ int64_t valueRangeSize, uint32_t minValue)
 	size_t dataLength = r1*r2;
 	if(*outSize>dataLength*sizeof(uint32_t))
 		SZ_compress_args_uint32_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
-	
-	free_TightDataPointStorageI(tdps);	
+
+	free_TightDataPointStorageI(tdps);
 }
 
 TightDataPointStorageI* SZ_compress_uint32_3D_MDQ(uint32_t *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, int64_t valueRangeSize, int64_t minValue)
 {
 	unsigned char bytes[8] = {0,0,0,0,0,0,0,0};
 	int byteSize = computeByteSizePerIntValue(valueRangeSize);
-	
+
 	unsigned int quantization_intervals;
 	if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_uint32_3D(oriData, r1, r2, r3, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
-	}	
+	}
 	else
 		quantization_intervals = exe_params->intvCapacity;
-	size_t i,j,k; 
+	size_t i,j,k;
 	int64_t pred1D, pred2D, pred3D, curValue;
 	int64_t diff = 0.0;
 	double itvNum = 0;
 	uint32_t *P0, *P1;
-		
-	size_t dataLength = r1*r2*r3;		
+
+	size_t dataLength = r1*r2*r3;
 
 	size_t r23 = r2*r3;
 	P0 = (uint32_t*)malloc(r23*sizeof(uint32_t));
@@ -567,9 +570,9 @@ TightDataPointStorageI* SZ_compress_uint32_3D_MDQ(uint32_t *oriData, size_t r1, 
 	int* type = (int*) malloc(dataLength*sizeof(int));
 
 	uint32_t* spaceFillingValue = oriData; //
-	
+
 	DynamicByteArray *exactDataByteArray;
-	new_DBA(&exactDataByteArray, DynArrayInitLen);	
+	new_DBA(&exactDataByteArray, DynArrayInitLen);
 
 	type[0] = 0;
 	P1[0] = spaceFillingValue[0];
@@ -624,7 +627,7 @@ TightDataPointStorageI* SZ_compress_uint32_3D_MDQ(uint32_t *oriData, size_t r1, 
 	for (i = 1; i < r2; i++)
 	{
 		/* Process row-i data 0 */
-		index = i*r3;	
+		index = i*r3;
 		pred1D = P1[index-r3];
 		diff = spaceFillingValue[index] - pred1D;
 
@@ -730,7 +733,7 @@ TightDataPointStorageI* SZ_compress_uint32_3D_MDQ(uint32_t *oriData, size_t r1, 
 		{
 			/* Process Row-i data 0 */
 			index = k*r23 + i*r3;
-			index2D = i*r3;		
+			index2D = i*r3;
 			pred2D = P0[index2D-r3] + P1[index2D] - P1[index2D-r3];
 			diff = spaceFillingValue[index] - pred2D;
 
@@ -755,7 +758,7 @@ TightDataPointStorageI* SZ_compress_uint32_3D_MDQ(uint32_t *oriData, size_t r1, 
 			{
 //				if(k==63&&i==43&&j==27)
 //					printf("i=%d\n", i);
-				//index = k*r2*r3 + i*r3 + j;			
+				//index = k*r2*r3 + i*r3 + j;
 				index ++;
 				index2D = i*r3 + j;
 				pred3D = P0[index2D-1] + P0[index2D-r3]+ P1[index2D] - P0[index2D-r3-1] - P1[index2D-r3] - P1[index2D-1] + P1[index2D-r3-1];
@@ -789,22 +792,22 @@ TightDataPointStorageI* SZ_compress_uint32_3D_MDQ(uint32_t *oriData, size_t r1, 
 	free(P1);
 
 	size_t exactDataNum = exactDataByteArray->size;
-	
-	TightDataPointStorageI* tdps;	
-			
-	new_TightDataPointStorageI(&tdps, dataLength, exactDataNum, byteSize, 
-			type, exactDataByteArray->array, exactDataByteArray->size,  
+
+	TightDataPointStorageI* tdps;
+
+	new_TightDataPointStorageI(&tdps, dataLength, exactDataNum, byteSize,
+			type, exactDataByteArray->array, exactDataByteArray->size,
 			realPrecision, minValue, quantization_intervals, SZ_UINT32);
-			
+
 	//free memory
-	free(type);	
+	free(type);
 	free(exactDataByteArray); //exactDataByteArray->array has been released in free_TightDataPointStorageF(tdps);
-	
-	return tdps;	
+
+	return tdps;
 }
 
 
-void SZ_compress_args_uint32_NoCkRngeNoGzip_3D(unsigned char** newByteData, uint32_t *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t *outSize, 
+void SZ_compress_args_uint32_NoCkRngeNoGzip_3D(unsigned char** newByteData, uint32_t *oriData, size_t r1, size_t r2, size_t r3, double realPrecision, size_t *outSize,
 int64_t valueRangeSize, int64_t minValue)
 {
 	TightDataPointStorageI* tdps = SZ_compress_uint32_3D_MDQ(oriData, r1, r2, r3, realPrecision, valueRangeSize, minValue);
@@ -814,8 +817,8 @@ int64_t valueRangeSize, int64_t minValue)
 	size_t dataLength = r1*r2*r3;
 	if(*outSize>dataLength*sizeof(uint32_t))
 		SZ_compress_args_uint32_StoreOriData(oriData, dataLength, tdps, newByteData, outSize);
-	
-	free_TightDataPointStorageI(tdps);	
+
+	free_TightDataPointStorageI(tdps);
 }
 
 
@@ -823,35 +826,35 @@ TightDataPointStorageI* SZ_compress_uint32_4D_MDQ(uint32_t *oriData, size_t r1, 
 {
 	unsigned char bytes[8] = {0,0,0,0,0,0,0,0};
 	int byteSize = computeByteSizePerIntValue(valueRangeSize);
-	
+
 	unsigned int quantization_intervals;
 	if(exe_params->optQuantMode==1)
 	{
 		quantization_intervals = optimize_intervals_uint32_4D(oriData, r1, r2, r3, r4, realPrecision);
 		updateQuantizationInfo(quantization_intervals);
-	}	
+	}
 	else
 		quantization_intervals = exe_params->intvCapacity;
-	size_t i,j,k; 
+	size_t i,j,k;
 	int64_t pred1D, pred2D, pred3D, curValue;
 	int64_t diff = 0.0;
 	double itvNum = 0;
 	uint32_t *P0, *P1;
-		
-	size_t dataLength = r1*r2*r3*r4;		
+
+	size_t dataLength = r1*r2*r3*r4;
 
 	size_t r234 = r2*r3*r4;
 	size_t r34 = r3*r4;
 
 	P0 = (uint32_t*)malloc(r34*sizeof(uint32_t));
 	P1 = (uint32_t*)malloc(r34*sizeof(uint32_t));
-	
+
 	int* type = (int*) malloc(dataLength*sizeof(int));
 
 	uint32_t* spaceFillingValue = oriData; //
-	
+
 	DynamicByteArray *exactDataByteArray;
-	new_DBA(&exactDataByteArray, DynArrayInitLen);	
+	new_DBA(&exactDataByteArray, DynArrayInitLen);
 
 	size_t l;
 	for (l = 0; l < r1; l++)
@@ -1097,21 +1100,21 @@ TightDataPointStorageI* SZ_compress_uint32_4D_MDQ(uint32_t *oriData, size_t r1, 
 	free(P1);
 
 	size_t exactDataNum = exactDataByteArray->size;
-	
-	TightDataPointStorageI* tdps;	
-			
-	new_TightDataPointStorageI(&tdps, dataLength, exactDataNum, byteSize, 
-			type, exactDataByteArray->array, exactDataByteArray->size,  
+
+	TightDataPointStorageI* tdps;
+
+	new_TightDataPointStorageI(&tdps, dataLength, exactDataNum, byteSize,
+			type, exactDataByteArray->array, exactDataByteArray->size,
 			realPrecision, minValue, quantization_intervals, SZ_UINT32);
-			
+
 	//free memory
-	free(type);	
+	free(type);
 	free(exactDataByteArray); //exactDataByteArray->array has been released in free_TightDataPointStorageF(tdps);
-	
-	return tdps;	
+
+	return tdps;
 }
 
-void SZ_compress_args_uint32_NoCkRngeNoGzip_4D(unsigned char** newByteData, uint32_t *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision, 
+void SZ_compress_args_uint32_NoCkRngeNoGzip_4D(unsigned char** newByteData, uint32_t *oriData, size_t r1, size_t r2, size_t r3, size_t r4, double realPrecision,
 size_t *outSize, int64_t valueRangeSize, int64_t minValue)
 {
 	TightDataPointStorageI* tdps = SZ_compress_uint32_4D_MDQ(oriData, r1, r2, r3, r4, realPrecision, valueRangeSize, minValue);
@@ -1128,8 +1131,8 @@ size_t *outSize, int64_t valueRangeSize, int64_t minValue)
 void SZ_compress_args_uint32_withinRange(unsigned char** newByteData, uint32_t *oriData, size_t dataLength, size_t *outSize)
 {
 	TightDataPointStorageI* tdps = (TightDataPointStorageI*) malloc(sizeof(TightDataPointStorageI));
-	tdps->typeArray = NULL;	
-	
+	tdps->typeArray = NULL;
+
 	tdps->allSameData = 1;
 	tdps->dataSeriesLength = dataLength;
 	tdps->exactDataBytes = (unsigned char*)malloc(sizeof(unsigned char)*4);
@@ -1137,28 +1140,28 @@ void SZ_compress_args_uint32_withinRange(unsigned char** newByteData, uint32_t *
 	//tdps->exactByteSize = 4;
 	tdps->exactDataNum = 1;
 	tdps->exactDataBytes_size = 4;
-	
+
 	uint32_t value = oriData[0];
 	int32ToBytes_bigEndian(tdps->exactDataBytes, value);
-	
+
 	size_t tmpOutSize;
 	convertTDPStoFlatBytes_int(tdps, newByteData, &tmpOutSize);
 
 	*outSize = tmpOutSize;//3+1+sizeof(uint32_t)+SZ_SIZE_TYPE; //8==3+1+4(uint32_size)
-	free_TightDataPointStorageI(tdps);	
+	free_TightDataPointStorageI(tdps);
 }
 
-int SZ_compress_args_uint32_wRngeNoGzip(unsigned char** newByteData, uint32_t *oriData, 
-size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
+int SZ_compress_args_uint32_wRngeNoGzip(unsigned char** newByteData, uint32_t *oriData,
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize,
 int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
 	int status = SZ_SCES;
 	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
 	int64_t valueRangeSize = 0;
-	
+
 	uint32_t minValue = computeRangeSize_int(oriData, SZ_UINT32, dataLength, &valueRangeSize);
 	double realPrecision = getRealPrecision_int(valueRangeSize, errBoundMode, absErr_Bound, relBoundRatio, &status);
-		
+
 	if(valueRangeSize <= realPrecision)
 	{
 		SZ_compress_args_uint32_withinRange(newByteData, oriData, dataLength, outSize);
@@ -1186,12 +1189,12 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 	return status;
 }
 
-int SZ_compress_args_uint32(unsigned char** newByteData, uint32_t *oriData, 
-size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize, 
+int SZ_compress_args_uint32(unsigned char** newByteData, uint32_t *oriData,
+size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_t *outSize,
 int errBoundMode, double absErr_Bound, double relBoundRatio)
 {
 	confparams_cpr->errorBoundMode = errBoundMode;
-	
+
 	if(errBoundMode>=PW_REL)
 	{
 		printf("Error: Current SZ version doesn't support integer data compression with point-wise relative error bound being based on pwrType=AVG\n");
@@ -1203,8 +1206,8 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 	int64_t valueRangeSize = 0;
 
 	uint32_t minValue = (uint32_t)computeRangeSize_int(oriData, SZ_UINT32, dataLength, &valueRangeSize);
-	double realPrecision = 0; 
-	
+	double realPrecision = 0;
+
 	if(confparams_cpr->errorBoundMode==PSNR)
 	{
 		confparams_cpr->errorBoundMode = ABS;
@@ -1260,9 +1263,9 @@ int errBoundMode, double absErr_Bound, double relBoundRatio)
 		else
 		{
 			printf("Error: Wrong setting of confparams_cpr->szMode in the uint32_t compression.\n");
-			status = SZ_MERR; //mode error			
+			status = SZ_MERR; //mode error
 		}
 	}
-	
+
 	return status;
 }

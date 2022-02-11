@@ -23,6 +23,11 @@
 extern "C" {
 #endif
 
+#if defined(_MSC_VER) /* MSVC Compiler Case */
+#define F_OK    0       /* Test for existence.  */
+#define access _access
+#endif
+
 int checkFileExistance(char* filePath);
 
 float** create2DArray_float(size_t m, size_t n);

@@ -18,29 +18,29 @@ extern "C" {
 
 //ByteToolkit.c
 
-unsigned short bytesToUInt16_bigEndian(unsigned char* bytes);
-unsigned int bytesToUInt32_bigEndian(unsigned char* bytes);
-unsigned long bytesToUInt64_bigEndian(unsigned char* b);
+extern unsigned short bytesToUInt16_bigEndian(unsigned char* bytes);
+extern unsigned int bytesToUInt32_bigEndian(unsigned char* bytes);
+extern unsigned long bytesToUInt64_bigEndian(unsigned char* b);
 
-short bytesToInt16_bigEndian(unsigned char* bytes);
-int bytesToInt32_bigEndian(unsigned char* bytes);
-long bytesToInt64_bigEndian(unsigned char* b);
-int bytesToInt_bigEndian(unsigned char* bytes);
+extern short bytesToInt16_bigEndian(unsigned char* bytes);
+extern int bytesToInt32_bigEndian(unsigned char* bytes);
+extern long bytesToInt64_bigEndian(unsigned char* b);
+extern int bytesToInt_bigEndian(unsigned char* bytes);
 
-void intToBytes_bigEndian(unsigned char *b, unsigned int num);
+extern void intToBytes_bigEndian(unsigned char *b, unsigned int num);
 
-void int64ToBytes_bigEndian(unsigned char *b, uint64_t num);
-void int32ToBytes_bigEndian(unsigned char *b, uint32_t num);
-void int16ToBytes_bigEndian(unsigned char *b, uint16_t num);
+extern void int64ToBytes_bigEndian(unsigned char *b, uint64_t num);
+extern void int32ToBytes_bigEndian(unsigned char *b, uint32_t num);
+extern void int16ToBytes_bigEndian(unsigned char *b, uint16_t num);
 
-long bytesToLong_bigEndian(unsigned char* b);
-void longToBytes_bigEndian(unsigned char *b, unsigned long num);
+extern long bytesToLong_bigEndian(unsigned char* b);
+extern void longToBytes_bigEndian(unsigned char *b, unsigned long num);
 long doubleToOSEndianLong(double value);
 int floatToOSEndianInt(float value);
-short getExponent_float(float value);
-short getPrecisionReqLength_float(float precision);
-short getExponent_double(double value);
-short getPrecisionReqLength_double(double precision);
+extern short getExponent_float(float value);
+extern short getPrecisionReqLength_float(float precision);
+extern short getExponent_double(double value);
+extern short getPrecisionReqLength_double(double precision);
 unsigned char numberOfLeadingZeros_Int(int i);
 unsigned char numberOfLeadingZeros_Long(long i);
 unsigned char getLeadingNumbers_Int(int v1, int v2);
@@ -49,15 +49,15 @@ short bytesToShort(unsigned char* bytes);
 void shortToBytes(unsigned char* b, short value);
 int bytesToInt(unsigned char* bytes);
 long bytesToLong(unsigned char* bytes);
-float bytesToFloat(unsigned char* bytes);
-void floatToBytes(unsigned char *b, float num);
-double bytesToDouble(unsigned char* bytes);
-void doubleToBytes(unsigned char *b, double num);
+extern float bytesToFloat(unsigned char* bytes);
+extern void floatToBytes(unsigned char *b, float num);
+extern double bytesToDouble(unsigned char* bytes);
+extern void doubleToBytes(unsigned char *b, double num);
 int extractBytes(unsigned char* byteArray, size_t k, int validLength);
 int getMaskRightCode(int m);
-int getLeftMovingCode(int kMod8);
-int getRightMovingSteps(int kMod8, int resiBitLength);
-int getRightMovingCode(int kMod8, int resiBitLength);
+extern int getLeftMovingCode(int kMod8);
+extern int getRightMovingSteps(int kMod8, int resiBitLength);
+extern int getRightMovingCode(int kMod8, int resiBitLength);
 short* convertByteDataToShortArray(unsigned char* bytes, size_t byteLength);
 unsigned short* convertByteDataToUShortArray(unsigned char* bytes, size_t byteLength);
 
@@ -68,8 +68,8 @@ void convertUIntArrayToBytes(unsigned int* states, size_t stateLength, unsigned 
 void convertLongArrayToBytes(int64_t* states, size_t stateLength, unsigned char* bytes);
 void convertULongArrayToBytes(uint64_t* states, size_t stateLength, unsigned char* bytes);
 
-size_t bytesToSize(unsigned char* bytes);
-void sizeToBytes(unsigned char* outBytes, size_t size);
+extern size_t bytesToSize(unsigned char* bytes);
+extern void sizeToBytes(unsigned char* outBytes, size_t size);
 
 void put_codes_to_output(unsigned int buf, int bitSize, unsigned char** p, int* lackBits, size_t *outSize);
 

@@ -7,7 +7,7 @@
  *      See COPYRIGHT in top-level directory.
  */
 
-
+#include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -274,7 +274,7 @@ void assessDeCompressionData(int dataType, char* zipFilePath, void* decompressed
 	size_t i, totalNbEle;
 	int status;
     char oriFilePath[640];
-    strncpy(oriFilePath, zipFilePath, (unsigned)strlen(zipFilePath)-3);
+    strcpy(oriFilePath, zipFilePath);
     oriFilePath[strlen(zipFilePath)-3] = '\0';
 	int64_t *data = (int64_t*)malloc(sizeof(int64_t)*nbEle);//decompressed data
 	int64_t *ori_data = (int64_t*)malloc(sizeof(int64_t)*nbEle); //original data

@@ -7,10 +7,13 @@
  *      See COPYRIGHT in top-level directory.
  */
 
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #include "sz.h"
 #include "DynamicByteArray.h"
 #include "DynamicIntArray.h"
@@ -38,7 +41,7 @@ long computeRangeSize_int(void* oriData, int dataType, size_t size, int64_t* val
 	if(dataType==SZ_UINT8)
 	{
 		unsigned char* data = (unsigned char*)oriData;
-		unsigned char data_; 
+		unsigned char data_;
 		min = data[0], max = min;
 		computeMinMax(data);
 	}
@@ -52,48 +55,48 @@ long computeRangeSize_int(void* oriData, int dataType, size_t size, int64_t* val
 	else if(dataType == SZ_UINT16)
 	{
 		unsigned short* data = (unsigned short*)oriData;
-		unsigned short data_; 
+		unsigned short data_;
 		min = data[0], max = min;
 		computeMinMax(data);
 	}
 	else if(dataType == SZ_INT16)
-	{ 
+	{
 		short* data = (short*)oriData;
-		short data_; 
+		short data_;
 		min = data[0], max = min;
 		computeMinMax(data);
 	}
 	else if(dataType == SZ_UINT32)
 	{
 		unsigned int* data = (unsigned int*)oriData;
-		unsigned int data_; 
+		unsigned int data_;
 		min = data[0], max = min;
 		computeMinMax(data);
 	}
 	else if(dataType == SZ_INT32)
 	{
 		int* data = (int*)oriData;
-		int data_; 
+		int data_;
 		min = data[0], max = min;
 		computeMinMax(data);
 	}
 	else if(dataType == SZ_UINT64)
 	{
 		unsigned long* data = (unsigned long*)oriData;
-		unsigned long data_; 
+		unsigned long data_;
 		min = data[0], max = min;
 		computeMinMax(data);
 	}
 	else if(dataType == SZ_INT64)
 	{
 		long* data = (long *)oriData;
-		long data_; 
+		long data_;
 		min = data[0], max = min;
 		computeMinMax(data);
 	}
 
 	*valueRangeSize = max - min;
-	return min;	
+	return min;
 }
 
 float computeRangeSize_float(float* oriData, size_t size, float* valueRangeSize, float* medianValue)
@@ -156,7 +159,7 @@ double computeRangeSize_double(double* oriData, size_t size, double* valueRangeS
 		else if(max<data)
 			max = data;
 	}
-	
+
 	*valueRangeSize = max - min;
 	*medianValue = min + *valueRangeSize/2;
 	return min;
@@ -287,7 +290,7 @@ double getRealPrecision_double(double valueRangeSize, int errBoundMode, double a
 	int state = SZ_SCES;
 	double precision = 0;
 	if(errBoundMode==ABS||errBoundMode==ABS_OR_PW_REL||errBoundMode==ABS_AND_PW_REL)
-		precision = absErrBound; 
+		precision = absErrBound;
 	else if(errBoundMode==REL||errBoundMode==REL_OR_PW_REL||errBoundMode==REL_AND_PW_REL)
 		precision = relBoundRatio*valueRangeSize;
 	else if(errBoundMode==ABS_AND_REL)
@@ -310,7 +313,7 @@ double getRealPrecision_float(float valueRangeSize, int errBoundMode, double abs
 	int state = SZ_SCES;
 	double precision = 0;
 	if(errBoundMode==ABS||errBoundMode==ABS_OR_PW_REL||errBoundMode==ABS_AND_PW_REL)
-		precision = absErrBound; 
+		precision = absErrBound;
 	else if(errBoundMode==REL||errBoundMode==REL_OR_PW_REL||errBoundMode==REL_AND_PW_REL)
 		precision = relBoundRatio*valueRangeSize;
 	else if(errBoundMode==ABS_AND_REL)
@@ -333,7 +336,7 @@ double getRealPrecision_int(long valueRangeSize, int errBoundMode, double absErr
 	int state = SZ_SCES;
 	double precision = 0;
 	if(errBoundMode==ABS||errBoundMode==ABS_OR_PW_REL||errBoundMode==ABS_AND_PW_REL)
-		precision = absErrBound; 
+		precision = absErrBound;
 	else if(errBoundMode==REL||errBoundMode==REL_OR_PW_REL||errBoundMode==REL_AND_PW_REL)
 		precision = relBoundRatio*valueRangeSize;
 	else if(errBoundMode==ABS_AND_REL)
@@ -360,11 +363,11 @@ void symTransform_8bytes(unsigned char data[8])
 	tmp = data[1];
 	data[1] = data[6];
 	data[6] = tmp;
-	
+
 	tmp = data[2];
 	data[2] = data[5];
 	data[5] = tmp;
-	
+
 	tmp = data[3];
 	data[3] = data[4];
 	data[4] = tmp;
@@ -448,25 +451,25 @@ inline void compressUInt64Value(uint64_t tgtValue, uint64_t minValue, int byteSi
 	memcpy(bytes, tmpBytes + 8 - byteSize, byteSize);
 }
 
-inline void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue, 
+inline void compressSingleFloatValue(FloatValueCompressElement *vce, float tgtValue, float precision, float medianValue,
 		int reqLength, int reqBytesLength, int resiBitsLength)
-{		
+{
 	float normValue = tgtValue - medianValue;
 
 	lfloat lfBuf;
 	lfBuf.value = normValue;
-			
+
 	int ignBytesLength = 32 - reqLength;
 	if(ignBytesLength<0)
 		ignBytesLength = 0;
-	
+
 	int tmp_int = lfBuf.ivalue;
 	intToBytes_bigEndian(vce->curBytes, tmp_int);
-		
+
 	lfBuf.ivalue = (lfBuf.ivalue >> ignBytesLength) << ignBytesLength;
-	
+
 	//float tmpValue = lfBuf.value;
-	
+
 	vce->data = lfBuf.value+medianValue;
 	vce->curValue = tmp_int;
 	vce->reqBytesLength = reqBytesLength;
@@ -519,25 +522,25 @@ void compressSingleDoubleValue_MSST19(DoubleValueCompressElement *vce, double tg
     vce->resiBitsLength = resiBitsLength;
 }
 
-void compressSingleDoubleValue(DoubleValueCompressElement *vce, double tgtValue, double precision, double medianValue, 
+void compressSingleDoubleValue(DoubleValueCompressElement *vce, double tgtValue, double precision, double medianValue,
 		int reqLength, int reqBytesLength, int resiBitsLength)
-{		
+{
 	double normValue = tgtValue - medianValue;
 
 	ldouble lfBuf;
 	lfBuf.value = normValue;
-			
+
 	int ignBytesLength = 64 - reqLength;
 	if(ignBytesLength<0)
 		ignBytesLength = 0;
 
 	long tmp_long = lfBuf.lvalue;
 	longToBytes_bigEndian(vce->curBytes, tmp_long);
-				
+
 	lfBuf.lvalue = (lfBuf.lvalue >> ignBytesLength)<<ignBytesLength;
-	
+
 	//double tmpValue = lfBuf.value;
-	
+
 	vce->data = lfBuf.value+medianValue;
 	vce->curValue = tmp_long;
 	vce->reqBytesLength = reqBytesLength;
@@ -569,7 +572,7 @@ inline int compIdenticalLeadingBytesCount_float(unsigned char* preBytes, unsigne
 }
 
 //TODO double-check the correctness...
-inline void addExactData(DynamicByteArray *exactMidByteArray, DynamicIntArray *exactLeadNumArray, 
+inline void addExactData(DynamicByteArray *exactMidByteArray, DynamicIntArray *exactLeadNumArray,
 		DynamicIntArray *resiBitArray, LossyCompressionElement *lce)
 {
 	int i;
@@ -617,35 +620,35 @@ int getPredictionCoefficients(int layers, int dimension, int **coeff_array, int 
 					(*coeff_array)[1] = -3;
 					(*coeff_array)[2] = 1;
 					break;
-			}	
+			}
 			break;
 		case 2:
 			switch(layers)
 			{
 				case 1:
-				
+
 					break;
 				case 2:
-				
+
 					break;
 				case 3:
-				
+
 					break;
-			}				
+			}
 			break;
 		case 3:
 			switch(layers)
 			{
 				case 1:
-				
+
 					break;
 				case 2:
-				
+
 					break;
 				case 3:
-				
+
 					break;
-			}			
+			}
 			break;
 		default:
 			printf("Error: dimension must be no greater than 3 in the current version.\n");
@@ -675,7 +678,7 @@ int computeBlockEdgeSize_3D(int segmentSize)
 		if(i*i*i>segmentSize)
 			break;
 	}
-	return i;	
+	return i;
 	//return (int)(pow(segmentSize, 1.0/3)+1);
 }
 
@@ -705,20 +708,20 @@ int initRandomAccessBytes(unsigned char* raBytes)
 	return k;
 }
 
-//The following functions are float-precision version of dealing with the unpredictable data points 
+//The following functions are float-precision version of dealing with the unpredictable data points
 int generateLossyCoefficients_float(float* oriData, double precision, size_t nbEle, int* reqBytesLength, int* resiBitsLength, float* medianValue, float* decData)
 {
 	float valueRangeSize;
-	
+
 	computeRangeSize_float(oriData, nbEle, &valueRangeSize, medianValue);
 	short radExpo = getExponent_float(valueRangeSize/2);
-	
+
 	int reqLength;
 	computeReqLength_float(precision, radExpo, &reqLength, medianValue);
-	
+
 	*reqBytesLength = reqLength/8;
 	*resiBitsLength = reqLength%8;
-	
+
 	size_t i = 0;
 	for(i = 0;i < nbEle;i++)
 	{
@@ -726,39 +729,39 @@ int generateLossyCoefficients_float(float* oriData, double precision, size_t nbE
 
 		lfloat lfBuf;
 		lfBuf.value = normValue;
-				
+
 		int ignBytesLength = 32 - reqLength;
 		if(ignBytesLength<0)
 			ignBytesLength = 0;
-			
+
 		lfBuf.ivalue = (lfBuf.ivalue >> ignBytesLength) << ignBytesLength;
-		
+
 		//float tmpValue = lfBuf.value;
-		
+
 		decData[i] = lfBuf.value + *medianValue;
 	}
 	return reqLength;
-}	
-		
+}
+
 /**
  * @param float* oriData: inplace argument (input / output)
- * 
- * */		
-int compressExactDataArray_float(float* oriData, double precision, size_t nbEle, unsigned char** leadArray, unsigned char** midArray, unsigned char** resiArray, 
+ *
+ * */
+int compressExactDataArray_float(float* oriData, double precision, size_t nbEle, unsigned char** leadArray, unsigned char** midArray, unsigned char** resiArray,
 int reqLength, int reqBytesLength, int resiBitsLength, float medianValue)
 {
 	//allocate memory for coefficient compression arrays
 	DynamicIntArray *exactLeadNumArray;
-	new_DIA(&exactLeadNumArray, DynArrayInitLen);	
+	new_DIA(&exactLeadNumArray, DynArrayInitLen);
 	DynamicByteArray *exactMidByteArray;
 	new_DBA(&exactMidByteArray, DynArrayInitLen);
 	DynamicIntArray *resiBitArray;
 	new_DIA(&resiBitArray, DynArrayInitLen);
-	unsigned char preDataBytes[4] = {0,0,0,0};	
+	unsigned char preDataBytes[4] = {0,0,0,0};
 
 	//allocate memory for vce and lce
 	FloatValueCompressElement *vce = (FloatValueCompressElement*)malloc(sizeof(FloatValueCompressElement));
-	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));	
+	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
 
 	size_t i = 0;
 	for(i = 0;i < nbEle;i++)
@@ -774,14 +777,14 @@ int reqLength, int reqBytesLength, int resiBitsLength, float medianValue)
 	convertDIAtoInts(resiBitArray, resiArray);
 
 	size_t midArraySize = exactMidByteArray->size;
-	
+
 	free(vce);
 	free(lce);
-	
+
 	free_DIA(exactLeadNumArray);
 	free_DBA(exactMidByteArray);
 	free_DIA(resiBitArray);
-	
+
 	return midArraySize;
 }
 
@@ -792,12 +795,12 @@ void decompressExactDataArray_float(unsigned char* leadNum, unsigned char* exact
 	float exactData = 0;
 	unsigned char preBytes[4] = {0,0,0,0};
 	unsigned char curBytes[4];
-	int resiBits; 
-	unsigned char leadingNum;		
-	
+	int resiBits;
+	unsigned char leadingNum;
+
 	int reqBytesLength = reqLength/8;
 	int resiBitsLength = reqLength%8;
-	
+
 	for(i = 0; i<nbEle;i++)
 	{
 		// compute resiBits
@@ -826,7 +829,7 @@ void decompressExactDataArray_float(unsigned char* leadNum, unsigned char* exact
 			k += resiBitsLength;
 		}
 
-		// recover the exact data	
+		// recover the exact data
 		memset(curBytes, 0, 4);
 		leadingNum = leadNum[l++];
 		memcpy(curBytes, preBytes, leadingNum);
@@ -840,23 +843,23 @@ void decompressExactDataArray_float(unsigned char* leadNum, unsigned char* exact
 		exactData = bytesToFloat(curBytes);
 		(*decData)[i] = exactData + medianValue;
 		memcpy(preBytes,curBytes,4);
-	}	
+	}
 }
 
 //double-precision version of dealing with unpredictable data points in sz 2.0
 int generateLossyCoefficients_double(double* oriData, double precision, size_t nbEle, int* reqBytesLength, int* resiBitsLength, double* medianValue, double* decData)
 {
 	double valueRangeSize;
-	
+
 	computeRangeSize_double(oriData, nbEle, &valueRangeSize, medianValue);
 	short radExpo = getExponent_double(valueRangeSize/2);
-	
+
 	int reqLength;
 	computeReqLength_double(precision, radExpo, &reqLength, medianValue);
-	
+
 	*reqBytesLength = reqLength/8;
 	*resiBitsLength = reqLength%8;
-	
+
 	size_t i = 0;
 	for(i = 0;i < nbEle;i++)
 	{
@@ -864,37 +867,37 @@ int generateLossyCoefficients_double(double* oriData, double precision, size_t n
 
 		ldouble ldBuf;
 		ldBuf.value = normValue;
-				
+
 		int ignBytesLength = 64 - reqLength;
 		if(ignBytesLength<0)
 			ignBytesLength = 0;
-			
+
 		ldBuf.lvalue = (ldBuf.lvalue >> ignBytesLength) << ignBytesLength;
-		
+
 		decData[i] = ldBuf.value + *medianValue;
 	}
 	return reqLength;
-}	
-		
+}
+
 /**
  * @param double* oriData: inplace argument (input / output)
- * 
- * */		
-int compressExactDataArray_double(double* oriData, double precision, size_t nbEle, unsigned char** leadArray, unsigned char** midArray, unsigned char** resiArray, 
+ *
+ * */
+int compressExactDataArray_double(double* oriData, double precision, size_t nbEle, unsigned char** leadArray, unsigned char** midArray, unsigned char** resiArray,
 int reqLength, int reqBytesLength, int resiBitsLength, double medianValue)
 {
 	//allocate memory for coefficient compression arrays
 	DynamicIntArray *exactLeadNumArray;
-	new_DIA(&exactLeadNumArray, DynArrayInitLen);	
+	new_DIA(&exactLeadNumArray, DynArrayInitLen);
 	DynamicByteArray *exactMidByteArray;
 	new_DBA(&exactMidByteArray, DynArrayInitLen);
 	DynamicIntArray *resiBitArray;
 	new_DIA(&resiBitArray, DynArrayInitLen);
-	unsigned char preDataBytes[8] = {0,0,0,0,0,0,0,0};	
+	unsigned char preDataBytes[8] = {0,0,0,0,0,0,0,0};
 
 	//allocate memory for vce and lce
 	DoubleValueCompressElement *vce = (DoubleValueCompressElement*)malloc(sizeof(DoubleValueCompressElement));
-	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));	
+	LossyCompressionElement *lce = (LossyCompressionElement*)malloc(sizeof(LossyCompressionElement));
 
 	size_t i = 0;
 	for(i = 0;i < nbEle;i++)
@@ -910,14 +913,14 @@ int reqLength, int reqBytesLength, int resiBitsLength, double medianValue)
 	convertDIAtoInts(resiBitArray, resiArray);
 
 	size_t midArraySize = exactMidByteArray->size;
-	
+
 	free(vce);
 	free(lce);
-	
+
 	free_DIA(exactLeadNumArray);
 	free_DBA(exactMidByteArray);
 	free_DIA(resiBitArray);
-	
+
 	return midArraySize;
 }
 
@@ -928,12 +931,12 @@ void decompressExactDataArray_double(unsigned char* leadNum, unsigned char* exac
 	double exactData = 0;
 	unsigned char preBytes[8] = {0,0,0,0,0,0,0,0};
 	unsigned char curBytes[8];
-	int resiBits; 
-	unsigned char leadingNum;		
-	
+	int resiBits;
+	unsigned char leadingNum;
+
 	int reqBytesLength = reqLength/8;
 	int resiBitsLength = reqLength%8;
-	
+
 	for(i = 0; i<nbEle;i++)
 	{
 		// compute resiBits
@@ -962,7 +965,7 @@ void decompressExactDataArray_double(unsigned char* leadNum, unsigned char* exac
 			k += resiBitsLength;
 		}
 
-		// recover the exact data	
+		// recover the exact data
 		memset(curBytes, 0, 8);
 		leadingNum = leadNum[l++];
 		memcpy(curBytes, preBytes, leadingNum);

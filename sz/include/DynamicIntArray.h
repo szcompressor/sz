@@ -16,7 +16,7 @@ extern "C" {
 
 #include <stdio.h>
 typedef struct DynamicIntArray
-{	
+{
 	unsigned char* array; //char* (one byte) is enough, don't have to be int*
 	size_t size;
 	size_t capacity;
@@ -26,7 +26,7 @@ void new_DIA(DynamicIntArray **dia, size_t cap);
 void convertDIAtoInts(DynamicIntArray *dia, unsigned char **data);
 void free_DIA(DynamicIntArray *dia);
 int getDIA_Data(DynamicIntArray *dia, size_t pos);
-void addDIA_Data(DynamicIntArray *dia, int value);
+extern void addDIA_Data(DynamicIntArray *dia, int value);
 
 #ifdef __cplusplus
 }
