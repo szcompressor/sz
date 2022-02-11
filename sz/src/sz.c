@@ -175,13 +175,13 @@ int filterDimension(size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_
 	{
 		if(r2==1)
 		{
-			r2= 0;
+			c[1]= 0;
 			dimensionCorrected = 1;
 		}	
 		if(r1==1) //remove this dimension
 		{
 			c[0] = c[1]; 
-			r2 = 0;
+			c[1] = c[2];
 			dimensionCorrected = 1;
 		}
 	}
@@ -189,13 +189,13 @@ int filterDimension(size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, size_
 	{
 		if(r3==1)
 		{
-			r3 = 0;
+			c[2] = 0;
 			dimensionCorrected = 1;
 		}	
 		if(r2==1)
 		{
 			c[1] = c[2];
-			c[2] = 0;
+			c[2] = c[3];
 			dimensionCorrected = 1;
 		}
 		if(r1==1)
@@ -1389,6 +1389,7 @@ unsigned char* SZ_compress_customize_threadsafe(const char* cmprName, void* user
 	unsigned char* result = NULL;
 	if(strcmp(cmprName, "SZ2.0")==0 || strcmp(cmprName, "SZ2.1")==0 || strcmp(cmprName, "SZ")==0)
 	{
+		SZ_Init(NULL);
 		struct sz_params* para = (struct sz_params*)userPara;
 		
 		if(dataType==SZ_FLOAT)
@@ -1407,6 +1408,7 @@ unsigned char* SZ_compress_customize_threadsafe(const char* cmprName, void* user
 	}
 	else if(strcmp(cmprName, "SZ1.4")==0)
 	{
+		SZ_Init(NULL);
 		struct sz_params* para = (struct sz_params*)userPara;
 		
 		if(dataType==SZ_FLOAT)
