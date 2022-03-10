@@ -1,6 +1,6 @@
 #include <sz_stats.h>
 
-sz_stats sz_stat;
+sz_stats sz_stat = {0};
 
 void writeBlockInfo(int use_mean, size_t blockSize, size_t regressionBlocks, size_t totalBlocks)
 {
@@ -29,6 +29,10 @@ void writeZstdCompressionRatio(float zstdCompressionRatio)
 void writeConstantFlag(int flag)
 {
 	sz_stat.constant_flag = flag;
+}
+
+void writeQuantizationInfo(unsigned int intervals) {
+  sz_stat.quantization_intervals = intervals;
 }
 
 void writeUnpredictDataCounts(size_t unpredictCount, size_t totalNumElements)
@@ -65,4 +69,6 @@ void printSZStats()
 
 	printf("unpredictCount             %zu\n", sz_stat.unpredictCount);
 	printf("unpredictPercent           %f\n", sz_stat.unpredictPercent);
+
+	printf("quantization_intervals     %u\n", sz_stat.quantization_intervals);
 }
