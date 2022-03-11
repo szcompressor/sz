@@ -40,7 +40,8 @@ typedef struct sz_stats
 	float unpredictPercent;
 	
 	float zstdCompressionRatio; //not available yet
-	
+
+  unsigned int quantization_intervals;
 } sz_stats;
 
 extern sz_stats sz_stat;
@@ -51,6 +52,7 @@ void writeHuffmanInfo(size_t huffmanTreeSize, size_t huffmanCodingSize, size_t t
 void writeZstdCompressionRatio(float zstdCompressionRatio);
 void writeConstantFlag(int flag);
 void writeUnpredictDataCounts(size_t unpredictCount, size_t totalNumElements);
+void writeQuantizationInfo(unsigned int quantization_intervals);
 void printSZStats();
 
 #ifdef __cplusplus
