@@ -1122,6 +1122,13 @@ TightDataPointStorageD* SZ_compress_double_3D_MDQ(double *oriData, size_t r1, si
 			resiBitsLength,
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
 
+#if HAVE_WRITESTATS
+	writeBlockInfo(false, 1, 0, dataLength);
+	writeUnpredictDataCounts(tdps->exactDataNum, dataLength);
+	writeQuantizationInfo(quantization_intervals);
+#endif
+
+
 //	printf("exactDataNum=%d, expSegmentsInBytes_size=%d, exactMidByteArray->size=%d\n",
 //			exactDataNum, expSegmentsInBytes_size, exactMidByteArray->size);
 

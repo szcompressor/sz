@@ -1387,6 +1387,12 @@ TightDataPointStorageF* SZ_compress_float_3D_MDQ(float *oriData, size_t r1, size
 			resiBitsLength,
 			realPrecision, medianValue, (char)reqLength, quantization_intervals, NULL, 0, 0);
 
+#if HAVE_WRITESTATS
+	writeBlockInfo(false, 1, 0, dataLength);
+	writeUnpredictDataCounts(tdps->exactDataNum, dataLength);
+	writeQuantizationInfo(quantization_intervals);
+#endif
+
 //sdi:Debug
 /*	int sum =0;
 	for(i=0;i<dataLength;i++)
