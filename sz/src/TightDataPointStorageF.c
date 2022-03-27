@@ -300,6 +300,10 @@ void new_TightDataPointStorageF(TightDataPointStorageF **this,
 	else
 		encode_withTree(huffmanTree, type, dataSeriesLength, &(*this)->typeArray, &(*this)->typeArray_size);
 	SZ_ReleaseHuffman(huffmanTree);
+#if HAVE_WRITESTATS
+    //update only the dataSeriesLength, the rest are set in encode_withTree
+    writeHuffmanInfo(sz_stat.huffmanTreeSize, sz_stat.huffmanCodingSize, sizeof(float)*dataSeriesLength, sz_stat.huffmanNodeCount);
+#endif
 		
 	(*this)->exactMidBytes = exactMidBytes;
 	(*this)->exactMidBytes_size = exactMidBytes_size;
