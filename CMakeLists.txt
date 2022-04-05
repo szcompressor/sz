@@ -79,7 +79,7 @@ if(SZ_FIND_DEPS)
   #by default pass no 3rd party exports
   set(thirdparty_export "")
 
-  if(ZSTD_FOUND AND FALSE)
+  if(ZSTD_FOUND)
     set(ZSTD_dep PkgConfig::ZSTD)
   else()
     add_subdirectory(zstd/build/cmake)
