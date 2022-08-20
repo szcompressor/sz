@@ -83,15 +83,10 @@ int main(int argc, char * argv[])
 	printf("cfgFile=%s\n", cfgFile); 
 	sprintf(outputFilePath, "%s.sz.h5", oriFilePath);
 
-//	printf("argv[1]=%s, dataType=%d\n", argv[1], dataType);
 	nbEle = computeDataLength(r5, r4, r3, r2, r1);
 		
-//	printf("nbEle=%u\n", nbEle);
-
 	//Create cd_values
 	printf("Dimension sizes: n5=%u, n4=%u, n3=%u, n2=%u, n1=%u\n", r5, r4, r3, r2, r1); 
-	//SZ_metaDataToCdArray(&cd_nelmts, &cd_values, dataType, r5, r4, r3, r2, r1);
-	//load_conffile_flag = 0;
 	SZ_errConfigToCdArray(&cd_nelmts, &cd_values, dataType, REL, 0.001, 0.001, 0, 0); //SZ_FLOAT or SZ_DOUBLE or SZ_INT 100x500x500 : 0, 0, 100, 500, 500, ABS, REL (0.01, 0.01*(max-min), PW_REL (0.01, 5, 6, 7, 8, 9 --> 5*0.01, 6*0.01, ...), PSNR (mean squared error)). 
 	/*cd_nelmts = 5;
 	cd_values[0] = 3;
@@ -125,12 +120,6 @@ int main(int argc, char * argv[])
 	if (0 > H5Pset_filter(cpid, H5Z_FILTER_SZ, H5Z_FLAG_MANDATORY, cd_nelmts, cd_values)) ERROR(H5Pset_filter);	
 	avail = H5Zfilter_avail(H5Z_FILTER_SZ);
 
-	unsigned int new_cd_values[12];
-	size_t new_cd_nelmts = 0;
-	int flags = 0;
-	memset(new_cd_values, 0, 12*sizeof(unsigned int));
-	H5Pget_filter_by_id(cpid, H5Z_FILTER_SZ, &flags, &new_cd_nelmts, new_cd_values, 0, NULL, NULL);
-
 	if (0 > H5Pset_chunk(cpid, dim, chunk)) ERROR(H5Pset_chunk);
 
 	//Initialize the configuration for SZ
@@ -143,14 +132,6 @@ int main(int argc, char * argv[])
 	//H5Z_SZ_Init(cfgFile);
 	
 	printf("....Writing SZ compressed data.............\n");
-
-        H5Pget_filter_by_id(cpid, H5Z_FILTER_SZ, &flags, &new_cd_nelmts, new_cd_values, 0, NULL, NULL);
-
-        for(i=0;i<cd_nelmts;i++)
-                printf("new_cd_values[%d]=%u\n", i, new_cd_values[i]);
-
-	printf("cpid=%d\n", cpid);
-	printf("dataType=%d\n", dataType);
 
 	if(dataType == SZ_FLOAT)
 	{
@@ -165,14 +146,6 @@ int main(int argc, char * argv[])
 		{
 			if (0 > (idsid = H5Dcreate(fid, DATASET, H5T_IEEE_F32LE, sid, H5P_DEFAULT, cpid, H5P_DEFAULT))) ERROR(H5Dcreate);
 			if (0 > H5Dwrite(idsid, H5T_IEEE_F32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data)) ERROR(H5Dwrite);		
-
-        H5Pget_filter_by_id(cpid, H5Z_FILTER_SZ, &flags, &new_cd_nelmts, new_cd_values, 0, NULL, NULL);
-
-        for(i=0;i<cd_nelmts;i++)
-                printf("2new_cd_values[%d]=%u\n", i, new_cd_values[i]);
-
-
-
 		}
 		else //BIG_ENDIAN_DATA
 		{
@@ -392,7 +365,7 @@ int main(int argc, char * argv[])
 	if (0 > H5Fclose(fid)) ERROR(H5Fclose);
 	free(cd_values);
 	printf("Output hdf5 file: %s\n", outputFilePath);
-//	H5Z_SZ_Finalize();
+	H5Z_SZ_Finalize();
 	H5close();
 	return 0;
 }
