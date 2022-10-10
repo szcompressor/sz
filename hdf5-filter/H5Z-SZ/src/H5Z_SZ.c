@@ -13,26 +13,6 @@
 #include "H5Z_SZ.h"
 #include "H5PLextern.h"
 
-struct timeval startTime;
-struct timeval endTime;  /* Start and end times */
-struct timeval costStart; /*only used for recording the cost*/
-double totalCost = 0;
-
-void cost_start()
-{
-        totalCost = 0;
-        gettimeofday(&costStart, NULL);
-}
-
-void cost_end()
-{
-        double elapsed;
-        struct timeval costEnd;
-        gettimeofday(&costEnd, NULL);
-        elapsed = ((costEnd.tv_sec*1000000+costEnd.tv_usec)-(costStart.tv_sec*1000000+costStart.tv_usec))/1000000.0;
-        totalCost += elapsed;
-}
-
 
 //sz_params* conf_params = NULL;
 int load_conffile_flag = 1; //set to load configuration file at the beginning by user
