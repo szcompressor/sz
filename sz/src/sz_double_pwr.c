@@ -715,7 +715,8 @@ size_t dataLength, size_t *outSize, double min, double max)
 		size_t totalByteLength = 3 + exe_params->SZ_SIZE_TYPE + 1 + doubleSize*dataLength;
 		*newByteData = (unsigned char*)malloc(totalByteLength);
 
-		unsigned char dsLengthBytes[exe_params->SZ_SIZE_TYPE];
+		/* unsigned char dsLengthBytes[exe_params->SZ_SIZE_TYPE]; */
+		unsigned char* dsLengthBytes = (unsigned char*) malloc((exe_params->SZ_SIZE_TYPE) * sizeof(unsigned char));
 		intToBytes_bigEndian(dsLengthBytes, dataLength);//4
 		for (i = 0; i < 3; i++)//3
 			(*newByteData)[k++] = versionNumber[i];
@@ -741,6 +742,7 @@ size_t dataLength, size_t *outSize, double min, double max)
 				doubleToBytes(p, oriData[i]);
 		}
 		*outSize = totalByteLength;
+		free(dsLengthBytes);
 	}
 
 	free(pwrErrBound);
