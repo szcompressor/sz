@@ -160,7 +160,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
 
 	int num_yz = num_y * num_z;
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -259,7 +259,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	for(int t=1; t<thread_num; t++){
 		unpred_offset[t] = unpredictable_count[t-1] + unpred_offset[t-1];
 	}
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -278,7 +278,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 
 	size_t * block_pos = (size_t *) result_pos;
 	result_pos += num_blocks * sizeof(size_t);
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -314,7 +314,7 @@ unsigned char * SZ_compress_float_3D_MDQ_openmp(float *oriData, size_t r1, size_
 	for(int t=1; t<thread_num; t++){
 		block_offset[t] = block_pos[t-1] + block_offset[t-1];
 	}
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -498,7 +498,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 	printf("Read data info elapsed time: %.4f\n", elapsed_time);
 #endif
 	elapsed_time = -sz_wtime();
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -523,7 +523,7 @@ void decompressDataSeries_float_3D_openmp(float** data, size_t r1, size_t r2, si
 #endif
 	elapsed_time = -sz_wtime();
 
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -675,7 +675,7 @@ unsigned char * SZ_compress_double_3D_MDQ_openmp(double *oriData, size_t r1, siz
 	HuffmanTree* huffmanTree = createHuffmanTree(stateNum);
 
 	int num_yz = num_y * num_z;
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -765,7 +765,7 @@ unsigned char * SZ_compress_double_3D_MDQ_openmp(double *oriData, size_t r1, siz
 		unpred_offset[t] = unpredictable_count[t-1] + unpred_offset[t-1];
 	}
 
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -784,7 +784,7 @@ unsigned char * SZ_compress_double_3D_MDQ_openmp(double *oriData, size_t r1, siz
 
 	size_t * block_pos = (size_t *) result_pos;
 	result_pos += num_blocks * sizeof(size_t);
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -820,7 +820,7 @@ unsigned char * SZ_compress_double_3D_MDQ_openmp(double *oriData, size_t r1, siz
 	for(int t=1; t<thread_num; t++){
 		block_offset[t] = block_pos[t-1] + block_offset[t-1];
 	}
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -983,7 +983,7 @@ void decompressDataSeries_double_3D_openmp(double** data, size_t r1, size_t r2, 
 	printf("Read data info elapsed time: %.4f\n", elapsed_time);
 #endif
 	elapsed_time = -sz_wtime();
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -1008,7 +1008,7 @@ void decompressDataSeries_double_3D_openmp(double** data, size_t r1, size_t r2, 
 #endif
 	elapsed_time = -sz_wtime();
 
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
@@ -1052,7 +1052,7 @@ void Huffman_init_openmp(HuffmanTree* huffmanTree, int *s, size_t length, int th
 	// memset(freq, 0, thread_num*huffmanTree->allNodes*sizeof(size_t));
 	size_t block_size = (length - 1)/ thread_num + 1;
 	size_t block_residue = length - (thread_num - 1) * block_size;
-	// Visual Studio compilers do not like the definition of the variables inside de parallel for loop
+	// Visual Studio compilers do not like the definition of the variables inside the parallel for loop
 #ifndef _MSC_VER
 	#pragma omp parallel for
 #endif
