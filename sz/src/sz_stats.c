@@ -41,6 +41,10 @@ void writeUnpredictDataCounts(size_t unpredictCount, size_t totalNumElements)
 	sz_stat.unpredictPercent = 1.0f*unpredictCount/totalNumElements;
 }
 
+void writePreEncodingSize(size_t pre_encoding_size) {
+  sz_stat.pre_encoding_size = pre_encoding_size;
+}
+
 void printSZStats()
 {
 	printf("===============stats about sz================\n");
@@ -71,4 +75,5 @@ void printSZStats()
 	printf("unpredictPercent           %f\n", sz_stat.unpredictPercent);
 
 	printf("quantization_intervals     %u\n", sz_stat.quantization_intervals);
+	printf("pre_encoding_size     %zu\n", sz_stat.pre_encoding_size);
 }

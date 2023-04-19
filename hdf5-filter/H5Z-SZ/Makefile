@@ -11,6 +11,7 @@
 
 SZPATH		= /home/sdi/Install/sz-2.1.12-install
 HDF5PATH	= /home/sdi/Install/hdf5-1.10.3-install
+#HDF5PATH	= /home/sdi/Install/hdf5-1.12.1-install
 
 ##=======================================================================
 ##   DIRECTORY TREE
@@ -53,7 +54,7 @@ $(OBJ)/%.o:	$(SRC)/%.c
 		
 $(LIB)/$(SHARED):	$(OBJS)
 		@mkdir -p $(LIB)
-		$(CC) -O3 -shared -o $(LIB)/$(SHARED) $(OBJS) $(SZFLAGS) -L$(HDF5PATH)/lib -lc -lSZ -lhdf5 -lzlib -lzstd
+		$(CC) -O3 -g -shared -o $(LIB)/$(SHARED) $(OBJS) $(SZFLAGS) -L$(HDF5PATH)/lib -lc -lSZ -lhdf5 -lzlib -lzstd
 
 $(LIB)/$(STATIC):	$(OBJS)
 		@mkdir -p $(LIB)

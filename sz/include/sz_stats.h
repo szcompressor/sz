@@ -42,6 +42,8 @@ typedef struct sz_stats
 	float zstdCompressionRatio; //not available yet
 
   unsigned int quantization_intervals;
+
+  size_t pre_encoding_size;
 } sz_stats;
 
 extern sz_stats sz_stat;
@@ -53,6 +55,7 @@ void writeZstdCompressionRatio(float zstdCompressionRatio);
 void writeConstantFlag(int flag);
 void writeUnpredictDataCounts(size_t unpredictCount, size_t totalNumElements);
 void writeQuantizationInfo(unsigned int quantization_intervals);
+void writePreEncodingSize(size_t pre_encoding_size);
 void printSZStats();
 
 #ifdef __cplusplus
